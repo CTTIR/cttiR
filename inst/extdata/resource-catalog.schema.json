@@ -1,0 +1,150 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CTTIR resource catalog v1",
+  "type": "object",
+  "required": [
+    "manifest",
+    "packages",
+    "observations",
+    "dependencies",
+    "evidence",
+    "relationships",
+    "profiles",
+    "workflow_approvals",
+    "document_inventory",
+    "document_chunks",
+    "function_records",
+    "documentation_coverage"
+  ],
+  "properties": {
+    "manifest": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": 1
+        },
+        "package_count": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "schema_version",
+        "package_count"
+      ],
+      "additionalProperties": true
+    },
+    "packages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "package_id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "purpose": {
+            "type": "string"
+          },
+          "api_verification": {
+            "type": "string"
+          },
+          "adapter_status": {
+            "type": "string"
+          },
+          "default_install": {
+            "const": false
+          }
+        },
+        "required": [
+          "package_id",
+          "name",
+          "category",
+          "purpose",
+          "api_verification",
+          "adapter_status",
+          "default_install"
+        ],
+        "additionalProperties": true
+      }
+    },
+    "observations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "observation_id": {
+            "type": "string"
+          },
+          "package_id": {
+            "type": "string"
+          },
+          "observed_version": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "source_url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "observation_id",
+          "package_id",
+          "observed_version",
+          "source_url"
+        ],
+        "additionalProperties": true
+      }
+    },
+    "dependencies": {
+      "type": "array"
+    },
+    "evidence": {
+      "type": "array"
+    },
+    "relationships": {
+      "type": "array"
+    },
+    "profiles": {
+      "type": "array"
+    },
+    "workflow_approvals": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "document_inventory": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "document_chunks": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "function_records": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "documentation_coverage": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    }
+  },
+  "additionalProperties": false
+}

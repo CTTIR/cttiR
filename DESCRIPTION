@@ -1,0 +1,19 @@
+Package: cttiR
+Title: CTTIR Project Builder
+Version: 0.0.1.9000
+Authors@R: person("R.", "Heller", email = "58561665+r-heller@users.noreply.github.com", role = c("aut", "cre"))
+Description: Creates deterministic research project scaffolds from a name,
+    research type and goal. Validates declarative configuration, records file
+    ownership and browses a bundled catalog of research package candidates.
+    This development version provides an offline foundation; workflow adapters
+    and catalog lifecycle operations are under development.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Depends: R (>= 4.1.0)
+Imports: DBI, RSQLite, digest, jsonlite, jsonvalidate, uuid, yaml
+Suggests: testthat (>= 3.0.0), withr
+Config/testthat/edition: 3
+Roxygen: list(markdown = TRUE)
+URL: https://github.com/CTTIR/cttiR
+BugReports: https://github.com/CTTIR/cttiR/issues
+Config/roxygen2/version: 8.0.0

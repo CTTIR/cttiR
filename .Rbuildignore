@@ -1,0 +1,7 @@
+^admin$
+^artifacts$
+^.*\.Rcheck$
+^.*\.tar\.gz$
+^CURRENT_STATE\.md$
+^\.git$
+^\.gitignore$

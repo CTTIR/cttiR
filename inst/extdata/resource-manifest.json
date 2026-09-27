@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "research_date": "2026-09-26",
+  "bioconductor_release_observed": "3.23",
+  "r_release_guidance": "4.6 (Bioconductor install page); resolve actual project compatibility at execution",
+  "package_count": 229,
+  "repository_counts": {
+    "Upstream": 9,
+    "CRAN": 121,
+    "Bioconductor": 97,
+    "Bioconductor-historical": 1,
+    "R-base": 1
+  },
+  "category_counts": {
+    "workflow": 20,
+    "tidy": 26,
+    "reporting": 20,
+    "clinical": 36,
+    "prediction": 19,
+    "bioc_containers": 19,
+    "bioc_tidy": 6,
+    "cytometry": 8,
+    "bulk_rna": 9,
+    "single_cell": 21,
+    "spatial": 6,
+    "multiomics": 4,
+    "pathways": 8,
+    "proteomics": 9,
+    "microbiome": 6,
+    "genomics": 12
+  },
+  "api_verified_count": 0,
+  "runtime_tested_adapter_count": 0,
+  "metadata_sources": "Official CRAN PACKAGES/DESCRIPTION; selected Bioconductor software/experiment indexes and pages; selected upstream DESCRIPTION/NAMESPACE",
+  "limitations": [
+    "Metadata verification is not API or runtime verification.",
+    "Interop fields are reviewed expectations, not whole-package certification.",
+    "Source snapshots are dated; update must recheck compatibility and lifecycle.",
+    "No R runtime/package installation was available for adapter tests."
+  ],
+  "documentation_coverage_queue_count": 229,
+  "stored_original_research_note_count": 13,
+  "stored_full_source_document_count": 0,
+  "workflow_approved_revision_count": 0,
+  "function_signature_record_count": 0,
+  "content_id": "sha256:122877f9677cfa5a42b3722301dc0c1d8a534847ca3746078d7db9ef165b5381"
+}

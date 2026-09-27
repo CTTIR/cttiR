@@ -1,0 +1,673 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "cttir resolved ProjectSpec core contract v1",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "project": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "slug": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "primary_research",
+            "secondary_research",
+            "methods",
+            "review",
+            "software",
+            "mixed",
+            "other"
+          ]
+        },
+        "goal": {
+          "type": "string",
+          "minLength": 1
+        },
+        "language": {
+          "type": "string",
+          "enum": [
+            "en",
+            "de"
+          ]
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "slug",
+        "type",
+        "goal",
+        "language",
+        "created_at"
+      ],
+      "additionalProperties": false
+    },
+    "research": {
+      "type": "object",
+      "properties": {
+        "design": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "domain": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "data_types": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "ethics_status": {
+          "type": "string",
+          "enum": [
+            "unknown",
+            "not_applicable",
+            "pending",
+            "approved"
+          ]
+        },
+        "analysis_role": {
+          "type": "string",
+          "enum": [
+            "primary_analysis",
+            "secondary_analysis",
+            "exploratory",
+            "unknown"
+          ]
+        },
+        "data_origin": {
+          "type": "string",
+          "enum": [
+            "new_collection",
+            "existing_dataset",
+            "literature",
+            "mixed",
+            "unknown"
+          ]
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "design",
+        "domain",
+        "data_types",
+        "ethics_status",
+        "analysis_role",
+        "data_origin",
+        "notes"
+      ],
+      "additionalProperties": false
+    },
+    "publications": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "slug": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "research_class": {
+            "type": "string",
+            "enum": [
+              "primary_research",
+              "secondary_research",
+              "methods",
+              "software",
+              "other",
+              "unknown"
+            ]
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "original_article",
+              "systematic_review",
+              "scoping_review",
+              "meta_analysis",
+              "methods",
+              "protocol",
+              "software",
+              "narrative_review",
+              "other"
+            ]
+          },
+          "analysis_role": {
+            "type": "string",
+            "enum": [
+              "primary_analysis",
+              "secondary_analysis",
+              "exploratory",
+              "unknown"
+            ]
+          },
+          "data_origin": {
+            "type": "string",
+            "enum": [
+              "new_collection",
+              "existing_dataset",
+              "literature",
+              "mixed",
+              "unknown"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "slug",
+          "research_class",
+          "type",
+          "analysis_role",
+          "data_origin"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "workflow": {
+      "type": "object",
+      "properties": {
+        "pipeline": {
+          "type": "string",
+          "enum": [
+            "targets",
+            "none"
+          ]
+        },
+        "environment": {
+          "type": "string",
+          "enum": [
+            "renv",
+            "none"
+          ]
+        },
+        "git": {
+          "type": "boolean"
+        },
+        "prepare_environment": {
+          "type": "boolean"
+        },
+        "network": {
+          "type": "string",
+          "enum": [
+            "offline",
+            "allowed"
+          ]
+        },
+        "reporting": {
+          "type": "string",
+          "enum": [
+            "generic",
+            "quarto",
+            "rmarkdown",
+            "workflowr",
+            "reflowR"
+          ]
+        },
+        "readiness": {
+          "type": "string",
+          "enum": [
+            "scaffold_ready",
+            "environment_ready",
+            "demo_verified",
+            "data_ready",
+            "analysis_ready"
+          ]
+        },
+        "profile": {
+          "type": "string",
+          "enum": [
+            "cttir_specialist",
+            "hybrid",
+            "standard_reflowR"
+          ]
+        },
+        "project_backend": {
+          "type": "string",
+          "enum": [
+            "cttir",
+            "reflowR"
+          ]
+        },
+        "table_backend": {
+          "type": "string",
+          "enum": [
+            "DescrTab2",
+            "gtsummary",
+            "gt",
+            "none"
+          ]
+        }
+      },
+      "required": [
+        "pipeline",
+        "environment",
+        "git",
+        "prepare_environment",
+        "network",
+        "reporting",
+        "readiness",
+        "profile",
+        "project_backend",
+        "table_backend"
+      ],
+      "additionalProperties": false
+    },
+    "data_sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          },
+          "logical_uri": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "format": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "access_class": {
+            "type": "string",
+            "enum": [
+              "unknown",
+              "public",
+              "restricted"
+            ]
+          },
+          "checksum": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "checksum_status": {
+            "type": "string",
+            "enum": [
+              "unknown",
+              "recorded",
+              "verified"
+            ]
+          },
+          "schema_ref": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "logical_uri",
+          "format",
+          "access_class",
+          "checksum",
+          "checksum_status",
+          "schema_ref"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "packages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "version": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "revision": {
+            "type": "string",
+            "minLength": 1
+          },
+          "source": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "version",
+          "revision",
+          "source",
+          "evidence_ids",
+          "required"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "string",
+            "pattern": "^/"
+          },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "explicit",
+              "config",
+              "inferred",
+              "default"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "required": [
+          "field",
+          "origin",
+          "reason",
+          "evidence_ids"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "catalog_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "template_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "prompt_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "planner_mode": {
+          "type": "string",
+          "enum": [
+            "deterministic",
+            "local_llm"
+          ]
+        },
+        "model_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "model_digest": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "catalog_id",
+        "template_version",
+        "prompt_version",
+        "planner_mode",
+        "model_id",
+        "model_digest"
+      ],
+      "additionalProperties": false
+    },
+    "extensions": {
+      "type": "object"
+    },
+    "analysis": {
+      "type": "object",
+      "properties": {
+        "aim": {
+          "type": "string",
+          "enum": [
+            "descriptive",
+            "explanatory",
+            "predictive",
+            "causal",
+            "unknown"
+          ]
+        },
+        "outcome_family": {
+          "type": "string",
+          "enum": [
+            "continuous",
+            "binary",
+            "count",
+            "ordinal",
+            "time_to_event",
+            "other",
+            "unknown"
+          ]
+        },
+        "unit_structure": {
+          "type": "string",
+          "enum": [
+            "independent",
+            "paired",
+            "clustered",
+            "longitudinal",
+            "unknown"
+          ]
+        },
+        "engine": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "approved": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "aim",
+        "outcome_family",
+        "unit_structure",
+        "engine",
+        "approved"
+      ],
+      "additionalProperties": false
+    },
+    "figures": {
+      "title": "CTTIR figure policy",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "continuous_palette": {
+          "enum": [
+            "viridis",
+            "cividis"
+          ],
+          "default": "viridis"
+        },
+        "categorical_provider": {
+          "const": "RColorBrewer",
+          "default": "RColorBrewer"
+        },
+        "categorical_palette": {
+          "type": "string",
+          "default": "Dark2"
+        },
+        "diverging_palette": {
+          "type": "string",
+          "default": "BrBG"
+        },
+        "colourblind_friendly_only": {
+          "const": true,
+          "default": true
+        },
+        "redundant_encoding_required": {
+          "const": true,
+          "default": true
+        },
+        "panel_composer": {
+          "const": "patchwork",
+          "default": "patchwork"
+        },
+        "checks": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "protanopia",
+              "deuteranopia",
+              "tritanopia",
+              "grayscale"
+            ]
+          },
+          "default": [
+            "protanopia",
+            "deuteranopia",
+            "tritanopia",
+            "grayscale"
+          ]
+        },
+        "named_colours": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$"
+          }
+        },
+        "na_colour": {
+          "type": "string",
+          "default": "#808080"
+        }
+      }
+    },
+    "ecosystem": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "seurat_for_relevant_gaps": {
+          "type": "boolean",
+          "default": true
+        },
+        "require_role_approval": {
+          "const": true,
+          "default": true
+        },
+        "modality": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "project",
+    "research",
+    "publications",
+    "workflow",
+    "data_sources",
+    "packages",
+    "decisions",
+    "provenance"
+  ],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "workflow": {
+            "properties": {
+              "profile": {
+                "const": "standard_reflowR"
+              }
+            },
+            "required": [
+              "profile"
+            ]
+          }
+        },
+        "required": [
+          "workflow"
+        ]
+      },
+      "then": {
+        "properties": {
+          "workflow": {
+            "properties": {
+              "project_backend": {
+                "const": "reflowR"
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

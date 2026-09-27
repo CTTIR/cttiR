@@ -1,1 +1,7 @@
 /admin/
+/artifacts/
+/*.tar.gz
+/*.Rcheck/
+.Rhistory
+.RData
+.Rproj.user/

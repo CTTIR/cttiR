@@ -1,0 +1,68 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CTTIR figure policy",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "continuous_palette": {
+      "enum": [
+        "viridis",
+        "cividis"
+      ],
+      "default": "viridis"
+    },
+    "categorical_provider": {
+      "const": "RColorBrewer",
+      "default": "RColorBrewer"
+    },
+    "categorical_palette": {
+      "type": "string",
+      "default": "Dark2"
+    },
+    "diverging_palette": {
+      "type": "string",
+      "default": "BrBG"
+    },
+    "colourblind_friendly_only": {
+      "const": true,
+      "default": true
+    },
+    "redundant_encoding_required": {
+      "const": true,
+      "default": true
+    },
+    "panel_composer": {
+      "const": "patchwork",
+      "default": "patchwork"
+    },
+    "checks": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "protanopia",
+          "deuteranopia",
+          "tritanopia",
+          "grayscale"
+        ]
+      },
+      "default": [
+        "protanopia",
+        "deuteranopia",
+        "tritanopia",
+        "grayscale"
+      ]
+    },
+    "named_colours": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$"
+      }
+    },
+    "na_colour": {
+      "type": "string",
+      "default": "#808080"
+    }
+  }
+}
