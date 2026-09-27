@@ -3,7 +3,7 @@
 CTTIR Project Builder creates research project scaffolds from three inputs:
 a name, research type and goal.
 
-This is the first development milestone (`0.0.1.9000`). It provides an offline
+This is the first development milestone (`0.0.2`). It provides an offline
 builder, schema validation and a searchable resource snapshot. It does not yet
 provide the complete research workflow described in the development plan.
 
@@ -45,17 +45,21 @@ verification limitations. These are dated observations, not current availability
 claims or approved executable adapters. Querying does not install packages.
 Project-scoped queries honor the recorded resource pin and fail if unavailable.
 
+`cttiR::sync()` previews explicit configuration changes and preserves edited files.
+`cttiR::audit()` inspects local integrity; `cttiR::doctor()` provides brief diagnostics.
+Repairs are restricted to missing managed files whose baseline can be verified.
+
 Still pending: reflowR and analysis adapters, verified API/documentation catalog,
 catalog update and rollback, runtime setup, grounded retrieval, Shiny,
-configuration synchronization, and the full audit/repair engine. Unimplemented
+the complete workflow lifecycle and full audit coverage. Unimplemented
 APIs are not exported as placeholders. See [CURRENT_STATE.md](CURRENT_STATE.md).
 
 To build and test locally with the declared dependencies installed:
 
 ```sh
 R CMD build .
-R CMD check --no-manual cttiR_0.0.1.9000.tar.gz
-R CMD INSTALL cttiR_0.0.1.9000.tar.gz
+R CMD check --no-manual cttiR_0.0.2.tar.gz
+R CMD INSTALL cttiR_0.0.2.tar.gz
 ```
 
 MIT licensed. Local validation currently covers Linux with R 4.6.1; other

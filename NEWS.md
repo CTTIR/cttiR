@@ -1,3 +1,9 @@
+# cttiR 0.0.2
+
+* Add read-only synchronization previews, conflict detection, per-file backups and rollback.
+* Add local integrity audits, structured reports and baseline-verified missing-file repair.
+* Add a working maintainer contact and exclude the web license copy from package builds.
+
 # cttiR 0.0.1.9000
 
 * Add an offline, staged project builder with three required research inputs.

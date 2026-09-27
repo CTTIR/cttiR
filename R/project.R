@@ -1,3 +1,21 @@
+project_bundle <- function(spec, prior_lock = NULL) {
+  files <- render_project(spec)
+  lock <- list(schema_version = 1L, spec_sha256 = content_hash(json_text(spec)),
+               template_version = "0.1.0", catalog_id = "unavailable", model = NULL,
+               resource_snapshot = jsonlite::fromJSON(resource_file("extdata", "resource-manifest.json"))$content_id,
+               dependencies = list(), environment_status = "pending")
+  if (!is.null(prior_lock)) {
+    lock <- prior_lock
+    lock$spec_sha256 <- content_hash(json_text(spec))
+  }
+  files[["cttir-lock.json"]] <- paste0(json_text(lock, TRUE), "\n")
+  manifest <- project_manifest(files)
+  files[[".cttir/managed-files.json"]] <- paste0(json_text(list(schema_version = 1L, files = manifest), TRUE), "\n")
+  files[[".cttir/state.json"]] <- paste0(json_text(list(schema_version = 1L, project_id = spec$project$id,
+                                                       status = "created", spec_sha256 = lock$spec_sha256), TRUE), "\n")
+  list(files = files, manifest = manifest, lock = lock)
+}
+
 assert_plain_path <- function(path) {
   # Check every existing lexical component before normalizing away links.
   path <- path.expand(path)
@@ -113,19 +131,12 @@ project <- function(name, type, goal, path = getwd(), config = NULL,
     saved <- validate_spec(spec_file)
     spec <- resolve_spec(name, type, goal, config, options, saved$project)
     if (!identical(json_text(spec), json_text(saved)))
-      abort_cttir("This project has different accepted inputs; configuration changes require a future sync milestone.",
-                  "cttir_path_conflict", "different_spec", remediation = "Preserve this project and choose another name, or wait for sync support.")
+      abort_cttir("This project has different accepted inputs; use sync() to preview explicit changes.",
+                  "cttir_path_conflict", "different_spec", remediation = "Use sync() to preview changes or choose another project name.")
   }
-  files <- render_project(spec)
-  lock <- list(schema_version = 1L, spec_sha256 = content_hash(json_text(spec)),
-               template_version = "0.1.0", catalog_id = "unavailable", model = NULL,
-               resource_snapshot = jsonlite::fromJSON(resource_file("extdata", "resource-manifest.json"))$content_id,
-               dependencies = list(), environment_status = "pending")
-  files[["cttir-lock.json"]] <- paste0(json_text(lock, TRUE), "\n")
-  manifest <- project_manifest(files)
-  files[[".cttir/managed-files.json"]] <- paste0(json_text(list(schema_version = 1L, files = manifest), TRUE), "\n")
-  files[[".cttir/state.json"]] <- paste0(json_text(list(schema_version = 1L, project_id = spec$project$id,
-                                                       status = "created", spec_sha256 = lock$spec_sha256), TRUE), "\n")
+  bundle <- project_bundle(spec)
+  files <- bundle$files
+  manifest <- bundle$manifest
   plan <- data.frame(path = names(files), action = if (exists) "skip" else "create",
                      sha256 = vapply(files, content_hash, character(1)), stringsAsFactors = FALSE, row.names = NULL)
   if (exists) {

@@ -5,3 +5,6 @@
 ^CURRENT_STATE\.md$
 ^\.git$
 ^\.gitignore$
+^LICENSE\.md$
+^cran-comments\.md$
+^\.github$

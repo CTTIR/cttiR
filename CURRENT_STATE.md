@@ -1,6 +1,30 @@
 # cttiR development state
 
-Updated: 2026-09-27. Version: 0.0.1.9000. License: MIT.
+Updated: 2026-09-27. Version: 0.0.2. License: MIT.
+
+## Milestone 2: project lifecycle
+
+Added sync previews/application, edited-file conflicts, per-file backups and failure rollback.
+Added audit/doctor, JSON/Markdown reports, strict failure conditions and baseline-verified
+missing managed-file repair. 131 assertions pass locally. R CMD check --as-cran reports
+0 errors, 0 warnings and the expected New submission NOTE. Cross-platform Actions
+checks are configured; results must be verified after push. Full CRAN readiness is
+not yet established.
+
+The maintainer contact is raban.heller@uni-ulm.de, explicitly approved by the user.
+The user authorizes readiness verification only: do not submit to CRAN.
+An ignored retry controller under admin/automation is scheduled with the user timer
+cttir-readiness-retry.timer for 2026-09-28 11:00 Europe/Berlin and hourly thereafter.
+It resumes this task while unfinished, suppresses recent activity, and honors STOP
+and COMPLETE files. Disable the timer on completion or explicit pause.
+
+reflowR source revision cd1243a068ff2c8fb6796e34b58f6c6ce6af87e8 was inspected and
+its initializer run with Git/open/change_wd disabled. Generated setup auto-installs
+a broad package set, and generated navigation YAML is malformed. An adapted,
+reviewed template with provenance is required; integration remains unverified.
+Public organization discovery returned 40 repositories. The live source inventory
+is recorded locally; several local trees are dirty and must not be bundled as
+public upstream source without obtaining verified public revisions.
 
 ## Milestone 1: offline foundation
 
@@ -63,7 +87,8 @@ Full v7 acceptance gates are **not complete**. No claims of Windows/macOS suppor
 hosted CI success, scientific validation, production readiness, CRAN readiness
 or release/submission are made. Creation locking coordinates cooperating writers;
 this milestone does not claim protection against a hostile concurrent filesystem
-actor. Existing-project writes/sync and journal recovery are not implemented.
+actor. Existing-project sync and rollback on caught write failures are tested. Recovery
+after abrupt process termination remains pending and is not a release pass.
 
 Authorization: validated milestones may be committed and pushed directly to main
 using the repository's configured user identity. Preserve ignored admin inputs.
