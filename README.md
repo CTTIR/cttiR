@@ -3,7 +3,7 @@
 CTTIR Project Builder creates research project scaffolds from three inputs:
 a name, research type and goal.
 
-This is development milestone `0.0.4`. It provides an offline
+This is development milestone `0.0.5`. It provides an offline
 builder, schema validation and a searchable resource snapshot. It does not yet
 provide the complete research workflow described in the development plan.
 
@@ -72,8 +72,15 @@ cloud-backed models. Runtime/model files stay outside the package. Offline mode
 reuses verified artifacts; no model is pulled. The candidate model has passed a
 real inference smoke test but is not yet qualified for workflow planning.
 
+With the suggested `shiny` and `callr` packages installed, `cttiR::setup_app()`
+opens a local Fast/Detailed builder. `cttiR::configure(path)` previews and applies
+explicit changes through the same synchronization engine. Read-only tools run in
+background workers; stale previews are refused. Detailed configuration currently
+uses validated JSON. The full questionnaire, saved drafts and visual review are
+still pending. This interface is for local use, not remote multi-user hosting.
+
 Still pending: reflowR and analysis adapters, verified API/documentation catalog,
-remote catalog refresh, workflow-model qualification, grounded planning, Shiny,
+remote catalog refresh, workflow-model qualification, grounded planning, the complete application workflow,
 the complete workflow lifecycle and full audit coverage. Unimplemented
 APIs are not exported as placeholders. See [CURRENT_STATE.md](CURRENT_STATE.md).
 
@@ -81,8 +88,8 @@ To build and test locally with the declared dependencies installed:
 
 ```sh
 R CMD build .
-R CMD check --no-manual cttiR_0.0.4.tar.gz
-R CMD INSTALL cttiR_0.0.4.tar.gz
+R CMD check --no-manual cttiR_0.0.5.tar.gz
+R CMD INSTALL cttiR_0.0.5.tar.gz
 ```
 
 MIT licensed. Local validation currently covers Linux with R 4.6.1; other

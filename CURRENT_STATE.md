@@ -1,6 +1,33 @@
 # cttiR development state
 
-Updated: 2026-10-01. Version: 0.0.4. License: MIT.
+Updated: 2026-10-01. Version: 0.0.5. License: MIT.
+
+## Milestone 5: local application and pin isolation
+
+Adds setup_app() and configure(): one Fast/Detailed draft, an explicit file-plan
+preview before writes, background workers for local tools, preview cancellation,
+duplicate-job suppression and stale-input/catalog/file checks. Configure applies
+through sync(). The interface does not execute study analysis or offer remote
+multi-user hosting. Detailed fields currently use validated JSON; the full typed
+questionnaire, saved drafts, guided runtime/update application and report export
+remain pending. New project identifiers are assigned on creation; previews show
+file actions rather than presenting prospective content hashes as final hashes.
+
+Fixed repeat creation to preserve both accepted API and resource pins without
+consulting a corrupt global pointer. Missing control files retain the documented
+path-conflict error. Creation and synchronization workers recheck the reviewed
+catalog/file plan at execution time; mixed catalog snapshots are rejected.
+Installed-worker tests exercised both rejection and successful application. Full tests: 291 passing assertions. Lint passes; automated
+coverage is 82.83% (app 76.47%, runtime 57.02%). The source archive passed --as-cran
+with zero errors/warnings and one New submission NOTE. Installed examples pass.
+
+Real browser checks created Fast and Detailed synthetic projects and applied a
+Configure change through actual background workers. A 390px viewport initially
+overflowed; after fixes the document width is 375px and plan width is 321.2px.
+Two screenshot attempts timed out in the browser connection. DOM/interaction QA
+passed, but screenshot visual review remains unverified and is not a release pass.
+The owned browser test server was stopped; test projects remain under ignored
+artifacts/examples. Runtime test artifacts are retained under artifacts/runtime.
 
 ## Milestone 4: immutable local catalog lifecycle
 
@@ -17,7 +44,8 @@ exports and same-version edits. A real frozen reflowR source passed local previe
 combined activation, pinned project creation and rollback. Detailed evidence is
 under artifacts/implementation/milestone4-*. The source archive passed --as-cran with zero errors/warnings and one New
 submission NOTE. Installed examples and lint passed; automated coverage is 83.29%.
-Hosted results must be verified for this milestone after publication.
+Hosted commit 39577ffc8a402dd51c34ceeddab6a7b8918d91ad passed all five
+Linux release/oldrel/devel, Windows and macOS jobs in run 36822377939.
 
 Remote fetch adapters, bounded discovery, pruning, release migration and automatic
 interrupted catalog lock recovery remain pending. Unsupported update policies fail
@@ -78,9 +106,9 @@ reflowR source revision cd1243a068ff2c8fb6796e34b58f6c6ce6af87e8 was inspected a
 its initializer run with Git/open/change_wd disabled. Generated setup auto-installs
 a broad package set, and generated navigation YAML is malformed. An adapted,
 reviewed template with provenance is required; integration remains unverified.
-Public organization discovery returned 40 repositories. The live source inventory
-is recorded locally; several local trees are dirty and must not be bundled as
-public upstream source without obtaining verified public revisions.
+Public organization discovery returned 40 repositories. The catalog was built
+from materialized verified public revisions, not neighboring dirty worktrees.
+The frozen source inventory and extraction evidence are retained locally.
 
 ## Milestone 1: offline foundation
 
@@ -128,23 +156,32 @@ intentionally bundled under `inst/`.
 
 ## Remaining work
 
-WO-01 foundation is implemented for this milestone, with full catalog/audit/update
-report schemas still pending. WO-02 offline creation is implemented; broader
-interruption/recovery, cross-platform filesystem tests and full lifecycle gates
-remain open. WO-06c has resource import/query functionality only.
+Full v7 acceptance is not complete. Continue in this order:
 
-Next: inspect the exact reflowR source and side effects, build a reviewed adapter,
-then implement the real source/API inventory and grounded workflow routing.
-Continue with immutable catalog lifecycle/update/rollback, approved documentation
-corpus, runtime setup and inference, scientific adapters, synchronization,
-Shiny and audit/repair. Follow the work orders in the local v7 specification.
+1. Complete bounded CTTIR/standard/IMBI remote source refresh and release policy,
+   source filtering, discovery, retained-history recovery and report schemas.
+2. Build the reviewed reflowR template adapter and standard tidy/table/model
+   adapters; test actual synthetic lm/GLM, mixed and survival workflows. Add
+   capability routing, explicit mappings, dependency preparation and safe targets.
+3. Store the licensed revision-aligned documentation/vignette corpus and tested
+   role approvals. Current workflow approval count is zero, so G27 fails.
+4. Implement grounded planning and complete the required usefulness/negative-case
+   benchmark. A runtime smoke is not a planning qualification. Extend runtime
+   installation beyond the currently live-tested Linux x86_64 backend.
+5. Complete biological object/release compatibility and loss-aware bridges,
+   accessible figure checks, patchwork and appropriate Seurat capability routing.
+6. Complete typed UI questions, durable drafts, guided update/runtime apply,
+   cancellation/recovery and exports. Finish screenshot visual review.
+7. Expand audit profiles and full interruption/recovery fixtures, then build
+   vignettes, documentation site, URL/spelling reports and the final gate matrix.
 
-Full v7 acceptance gates are **not complete**. No claims of Windows/macOS support,
-hosted CI success, scientific validation, production readiness, CRAN readiness
-or release/submission are made. Creation locking coordinates cooperating writers;
-this milestone does not claim protection against a hostile concurrent filesystem
-actor. Existing-project sync and rollback on caught write failures are tested. Recovery
-after abrupt process termination remains pending and is not a release pass.
+Package checks on the supported hosted matrix passed for milestones 3 and 4;
+this does not qualify every runtime installer or scientific adapter. Full
+scientific validation, production readiness and CRAN readiness are not claimed.
+No CRAN or external-builder submission has been made. Creation and transaction
+locks coordinate cooperating writers; hostile concurrent filesystem actors are
+outside the current contract. Keep the exact acceptance gates in the ignored v7
+specification and preserve the distinction between passed, partial and untested.
 
 Authorization: validated milestones may be committed and pushed directly to main
 using the repository's configured user identity. Preserve ignored admin inputs.

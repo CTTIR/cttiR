@@ -1,3 +1,10 @@
+# cttiR 0.0.5
+
+* Add a local Fast/Detailed builder and Configure interface using the package APIs.
+* Run read-only tasks in bounded background workers and refuse stale apply requests.
+* Preserve project pins during repeat creation even when the global catalog is corrupt.
+* Keep preview tables within narrow layouts and preserve missing-file conflict errors.
+
 # cttiR 0.0.4
 
 * Add staged local API/resource refresh and atomic composite activation.

@@ -104,3 +104,26 @@ test_that("corrupt historical snapshots cannot become active", {
   expect_error(rollback_knowledge(first$new_id, dry_run = FALSE), class = "cttir_catalog_corrupt")
   expect_equal(read_document(file.path(f$store, "active.json")), pointer)
 })
+
+test_that("repeat creation and sync use project pins even if the global pointer is corrupt", {
+  f <- local_update_fixture()
+  p <- project("Independent pin", "methods", "Goal", f$parent)
+  original <- tree_hashes(p$path)
+  update()
+  expect_equal(project("Independent pin", "methods", "Goal", f$parent)$path, p$path)
+  writeLines("corrupt", file.path(f$store, "active.json"))
+  expect_equal(project("Independent pin", "methods", "Goal", f$parent)$path, p$path)
+  expect_equal(sync(p$path)$state, "planned")
+  expect_equal(tree_hashes(p$path), original)
+})
+
+test_that("creation rejects catalog changes after preview or during planning", {
+  f <- local_update_fixture()
+  expected <- content_hash(json_text(current_catalog_manifest()))
+  update()
+  expect_error(project_impl("Stale creation", "methods", "Goal", f$parent, expected_catalog = expected), class = "cttir_transaction_conflict")
+  expect_false(dir.exists(file.path(f$parent, "stale_creation")))
+  local_mocked_bindings(resource_snapshot = function(...) list(id = paste(rep("a", 64), collapse = "")))
+  expect_error(project("Mixed snapshot", "methods", "Goal", f$parent), class = "cttir_transaction_conflict")
+  expect_false(dir.exists(file.path(f$parent, "mixed_snapshot")))
+})

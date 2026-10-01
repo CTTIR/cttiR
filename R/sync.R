@@ -78,6 +78,10 @@ sync_plan <- function(project, bundle) {
 #' @return A `cttir_sync` with actions, conflicts, changed files, journal and readiness.
 #' @export
 sync <- function(path = ".", config = NULL, options = list(), dry_run = TRUE) {
+  sync_impl(path, config, options, dry_run)
+}
+
+sync_impl <- function(path = ".", config = NULL, options = list(), dry_run = TRUE, expected_plan = NULL) {
   scalar_flag(dry_run, "dry_run")
   p <- read_project(path)
   spec <- sync_spec(p$spec, config, options)
@@ -92,6 +96,8 @@ sync <- function(path = ".", config = NULL, options = list(), dry_run = TRUE) {
   }
   bundle$files[[".cttir/managed-files.json"]] <- paste0(json_text(list(schema_version = 1L, files = bundle$manifest), TRUE), "\n")
   plan <- sync_plan(p, bundle)
+  if (!is.null(expected_plan) && !identical(content_hash(json_text(plan)), expected_plan))
+    abort_cttir("Project files changed after preview; preview again before applying.", "cttir_transaction_conflict")
   conflicts <- plan$path[plan$action == "conflict"]
   journal <- NULL
   if (!dry_run && !length(conflicts)) journal <- transact_files(p$path, bundle$files, plan)

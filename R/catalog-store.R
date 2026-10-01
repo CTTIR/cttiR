@@ -9,6 +9,16 @@ catalog_pointer <- function() {
   value
 }
 
+current_catalog_manifest <- function() {
+  pointer <- catalog_pointer()
+  base_resources <- read_document(resource_file("extdata", "resource-manifest.json"))$content_id
+  if (is.null(pointer)) {
+    return(snapshot_manifest(read_catalog(resource_file("extdata", "api-catalog.json.gz"))$content_id, base_resources))
+  }
+  if (!is.null(pointer$manifest_id)) return(validate_manifest(pointer))
+  snapshot_manifest(catalog_snapshot(pointer$content_id)$content_id, base_resources)
+}
+
 resource_snapshot <- function(path = NULL) {
   base_id <- read_document(resource_file("extdata", "resource-manifest.json"))$content_id
   id <- base_id

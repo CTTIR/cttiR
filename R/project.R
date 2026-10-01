@@ -135,22 +135,37 @@ project_manifest <- function(files) {
 #' print(p)
 project <- function(name, type, goal, path = getwd(), config = NULL,
   options = list(), dry_run = FALSE) {
+  project_impl(name, type, goal, path, config, options, dry_run)
+}
+
+project_impl <- function(name, type, goal, path = getwd(), config = NULL,
+  options = list(), dry_run = FALSE, expected_catalog = NULL) {
   scalar_flag(dry_run, "dry_run")
   scalar_text(path, "path")
   assert_plain_path(path)
   if (!dir.exists(path)) abort_cttir("The parent directory must already exist.")
   parent <- normalizePath(path, winslash = "/", mustWork = TRUE)
-  spec <- resolve_spec(name, type, goal, config, options)
-  target <- file.path(parent, spec$project$slug)
+  target <- file.path(parent, safe_slug(name))
   assert_plain_path(target)
   exists <- file.exists(target)
   saved <- NULL
+  prior_lock <- NULL
+  context <- if (!exists) current_catalog_manifest() else NULL
+  if (!exists && !is.null(expected_catalog) && !identical(content_hash(json_text(context)), expected_catalog))
+    abort_cttir("The catalog changed after preview; preview again before creation.", "cttir_transaction_conflict")
   if (exists) {
     if (!dir.exists(target)) abort_cttir("The project target is an existing file.", "cttir_path_conflict")
     spec_file <- file.path(target, "cttir-project.yml")
     assert_plain_path(spec_file)
     if (!file.exists(spec_file)) abort_cttir("The target is not a recognized project.", "cttir_path_conflict")
     saved <- validate_spec(spec_file)
+    for (file in c("cttir-lock.json", ".cttir/state.json", ".cttir/managed-files.json")) {
+      actual <- file.path(target, file)
+      assert_plain_path(actual)
+      if (!file.exists(actual) || dir.exists(actual))
+        abort_cttir("An existing project control file is missing or replaced by a directory.", "cttir_path_conflict", "incomplete_project")
+    }
+    prior_lock <- read_project(target)$lock
     spec <- resolve_spec(name, type, goal, config, options, saved$project, saved$provenance)
     if (!identical(json_text(spec), json_text(saved))) {
       abort_cttir("This project has different accepted inputs; use sync() to preview explicit changes.",
@@ -158,8 +173,14 @@ project <- function(name, type, goal, path = getwd(), config = NULL,
         remediation = "Use sync() to preview changes or choose another project name."
       )
     }
+  } else {
+    spec <- resolve_spec(name, type, goal, config, options)
   }
-  bundle <- project_bundle(spec)
+  bundle <- project_bundle(spec, prior_lock)
+  if (!exists && (!identical(spec$provenance$catalog_id, context$content_id) ||
+        !identical(bundle$lock$resource_snapshot, context$resource_id))) {
+    abort_cttir("The catalog changed during planning; retry against one complete snapshot.", "cttir_transaction_conflict")
+  }
   files <- bundle$files
   manifest <- bundle$manifest
   plan <- data.frame(

@@ -64,3 +64,16 @@ test_that("a failed replacement rolls back completed writes and retains evidence
   expect_equal(read_document(journals[[1]])$status, "rolled_back")
   expect_false(dir.exists(file.path(p$path, ".cttir/write-lock")))
 })
+
+test_that("background apply refuses a changed reviewed file plan", {
+  parent <- new_parent()
+  p <- project("Reviewed sync", "methods", "Goal", parent)
+  config <- list(project = list(language = "de"))
+  plan <- sync(p$path, config = config)
+  hash <- content_hash(json_text(plan$actions))
+  file <- file.path(p$path, "cttir-project.yml")
+  writeLines(c(readLines(file), "# intervening edit"), file)
+  before <- tree_hashes(p$path)
+  expect_error(sync_impl(p$path, config = config, dry_run = FALSE, expected_plan = hash), class = "cttir_transaction_conflict")
+  expect_identical(tree_hashes(p$path), before)
+})
