@@ -2,7 +2,9 @@ normalize_schema_value <- function(x, schema) {
   # Preserve JSON arrays of length one and empty objects across R/YAML round trips.
   type <- schema$type
   if (identical(type, "object") && is.list(x)) {
-    if (!length(x)) return(stats::setNames(list(), character()))
+    if (!length(x)) {
+      return(stats::setNames(list(), character()))
+    }
     for (key in names(x)) {
       child <- schema$properties[[key]]
       if (!is.null(child)) x[key] <- list(normalize_schema_value(x[[key]], child))
@@ -20,12 +22,15 @@ validate_document <- function(x, kind) {
   schema <- jsonlite::fromJSON(schema_path, simplifyVector = FALSE)
   normalized <- normalize_schema_value(x, schema)
   encoded <- json_text(normalized)
-  if (nchar(encoded, type = "bytes") > 1048576L)
+  if (nchar(encoded, type = "bytes") > 1048576L) {
     abort_cttir("Configuration exceeds 1 MiB.")
+  }
   valid <- jsonvalidate::json_validate(encoded, schema_path, engine = "ajv", verbose = TRUE)
   if (!isTRUE(valid)) {
     abort_cttir(paste("Invalid", kind, "document; check field names, types and allowed values."),
-                "cttir_schema_error", "schema_validation", field = attr(valid, "errors"))
+      "cttir_schema_error", "schema_validation",
+      field = attr(valid, "errors")
+    )
   }
   normalized
 }
@@ -68,7 +73,7 @@ merge_config <- function(base, incoming) {
       }
       base[key] <- list(rows)
     } else if (is.list(value) && length(value) && !is.null(names(value)) &&
-               is.list(base[[key]]) && !is.null(names(base[[key]]))) {
+        is.list(base[[key]]) && !is.null(names(base[[key]]))) {
       base[key] <- list(merge_config(base[[key]], value))
     } else {
       base[key] <- list(value)

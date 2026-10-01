@@ -26,8 +26,8 @@ audit(
 \item{strict}{Throw \code{cttir_audit_failed} after reporting required failures or
 required unverified checks. The condition contains the full report.}
 
-\item{live}{Allow live probes. No runtime probe is yet implemented; a selected
-live integration check is reported as unverified, never as passed.}
+\item{live}{Allow a bounded CPU structured-output probe of an already owned
+runtime when the integration scope is selected. Never installs or starts it.}
 }
 \value{
 A \code{cttir_audit} with check table, overall status, repairs and limitations.
@@ -36,6 +36,8 @@ A \code{cttir_audit} with check table, overall status, repairs and limitations.
 Default inspection is local and read-only. It never opens referenced study
 datasets, runs study pipelines, installs dependencies or starts services.
 Missing managed files may be restored with \code{repair = TRUE} only when their
-generated content matches the accepted baseline. Edited files are preserved.
+generated content matches the accepted baseline. Interrupted writes can be
+rolled back when the recorded local writer has stopped and all destination
+and backup hashes match. Edited files are preserved.
 Reports are written only to an explicit output directory with unique names.
 }

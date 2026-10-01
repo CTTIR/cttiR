@@ -7,7 +7,7 @@ test_that("three-input creation is offline, useful and idempotent", {
   expect_length(list.files(parent, all.files = TRUE, no.. = TRUE), 0)
   expect_false(preview$readiness$materialized)
   p <- project("Example Study", "primary_research", "Describe outcomes", parent)
-  expect_equal(p$path, file.path(parent, "example_study"))
+  expect_equal(p$path, file.path(normalizePath(parent, winslash = "/"), "example_study"))
   expect_equal(p$spec$research$ethics_status, "unknown")
   expect_false(p$spec$analysis$approved)
   expect_true(file.exists(file.path(p$path, "publications/pub01_main/manuscript/README.md")))
@@ -42,8 +42,9 @@ test_that("user edits survive identical creation and dry run", {
 
 test_that("unsafe paths, symlinks and writer collisions are contained", {
   parent <- new_parent()
-  for (name in c("../escape", "CON", "a/b", "a\\b", "..", "nul", "com1"))
+  for (name in c("../escape", "CON", "a/b", "a\\b", "..", "nul", "com1")) {
     expect_error(project(name, "methods", "Goal", parent), class = "cttir_input_error")
+  }
   writeLines("Keep me", file.path(parent, "collision"))
   expect_error(project("Collision", "methods", "Goal", parent), class = "cttir_path_conflict")
   dir.create(file.path(parent, ".locked.cttir-create-lock"))

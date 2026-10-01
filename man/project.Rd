@@ -42,6 +42,7 @@ options that are not implemented raise a typed error instead of being ignored.
 }
 \examples{
 p <- project("Example", "methods", "Plan a reproducible comparison",
-             path = tempdir(), dry_run = TRUE)
+  path = tempdir(), dry_run = TRUE
+)
 print(p)
 }

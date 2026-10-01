@@ -1,6 +1,41 @@
 # cttiR development state
 
-Updated: 2026-09-27. Version: 0.0.2. License: MIT.
+Updated: 2026-10-01. Version: 0.0.3. License: MIT.
+
+## Milestone 3: catalog, recovery and local runtime
+
+Version 0.0.3 adds a revision-scoped public API catalog (30 package roots,
+1340 exports, 1323 statically resolved, zero workflow approvals), evidence
+queries, project API pins, guarded journal recovery, and platform path fixes.
+Multiple source definitions remain unresolved instead of receiving a false
+verified signature. All source extraction is static and never executes code.
+
+Explicit setup verifies the pinned Ollama 0.34.4 Linux x86_64 publisher archive,
+starts only an owned cloud-disabled process, verifies the downloaded model and
+runs a bounded CPU structured-output probe. Dry runs are read-only; offline setup
+never acquires software or pulls models. Concurrent setup and unmanaged daemons
+are refused. Live audit probes an already configured runtime without installing
+or starting one. The qwen2.5-coder:1.5b candidate passed a real CPU smoke in 3.642
+seconds; workflow usefulness remains unqualified. Retained-archive acquisition
+was exercised through the package implementation, including extraction and binary
+verification. Other runtime installation platforms remain unverified.
+
+Validation: 210 test assertions across the suite; 81.96% automated coverage
+(runtime 57.02%, supplemented by separate live acquisition/inference evidence);
+selected lint rules pass. Source checks and hosted evidence are recorded in
+artifacts/implementation. No package readiness claim follows from this milestone.
+Hosted milestone-2 Linux jobs passed; Windows/macOS path defects have working
+fixes and require verification on the newly pushed candidate.
+
+Retry history: hourly attempts ran, but the desktop session retained this thread's
+write lock, so CLI resume was rejected. Timer execution is not evidence of task
+progress. Direct interactive continuation resumed on 2026-10-01. The timer remains
+configured; do not bypass another active writer or run duplicate modifications.
+
+Next: implement coordinated immutable catalog/resource update and rollback,
+complete standard source/documentation coverage and reviewed workflow adapters,
+then qualify local planning and build the shared Shiny interface. Complete all
+remaining acceptance gates before claiming CRAN readiness.
 
 ## Milestone 2: project lifecycle
 
@@ -68,7 +103,7 @@ intentionally bundled under `inst/`.
 - Standard profile selection records reflowR integration pending. It does not
   imply that reflowR was invoked or that a supported analysis adapter exists.
 - Catalog candidates preserve their original verification levels. No workflow
-  revisions are approved and no function signatures are verified in this seed.
+  revisions are approved. Static API signatures are recorded separately from the resource seed.
 
 ## Remaining work
 

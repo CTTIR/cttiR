@@ -3,7 +3,7 @@
 CTTIR Project Builder creates research project scaffolds from three inputs:
 a name, research type and goal.
 
-This is the first development milestone (`0.0.2`). It provides an offline
+This is development milestone `0.0.3`. It provides an offline
 builder, schema validation and a searchable resource snapshot. It does not yet
 provide the complete research workflow described in the development plan.
 
@@ -39,6 +39,13 @@ New publication entries need all fields of the resolved publication schema.
 Unsupported integration requests fail explicitly. Validate documents with
 `cttiR::validate_config()` and `cttiR::validate_spec()`.
 
+`cttiR::packages()` and `cttiR::search()` inspect a separate static API catalog
+from 30 public package roots across 40 enumerated CTTIR repositories. It contains
+1,340 export records, with 1,323 statically resolved function signatures.
+`cttiR::ask()` returns matching source evidence; it does not yet perform
+natural-language planning or generate approved workflow code. Project pins
+prevent silent substitution of another API snapshot.
+
 The bundled resource snapshot contains **229 research package candidates** from
 2026-09-26. It preserves source URLs, observed versions, lifecycle information and
 verification limitations. These are dated observations, not current availability
@@ -47,10 +54,18 @@ Project-scoped queries honor the recorded resource pin and fail if unavailable.
 
 `cttiR::sync()` previews explicit configuration changes and preserves edited files.
 `cttiR::audit()` inspects local integrity; `cttiR::doctor()` provides brief diagnostics.
-Repairs are restricted to missing managed files whose baseline can be verified.
+Repairs restore missing managed files whose baseline can be verified and recover
+interrupted transactions only when the writer has stopped and hashes match.
+
+`cttiR::setup(dry_run = TRUE)` previews local runtime setup. Explicit setup can
+acquire the pinned portable Ollama runtime on Linux x86_64, verify a local model
+and run a bounded CPU structured-output probe. It refuses unmanaged daemons and
+cloud-backed models. Runtime/model files stay outside the package. Offline mode
+reuses verified artifacts; no model is pulled. The candidate model has passed a
+real inference smoke test but is not yet qualified for workflow planning.
 
 Still pending: reflowR and analysis adapters, verified API/documentation catalog,
-catalog update and rollback, runtime setup, grounded retrieval, Shiny,
+catalog update and rollback, workflow-model qualification, grounded planning, Shiny,
 the complete workflow lifecycle and full audit coverage. Unimplemented
 APIs are not exported as placeholders. See [CURRENT_STATE.md](CURRENT_STATE.md).
 
@@ -58,8 +73,8 @@ To build and test locally with the declared dependencies installed:
 
 ```sh
 R CMD build .
-R CMD check --no-manual cttiR_0.0.2.tar.gz
-R CMD INSTALL cttiR_0.0.2.tar.gz
+R CMD check --no-manual cttiR_0.0.3.tar.gz
+R CMD INSTALL cttiR_0.0.3.tar.gz
 ```
 
 MIT licensed. Local validation currently covers Linux with R 4.6.1; other

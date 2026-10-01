@@ -1,6 +1,6 @@
 Package: cttiR
 Title: Reproducible Research Project Builder
-Version: 0.0.2
+Version: 0.0.3
 Authors@R: person("R.", "Heller", email = "raban.heller@uni-ulm.de", role = c("aut", "cre"))
 Description: Creates deterministic research project scaffolds from a name,
     research type and goal. Validates declarative configuration, records file
@@ -10,8 +10,8 @@ Description: Creates deterministic research project scaffolds from a name,
 License: MIT + file LICENSE
 Encoding: UTF-8
 Depends: R (>= 4.1.0)
-Imports: DBI, RSQLite, digest, fs, jsonlite, jsonvalidate, uuid, yaml
-Suggests: testthat (>= 3.0.0), withr
+Imports: DBI, RSQLite, digest, fs, httr2, jsonlite, jsonvalidate, processx, ps, uuid, yaml
+Suggests: callr, testthat (>= 3.0.0), withr
 Config/testthat/edition: 3
 Roxygen: list(markdown = TRUE)
 URL: https://github.com/CTTIR/cttiR

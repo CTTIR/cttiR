@@ -14,8 +14,10 @@ test_that("sync previews, applies and preserves user content and pins", {
   expect_equal(accepted$project$goal, "Updated goal")
   expect_equal(accepted$project$id, p$spec$project$id)
   expect_equal(readLines(manuscript), "Reviewed manuscript")
-  expect_equal(read_project(p$path)$lock$resource_snapshot,
-               jsonlite::fromJSON(system.file("extdata/resource-manifest.json", package = "cttiR"))$content_id)
+  expect_equal(
+    read_project(p$path)$lock$resource_snapshot,
+    jsonlite::fromJSON(system.file("extdata/resource-manifest.json", package = "cttiR"))$content_id
+  )
   after <- tree_hashes(p$path)
   expect_length(sync(p$path, dry_run = FALSE)$changed_files, 0)
   expect_identical(tree_hashes(p$path), after)
