@@ -3,7 +3,7 @@
 CTTIR Project Builder creates research project scaffolds from three inputs:
 a name, research type and goal.
 
-This is development milestone `0.0.3`. It provides an offline
+This is development milestone `0.0.4`. It provides an offline
 builder, schema validation and a searchable resource snapshot. It does not yet
 provide the complete research workflow described in the development plan.
 
@@ -46,6 +46,14 @@ from 30 public package roots across 40 enumerated CTTIR repositories. It contain
 natural-language planning or generate approved workflow code. Project pins
 prevent silent substitution of another API snapshot.
 
+`cttiR::update()` refreshes explicitly registered local source directories into
+immutable API and resource snapshots, then activates both through one pointer.
+It never installs packages or changes existing project pins. Use `dry_run = TRUE`
+for a disposable preview and `cttiR::rollback_knowledge(id)` for a rollback preview.
+Removed exports stay removed in the active revision. Remote refresh, discovery,
+pruning and Bioconductor release migration remain unsupported and fail explicitly.
+See `help("update", package = "cttiR")` for local source registration.
+
 The bundled resource snapshot contains **229 research package candidates** from
 2026-09-26. It preserves source URLs, observed versions, lifecycle information and
 verification limitations. These are dated observations, not current availability
@@ -65,7 +73,7 @@ reuses verified artifacts; no model is pulled. The candidate model has passed a
 real inference smoke test but is not yet qualified for workflow planning.
 
 Still pending: reflowR and analysis adapters, verified API/documentation catalog,
-catalog update and rollback, workflow-model qualification, grounded planning, Shiny,
+remote catalog refresh, workflow-model qualification, grounded planning, Shiny,
 the complete workflow lifecycle and full audit coverage. Unimplemented
 APIs are not exported as placeholders. See [CURRENT_STATE.md](CURRENT_STATE.md).
 
@@ -73,8 +81,8 @@ To build and test locally with the declared dependencies installed:
 
 ```sh
 R CMD build .
-R CMD check --no-manual cttiR_0.0.3.tar.gz
-R CMD INSTALL cttiR_0.0.3.tar.gz
+R CMD check --no-manual cttiR_0.0.4.tar.gz
+R CMD INSTALL cttiR_0.0.4.tar.gz
 ```
 
 MIT licensed. Local validation currently covers Linux with R 4.6.1; other

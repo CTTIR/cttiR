@@ -116,7 +116,7 @@ extract_source <- function(path, repository, revision, family = "local") {
 write_catalog <- function(packages, path, inventory = list()) {
   names <- vapply(packages, function(p) p$name, character(1))
   if (anyDuplicated(names)) abort_cttir("Catalog package identities are duplicated.", "cttir_catalog_corrupt")
-  packages <- packages[order(names)]
+  packages <- packages[order(names, method = "radix")]
   catalog <- list(schema_version = 1L, packages = packages, inventory = inventory)
   catalog$content_id <- content_hash(json_text(catalog))
   con <- gzfile(path, open = "wb", compression = 9)

@@ -1,3 +1,10 @@
+# cttiR 0.0.4
+
+* Add staged local API/resource refresh and atomic composite activation.
+* Preserve whole-revision API semantics, project pins and resource curation.
+* Add immutable history and preview-first catalog rollback without package installation.
+* Make catalog ordering locale-independent while retaining older snapshot identities.
+
 # cttiR 0.0.3
 
 * Add guarded interrupted-transaction recovery with hash and writer checks.

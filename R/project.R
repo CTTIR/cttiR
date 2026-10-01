@@ -3,7 +3,7 @@ project_bundle <- function(spec, prior_lock = NULL) {
   lock <- list(
     schema_version = 1L, spec_sha256 = content_hash(json_text(spec)),
     template_version = "0.1.0", catalog_id = spec$provenance$catalog_id, model = NULL,
-    resource_snapshot = jsonlite::fromJSON(resource_file("extdata", "resource-manifest.json"))$content_id,
+    resource_snapshot = if (is.null(prior_lock)) resource_snapshot()$id else prior_lock$resource_snapshot,
     dependencies = list(), environment_status = "pending"
   )
   if (!is.null(prior_lock)) {

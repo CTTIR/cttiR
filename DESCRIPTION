@@ -1,12 +1,12 @@
 Package: cttiR
 Title: Reproducible Research Project Builder
-Version: 0.0.3
+Version: 0.0.4
 Authors@R: person("R.", "Heller", email = "raban.heller@uni-ulm.de", role = c("aut", "cre"))
 Description: Creates deterministic research project scaffolds from a name,
     research type and goal. Validates declarative configuration, records file
     ownership and browses a bundled catalog of research package candidates.
-    This development version provides an offline foundation; workflow adapters
-    and catalog lifecycle operations are under development.
+    Provides immutable local catalog refresh and rollback with explicit
+    verification levels. Workflow adapters are under development.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Depends: R (>= 4.1.0)

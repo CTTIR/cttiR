@@ -1,6 +1,27 @@
 # cttiR development state
 
-Updated: 2026-10-01. Version: 0.0.3. License: MIT.
+Updated: 2026-10-01. Version: 0.0.4. License: MIT.
+
+## Milestone 4: immutable local catalog lifecycle
+
+Adds update(), update_knowledge() and rollback_knowledge(). Local source records
+are configured explicitly; parsing never executes source. Knowledge and resource
+observations are staged before one composite pointer activation. Whole package
+revisions replace prior exports; removed APIs cannot reappear through fallback.
+Same-version source edits have distinct hashes. Historical project API/resource
+pins survive global update and rollback. Curated resource fields remain unchanged.
+
+255 assertions pass, including failed extraction, resource staging and activation,
+corrupt-history rejection, repeated no-change updates, dry-run persistence, removed
+exports and same-version edits. A real frozen reflowR source passed local preview,
+combined activation, pinned project creation and rollback. Detailed evidence is
+under artifacts/implementation/milestone4-*. The source archive passed --as-cran with zero errors/warnings and one New
+submission NOTE. Installed examples and lint passed; automated coverage is 83.29%.
+Hosted results must be verified for this milestone after publication.
+
+Remote fetch adapters, bounded discovery, pruning, release migration and automatic
+interrupted catalog lock recovery remain pending. Unsupported update policies fail
+before mutation. They are not silently accepted or marked as verified.
 
 ## Milestone 3: catalog, recovery and local runtime
 
@@ -24,16 +45,16 @@ Validation: 210 test assertions across the suite; 81.96% automated coverage
 (runtime 57.02%, supplemented by separate live acquisition/inference evidence);
 selected lint rules pass. Source checks and hosted evidence are recorded in
 artifacts/implementation. No package readiness claim follows from this milestone.
-Hosted milestone-2 Linux jobs passed; Windows/macOS path defects have working
-fixes and require verification on the newly pushed candidate.
+Hosted milestone-3 commit 58514d46d6cd62961e46415628473cc48cd10b9c passed
+Linux release/oldrel/devel, Windows release and macOS release in run 36821452382.
 
 Retry history: hourly attempts ran, but the desktop session retained this thread's
 write lock, so CLI resume was rejected. Timer execution is not evidence of task
 progress. Direct interactive continuation resumed on 2026-10-01. The timer remains
 configured; do not bypass another active writer or run duplicate modifications.
 
-Next: implement coordinated immutable catalog/resource update and rollback,
-complete standard source/documentation coverage and reviewed workflow adapters,
+Next: extend remote catalog/source support and complete standard
+source/documentation coverage and reviewed workflow adapters,
 then qualify local planning and build the shared Shiny interface. Complete all
 remaining acceptance gates before claiming CRAN readiness.
 

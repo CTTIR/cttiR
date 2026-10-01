@@ -29,7 +29,7 @@ resolve_catalog <- function(path = NULL) {
   if (!file.exists(active)) {
     return(read_catalog(bundled))
   }
-  id <- read_document(active)$content_id
+  id <- catalog_pointer()$content_id
   if (!is.character(id) || length(id) != 1L || !grepl("^[a-f0-9]{64}$", id)) {
     abort_cttir("Invalid active catalog pointer.", "cttir_catalog_corrupt")
   }

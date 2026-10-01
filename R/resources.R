@@ -23,21 +23,7 @@ resources <- function(query = NULL, domain = NULL, repository = NULL,
       !is.finite(limit) || limit < 1 || limit > 10000 || limit != as.integer(limit)) {
     abort_cttir("limit must be an integer between 1 and 10000.")
   }
-  manifest <- jsonlite::fromJSON(resource_file("extdata", "resource-manifest.json"))
-  if (!is.null(path)) {
-    assert_plain_path(path)
-    lockpath <- file.path(path, "cttir-lock.json")
-    assert_plain_path(lockpath)
-    pin <- read_document(lockpath)$resource_snapshot
-    if (is.null(pin) || !identical(pin, manifest$content_id)) {
-      abort_cttir("The pinned resource snapshot is unavailable.", "cttir_source_unavailable", "missing_pin")
-    }
-  }
-  dbpath <- resource_file("extdata", "package-resources.sqlite")
-  expected <- jsonlite::fromJSON(resource_file("extdata", "file-hashes.json"))[["package-resources.sqlite"]]
-  if (!identical(digest::digest(file = dbpath, algo = "sha256"), expected)) {
-    abort_cttir("The bundled resource database failed its integrity check.", "cttir_catalog_corrupt", "hash_mismatch")
-  }
+  dbpath <- resource_snapshot(path)$file
   con <- DBI::dbConnect(RSQLite::SQLite(), dbpath, flags = RSQLite::SQLITE_RO)
   on.exit(DBI::dbDisconnect(con), add = TRUE)
   where <- "1 = 1"
