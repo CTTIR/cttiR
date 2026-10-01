@@ -1,0 +1,12 @@
+---
+title: "01 -- Import and validate"
+---
+
+No dataset is imported automatically. Register sources in
+`metadata/data-registry.yml` and record local bindings in `.cttir/local.yml`.
+Choose an import adapter only after the actual format and encoding are known.
+
+Before analysis, review column types, identifiers, duplicates, units, levels,
+missing-value codes, date/time zones and join cardinality. Record variable roles
+and transformations in the analysis plan. Import adapters and automatic input
+checks are still pending; this page does not certify data readiness.

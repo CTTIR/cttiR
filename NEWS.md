@@ -1,3 +1,10 @@
+# cttiR 0.0.6
+
+* Add a hashed, MIT-licensed adaptation of the pinned reflowR minimal layout.
+* Render five local R Markdown pages explicitly, including an isolated synthetic fixture.
+* Preserve accepted older templates during repeat creation and synchronization.
+* Reject inconsistent template pins before project mutation.
+
 # cttiR 0.0.5
 
 * Add a local Fast/Detailed builder and Configure interface using the package APIs.

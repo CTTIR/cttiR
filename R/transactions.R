@@ -37,6 +37,7 @@ read_project <- function(path) {
   state <- read_document(file.path(root, ".cttir/state.json"))
   if (!identical(lock$schema_version, 1L) || !identical(manifest$schema_version, 1L) ||
       !identical(state$project_id, spec$project$id) ||
+      !identical(lock$template_version, spec$provenance$template_version) ||
       !identical(lock$spec_sha256, content_hash(json_text(spec))) ||
       !identical(state$spec_sha256, lock$spec_sha256)) {
     abort_cttir("Project specification and control metadata do not agree.", "cttir_schema_error", "metadata_mismatch")

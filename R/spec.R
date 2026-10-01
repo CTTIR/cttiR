@@ -72,7 +72,7 @@ default_spec <- function(name, type, goal, slug, provenance = NULL) {
     ),
     data_sources = list(), packages = list(), decisions = list(),
     provenance = list(
-      catalog_id = if (is.null(provenance)) resolve_catalog()$content_id else provenance$catalog_id, template_version = "0.1.0",
+      catalog_id = if (is.null(provenance)) resolve_catalog()$content_id else provenance$catalog_id, template_version = "0.2.0",
       prompt_version = "none", planner_mode = "deterministic", model_id = NULL, model_digest = NULL
     ),
     analysis = list(aim = "unknown", outcome_family = "unknown", unit_structure = "unknown", engine = NULL, approved = FALSE),

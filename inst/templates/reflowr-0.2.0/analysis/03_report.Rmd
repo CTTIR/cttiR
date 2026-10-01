@@ -1,0 +1,14 @@
+---
+title: "03 -- Report"
+---
+
+No study has been run. Report the approved question, data provenance, mappings,
+methods, diagnostics, missingness and limitations before interpreting results.
+Place manuscript-specific files under the appropriate publication directory.
+Record citations for the packages actually used, including their versions.
+
+## Rendering environment
+
+```{r session-info}
+sessionInfo()
+```

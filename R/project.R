@@ -2,7 +2,7 @@ project_bundle <- function(spec, prior_lock = NULL) {
   files <- render_project(spec)
   lock <- list(
     schema_version = 1L, spec_sha256 = content_hash(json_text(spec)),
-    template_version = "0.1.0", catalog_id = spec$provenance$catalog_id, model = NULL,
+    template_version = spec$provenance$template_version, catalog_id = spec$provenance$catalog_id, model = NULL,
     resource_snapshot = if (is.null(prior_lock)) resource_snapshot()$id else prior_lock$resource_snapshot,
     dependencies = list(), environment_status = "pending"
   )
@@ -11,7 +11,7 @@ project_bundle <- function(spec, prior_lock = NULL) {
     lock$spec_sha256 <- content_hash(json_text(spec))
   }
   files[["cttir-lock.json"]] <- paste0(json_text(lock, TRUE), "\n")
-  manifest <- project_manifest(files)
+  manifest <- project_manifest(files, spec$provenance$template_version)
   files[[".cttir/managed-files.json"]] <- paste0(json_text(list(schema_version = 1L, files = manifest), TRUE), "\n")
   files[[".cttir/state.json"]] <- paste0(json_text(list(
     schema_version = 1L, project_id = spec$project$id,
@@ -43,6 +43,10 @@ assert_plain_path <- function(path) {
 }
 
 render_project <- function(spec) {
+  version <- spec$provenance$template_version
+  if (!version %in% c("0.1.0", "0.2.0")) {
+    abort_cttir("This template version is not supported.", "cttir_api_mismatch")
+  }
   # User text stays in structured YAML, never executable code or Markdown markup.
   files <- list(
     "README.md" = paste0(
@@ -95,10 +99,17 @@ render_project <- function(spec) {
       files[[paste0(root, dir, "/README.md")]] <- paste0("# ", dir, "\n\nPublication-specific work belongs here.\n")
     }
   }
+  if (version == "0.2.0") {
+    files <- c(files, reflowr_templates())
+    files[["README.md"]] <- paste0(files[["README.md"]],
+      "\nReviewed reflowR layout adaptation: see `metadata/reflowr-template.json`.\n",
+      "Run `Rscript code/render_report.R` explicitly to render the placeholder\n",
+      "pages and labelled synthetic fixture. Standard analysis adapters remain pending.\n")
+  }
   files
 }
 
-project_manifest <- function(files) {
+project_manifest <- function(files, template_version = "0.1.0") {
   lapply(names(files), function(path) {
     ownership <- if (grepl("^(protocol/|analysis/|publications/|metadata/|administration/|reports/|data/)", path) ||
         path == ".cttir/local.yml") {
@@ -106,7 +117,8 @@ project_manifest <- function(files) {
     } else {
       "managed"
     }
-    list(path = path, ownership = ownership, baseline_sha256 = content_hash(files[[path]]), template_version = "0.1.0")
+    if (path == "metadata/reflowr-template.json") ownership <- "managed"
+    list(path = path, ownership = ownership, baseline_sha256 = content_hash(files[[path]]), template_version = template_version)
   })
 }
 

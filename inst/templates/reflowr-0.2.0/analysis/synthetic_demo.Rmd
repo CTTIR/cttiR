@@ -1,0 +1,32 @@
+---
+title: "Synthetic demonstration -- no study data"
+---
+
+This deterministic fixture illustrates report rendering only. All values below
+are constructed here; they are unrelated to the project question or datasets.
+No data are read and no files are written by the code chunks.
+
+```{r synthetic-data}
+x <- 0:5
+residual <- c(1, -2, 1, 1, -2, 1)
+demo <- data.frame(x = x, y = 1 + 2 * x + residual)
+knitr::kable(demo, caption = "Synthetic values only")
+```
+
+## Continuous-outcome fixture
+
+The construction has intercept 1 and slope 2. These assertions check the
+fixture, not a scientific hypothesis.
+
+```{r synthetic-model}
+fit <- stats::lm(y ~ x, data = demo)
+stopifnot(isTRUE(all.equal(unname(stats::coef(fit)), c(1, 2))))
+knitr::kable(as.data.frame(summary(fit)$coefficients), digits = 3,
+  caption = "Synthetic least-squares fit; no study inference")
+```
+
+## Rendering environment
+
+```{r session-info}
+sessionInfo()
+```

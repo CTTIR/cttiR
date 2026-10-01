@@ -3,7 +3,7 @@
 CTTIR Project Builder creates research project scaffolds from three inputs:
 a name, research type and goal.
 
-This is development milestone `0.0.5`. It provides an offline
+This is development milestone `0.0.6`. It provides an offline
 builder, schema validation and a searchable resource snapshot. It does not yet
 provide the complete research workflow described in the development plan.
 
@@ -28,8 +28,11 @@ Each project contains a YAML specification, a separate build lock, file ownershi
 metadata, a data registry and dictionary, an analysis plan, publication folders
 and a read-only validation script. Data, scientific decisions and approvals remain
 unknown until supplied. No packages are installed, no model is called, no remote
-requests are made and no study code is executed during creation. ReflowR
-integration and dependency preparation are reported as pending. The lock records
+requests are made and no study code is executed during creation. New projects include a hashed adaptation of the reflowR minimal layout.
+Explicit `Rscript code/render_report.R` uses rmarkdown to render placeholder
+pages and a labelled synthetic example. The pinned provenance and MIT notice
+are included; reflow_init and workflowr are not invoked. Full reflowR analysis
+integration and dependency preparation remain pending. The lock records
 scaffold provenance; it is not an `renv.lock`.
 
 Configuration accepts named lists or local YAML/JSON files. Required arguments
@@ -88,9 +91,9 @@ To build and test locally with the declared dependencies installed:
 
 ```sh
 R CMD build .
-R CMD check --no-manual cttiR_0.0.5.tar.gz
-R CMD INSTALL cttiR_0.0.5.tar.gz
+R CMD check --no-manual cttiR_0.0.6.tar.gz
+R CMD INSTALL cttiR_0.0.6.tar.gz
 ```
 
-MIT licensed. Local validation currently covers Linux with R 4.6.1; other
-platforms and the full product acceptance gates remain unverified.
+MIT licensed. Milestone 0.0.5 passed hosted checks on Linux release/oldrel/devel,
+Windows and macOS. Full product acceptance gates remain incomplete.

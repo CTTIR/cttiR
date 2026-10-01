@@ -1,0 +1,19 @@
+---
+title: "Research workflow"
+---
+
+This workflow adapts the minimal reflowR layout. The renderer is explicitly
+`rmarkdown::render_site`; neither `reflow_init()` nor workflowr is invoked.
+Source revision, file hashes, changes and license are in
+`../metadata/reflowr-template.json` and `../licenses/reflowR-MIT.txt`.
+
+Review the project specification, analysis plan and variable mappings before
+adding real data. Project creation does not read data, install dependencies,
+initialize Git, render pages or approve an analysis.
+
+From the project root, run `Rscript code/render_report.R` after installing
+rmarkdown, knitr and Pandoc. This renders the reviewed placeholder pages and a
+clearly labelled synthetic demonstration into `docs/`. Review any edits to these
+R Markdown files before rendering: rendering intentionally executes their code.
+Publication-specific outputs belong under `publications/`, with dataset IDs
+referencing the shared registry. No study conclusions are generated here.

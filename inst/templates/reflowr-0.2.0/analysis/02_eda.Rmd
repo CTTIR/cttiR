@@ -1,0 +1,12 @@
+---
+title: "02 -- Describe and plan"
+---
+
+Specify the sampling unit, outcome, predictors, repeated observations and
+missingness strategy before choosing an analysis. Descriptive tables must show
+the denominator and missingness; statistical tests require an explicit plan.
+
+Real-data models remain disabled until mappings and scientific prerequisites
+are reviewed. The separate synthetic demonstration is a rendering fixture,
+not an inferred analysis of this project. Tidy, table, figure and model adapters
+remain pending.

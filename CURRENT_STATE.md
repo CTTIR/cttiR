@@ -1,6 +1,29 @@
 # cttiR development state
 
-Updated: 2026-10-01. Version: 0.0.5. License: MIT.
+Updated: 2026-10-01. Version: 0.0.6. License: MIT.
+
+## Milestone 6: pinned template adaptation
+
+New projects use template 0.2.0: a hashed MIT-licensed adaptation of the minimal
+reflowR layout at cd1243a068ff2c8fb6796e34b58f6c6ce6af87e8. The adapter records
+source file hashes, license and changes, fixes navigation YAML, and omits upstream
+automatic installs and Git effects. Explicit rendering uses rmarkdown::render_site;
+reflow_init and workflowr are not invoked. The five pages include placeholders and
+an isolated synthetic least-squares fixture with expected coefficients. This is
+not full standard-workflow integration; its readiness blocker remains present.
+
+Existing 0.1.0 templates retain their renderer and ownership baselines. A real
+project created using installed cttiR 0.0.5 remained byte-identical under repeat
+creation and synchronization. Template-lock mismatches fail before mutation, and
+the source-provenance record is managed. User-edited analysis pages are preserved.
+Real rendering passed with rmarkdown 2.31 and Pandoc 3.7.0.2; browser accessibility
+inspection confirmed navigation, synthetic labels and expected table values.
+Screenshot capture still times out and visual review is unverified. Test servers
+and browser tabs were stopped after inspection. Installed three-project smoke
+and pkgdown build passed. Lint is clean; measured automated coverage is 82.95%.
+Final source check: 325 assertions pass, zero errors/warnings, and only the
+New submission NOTE. Evidence: milestone6-* under
+artifacts/implementation; example HTML under artifacts/examples.
 
 ## Milestone 5: local application and pin isolation
 
@@ -28,6 +51,9 @@ Two screenshot attempts timed out in the browser connection. DOM/interaction QA
 passed, but screenshot visual review remains unverified and is not a release pass.
 The owned browser test server was stopped; test projects remain under ignored
 artifacts/examples. Runtime test artifacts are retained under artifacts/runtime.
+
+Hosted milestone-5 commit 882ded0c000059aa8fe47f7a2cb4068848b22f3b passed all
+five supported jobs in run 36824581448.
 
 ## Milestone 4: immutable local catalog lifecycle
 
@@ -104,8 +130,8 @@ and COMPLETE files. Disable the timer on completion or explicit pause.
 
 reflowR source revision cd1243a068ff2c8fb6796e34b58f6c6ce6af87e8 was inspected and
 its initializer run with Git/open/change_wd disabled. Generated setup auto-installs
-a broad package set, and generated navigation YAML is malformed. An adapted,
-reviewed template with provenance is required; integration remains unverified.
+a broad package set, and generated navigation YAML is malformed. The initial template adaptation is now implemented in milestone 6; complete
+standard analysis integration remains pending.
 Public organization discovery returned 40 repositories. The catalog was built
 from materialized verified public revisions, not neighboring dirty worktrees.
 The frozen source inventory and extraction evidence are retained locally.
@@ -175,7 +201,7 @@ Full v7 acceptance is not complete. Continue in this order:
 7. Expand audit profiles and full interruption/recovery fixtures, then build
    vignettes, documentation site, URL/spelling reports and the final gate matrix.
 
-Package checks on the supported hosted matrix passed for milestones 3 and 4;
+Package checks on the supported hosted matrix passed for milestones 3, 4 and 5;
 this does not qualify every runtime installer or scientific adapter. Full
 scientific validation, production readiness and CRAN readiness are not claimed.
 No CRAN or external-builder submission has been made. Creation and transaction
