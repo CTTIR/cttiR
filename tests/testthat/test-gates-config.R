@@ -141,7 +141,10 @@ test_that("G06 precedence: required arguments, then options, then config, then d
     research = list(design = "cohort", domain = "cardiology")
   )
   options <- list(research = list(design = "randomized trial"))
-  p <- project("Argument name", "primary_research", "Goal", tempdir(), config = config, options = options, dry_run = TRUE)
+  create <- function(config) {
+    project("Argument name", "primary_research", "Goal", tempdir(), config = config, options = options, dry_run = TRUE)
+  }
+  expect_warning(p <- create(config), "required `name` argument overrides", class = "cttir_config_override")
   expect_equal(p$spec$project$name, "Argument name")
   expect_equal(p$spec$project$language, "de")
   expect_equal(p$spec$research$design, "randomized trial")
@@ -153,7 +156,7 @@ test_that("G06 precedence: required arguments, then options, then config, then d
   file <- tempfile(fileext = ".yml")
   withr::defer(unlink(file))
   writeLines(yaml::as.yaml(config), file)
-  from_file <- project("Argument name", "primary_research", "Goal", tempdir(), config = file, options = options, dry_run = TRUE)
+  expect_warning(from_file <- create(file), class = "cttir_config_override")
   expect_identical(from_file$spec[c("research", "publications", "workflow")], p$spec[c("research", "publications", "workflow")])
   for (field in c("name", "type", "goal")) {
     override <- stats::setNames(list(if (field == "type") "methods" else "Override"), field)

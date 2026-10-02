@@ -33,6 +33,13 @@ project_bundle <- function(spec, prior_lock = NULL) {
     schema_version = 1L, project_id = spec$project$id,
     status = "created", spec_sha256 = lock$spec_sha256
   ), TRUE), "\n")
+  # A verified copy of the accepted spec lets sync() review hand edits of
+  # cttir-project.yml field by field. Older template versions stay unchanged.
+  if (identical(spec$provenance$template_version, current_template_version)) {
+    files[[".cttir/accepted-spec.yml"]] <- paste0(
+      "# Accepted copy of cttir-project.yml, kept by cttiR to review hand edits. Do not edit.\n",
+      files[["cttir-project.yml"]])
+  }
   list(files = files, manifest = manifest, lock = lock, route = route)
 }
 
@@ -179,6 +186,27 @@ validate_script_0.3.0 <- paste0(
   "}\n"
 )
 
+# User ownership is sticky, and a user-owned file keeps its accepted baseline
+# while it differs from it, so its edits stay recognisable. sync() moves an
+# unedited user file to its new baseline together with its update (`refresh`);
+# a repeat project() only reads and keeps every recorded user baseline.
+carry_user_records <- function(bundle, p, refresh = FALSE) {
+  recorded <- vapply(p$manifest$files, function(f) f$path, character(1))
+  for (i in seq_along(bundle$manifest)) {
+    at <- match(bundle$manifest[[i]]$path, recorded)
+    if (is.na(at) || !identical(p$manifest$files[[at]]$ownership, "user")) next
+    old <- p$manifest$files[[at]]
+    current <- if (refresh) file_hash(file.path(p$path, old$path)) else NULL
+    if (refresh && (is.na(current) || current %in% c(old$baseline_sha256, bundle$manifest[[i]]$baseline_sha256))) {
+      bundle$manifest[[i]]$ownership <- "user"
+    } else {
+      bundle$manifest[[i]] <- old
+    }
+  }
+  bundle$files[[".cttir/managed-files.json"]] <- paste0(json_text(list(schema_version = 1L, files = bundle$manifest), TRUE), "\n")
+  bundle
+}
+
 project_manifest <- function(files, template_version = "0.1.0") {
   lapply(names(files), function(path) {
     ownership <- if (grepl("^(protocol/|analysis/|publications/|metadata/|administration/|reports/|data/)", path) ||
@@ -210,7 +238,17 @@ project_manifest <- function(files, template_version = "0.1.0") {
 #' or commits. Failures of these steps keep the scaffold and are reported as
 #' readiness blockers with a recovery command.
 #'
-#' @param name Nonempty project title. A portable child-directory slug is derived.
+#' Creation stages the scaffold next to the target and publishes it with one
+#' rename while holding a creation lock that records its process. A lock left
+#' by a stopped process on this host (or an ownerless lock from an older
+#' version, after 24 hours) is recovered on the next attempt: only the lock and
+#' that attempt's staging directory are removed, and `recovered` reports it.
+#'
+#' @param name Nonempty project title, kept as written. A portable
+#'   child-directory slug is derived once: ASCII transliteration where
+#'   possible; when letters have no transliteration (for example CJK script) or
+#'   the slug would exceed 80 characters, a short hash of the name is appended
+#'   (`project_<hash>` when nothing transliterates).
 #' @param type One of `primary_research`, `secondary_research`, `methods`,
 #'   `review`, `software`, `mixed`, or `other`.
 #' @param goal Nonempty research objective.
@@ -278,19 +316,20 @@ project_impl <- function(name, type, goal, path = getwd(), config = NULL,
     spec_file <- file.path(target, "cttir-project.yml")
     assert_plain_path(spec_file)
     if (!file.exists(spec_file)) abort_cttir("The target is not a recognized project.", "cttir_path_conflict")
-    saved <- validate_spec(spec_file)
     for (file in c("cttir-lock.json", ".cttir/state.json", ".cttir/managed-files.json")) {
       actual <- file.path(target, file)
       assert_plain_path(actual)
       if (!file.exists(actual) || dir.exists(actual))
         abort_cttir("An existing project control file is missing or replaced by a directory.", "cttir_path_conflict", "incomplete_project")
     }
-    prior_lock <- read_project(target)$lock
-    spec <- resolve_existing(saved, name, type, goal, config, options)
+    existing <- read_project(target)
+    prior_lock <- existing$lock
+    spec <- resolve_existing(existing$spec, name, type, goal, config, options)
   } else {
     spec <- resolve_spec(name, type, goal, config, options)
   }
   bundle <- project_bundle(spec, prior_lock)
+  if (exists) bundle <- carry_user_records(bundle, existing)
   if (!exists && (!identical(spec$provenance$catalog_id, context$content_id) ||
         !identical(bundle$lock$resource_snapshot, context$resource_id))) {
     abort_cttir("The catalog changed during planning; retry against one complete snapshot.", "cttir_transaction_conflict")
@@ -302,17 +341,23 @@ project_impl <- function(name, type, goal, path = getwd(), config = NULL,
     sha256 = vapply(files, content_hash, character(1)), stringsAsFactors = FALSE, row.names = NULL
   )
   if (exists) {
+    # Generated files of an earlier build of the same template version differ
+    # from this build's rendering; sync() previews and applies the difference.
+    refresh <- sprintf("If an earlier cttiR build created this project, preview its regenerated files with cttiR::sync(%s) %s",
+      r_literal(target), "and apply them with dry_run = FALSE; otherwise restore the file from version control.")
     for (file in names(files)) {
       actual <- file.path(target, file)
       assert_plain_path(actual)
       if (!file.exists(actual) || dir.exists(actual)) {
-        abort_cttir("An existing project file is missing or replaced by a directory.", "cttir_path_conflict", "incomplete_project")
+        abort_cttir(sprintf("The existing project file %s is missing or replaced by a directory.", file),
+          "cttir_path_conflict", "incomplete_project", field = file, remediation = refresh)
       }
     }
     # Control metadata must match the accepted spec and generated baseline.
     for (file in c("cttir-lock.json", ".cttir/state.json", ".cttir/managed-files.json")) {
       if (!identical(digest::digest(file = file.path(target, file), algo = "sha256"), content_hash(files[[file]]))) {
-        abort_cttir("Project control metadata differs from its accepted baseline.", "cttir_path_conflict", "changed_metadata")
+        abort_cttir(sprintf("Project control metadata (%s) differs from its accepted baseline.", file),
+          "cttir_path_conflict", "changed_metadata", field = file, remediation = refresh)
       }
     }
   }
@@ -335,15 +380,24 @@ project_impl <- function(name, type, goal, path = getwd(), config = NULL,
     ), manifest = manifest,
     warnings = warnings, dry_run = dry_run
   ), class = "cttir_project")
+  lockdir <- creation_lock_path(parent, spec$project$slug)
+  if (dry_run && !exists) {
+    lock <- lock_state(lockdir)$state
+    if (!identical(lock, "absent")) {
+      result$warnings <- c(result$warnings, if (identical(lock, "stale")) "stale_creation_lock" else "creation_lock_held")
+    }
+  }
   if (dry_run || exists) {
     return(result)
   }
-  lockdir <- file.path(parent, paste0(".", spec$project$slug, ".cttir-create-lock"))
+  recovered <- list()
   if (!dir.create(lockdir, showWarnings = FALSE)) {
-    abort_cttir("Another creation operation may own this destination.", "cttir_transaction_conflict", "writer_lock")
+    recovered <- list(recover_creation_lock(parent, spec$project$slug))
+    if (!dir.create(lockdir, showWarnings = FALSE)) abort_creation_lock(lockdir, lock_state(lockdir))
   }
   on.exit(unlink(lockdir, recursive = TRUE), add = TRUE)
   stage <- tempfile(pattern = paste0(".", spec$project$slug, "-stage-"), tmpdir = parent)
+  write_lock_owner(lockdir, list(stage = basename(stage)))
   if (!dir.create(stage, mode = "0700")) abort_cttir("Could not create staging directory.", "cttir_path_conflict")
   on.exit(unlink(stage, recursive = TRUE), add = TRUE)
   for (file in names(files)) {
@@ -362,7 +416,8 @@ project_impl <- function(name, type, goal, path = getwd(), config = NULL,
   environment <- environment_step(target, spec, bundle$lock$dependencies)
   git <- if (isTRUE(spec$workflow$git)) git_initialize(target) else git_status(target, FALSE)
   result$readiness <- readiness_with(result$readiness, spec, bundle, environment, git)
-  result$warnings <- result$readiness$blockers
+  result$warnings <- c(result$readiness$blockers, if (length(recovered)) "stale_creation_lock_recovered")
+  result$recovered <- recovered
   result
 }
 
@@ -402,5 +457,6 @@ print.cttir_project <- function(x, ...) {
   cat("Readiness: ", x$readiness$level, "\n", sep = "")
   if (!is.null(x$readiness$workflow)) cat("Workflow: ", x$readiness$workflow$profile, "\n", sep = "")
   cat("Pending: ", paste(x$readiness$blockers, collapse = ", "), "\n", sep = "")
+  if (length(x$recovered)) cat("Recovered: a creation lock left by a stopped process\n")
   invisible(x)
 }

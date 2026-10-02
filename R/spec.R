@@ -1,22 +1,111 @@
+reserved_device_names <- "^(con|prn|aux|nul|com[0-9]|lpt[0-9])$"
+
+slug_hash <- function(x) substr(content_hash(enc2utf8(x)), 1L, 8L)
+
+# TRUE when a letter or digit of the name has no ASCII transliteration (for
+# example CJK, Cyrillic or Greek script on most platforms).
+slug_loses_letters <- function(x) {
+  chars <- strsplit(enc2utf8(x), "", fixed = TRUE)[[1]]
+  wanted <- chars[grepl("^[\\p{L}\\p{N}]$", chars, perl = TRUE) & !grepl("^[A-Za-z0-9]$", chars)]
+  if (!length(wanted)) return(FALSE)
+  ascii <- iconv(wanted, to = "ASCII//TRANSLIT", sub = "")
+  any(is.na(ascii) | !grepl("[A-Za-z0-9]", ascii))
+}
+
+# The directory slug is derived once from the display name, which is kept
+# unchanged in the spec. Names whose letters cannot all be transliterated get a
+# short hash of the full name, so that distinct names keep distinct slugs; long
+# names are shortened the same way.
 safe_slug <- function(x) {
   scalar_text(x, "name")
   if (grepl("[/\\\\]", x) || x %in% c(".", "..")) {
-    abort_cttir("Names cannot contain path separators or traversal.")
+    abort_cttir("Names cannot contain path separators or traversal.", field = "name")
   }
   slug <- tolower(iconv(x, to = "ASCII//TRANSLIT", sub = "_"))
   slug <- gsub("[^a-z0-9]+", "_", slug)
   slug <- gsub("^_+|_+$", "", slug)
-  if (!nzchar(slug)) abort_cttir("Supply a name containing letters or numbers.")
+  if (slug_loses_letters(x)) slug <- paste0(if (nzchar(slug)) slug else "project", "_", slug_hash(x))
+  if (!nzchar(slug)) {
+    abort_cttir("The name needs at least one letter or digit to derive a directory name.", field = "name")
+  }
   if (!grepl("^[a-z]", slug)) slug <- paste0("project_", slug)
+  if (nchar(slug) > 80L) slug <- paste0(sub("_+$", "", substr(slug, 1L, 71L)), "_", slug_hash(x))
+  if (grepl(reserved_device_names, slug)) {
+    abort_cttir(sprintf("The name '%s' maps to the reserved Windows device name '%s'.", x, slug), field = "name",
+      remediation = "Choose another project name, for example by adding a word.")
+  }
   check_slug(slug)
   slug
 }
 
-check_slug <- function(x) {
-  scalar_text(x, "slug")
-  if (!grepl("^[a-z][a-z0-9_]*$", x) || nchar(x) > 80L ||
-      grepl("^(con|prn|aux|nul|com[0-9]|lpt[0-9])$", x)) {
-    abort_cttir("Use a portable slug of at most 80 characters; device names are forbidden.")
+check_slug <- function(x, field = "slug") {
+  scalar_text(x, field)
+  if (!grepl("^[a-z][a-z0-9_]*$", x)) {
+    abort_cttir(sprintf("The slug '%s' must start with a lowercase ASCII letter and contain only lowercase letters, digits and underscores.", x),
+      field = field)
+  }
+  if (nchar(x) > 80L) {
+    abort_cttir(sprintf("The slug '%s...' has %d characters; at most 80 are allowed.", substr(x, 1L, 24L), nchar(x)), field = field)
+  }
+  if (grepl(reserved_device_names, x)) {
+    abort_cttir(sprintf("The slug '%s' is a reserved Windows device name.", x), field = field,
+      remediation = "Choose another slug, for example by adding a word.")
+  }
+  invisible(x)
+}
+
+# Readable summary of JSON Schema validation errors: the first offending JSON
+# Pointer and one clause per error.
+schema_error_detail <- function(errors) {
+  if (!is.data.frame(errors) || !nrow(errors)) return(list(pointer = NULL, text = "the document does not match the schema"))
+  path <- if ("instancePath" %in% names(errors)) errors$instancePath else rep("", nrow(errors))
+  params <- if (is.data.frame(errors$params)) errors$params else data.frame(row.names = seq_len(nrow(errors)))
+  pointers <- character()
+  clauses <- character()
+  for (i in seq_len(nrow(errors))) {
+    pointer <- if (nzchar(path[[i]])) path[[i]] else "/"
+    clause <- switch(as.character(errors$keyword[[i]]),
+      additionalProperties = {
+        pointer <- paste0(sub("/$", "", pointer), "/", params$additionalProperty[[i]])
+        "is not a recognized field"
+      },
+      required = {
+        pointer <- paste0(sub("/$", "", pointer), "/", params$missingProperty[[i]])
+        "is required"
+      },
+      enum = paste("must be one of:", paste(unlist(params$allowedValues[[i]]), collapse = ", ")),
+      as.character(errors$message[[i]]))
+    pointers <- c(pointers, pointer)
+    clauses <- c(clauses, paste(pointer, clause))
+  }
+  list(pointer = pointers[[1]], text = paste(unique(clauses), collapse = "; "))
+}
+
+# Empty strings are never answers (file 04): an unknown is null, and absence
+# leaves a value unchanged. Leaves equal to their counterpart in `base` are not
+# checked, so values stored by an older version never block unrelated edits.
+check_empty_strings <- function(x, base = NULL, prefix = "") {
+  if (!is.list(x)) return(invisible(x))
+  keyed <- is.null(names(x))
+  for (i in seq_along(x)) {
+    value <- x[[i]]
+    key <- if (keyed) as.character(i - 1L) else names(x)[[i]]
+    pointer <- paste0(prefix, "/", key)
+    if (pointer == "/research/notes" || startsWith(pointer, "/extensions")) next
+    old <- NULL
+    if (is.list(base) && !keyed) {
+      old <- base[[key]]
+    } else if (is.list(base) && is.list(value) && is.character(value$id)) {
+      for (row in base) if (is.list(row) && identical(row$id, value$id)) old <- row
+    }
+    if (is.list(value)) {
+      check_empty_strings(value, old, pointer)
+    } else if (is.character(value) && length(value) == 1L && !is.na(value) && !nzchar(trimws(value)) &&
+        !identical(value, old)) {
+      abort_cttir(sprintf("%s is an empty string, which is not a valid answer.", pointer),
+        "cttir_input_error", "empty_value", field = pointer,
+        remediation = "Use null (R NULL, YAML ~) to record that the value is unknown, or leave the field out to keep it unchanged.")
+    }
   }
   invisible(x)
 }
@@ -30,15 +119,15 @@ validate_spec <- function(spec) {
   if (is.character(spec)) spec <- read_document(spec)
   check_schema_version(spec)
   spec <- validate_document(spec, "project-spec")
-  check_slug(spec$project$slug)
+  check_slug(spec$project$slug, "/project/slug")
   for (key in c("publications", "data_sources", "packages")) {
     field <- if (key == "packages") "name" else "id"
     ids <- vapply(spec[[key]], function(x) x[[field]], character(1))
     if (anyDuplicated(tolower(ids))) abort_cttir(paste("Duplicate", key, "identities."), "cttir_schema_error")
   }
-  slugs <- vapply(spec$publications, function(x) {
-    check_slug(x$slug)
-    x$slug
+  slugs <- vapply(seq_along(spec$publications), function(i) {
+    check_slug(spec$publications[[i]]$slug, paste0("/publications/", i - 1L, "/slug"))
+    spec$publications[[i]]$slug
   }, character(1))
   if (anyDuplicated(slugs)) abort_cttir("Publication slugs must be unique.", "cttir_schema_error")
   dataset_ids <- vapply(spec$data_sources, function(x) x$id, character(1))
@@ -113,6 +202,16 @@ resolve_spec <- function(name, type, goal, config, options, identity = NULL, pro
   config <- validate_config(if (is.null(config)) list() else config)
   options <- validate_config(options)
   check_explicit_identity(config, options)
+  check_empty_strings(config)
+  check_empty_strings(options)
+  # Required arguments win over conflicting config values (file 04); say so.
+  required <- list(name = name, type = type, goal = goal)
+  overridden <- Filter(function(key) !is.null(config$project[[key]]) && !identical(config$project[[key]], required[[key]]),
+    names(required))
+  for (key in overridden) {
+    message <- sprintf("The configuration sets project.%s, which the required `%s` argument overrides.", key, key)
+    warning(warningCondition(message, class = c("cttir_config_override", "cttir_warning")))
+  }
   slug <- safe_slug(name)
   defaults <- default_spec(name, type, goal, slug, provenance)
   combined <- merge_config(config, options)
@@ -172,7 +271,12 @@ resolve_spec <- function(name, type, goal, config, options, identity = NULL, pro
       if (is.list(x[[key]]) && length(x[[key]]) && !is.null(names(x[[key]]))) {
         walk(x[[key]], field, origin)
       } else {
-        decisions[[length(decisions) + 1L]] <<- record(field, origin, "Supplied customization.")
+        reason <- if (identical(origin, "config") && field %in% paste0("/project/", overridden)) {
+          "Configuration value overridden by the required argument."
+        } else {
+          "Supplied customization."
+        }
+        decisions[[length(decisions) + 1L]] <<- record(field, origin, reason)
       }
     }
   }
@@ -239,6 +343,8 @@ resolve_existing <- function(saved, name, type, goal, config, options) {
   config <- validate_config(if (is.null(config)) list() else config)
   options <- validate_config(options)
   check_explicit_identity(config, options)
+  check_empty_strings(config, saved)
+  check_empty_strings(options, saved)
   different <- function() {
     abort_cttir("This project has different accepted inputs; use sync() to preview explicit changes.",
       "cttir_path_conflict", "different_spec",

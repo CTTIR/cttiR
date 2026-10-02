@@ -6,6 +6,12 @@
 # return the spec at version `n + 1` without side effects. migrate_spec()
 # applies steps one version at a time and never writes files. No migration is
 # needed yet: the current and only supported ProjectSpec schema is version 1.
+#
+# migrate_spec() is therefore not reachable from project(), sync() or audit():
+# validate_spec() and validate_config() refuse any other schema version with a
+# typed `unsupported_schema_version` error before generic schema validation.
+# Registering the first step must also route older project files through a
+# sync() preview that shows the migration diff and keeps the original file.
 
 spec_schema_version <- function() 1L
 
@@ -21,17 +27,35 @@ spec_version_of <- function(spec) {
   as.integer(version)
 }
 
-# Newer documents are refused with a typed error before generic schema
-# validation, so callers can tell an upgrade is needed. Nothing is written.
-check_schema_version <- function(x, kind = "project specification", supported = spec_schema_version()) {
-  if (!is.list(x)) return(invisible(x))
+# Other schema versions are refused with a typed error before generic schema
+# validation, so callers can tell what is needed. Nothing is written. Only
+# migrate_spec() accepts older versions, which it migrates step by step.
+check_schema_version <- function(x, kind = "project specification", supported = spec_schema_version(),
+  allow_older = FALSE) {
+  if (!is.list(x) || is.null(x$schema_version)) return(invisible(x))
   version <- x$schema_version
-  if (is.numeric(version) && length(version) == 1L && !is.na(version) && version > supported) {
+  if (!is.numeric(version) || length(version) != 1L || is.na(version) || !is.finite(version) ||
+      version != round(version) || version < 0) {
+    message <- paste0("The ", kind, " has schema_version ", encodeString(format(version), quote = "'"),
+      "; it must be a whole number (currently ", supported, ").")
+    abort_cttir(message, "cttir_schema_error", "schema_validation", "/schema_version",
+      remediation = paste0("Set schema_version to ", supported, "."))
+  }
+  if (version > supported) {
     abort_cttir(
       paste0("This ", kind, " uses schema version ", format(version), ", newer than the supported version ",
         supported, "; it is treated as read-only."),
       "cttir_schema_error", "unsupported_schema_version", "/schema_version",
       remediation = "Install a cttiR release that supports this schema version. No files were changed."
+    )
+  }
+  if (version < supported && !allow_older) {
+    abort_cttir(
+      paste0("This ", kind, " uses schema version ", format(version), ", older than the supported version ",
+        supported, "; no migration from version ", format(version), " is defined."),
+      "cttir_schema_error", "unsupported_schema_version", "/schema_version",
+      remediation = paste0("Recreate the document with this cttiR release (schema version ", supported,
+        "). No files were changed.")
     )
   }
   invisible(x)
@@ -74,7 +98,7 @@ migrate_spec <- function(spec) {
   }
   check_tree(spec)
   original <- spec
-  check_schema_version(spec)
+  check_schema_version(spec, allow_older = TRUE)
   version <- spec_version_of(spec)
   current <- spec_schema_version()
   registry <- spec_migrations()

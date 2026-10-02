@@ -23,24 +23,131 @@ file_hash <- function(path) {
   digest::digest(file = path, algo = "sha256")
 }
 
-read_project <- function(path) {
+abort_not_project_root <- function(root) {
+  if (file.exists(file.path(root, ".cttir", "state.json"))) {
+    abort_cttir("The project file cttir-project.yml is missing.", "cttir_path_conflict", "incomplete_project",
+      field = "cttir-project.yml", remediation = "Restore it from version control or a backup.")
+  }
+  enclosing <- dirname(root)
+  while (!identical(enclosing, dirname(enclosing)) && !file.exists(file.path(enclosing, "cttir-project.yml"))) {
+    enclosing <- dirname(enclosing)
+  }
+  if (file.exists(file.path(enclosing, "cttir-project.yml"))) {
+    abort_cttir(sprintf("%s is inside the project %s, not its root.", root, enclosing), "cttir_path_conflict",
+      "not_project_root", field = "path", remediation = sprintf("Pass the project root: %s.", r_literal(enclosing)))
+  }
+  abort_cttir(sprintf("%s contains no cttir-project.yml, so it is not the root of a cttiR project.", root),
+    "cttir_path_conflict", "not_project_root", field = "path",
+    remediation = "Pass the directory that project() created (the one holding cttir-project.yml).")
+}
+
+read_control_file <- function(root, file) {
+  tryCatch(read_document(file.path(root, file)), cttir_error = function(e) {
+    abort_cttir(sprintf("The project control file %s cannot be read.", file), "cttir_schema_error", "metadata_mismatch",
+      field = file, remediation = "Restore it from version control or a backup; cttiR does not regenerate control metadata.")
+  })
+}
+
+# Reads cttir-project.yml with messages that name the offending field and the
+# next step, since this file is meant to be edited by hand.
+read_project_spec <- function(root) {
+  next_step <- sprintf("then preview with cttiR::sync(%s).", r_literal(root))
+  tryCatch(validate_spec(file.path(root, "cttir-project.yml")), cttir_error = function(e) {
+    if (identical(e$code, "parse_error")) {
+      abort_cttir("cttir-project.yml is not valid YAML.", "cttir_schema_error", "parse_error", field = "cttir-project.yml",
+        remediation = paste("Fix the YAML syntax (indentation, quoting) or restore the file from version control,", next_step))
+    }
+    if (identical(e$code, "schema_validation") && is.data.frame(e$field)) {
+      detail <- schema_error_detail(e$field)
+      abort_cttir(paste0("cttir-project.yml is not a valid project specification: ", detail$text, "."),
+        "cttir_schema_error", "schema_validation", field = detail$pointer,
+        remediation = paste0("Correct ", detail$pointer, " in cttir-project.yml or restore the file from version control, ",
+          next_step))
+    }
+    if (inherits(e, "cttir_input_error") && !is.null(e$field)) {
+      abort_cttir(paste("cttir-project.yml:", conditionMessage(e)), "cttir_schema_error", e$code, field = e$field,
+        remediation = paste("Correct the field in cttir-project.yml or restore the file from version control,", next_step))
+    }
+    stop(e)
+  })
+}
+
+# The verified copy of the accepted spec, used to review hand edits field by
+# field; NULL when absent (older projects) or when it no longer matches the lock.
+accepted_spec <- function(root, lock) {
+  file <- file.path(root, ".cttir", "accepted-spec.yml")
+  if (is.na(file_hash(file))) return(NULL)
+  spec <- tryCatch(validate_spec(file), error = function(e) NULL)
+  if (is.null(spec) || !identical(content_hash(json_text(spec)), lock$spec_sha256)) return(NULL)
+  spec
+}
+
+# A spec whose hash differs from the lock while the control files agree with
+# each other was edited by hand. Builder-owned identity must still match.
+check_spec_edit <- function(root, spec, lock, state) {
+  restore <- function(field, value) {
+    value <- encodeString(format(value), quote = "'")
+    message <- sprintf("%s in cttir-project.yml was changed by hand; it is assigned by cttiR and must stay %s.", field, value)
+    abort_cttir(message, "cttir_input_error", "invalid_spec_edit", field = field,
+      remediation = sprintf("Restore %s to %s, then preview the remaining edit with cttiR::sync(%s).",
+        field, value, r_literal(root)))
+  }
+  if (!identical(spec$project$id, state$project_id)) restore("/project/id", state$project_id)
+  if (!identical(spec$provenance$template_version, lock$template_version)) {
+    restore("/provenance/template_version", lock$template_version)
+  }
+  if (!identical(spec$provenance$catalog_id, lock$catalog_id)) restore("/provenance/catalog_id", lock$catalog_id)
+  invisible(TRUE)
+}
+
+read_project <- function(path, edited = FALSE) {
   scalar_text(path, "path")
   assert_plain_path(path)
   if (!dir.exists(path)) abort_cttir("Project directory does not exist.", "cttir_path_conflict")
   root <- normalizePath(path, winslash = "/", mustWork = TRUE)
+  if (!file.exists(file.path(root, "cttir-project.yml"))) abort_not_project_root(root)
   for (f in c("cttir-project.yml", "cttir-lock.json", ".cttir/managed-files.json", ".cttir/state.json")) {
-    file_hash(file.path(root, f))
+    if (is.na(file_hash(file.path(root, f)))) {
+      abort_cttir(sprintf("The project control file %s is missing.", f), "cttir_path_conflict", "incomplete_project",
+        field = f, remediation = "Restore it from version control or a backup; cttiR does not regenerate control metadata.")
+    }
   }
-  spec <- validate_spec(file.path(root, "cttir-project.yml"))
-  lock <- read_document(file.path(root, "cttir-lock.json"))
-  manifest <- read_document(file.path(root, ".cttir/managed-files.json"))
-  state <- read_document(file.path(root, ".cttir/state.json"))
+  spec <- read_project_spec(root)
+  lock <- read_control_file(root, "cttir-lock.json")
+  manifest <- read_control_file(root, ".cttir/managed-files.json")
+  state <- read_control_file(root, ".cttir/state.json")
   if (!identical(lock$schema_version, 1L) || !identical(manifest$schema_version, 1L) ||
-      !identical(state$project_id, spec$project$id) ||
-      !identical(lock$template_version, spec$provenance$template_version) ||
-      !identical(lock$spec_sha256, content_hash(json_text(spec))) ||
-      !identical(state$spec_sha256, lock$spec_sha256)) {
-    abort_cttir("Project specification and control metadata do not agree.", "cttir_schema_error", "metadata_mismatch")
+      !identical(state$spec_sha256, lock$spec_sha256) || !is.character(lock$spec_sha256)) {
+    abort_cttir("Project control metadata (cttir-lock.json, .cttir/state.json, .cttir/managed-files.json) do not agree.",
+      "cttir_schema_error", "metadata_mismatch",
+      remediation = "Restore the control files from version control or a backup; cttiR does not regenerate them.")
+  }
+  edited_spec <- NULL
+  if (!identical(lock$spec_sha256, content_hash(json_text(spec)))) {
+    check_spec_edit(root, spec, lock, state)
+    accepted <- accepted_spec(root, lock)
+    preview <- sprintf("cttiR::sync(%s)", r_literal(root))
+    if (!edited) {
+      message <- paste0("cttir-project.yml was edited after it was last accepted. Preview the edit with ", preview,
+        " and accept it with dry_run = FALSE.")
+      abort_cttir(message, "cttir_schema_error", "spec_edited", field = "cttir-project.yml",
+        remediation = paste0("Run ", preview, " to review the edit, then ", sub(")$", ", dry_run = FALSE)", preview),
+          " to accept it; or restore cttir-project.yml from version control."))
+    }
+    if (is.null(accepted)) {
+      message <- paste("cttir-project.yml was edited after it was last accepted, and this project has no verified",
+        "copy of the accepted specification (.cttir/accepted-spec.yml) to review the edit against.")
+      abort_cttir(message, "cttir_schema_error", "spec_edit_unverifiable", field = "cttir-project.yml",
+        remediation = paste("Restore cttir-project.yml from version control (or undo the edit) and make the change with",
+          "cttiR::sync(path, options = list(...), dry_run = FALSE), which validates it."))
+    }
+    edited_spec <- spec
+    spec <- accepted
+  }
+  if (!identical(state$project_id, spec$project$id) ||
+      !identical(lock$template_version, spec$provenance$template_version)) {
+    abort_cttir("Project specification and control metadata do not agree.", "cttir_schema_error", "metadata_mismatch",
+      remediation = "Restore cttir-project.yml and the control files from version control or a backup.")
   }
   paths <- vapply(manifest$files, function(x) {
     relative_file(x$path)
@@ -52,7 +159,7 @@ read_project <- function(path) {
     x$path
   }, character(1))
   if (anyDuplicated(tolower(paths))) abort_cttir("Duplicate managed paths.", "cttir_schema_error")
-  list(path = root, spec = spec, lock = lock, manifest = manifest, state = state)
+  list(path = root, spec = spec, lock = lock, manifest = manifest, state = state, edited_spec = edited_spec)
 }
 
 write_bytes <- function(text, path) {
@@ -88,16 +195,13 @@ pending_transactions <- function(root) {
 transact_files <- function(root, files, plan) {
   lockdir <- file.path(root, ".cttir/write-lock")
   assert_plain_path(lockdir)
-  if (!dir.create(lockdir, showWarnings = FALSE)) {
-    abort_cttir("The project has an active or interrupted writer.", "cttir_transaction_conflict", "writer_lock")
-  }
+  if (!dir.create(lockdir, showWarnings = FALSE)) abort_writer_lock(root)
   on.exit(unlink(lockdir, recursive = TRUE), add = TRUE)
-  write_bytes(
-    paste0(json_text(list(pid = Sys.getpid(), host = Sys.info()[["nodename"]]), TRUE), "\n"),
-    file.path(lockdir, "owner.json")
-  )
+  write_lock_owner(lockdir)
   if (length(pending_transactions(root))) {
-    abort_cttir("An interrupted transaction needs review before another write.", "cttir_transaction_conflict", "pending_journal")
+    abort_cttir("An interrupted transaction needs review before another write.", "cttir_transaction_conflict", "pending_journal",
+      remediation = sprintf("Review it with cttiR::audit(%s, scope = \"project\") and roll it back with repair = TRUE.",
+        r_literal(root)))
   }
   # Recheck all preview preimages while owning the writer lock.
   for (i in seq_len(nrow(plan))) {

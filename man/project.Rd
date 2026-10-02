@@ -15,7 +15,11 @@ project(
 )
 }
 \arguments{
-\item{name}{Nonempty project title. A portable child-directory slug is derived.}
+\item{name}{Nonempty project title, kept as written. A portable
+child-directory slug is derived once: ASCII transliteration where
+possible; when letters have no transliteration (for example CJK script) or
+the slug would exceed 80 characters, a short hash of the name is appended
+(\verb{project_<hash>} when nothing transliterates).}
 
 \item{type}{One of \code{primary_research}, \code{secondary_research}, \code{methods},
 \code{review}, \code{software}, \code{mixed}, or \code{other}.}
@@ -59,6 +63,12 @@ honoring \code{network} (\code{"offline"} by default). \code{git = TRUE} runs \v
 the new project root only, never inside another work tree, and never stages
 or commits. Failures of these steps keep the scaffold and are reported as
 readiness blockers with a recovery command.
+
+Creation stages the scaffold next to the target and publishes it with one
+rename while holding a creation lock that records its process. A lock left
+by a stopped process on this host (or an ownerless lock from an older
+version, after 24 hours) is recovered on the next attempt: only the lock and
+that attempt's staging directory are removed, and \code{recovered} reports it.
 
 Optional \code{analysis$mapping} records \code{data_source_id}, \code{outcome},
 \code{predictors}, \code{subject}, \code{time}, \code{event}, \code{event_value}, \code{non_event_value},
