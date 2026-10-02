@@ -2,6 +2,30 @@
 
 Updated: 2026-10-02. Version: 0.0.18. License: MIT.
 
+## Continuation: private adapter diagnostics and tied survival events
+
+Milestone 18 commit dd1ea38 passed all five hosted jobs in run 37002612423.
+Receipt: artifacts/implementation/milestone18-hosted-ci.json. Public package
+remains 0.0.18; this continuation changes ignored development evidence only.
+
+- admin/verify_candidate_diagnostics.R passes ten cases: unsupported engine
+  refusal, overlap, forced nonconvergence, complete separation in both directions,
+  quasi-separation, tied overlap, multivariable assessment gap, perfect linear fit,
+  and aliased coefficients. Warnings remain recorded; fit return is not approval.
+- admin/verify_candidate_survival_ties.R reruns the eleven adapter fixtures and
+  checks Breslow, Efron and exact tied-event likelihoods against independently
+  enumerated small risk sets. Coefficients, log likelihood and numerical inverse
+  curvature agree; row permutation and explicit factor event labels are invariant.
+- admin/verify_candidate_callable_alignment.R confirms 24 selected stats/nlme/
+  survival implementations match pinned source formals and bodies. This does not
+  cover every transitive callable, base QR, compiled code or platform behavior.
+
+Receipts: candidate-diagnostics.json, candidate-survival-ties.json and
+candidate-callable-alignment.json under artifacts/implementation. The candidate
+still has mixed variance/residual and Cox proportional-hazards/influence gaps.
+No public runner, workflow approval, full CRAN-readiness claim or submission.
+Continue admin/production-adapter-readiness.md; the retry timer remains active.
+
 ## Milestone 18: explicit typed model settings
 
 Optional analysis.model fields record a fixed intercept, binary logit link,
