@@ -542,9 +542,9 @@ audit_checks_project <- function() {
     audit_check(id, "project", description, run, applies = audit_has_path, ...)
   }
   list(
-    project_check("PRJ-001", "ProjectSpec, lock and control metadata validate and agree.",
-      audit_prj_spec, required = TRUE, read_effects = "reads_project_metadata",
-      evidence_schema = c("project_id", "schema_version", "template_version", "readiness")),
+    project_check("PRJ-001", "ProjectSpec, lock and control metadata validate and equal their regenerated baseline.",
+      audit_prj_spec, required = TRUE, read_effects = c("reads_project_metadata", "reads_catalog_store", "reads_installation"),
+      evidence_schema = c("project_id", "schema_version", "template_version", "readiness", "changed_control_files")),
     project_check("PRJ-002", "Managed file hashes, preserved user edits and unsafe links.",
       audit_prj_files, required = TRUE, read_effects = "reads_project_metadata",
       repair_id = "restore_missing_managed", evidence_schema = c("files", "missing", "edited", "unsafe")),
@@ -574,9 +574,40 @@ audit_checks_project <- function() {
 audit_prj_spec <- function(context) {
   p <- audit_project(context)
   if (inherits(p, "error")) stop(p)
-  audit_result("pass", "Specification, lock and control metadata validate and agree.",
-    list(project_id = p$spec$project$id, schema_version = p$spec$schema_version,
-      template_version = p$spec$provenance$template_version, readiness = p$spec$workflow$readiness))
+  evidence <- list(project_id = p$spec$project$id, schema_version = p$spec$schema_version,
+    template_version = p$spec$provenance$template_version, readiness = p$spec$workflow$readiness)
+  bundle <- audit_bundle(context)
+  if (inherits(bundle, "error")) {
+    message <- paste("Specification and lock validate, but the control metadata could not be regenerated for comparison:",
+      audit_condition_message(bundle))
+    return(audit_result("not_tested", message, evidence))
+  }
+  drift <- audit_control_drift(p, bundle)
+  evidence$changed_control_files <- as.list(drift)
+  if (length(drift)) {
+    message <- paste0("Control metadata differs from what the accepted specification and lock regenerate (",
+      paste(drift, collapse = ", "), "); project() refuses to reuse it and its file baselines cannot be trusted.")
+    return(audit_result("fail", message, evidence))
+  }
+  audit_result("pass", "Specification, lock and control metadata validate and match their regenerated baseline.", evidence)
+}
+
+# Control files must equal what project() regenerates for an identical repeat,
+# keeping the accepted baselines of user-owned files as sync() does. A lock or
+# manifest edited by hand (for example a claimed environment state or a new
+# baseline for changed managed code) therefore fails.
+audit_control_drift <- function(p, bundle) {
+  accepted <- p$manifest$files
+  paths <- vapply(accepted, function(x) x$path, character(1))
+  manifest <- lapply(bundle$manifest, function(entry) {
+    at <- match(entry$path, paths)
+    user <- !is.na(at) && identical(entry$ownership, "user") && identical(accepted[[at]]$ownership, "user")
+    if (user) accepted[[at]] else entry
+  })
+  files <- bundle$files
+  files[[".cttir/managed-files.json"]] <- paste0(json_text(list(schema_version = 1L, files = manifest), TRUE), "\n")
+  control <- c("cttir-lock.json", ".cttir/state.json", ".cttir/managed-files.json")
+  control[vapply(control, function(file) !identical(file_hash(file.path(p$path, file)), content_hash(files[[file]])), logical(1))]
 }
 
 audit_prj_files <- function(context) {

@@ -512,3 +512,54 @@ test_that("reviewed constructs, attached packages and data columns are not false
   row <- audit_row(audit(root, scope = "project"), "STD-003")
   expect_equal(unlist(row$evidence$unsafe), "code/R/cttir_workflow.R: unlink (forbidden_call)")
 })
+
+test_that("hand-edited control metadata fails like an identical project() repeat", {
+  parent <- new_parent()
+  goal <- "Compare blood pressure between two groups"
+  root <- project("Lock edit", "primary_research", goal, parent)$path
+  lock <- file.path(root, "cttir-lock.json")
+  writeLines(sub('"environment_status": "pending"', '"environment_status": "ready"', readLines(lock)), lock)
+  expect_error(project("Lock edit", "primary_research", goal, parent), class = "cttir_path_conflict")
+  report <- audit(root, scope = "project")
+  row <- audit_row(report, "PRJ-001")
+  expect_equal(row$status, "fail")
+  expect_equal(unlist(row$evidence$changed_control_files), ".cttir/managed-files.json")
+  expect_equal(report$overall_status, "fail")
+  root <- project("Manifest edit", "primary_research", goal, parent)$path
+  code <- file.path(root, "code/R/cttir_workflow.R")
+  cat("\nmessage('changed')\n", file = code, append = TRUE)
+  manifest <- jsonlite::read_json(file.path(root, ".cttir/managed-files.json"))
+  for (i in seq_along(manifest$files)) {
+    if (manifest$files[[i]]$path == "code/R/cttir_workflow.R") manifest$files[[i]]$baseline_sha256 <- file_hash(code)
+  }
+  writeLines(jsonlite::toJSON(manifest, auto_unbox = TRUE, pretty = TRUE), file.path(root, ".cttir/managed-files.json"))
+  report <- audit(root, scope = "project")
+  expect_equal(audit_row(report, "PRJ-002")$status, "pass")
+  expect_equal(audit_row(report, "PRJ-001")$status, "fail")
+  expect_equal(report$overall_status, "fail")
+  root <- project("Synced", "primary_research", goal, parent)$path
+  source <- list(id = "cohort", label = "Cohort", logical_uri = "registry:cohort", format = "csv",
+    access_class = "restricted", checksum = NULL, checksum_status = "unknown", schema_ref = NULL)
+  expect_equal(sync(root, options = list(data_sources = list(source), workflow = list(pipeline = "targets")), dry_run = FALSE)$state, "applied")
+  expect_equal(audit_row(audit(root, scope = "project"), "PRJ-001")$status, "pass")
+})
+
+test_that("project checks report a missing pinned snapshot instead of using the active catalog", {
+  f <- local_update_fixture()
+  update()
+  p <- project("Pinned elsewhere", "primary_research", "Compare blood pressure between two groups", f$parent)
+  pinned <- read_project(p$path)$lock$catalog_id
+  writeLines(c("keep <- function(x = 3) x", "added <- function() 1"), file.path(f$source, "R", "api.R"))
+  writeLines(c("export(keep)", "export(added)"), file.path(f$source, "NAMESPACE"))
+  update()
+  expect_false(identical(resolve_catalog()$content_id, pinned))
+  expect_equal(audit(p$path, scope = "project")$overall_status, "warning")
+  unlink(file.path(f$store, "snapshots", pinned), recursive = TRUE)
+  report <- audit(p$path, scope = "project")
+  for (id in c("STD-001", "STD-003", "STD-005", "PRJ-004")) {
+    expect_equal(audit_row(report, id)$status, "fail", info = id)
+    expect_match(audit_row(report, id)$message, "snapshot is unavailable", fixed = TRUE, info = id)
+  }
+  expect_equal(audit_row(report, "PRJ-001")$status, "not_tested")
+  expect_equal(report$overall_status, "fail")
+})
