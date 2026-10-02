@@ -133,8 +133,9 @@ official PACKAGES files carry neither field, so matching is effectively by
 name. Discovered rows are quarantined and never promoted. An explicit
 \code{bioc_version} that differs from the stored policy stages a separate
 observation set (release in each observation ID) and records the new policy
-in the catalog store only after a successful applied run; project pins keep
-their resource snapshots. Upstream-only, base R, historical Bioconductor and
+in the composite snapshot only after a successful applied run, so
+\code{\link[=rollback_knowledge]{rollback_knowledge()}} restores the policy together with both catalogs; project
+pins keep their resource snapshots. Upstream-only, base R, historical Bioconductor and
 data packages are not refreshed by index. A resources-only run observes CRAN
 and Bioconductor registrations through the indices without downloading their
 tarballs.
@@ -163,5 +164,7 @@ Repeating an unchanged update retains its ID. Applied updates can recover a
 stopped local writer lock only after checking its owner, the active snapshot
 and any activation journal; the old lock is retained under \code{recovered-locks}.
 Active or unknown writers, corrupt pointers and conflicting journals are
-refused, and previews never recover locks.
+refused, and previews never recover locks. An active snapshot that fails
+verification is refused with the verified retained IDs that
+\code{\link[=rollback_knowledge]{rollback_knowledge()}} can restore.
 }

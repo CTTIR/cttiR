@@ -291,3 +291,48 @@ test_that("Bioconductor release policy stages new releases without touching pins
   expect_error(bioc_release_policy(), class = "cttir_catalog_corrupt")
   expect_error(update(mode = "remote", dry_run = TRUE), class = "cttir_catalog_corrupt")
 })
+
+test_that("rollback restores the Bioconductor release policy together with both catalogs", {
+  f <- resource_only_fixture()
+  mock <- local_repository_mock(c(repository_files(), repository_files(release = "3.22")))
+  policy_file <- file.path(f$store, "bioc-policy.json")
+  first <- update(mode = "remote", catalogs = "resources")
+  expect_null(current_catalog_manifest()$bioc_release)
+  staged <- update(mode = "remote", catalogs = "resources", bioc_version = "3.22")
+  expect_true(staged$bioc_release$recorded)
+  expect_identical(current_catalog_manifest()$bioc_release, "3.22")
+  expect_equal(bioc_release_policy()$release, "3.22")
+  releases <- function() {
+    active_db_query("SELECT DISTINCT bioconductor_release AS r FROM observations WHERE bioconductor_release IS NOT NULL")$r
+  }
+  expect_setequal(releases(), c("3.22", "3.23"))
+  restored <- rollback_knowledge(first$new_id, dry_run = FALSE)
+  expect_true(restored$activation)
+  expect_true(is.na(restored$bioc_release$release))
+  expect_false(file.exists(policy_file))
+  expect_equal(bioc_release_policy()$release, "3.23")
+  expect_equal(bioc_release_policy()$source, "derived_from_running_r")
+  expect_false("3.22" %in% releases())
+  forward <- rollback_knowledge(staged$new_id, dry_run = FALSE)
+  expect_identical(forward$bioc_release$release, "3.22")
+  expect_equal(bioc_release_policy()$release, "3.22")
+  expect_equal(read_document(policy_file)$release, "3.22")
+  # The manifest stays authoritative when the policy mirror is lost.
+  unlink(policy_file)
+  mock$calls <- character()
+  expect_equal(update(mode = "remote", catalogs = "resources")$status, "unchanged")
+  expect_true(bioc_index_url("3.22") %in% mock$calls)
+  expect_equal(read_document(policy_file)$release, "3.22")
+  # A writer stopped between the pointer swap and the mirror is repaired on recovery.
+  skip_if_not_installed("callr")
+  unlink(policy_file)
+  previous <- validate_manifest(read_document(file.path(f$store, "manifests", paste0(first$new_id, ".json"))))
+  dir.create(file.path(f$store, "write-lock"))
+  write_bytes(json_text(list(pid = callr::r(function() Sys.getpid()), host = Sys.info()[["nodename"]])),
+    file.path(f$store, "write-lock", "owner.json"))
+  write_bytes(json_text(list(schema_version = 1L, previous = previous, candidate = current_catalog_manifest())),
+    file.path(f$store, "write-lock", "activation.json"))
+  expect_equal(rollback_knowledge(staged$new_id, dry_run = FALSE)$status, "unchanged")
+  expect_equal(read_document(policy_file)$release, "3.22")
+  expect_length(list.dirs(file.path(f$store, "recovered-locks"), recursive = FALSE), 1L)
+})

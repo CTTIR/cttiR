@@ -7,13 +7,21 @@
 rollback_knowledge(version, dry_run = TRUE)
 }
 \arguments{
-\item{version}{Composite snapshot ID returned by \code{\link[=update]{update()}}.}
+\item{version}{Composite snapshot ID returned by \code{\link[=update]{update()}}. Unknown IDs fail
+with a message listing the retained IDs.}
 
 \item{dry_run}{Preview only; the default makes no changes.}
 }
 \value{
-A \code{cttir_update} containing IDs, API impact and activation outcome.
+A \code{cttir_update} containing IDs, API impact, activation outcome,
+\code{active_problem} (\code{NA} when the active snapshot verified) and the restored
+\code{bioc_release} policy (\code{NA} release when none is recorded).
 }
 \description{
-Restore a retained composite catalog without changing project pins
+Restores the API snapshot, resource snapshot and recorded Bioconductor
+release policy of a retained composite snapshot together. The target must
+verify completely. A damaged active snapshot does not block restoring a
+verified one: the damage is reported in \code{active_problem} and \code{warnings}, the
+damaged files are kept for inspection, and the impact against them is not
+computed.
 }
