@@ -40,6 +40,14 @@ validate_spec <- function(spec) {
     x$slug
   }, character(1))
   if (anyDuplicated(slugs)) abort_cttir("Publication slugs must be unique.", "cttir_schema_error")
+  dataset_ids <- vapply(spec$data_sources, function(x) x$id, character(1))
+  for (pub in spec$publications) {
+    unknown <- setdiff(unlist(pub$data_source_ids), dataset_ids)
+    if (length(unknown)) {
+      abort_cttir("Publications must reference registered data sources by ID.", "cttir_schema_error",
+        "unknown_data_source", field = paste0("/publications/", pub$id, "/data_source_ids"))
+    }
+  }
   if (isTRUE(spec$analysis$approved) &&
       (spec$analysis$aim == "unknown" || spec$analysis$unit_structure == "unknown")) {
     abort_cttir("Analysis approval requires a known aim and unit structure.", "cttir_schema_error")

@@ -189,3 +189,20 @@ test_that("sync changes the table backend of a standard project without touching
   expect_error(sync(p$path, options = list(workflow = list(profile = "hybrid"))), class = "cttir_api_mismatch")
   expect_error(sync(p$path, options = list(workflow = list(table_backend = "gt"))), class = "cttir_api_mismatch")
 })
+
+test_that("publications reference shared datasets only by registry ID", {
+  dataset <- list(id = "cohort", label = "Cohort", logical_uri = NULL, format = "csv",
+    access_class = "restricted", checksum = NULL, checksum_status = "unknown", schema_ref = NULL)
+  p <- project("Two papers", "mixed", "Describe a cohort", new_parent(), options = list(
+    data_sources = list(dataset),
+    publications = list(
+      list(id = "pub01", data_source_ids = list("cohort")),
+      list(id = "pub02", title = "Meta-analysis", slug = "pub02_meta", research_class = "secondary_research",
+        type = "meta_analysis", analysis_role = "secondary_analysis", data_origin = "literature",
+        data_source_ids = list("cohort")))))
+  meta <- yaml::read_yaml(file.path(p$path, "publications/pub02_meta/publication.yml"))
+  expect_equal(meta$data_source_ids, "cohort")
+  expect_false(any(grepl("/", unlist(meta))))
+  expect_error(project("Bad ref", "methods", "Goal", tempdir(), dry_run = TRUE, options = list(
+    publications = list(list(id = "pub01", data_source_ids = list("missing"))))), class = "cttir_schema_error")
+})

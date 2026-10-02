@@ -169,6 +169,14 @@
               "mixed",
               "unknown"
             ]
+          },
+          "data_source_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
           }
         },
         "required": [],
