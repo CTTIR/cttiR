@@ -27,17 +27,49 @@ audit(
 required unverified checks. The condition contains the full report.}
 
 \item{live}{Allow a bounded CPU structured-output probe of an already owned
-runtime when the integration scope is selected. Never installs or starts it.}
+runtime when the integration scope is selected, and a loopback metadata
+query for model locality. Never installs, pulls or starts a runtime.}
 }
 \value{
-A \code{cttir_audit} with check table, overall status, repairs and limitations.
+A \code{cttir_audit} with a check table (\code{id}, \code{scope}, \code{status},
+\code{required}, \code{message}, \code{description}, \code{severity}, \code{read_effects},
+\code{repair_id}, \code{evidence} as JSON text, \code{duration_seconds}), overall status
+and reason, repairs, package identity, effects and limitations.
 }
 \description{
-Default inspection is local and read-only. It never opens referenced study
-datasets, runs study pipelines, installs dependencies or starts services.
-Missing managed files may be restored with \code{repair = TRUE} only when their
-generated content matches the accepted baseline. Interrupted writes can be
-rolled back when the recorded local writer has stopped and all destination
-and backup hashes match. Edited files are preserved.
-Reports are written only to an explicit output directory with unique names.
+Runs registered checks with stable IDs (\verb{INS-}, \verb{KB-}, \verb{RES-}, \verb{PRJ-},
+\verb{STD-} and \verb{INT-}). Default inspection is local and read-only: it reads
+package resources, catalog metadata, runtime state files and project metadata.
+It never opens referenced study datasets or dereferences paths bound in
+\code{.cttir/local.yml}, runs study pipelines, installs dependencies, starts
+services, contacts a model daemon or queries remote servers. Declared Imports
+are checked with \code{\link[=requireNamespace]{requireNamespace()}}, which may load trusted installed
+namespaces. When the project root contains \code{.git} and Git is available,
+tracked file names under ignored private paths are listed with
+\verb{git ls-files} (names only; no contents are read).
+}
+\details{
+Overall status precedence: a required \code{fail}, then a required \code{not_tested},
+then any warning or optional finding, then \code{pass}; when every check is
+\code{not_applicable} the overall status is \code{not_tested}. Which checks are required
+derives from the project's declared readiness and workflow.
+
+With \code{repair = TRUE}, only an allowlist of reversible repairs is attempted,
+each only when its triggering check failed: rolling back an interrupted
+project write whose recorded writer has stopped, restoring a missing managed
+file whose generated content matches its accepted baseline, and repointing a
+corrupt active catalog pointer to the most recently written retained manifest
+that passes verification (under the catalog writer lock, journaled, never
+deleting snapshots). Edited files are never overwritten. Each repair records
+before/after hashes, its outcome and a recheck; a failed repair restores the
+prior bytes. All checks except integration are rerun after an applied repair.
+
+The integration scope explicitly creates synthetic temporary projects and an
+isolated temporary catalog store and removes them afterwards; it never uses
+the configured catalog store for its fixture.
+
+Reports are written only to an explicit \code{output} directory, always under new
+unique names. Report text is portable: paths under the project root become
+relative, the home directory is shown as \code{~}, and Markdown control characters
+in messages are escaped.
 }
