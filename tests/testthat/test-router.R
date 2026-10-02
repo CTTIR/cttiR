@@ -15,6 +15,87 @@ test_that("the capability registry is well formed and adapters are declared", {
   expect_contains(vapply(registry$modalities, function(x) x$id, character(1)), c("single_cell", "imaging"))
 })
 
+test_that("keywords match whole words, honour stems and compounds, and ignore negated signals", {
+  expect_equal(infer_goal("Market segmentation of retail customers")$keyword_capabilities, character())
+  expect_false("cttir.delphi.study" %in% infer_goal("Registry study in Philadelphia hospitals")$keyword_capabilities)
+  expect_false("cttir.mri.sci" %in% infer_goal("Outcomes in a spinal cord injury registry")$keyword_capabilities)
+  expect_equal(infer_goal("Predictors of blood pressure, adjusted for age")$aim, "explanatory")
+  expect_equal(infer_goal("Develop a prediction model for readmission")$aim, "predictive")
+  expect_equal(infer_goal("Vorhersagemodell für Wiederaufnahmen")$aim, "predictive")
+  expect_equal(infer_goal("Trajectories of pain scores")$unit_structure, "longitudinal")
+  expect_equal(infer_goal("Gesamtüberleben nach Diagnose")$outcome_family, "time_to_event")
+  expect_equal(infer_goal("Zytokinkonzentrationen zwischen zwei Gruppen")$outcome_family, "continuous")
+  expect_equal(infer_goal("Durchflusszytometrie von Blutproben")$modality, "cytometry")
+  expect_equal(infer_goal("This is not a survival study; compare cholesterol concentration across arms")$outcome_family,
+    "continuous")
+  expect_equal(infer_goal("Cross-sectional comparison without repeated measures")$unit_structure, "independent")
+  expect_equal(infer_goal("Keine Messwiederholung, Querschnittsvergleich")$unit_structure, "independent")
+  expect_equal(infer_goal("Patients with a yes/no outcome")$outcome_family, "binary")
+})
+
+test_that("event-type outcomes veto a continuous reading and scATAC-seq is single-cell", {
+  s <- infer_goal("Cross-sectional association of in-hospital mortality with laboratory values")
+  expect_equal(s$outcome_family, "unknown")
+  expect_equal(s[c("aim", "unit_structure")], list(aim = "explanatory", unit_structure = "independent"))
+  expect_equal(infer_goal("Zusammenhang der Krankenhausmortalität mit Laborwerten")$outcome_family, "unknown")
+  expect_equal(infer_goal("Association of statins with LDL concentration")$outcome_family, "continuous")
+  expect_equal(infer_goal("No deaths occurred; association of statins with LDL concentration")$outcome_family, "continuous")
+  for (goal in c("scATAC-seq of chromatin accessibility in tumour cells", "snATAC-seq of brain nuclei")) {
+    p <- project("ATAC", "primary_research", goal, tempdir(), dry_run = TRUE)
+    expect_equal(p$spec$ecosystem$modality, "single_cell", info = goal)
+    route <- route_workflow(p$spec, "standard_reflowR")
+    expect_contains(vapply(route$ecosystem, function(x) x$capability, character(1)), "seurat.chromatin.signac")
+  }
+  expect_equal(infer_goal("10x Multiome of RNA and chromatin")$modality, "multiomics")
+})
+
+test_that("capability approval requires every declared callable to be approved", {
+  registry <- capability_registry()
+  catalog <- resolve_catalog()
+  tested <- Filter(function(x) identical(x$status, "adapter_tested") && length(setdiff(x$packages, "base")), registry$capabilities)
+  expect_true(all(vapply(tested, function(x) length(x$callables) > 0L, logical(1))))
+  seurat <- capability_approval(registry$capabilities$seurat.single_cell.exploration, catalog)
+  expect_equal(seurat$status, "approval_pending")
+  expect_contains(seurat$missing, c("Seurat::FindClusters", "Seurat::RunUMAP"))
+  expect_equal(capability_approval(registry$capabilities$std.model.coxph, catalog)$status, "approved")
+  # broom::tidy is approved only through its owner generics, for this adapter.
+  expect_equal(capability_approval(registry$capabilities$std.effects.broom, catalog)$status, "approved")
+  stripped <- catalog
+  stripped$packages <- lapply(catalog$packages, function(p) {
+    if (identical(p$name, "generics")) p$approvals <- list()
+    p
+  })
+  expect_equal(capability_approval(registry$capabilities$std.effects.broom, stripped)$status, "approval_pending")
+  sc <- project("Seurat", "primary_research", "Single-cell RNA-seq clustering of immune cells", tempdir(), dry_run = TRUE)
+  route <- route_workflow(sc$spec, "standard_reflowR")
+  exploration <- Filter(function(x) identical(x$capability, "seurat.single_cell.exploration"), route$ecosystem)[[1]]
+  expect_equal(exploration$status, "approval_pending")
+})
+
+test_that("dependencies pin re-export owners and optional interop packages", {
+  catalog <- catalog_snapshot(resolve_catalog()$content_id)
+  r <- route_for("Repeated measurements of a biomarker",
+    options = list(analysis = list(aim = "explanatory", outcome_family = "continuous", unit_structure = "longitudinal")))
+  deps <- route_dependencies(route_workflow(r$project$spec, "standard_reflowR"), catalog)
+  by_name <- stats::setNames(deps, vapply(deps, function(x) x$package, character(1)))
+  expect_true(by_name$generics$required)
+  expect_contains(unlist(by_name$generics$stages), "effects")
+  expect_match(by_name$generics$approval, "effects_broom", fixed = TRUE)
+  expect_equal(by_name$generics$version, Filter(function(p) identical(p$name, "generics"), catalog$packages)[[1]]$version)
+  expect_false(any(vapply(deps, function(x) isFALSE(x$required), logical(1))))
+  sc <- project("Interop", "primary_research", "Single-cell RNA-seq of donors", tempdir(), dry_run = TRUE)
+  route <- route_workflow(sc$spec, "standard_reflowR")
+  deps <- route_dependencies(route, catalog)
+  optional <- Filter(function(x) isFALSE(x$required), deps)
+  expect_setequal(vapply(optional, function(x) x$package, character(1)),
+    c("Matrix", "S4Vectors", "Seurat", "SeuratObject", "SingleCellExperiment", "SummarizedExperiment", "methods"))
+  expect_true(all(vapply(optional, function(x) is.character(x$version), logical(1))))
+  expect_match(route_summary(route)$notes[[1]], "optional (required = FALSE)", fixed = TRUE)
+  demo <- Filter(function(x) identical(x$stage, "demo"), route$stages)[[1]]
+  expect_setequal(unlist(demo$packages), capability_registry()$capabilities$std.demo.synthetic$packages)
+  expect_null(route_summary(route_workflow(r$project$spec, "standard_reflowR"))$notes)
+})
+
 test_that("goal signals are conservative, bilingual and inert", {
   s <- infer_goal("Describe longitudinal immune trajectories after polytrauma")
   expect_equal(s[c("aim", "unit_structure", "outcome_family")], list(aim = "descriptive", unit_structure = "longitudinal", outcome_family = "unknown"))
@@ -32,7 +113,7 @@ test_that("case 1: a generic observational cohort gets the standard reflowR prof
   expect_equal(r$workflow$profile, "standard_reflowR")
   expect_equal(r$project$spec$workflow$table_backend, "DescrTab2")
   expect_contains(r$stages, c("std.project.reflowr_layout", "std.import.delimited", "std.tidy.dplyr",
-    "std.describe.descrtab2", "std.figures.accessible", "std.report.render"))
+      "std.describe.descrtab2", "std.figures.accessible", "std.report.render"))
   expect_equal(r$project$spec$analysis$aim, "explanatory")
   expect_false(r$project$spec$analysis$approved)
   expect_contains(unlist(r$analysis$missing_fields), c("/analysis/outcome_family", "/analysis/mapping/data_source_id"))
@@ -62,7 +143,7 @@ test_that("cases 3 and 4: repeated and time-to-event designs require their roles
     options = list(analysis = list(aim = "explanatory", outcome_family = "time_to_event", unit_structure = "independent")))
   expect_equal(r$workflow$engine, "survival::coxph")
   expect_contains(unlist(r$analysis$missing_fields), c("/analysis/mapping/event", "/analysis/mapping/event_value",
-    "/analysis/mapping/time_origin", "/analysis/mapping/time_unit"))
+      "/analysis/mapping/time_origin", "/analysis/mapping/time_unit"))
 })
 
 test_that("case 5: prediction stays an explicit gap without a fitted adapter", {
@@ -156,7 +237,7 @@ test_that("projects saved with older defaults remain unchanged on repeat creatio
   expect_true(all(again$plan$action == "skip"))
   expect_identical(tree_hashes(root), before)
   expect_error(project("Legacy defaults", "methods", "Goal", parent,
-    options = list(workflow = list(table_backend = "DescrTab2"))), class = "cttir_path_conflict")
+      options = list(workflow = list(table_backend = "DescrTab2"))), class = "cttir_path_conflict")
   expect_true(all(sync(root)$actions$action == "skip"))
 })
 
@@ -222,7 +303,8 @@ test_that("biological modalities route to ecosystem candidates, never clinical t
   clinical <- route_goal("Compare blood pressure between treatment arms in a clinical cohort")
   expect_length(clinical$route$ecosystem, 0)
   deps <- route_dependencies(sc$route, catalog_snapshot(resolve_catalog()$content_id))
-  expect_false("Seurat" %in% vapply(deps, function(x) x$package, character(1)))
+  required <- vapply(Filter(function(x) isTRUE(x$required), deps), function(x) x$package, character(1))
+  expect_false("Seurat" %in% required)
   off <- project("No Seurat", "primary_research", "Single-cell RNA-seq clustering", tempdir(), dry_run = TRUE,
     options = list(ecosystem = list(seurat_for_relevant_gaps = FALSE)))
   off_ids <- vapply(route_workflow(off$spec, "standard_reflowR")$ecosystem, function(x) x$capability, character(1))

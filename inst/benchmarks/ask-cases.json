@@ -26,7 +26,7 @@
     {"id": "X01", "lang": "en", "kind": "cross", "question": "Import a CSV, make a baseline table and fit a linear regression", "expect": ["std.import.delimited", "std.describe.descrtab2", "std.model.lm"]},
     {"id": "X02", "lang": "en", "kind": "cross", "question": "Plot the data with an accessible palette and fit a mixed model for repeated measures", "expect": ["std.figures.accessible", "std.model.lme"]},
     {"id": "X03", "lang": "en", "kind": "cross", "question": "Tidy the data, then fit a Cox model and get confidence intervals", "expect": ["std.tidy.dplyr", "std.model.coxph", "std.effects.broom"]},
-    {"id": "X04", "lang": "en", "kind": "cross", "question": "Single-cell RNA-seq clustering across donors", "expect": ["seurat.single_cell.exploration"]},
+    {"id": "X04", "lang": "en", "kind": "gap", "question": "Single-cell RNA-seq clustering across donors", "gap": "seurat.single_cell.exploration"},
     {"id": "D01", "lang": "de", "kind": "supported", "question": "Wie erstelle ich eine logistische Regression?", "expect": ["std.model.glm_binomial"]},
     {"id": "D02", "lang": "de", "kind": "supported", "question": "Lineare Regression für einen stetigen Endpunkt", "expect": ["std.model.lm"]},
     {"id": "D03", "lang": "de", "kind": "supported", "question": "Gemischtes Modell mit Zufallsintercept für Messwiederholung", "expect": ["std.model.lme"]},

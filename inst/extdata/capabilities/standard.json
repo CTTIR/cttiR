@@ -2,14 +2,14 @@
   "schema_version": 1,
   "family": "standard",
   "modalities": [
-    {"id": "single_cell", "keywords": {"en": ["single-cell", "single cell", "scrna", "sc-rna", "snrna", "cell clustering", "10x genomics"], "de": ["einzelzell", "einzel-zell"]}},
-    {"id": "spatial", "keywords": {"en": ["spatial transcriptom", "visium", "spatial omics", "spatial biology"], "de": ["räumliche transkriptom", "raeumliche transkriptom"]}},
-    {"id": "multiomics", "keywords": {"en": ["multi-omics", "multiomics", "multi omics"], "de": ["multiomik", "multi-omik"]}},
-    {"id": "cytometry", "keywords": {"en": ["cytometry", "facs", "cytof"], "de": ["zytometrie"]}},
-    {"id": "proteomics", "keywords": {"en": ["proteomic", "mass spectrometry", "peptide quantification"], "de": ["proteom", "massenspektrometrie"]}},
-    {"id": "microbiome", "keywords": {"en": ["microbiome", "16s rrna", "metagenom"], "de": ["mikrobiom"]}},
-    {"id": "imaging", "keywords": {"en": ["multiplex imaging", "multiplexed imaging", "immunofluorescence", "whole-slide", "whole slide", "histology image", "cell segmentation", "qupath", "hyperspectral", "microscopy"], "de": ["bildgebung", "mikroskopie", "segmentierung", "hyperspektral", "histologie"]}},
-    {"id": "bulk_rna", "keywords": {"en": ["rna-seq", "rnaseq", "bulk rna", "transcriptom", "differential expression", "gene expression"], "de": ["transkriptom", "genexpression", "differenzielle expression"]}}
+    {"id": "single_cell", "keywords": {"en": ["single-cell", "single cell", "scrna", "sc-rna", "snrna", "cell clustering", "10x genomics", "single-nucleus", "single nucleus", "scatac", "sc-atac", "snatac", "sn-atac"], "de": ["einzelzell*", "einzel-zell*"]}},
+    {"id": "spatial", "keywords": {"en": ["spatial transcriptom*", "visium", "spatial omics", "spatial biology"], "de": ["räumliche transkriptom*", "raeumliche transkriptom*"]}},
+    {"id": "multiomics", "keywords": {"en": ["multi-omics", "multiomics", "multi omics", "multiome"], "de": ["multiomik", "multi-omik"]}},
+    {"id": "cytometry", "keywords": {"en": ["cytometry", "facs", "cytof"], "de": ["*zytometrie"]}},
+    {"id": "proteomics", "keywords": {"en": ["proteomic", "mass spectrometry", "peptide quantification"], "de": ["*proteom*", "*massenspektrometrie"]}},
+    {"id": "microbiome", "keywords": {"en": ["microbiome", "16s rrna", "metagenom*"], "de": ["*mikrobiom*"]}},
+    {"id": "imaging", "keywords": {"en": ["multiplex imaging", "multiplexed imaging", "immunofluorescence", "whole-slide", "whole slide", "histology image", "cell segmentation", "qupath", "hyperspectral", "microscopy"], "de": ["*bildgebung", "*mikroskopie", "zellsegmentierung", "bildsegmentierung", "hyperspektral*", "histologie"]}},
+    {"id": "bulk_rna", "keywords": {"en": ["rna-seq", "rnaseq", "bulk rna", "transcriptom*", "differential expression", "gene expression", "bulk-rna"], "de": ["*transkriptom*", "*genexpression*", "differenzielle expression", "rna-sequenzierung*"]}}
   ],
   "rules": {
     "aim": [
@@ -21,10 +21,10 @@
             "causal inference",
             "counterfactual",
             "target trial",
-            "causal"
+            "causal*"
           ],
           "de": [
-            "kausal"
+            "kausal*"
           ]
         }
       },
@@ -37,10 +37,12 @@
             "risk score",
             "classifier",
             "machine learning",
-            "forecast"
+            "forecast",
+            "prediction",
+            "predictive"
           ],
           "de": [
-            "vorhersag",
+            "*vorhersag*",
             "prädiktiv",
             "praediktiv",
             "prognosemodell",
@@ -67,8 +69,8 @@
             "assoziation",
             "adjustiert",
             "regression",
-            "risikofaktor",
-            "vergleich",
+            "*risikofaktor",
+            "*vergleich",
             "einfluss"
           ]
         }
@@ -90,13 +92,13 @@
             "summary statistics"
           ],
           "de": [
-            "beschreib",
+            "beschreib*",
             "deskriptiv",
-            "charakterisier",
-            "prävalenz",
-            "praevalenz",
-            "zusammenfass",
-            "charakteristika",
+            "*charakterisier*",
+            "*prävalenz",
+            "*praevalenz",
+            "zusammenfass*",
+            "*charakteristika",
             "studienpopulation"
           ]
         }
@@ -115,10 +117,10 @@
             "kaplan"
           ],
           "de": [
-            "überleben",
-            "ueberleben",
+            "*überleben*",
+            "*ueberleben*",
             "ereigniszeit",
-            "zensier"
+            "zensier*"
           ]
         }
       },
@@ -184,10 +186,10 @@
             "stetiger endpunkt",
             "lineare regression",
             "mittelwertsdifferenz",
-            "konzentration",
+            "*konzentration",
             "stetiger wert",
             "stetige variable",
-            "laborwert"
+            "*laborwert"
           ]
         }
       }
@@ -200,7 +202,7 @@
             "longitudinal",
             "repeated measure",
             "repeated-measure",
-            "trajector",
+            "trajector*",
             "over time",
             "time course",
             "follow-up visits",
@@ -213,9 +215,9 @@
           ],
           "de": [
             "longitudinal",
-            "messwiederholung",
+            "*messwiederholung",
             "wiederholte messung",
-            "verlauf",
+            "*verlauf*",
             "mehrere visiten",
             "wiederholten",
             "pro patient",
@@ -236,7 +238,7 @@
           ],
           "de": [
             "geclustert",
-            "multizentr",
+            "multizentr*",
             "verschachtelt"
           ]
         }
@@ -249,7 +251,45 @@
             "cross sectional"
           ],
           "de": [
-            "querschnitt"
+            "querschnitt*"
+          ]
+        }
+      }
+    ],
+    "event_outcome": [
+      {
+        "value": "event",
+        "keywords": {
+          "en": [
+            "mortality",
+            "death",
+            "deaths",
+            "died",
+            "dead",
+            "survival status",
+            "vital status",
+            "complication",
+            "readmission",
+            "readmitted",
+            "relapse",
+            "recurrence",
+            "event occurred",
+            "occurrence of an event"
+          ],
+          "de": [
+            "*mortalität",
+            "*mortalitaet",
+            "*sterblichkeit",
+            "tod",
+            "todesfall",
+            "todesfälle",
+            "todesfaelle",
+            "verstorben",
+            "verstarb*",
+            "*komplikation",
+            "*wiederaufnahme",
+            "*rezidiv",
+            "ereignis eingetreten"
           ]
         }
       }
@@ -265,34 +305,34 @@
     {"id": "std.describe.descrtab2", "family": "imbi", "stage": "describe", "title": "Descriptive tables with DescrTab2 and no inferential tests", "packages": ["DescrTab2", "stats"], "adapter": {"id": "standard.describe_descrtab2", "version": "0.3.0"}, "applies": {"modality": ["tabular"], "aim": [], "outcome_family": [], "unit_structure": []}, "keywords": {"en": ["baseline table", "table 1", "descriptive table", "descriptive statistics", "descrtab2", "summary table", "characteristics table", "table of characteristics", "study population"], "de": ["baseline-tabelle", "tabelle 1", "deskriptive tabelle", "deskriptive statistik", "charakteristika", "tabelle der"]}, "infrastructure": false, "specialist": false, "requirements": ["DescrTab2 2.1.16 is CRAN-archived; it is used only at the reviewed pinned revision.", "Automatic tests are replaced by an explicit no-inference callback; no p-values are displayed."], "status": "adapter_tested"},
     {"id": "std.describe.base", "family": "standard", "stage": "describe", "title": "Base R descriptive-only summaries (documented fallback)", "packages": ["base", "stats", "utils"], "adapter": {"id": "standard.describe_base", "version": "0.3.0"}, "applies": {"modality": ["tabular"], "aim": [], "outcome_family": [], "unit_structure": []}, "keywords": {"en": ["descriptive only", "base r summary"], "de": ["nur deskriptiv"]}, "infrastructure": false, "specialist": false, "requirements": ["Used when table_backend is none or DescrTab2 is unavailable; never performs tests."], "status": "adapter_tested"},
     {"id": "std.describe.gtsummary", "family": "standard", "stage": "describe", "title": "gtsummary tables", "packages": ["gtsummary"], "adapter": null, "applies": {"modality": ["tabular"], "aim": [], "outcome_family": [], "unit_structure": []}, "keywords": {"en": ["gtsummary"], "de": ["gtsummary"]}, "infrastructure": false, "specialist": false, "requirements": ["Alternative table backend; no reviewed adapter yet."], "status": "candidate"},
-    {"id": "std.figures.accessible", "family": "standard", "stage": "figures", "title": "Accessible ggplot2 figures with viridis/RColorBrewer palettes and patchwork panels", "packages": ["ggplot2", "patchwork", "viridisLite", "RColorBrewer", "colorspace", "grDevices", "utils", "jsonlite", "stats"], "adapter": {"id": "standard.figures_accessible", "version": "0.3.0"}, "applies": {"modality": ["tabular"], "aim": [], "outcome_family": [], "unit_structure": []}, "keywords": {"en": ["figure", "plot", "colour", "color", "palette", "patchwork", "colourblind", "colorblind", "viridis", "panel", "chart", "graph", "colour vision", "color vision", "visualise", "visualize"], "de": ["abbildung", "grafik", "farbpalette", "farbenblind", "diagramm", "farbsehschwäche", "farbsehschwaeche", "visualisier"]}, "infrastructure": false, "specialist": false, "requirements": ["Colour-vision simulations are checks, not guarantees; redundant non-colour encodings are required."], "status": "adapter_tested"},
+    {"id": "std.figures.accessible", "family": "standard", "stage": "figures", "title": "Accessible ggplot2 figures with viridis/RColorBrewer palettes and patchwork panels", "packages": ["ggplot2", "patchwork", "viridisLite", "RColorBrewer", "colorspace", "grDevices", "utils", "jsonlite", "stats"], "adapter": {"id": "standard.figures_accessible", "version": "0.3.0"}, "applies": {"modality": ["tabular"], "aim": [], "outcome_family": [], "unit_structure": []}, "keywords": {"en": ["figure", "plot", "colour", "color", "palette", "patchwork", "colourblind", "colorblind", "viridis", "panel", "chart", "graph", "colour vision", "color vision", "visualise", "visualize"], "de": ["*abbildung", "*grafik", "farbpalette", "farbenblind", "*diagramm", "farbsehschwäche", "farbsehschwaeche", "visualisier*"]}, "infrastructure": false, "specialist": false, "requirements": ["Colour-vision simulations are checks, not guarantees; redundant non-colour encodings are required."], "status": "adapter_tested"},
     {"id": "std.model.lm", "family": "standard", "stage": "model", "title": "Linear model for an independent continuous outcome", "packages": ["stats"], "adapter": {"id": "standard.model_lm", "version": "0.3.0"}, "applies": {"modality": ["tabular"], "aim": ["explanatory"], "outcome_family": ["continuous"], "unit_structure": ["independent"]}, "keywords": {"en": ["linear regression", "linear model", "ordinary least squares", "linear relationship", "linear association", "dose-response line"], "de": ["lineare regression", "lineares modell", "linearer zusammenhang"]}, "infrastructure": false, "specialist": false, "requirements": ["Estimand, outcome, predictors and missing-data intent must be mapped; residual diagnostics reviewed."], "status": "adapter_tested"},
     {"id": "std.model.glm_binomial", "family": "standard", "stage": "model", "title": "Logistic regression for an independent binary outcome", "packages": ["stats"], "adapter": {"id": "standard.model_glm_binomial", "version": "0.3.0"}, "applies": {"modality": ["tabular"], "aim": ["explanatory"], "outcome_family": ["binary"], "unit_structure": ["independent"]}, "keywords": {"en": ["logistic regression", "binary outcome", "odds ratio", "yes/no", "dichotomous", "binary endpoint"], "de": ["logistische regression", "binärer endpunkt", "binaerer endpunkt", "ja/nein", "dichotom"]}, "infrastructure": false, "specialist": false, "requirements": ["Event and non-event codes explicit; separation and convergence diagnostics reviewed."], "status": "adapter_tested"},
     {"id": "std.model.lme", "family": "standard", "stage": "model", "title": "Random-intercept linear mixed model for clustered or longitudinal continuous outcomes", "packages": ["nlme", "stats"], "adapter": {"id": "standard.model_lme", "version": "0.3.0"}, "applies": {"modality": ["tabular"], "aim": ["explanatory"], "outcome_family": ["continuous"], "unit_structure": ["clustered", "longitudinal"]}, "keywords": {"en": ["mixed model", "mixed-effects", "random intercept", "repeated measures model", "longitudinal model", "random effect", "repeated measurements", "several visits", "multiple visits"], "de": ["gemischtes modell", "zufallsintercept", "messwiederholungsmodell", "wiederholte messungen", "zufallseffekt"]}, "infrastructure": false, "specialist": false, "requirements": ["Subject/cluster identifier and, for longitudinal data, time are required; no independent-observation shortcut."], "status": "adapter_tested"},
     {"id": "std.model.coxph", "family": "standard", "stage": "model", "title": "Cox proportional hazards model for right-censored time-to-event outcomes", "packages": ["survival", "stats"], "adapter": {"id": "standard.model_coxph", "version": "0.3.0"}, "applies": {"modality": ["tabular"], "aim": ["explanatory"], "outcome_family": ["time_to_event"], "unit_structure": ["independent"]}, "keywords": {"en": ["cox model", "cox regression", "proportional hazards", "hazard ratio", "survival model", "time-to-event model"], "de": ["cox-modell", "cox-regression", "überlebenszeitmodell", "ueberlebenszeitmodell"]}, "infrastructure": false, "specialist": false, "requirements": ["Time origin, unit, event and censoring codes explicit; proportional-hazards diagnostics reviewed; competing events not handled."], "status": "adapter_tested"},
     {"id": "std.model.glm_count", "family": "standard", "stage": "model", "title": "Count or rate models", "packages": ["stats", "MASS", "glmmTMB"], "adapter": null, "applies": {"modality": ["tabular"], "aim": ["explanatory"], "outcome_family": ["count"], "unit_structure": []}, "keywords": {"en": [], "de": []}, "infrastructure": false, "specialist": false, "requirements": ["Exposure/offset, dispersion and zero inflation need a reviewed adapter."], "status": "candidate"},
     {"id": "std.model.lme4", "family": "standard", "stage": "model", "title": "lme4 mixed models", "packages": ["lme4"], "adapter": null, "applies": {"modality": ["tabular"], "aim": ["explanatory"], "outcome_family": ["continuous", "binary"], "unit_structure": ["clustered", "longitudinal"]}, "keywords": {"en": ["lme4", "glmm"], "de": ["lme4"]}, "infrastructure": false, "specialist": false, "requirements": ["Candidate alternative engine; no reviewed adapter."], "status": "candidate"},
-    {"id": "std.effects.broom", "family": "standard", "stage": "effects", "title": "Tidy effect estimates with confidence intervals", "packages": ["broom", "broom.mixed"], "adapter": {"id": "standard.effects_broom", "version": "0.3.0"}, "applies": {"modality": ["tabular"], "aim": ["explanatory"], "outcome_family": [], "unit_structure": []}, "keywords": {"en": ["confidence interval", "effect estimate", "tidy output"], "de": ["konfidenzintervall", "effektschätzer", "effektschaetzer"]}, "infrastructure": false, "specialist": false, "requirements": ["Method support verified for the fitted model class."], "status": "adapter_tested"},
+    {"id": "std.effects.broom", "family": "standard", "stage": "effects", "title": "Tidy effect estimates with confidence intervals", "packages": ["broom", "broom.mixed"], "adapter": {"id": "standard.effects_broom", "version": "0.3.0"}, "applies": {"modality": ["tabular"], "aim": ["explanatory"], "outcome_family": [], "unit_structure": []}, "keywords": {"en": ["confidence interval", "effect estimate", "tidy output"], "de": ["*konfidenzintervall", "effektschätzer", "effektschaetzer"]}, "infrastructure": false, "specialist": false, "requirements": ["Method support verified for the fitted model class."], "status": "adapter_tested"},
     {"id": "std.demo.synthetic", "family": "standard", "stage": "demo", "title": "Synthetic demonstration of every reviewed stage against independent references", "packages": ["dplyr", "stats", "nlme", "survival", "broom", "broom.mixed", "jsonlite", "yaml", "tools"], "adapter": {"id": "standard.demo_synthetic", "version": "0.3.0"}, "applies": {"modality": [], "aim": [], "outcome_family": [], "unit_structure": []}, "keywords": {"en": ["synthetic demo", "demonstration data"], "de": ["synthetische demo"]}, "infrastructure": true, "specialist": false, "requirements": ["Constructed data only; results are adapter checks, never study results."], "status": "adapter_tested"},
     {"id": "std.report.render", "family": "standard", "stage": "report", "title": "Explicit report rendering with session information", "packages": ["rmarkdown", "knitr", "jsonlite", "utils", "yaml"], "adapter": {"id": "standard.report_render", "version": "0.3.0"}, "applies": {"modality": [], "aim": [], "outcome_family": [], "unit_structure": []}, "keywords": {"en": ["render the report", "render report", "html report"], "de": ["bericht rendern"]}, "infrastructure": true, "specialist": false, "requirements": ["Pandoc must be available; rendering is explicit."], "status": "adapter_tested"},
     {"id": "std.pipeline.targets", "family": "standard", "stage": "pipeline", "title": "Reviewed targets pipeline: structural validation, synthetic demonstration and a guarded study target", "packages": ["targets"], "adapter": {"id": "standard.pipeline_targets", "version": "0.3.0"}, "applies": {"modality": [], "aim": [], "outcome_family": [], "unit_structure": []}, "keywords": {"en": ["targets pipeline", "tar_make", "pipeline"], "de": ["pipeline"]}, "infrastructure": true, "specialist": false, "requirements": ["Enabled only by workflow.pipeline = 'targets'. The study target returns a missing-input status without reading data until every prerequisite is recorded; code/run_demo.R and code/run_workflow.R are never called by the pipeline."], "status": "adapter_tested"},
     {"id": "std.prediction.tidymodels", "family": "standard", "stage": "model", "title": "Prediction with grouped resampling and fold-internal preprocessing", "packages": ["rsample", "recipes", "parsnip", "workflows", "yardstick", "tune"], "adapter": null, "applies": {"modality": ["tabular"], "aim": ["predictive"], "outcome_family": [], "unit_structure": []}, "keywords": {"en": ["predict", "prediction model", "machine learning", "tidymodels", "classifier"], "de": ["vorhersage", "prognosemodell", "maschinelles lernen"]}, "infrastructure": false, "specialist": false, "requirements": ["Subject/time groups kept together; preprocessing, imputation and tuning inside training folds; no holdout reuse."], "status": "candidate"},
     {"id": "std.model.tree_ensembles", "family": "standard", "stage": "model", "title": "Random forests and gradient boosting", "packages": ["ranger", "xgboost"], "adapter": null, "applies": {"modality": ["tabular"], "aim": [], "outcome_family": [], "unit_structure": []}, "keywords": {"en": ["random forest", "boosted", "boosting", "xgboost", "survival forest"], "de": ["random forest", "boosting"]}, "infrastructure": false, "specialist": false, "requirements": ["Needs a reviewed adapter with nested validation and a comparison baseline."], "status": "candidate"},
-    {"id": "std.model.bayesian", "family": "standard", "stage": "model", "title": "Bayesian regression models", "packages": ["brms"], "adapter": null, "applies": {"modality": ["tabular"], "aim": [], "outcome_family": [], "unit_structure": []}, "keywords": {"en": ["bayesian", "brms", "stan model", "posterior"], "de": ["bayesianisch", "bayes"]}, "infrastructure": false, "specialist": false, "requirements": ["Priors, compute budget, convergence and predictive checks need a reviewed adapter."], "status": "candidate"},
+    {"id": "std.model.bayesian", "family": "standard", "stage": "model", "title": "Bayesian regression models", "packages": ["brms"], "adapter": null, "applies": {"modality": ["tabular"], "aim": [], "outcome_family": [], "unit_structure": []}, "keywords": {"en": ["bayesian", "brms", "stan model", "posterior"], "de": ["bayesianisch", "bayes*"]}, "infrastructure": false, "specialist": false, "requirements": ["Priors, compute budget, convergence and predictive checks need a reviewed adapter."], "status": "candidate"},
     {"id": "std.model.gam", "family": "standard", "stage": "model", "title": "Generalized additive models", "packages": ["mgcv"], "adapter": null, "applies": {"modality": ["tabular"], "aim": [], "outcome_family": [], "unit_structure": []}, "keywords": {"en": ["generalized additive", "additive model", "smooth term"], "de": ["generalisiertes additives modell"]}, "infrastructure": false, "specialist": false, "requirements": ["Smooth structure and basis dimension checks need a reviewed adapter."], "status": "candidate"},
-    {"id": "std.synthesis.meta", "family": "standard", "stage": "model", "title": "Evidence synthesis and meta-analysis", "packages": ["metafor", "meta"], "adapter": null, "applies": {"modality": ["tabular"], "aim": [], "outcome_family": [], "unit_structure": []}, "keywords": {"en": ["meta-analysis", "meta analysis", "network meta", "pooled effect"], "de": ["metaanalyse", "meta-analyse"]}, "infrastructure": false, "specialist": false, "requirements": ["Extracted effects, variances, dependence and heterogeneity need a reviewed adapter."], "status": "candidate"},
+    {"id": "std.synthesis.meta", "family": "standard", "stage": "model", "title": "Evidence synthesis and meta-analysis", "packages": ["metafor", "meta"], "adapter": null, "applies": {"modality": ["tabular"], "aim": [], "outcome_family": [], "unit_structure": []}, "keywords": {"en": ["meta-analysis", "meta analysis", "network meta", "pooled effect"], "de": ["*metaanalyse", "meta-analyse"]}, "infrastructure": false, "specialist": false, "requirements": ["Extracted effects, variances, dependence and heterogeneity need a reviewed adapter."], "status": "candidate"},
     {"id": "imbi.design.blindrecalc", "family": "imbi", "stage": "design", "title": "Blinded sample size recalculation", "packages": ["blindrecalc"], "adapter": null, "applies": {"modality": [], "aim": [], "outcome_family": [], "unit_structure": []}, "keywords": {"en": ["blinded sample size recalculation", "sample size re-estimation"], "de": ["verblindete fallzahlrekalkulation", "fallzahlneuberechnung"]}, "infrastructure": false, "specialist": false, "requirements": ["Only for trial-design questions with endpoints, assumptions and design parameters."], "status": "candidate"},
     {"id": "imbi.design.adoptr", "family": "imbi", "stage": "design", "title": "Optimal adaptive two-stage designs", "packages": ["adoptr"], "adapter": null, "applies": {"modality": [], "aim": [], "outcome_family": [], "unit_structure": []}, "keywords": {"en": ["adaptive two-stage design", "adaptive design"], "de": ["adaptives design", "zweistufiges design"]}, "infrastructure": false, "specialist": false, "requirements": ["Only for adaptive trial planning with explicit design parameters."], "status": "candidate"},
     {"id": "cttir.imaging.phenotyping", "family": "cttir", "stage": "preprocess", "title": "Reviewable marker gating and phenotyping for multiplexed imaging", "packages": ["gatekeepR", "cellspecR"], "adapter": null, "applies": {"modality": ["imaging"], "aim": [], "outcome_family": [], "unit_structure": []}, "keywords": {"en": ["phenotyping", "marker gating", "cell types from multiplex"], "de": ["phänotypisierung", "phaenotypisierung", "marker-gating"]}, "infrastructure": false, "specialist": true, "requirements": ["Marker panel and phenotype hierarchy declared as data."], "status": "candidate"},
-    {"id": "cttir.imaging.segmentation", "family": "cttir", "stage": "preprocess", "title": "Cell segmentation of histology and multiplexed tissue images", "packages": ["segmantR"], "adapter": null, "applies": {"modality": ["imaging"], "aim": [], "outcome_family": [], "unit_structure": []}, "keywords": {"en": ["cell segmentation", "segmentation"], "de": ["zellsegmentierung", "segmentierung"]}, "infrastructure": false, "specialist": true, "requirements": ["Image provenance and segmentation model versions recorded."], "status": "candidate"},
+    {"id": "cttir.imaging.segmentation", "family": "cttir", "stage": "preprocess", "title": "Cell segmentation of histology and multiplexed tissue images", "packages": ["segmantR"], "adapter": null, "applies": {"modality": ["imaging"], "aim": [], "outcome_family": [], "unit_structure": []}, "keywords": {"en": ["cell segmentation", "image segmentation", "nucleus segmentation", "nuclei segmentation", "tissue segmentation", "segment cells"], "de": ["zellsegmentierung", "bildsegmentierung", "kernsegmentierung", "gewebesegmentierung"]}, "infrastructure": false, "specialist": true, "requirements": ["Image provenance and segmentation model versions recorded."], "status": "candidate"},
     {"id": "cttir.imaging.spatial_cells", "family": "cttir", "stage": "analysis", "title": "Single-cell spatial biology analysis of multiplexed imaging exports", "packages": ["phenoscapR"], "adapter": null, "applies": {"modality": ["imaging"], "aim": [], "outcome_family": [], "unit_structure": []}, "keywords": {"en": ["spatial biology", "cell neighbourhood", "cell neighborhood"], "de": ["zellnachbarschaft"]}, "infrastructure": false, "specialist": true, "requirements": ["Cells are not biological replicates; sample-level inference required."], "status": "candidate"},
-    {"id": "cttir.imaging.hyperspectral", "family": "cttir", "stage": "preprocess", "title": "Hyperspectral image calibration and spectral analysis", "packages": ["hyperspectR"], "adapter": null, "applies": {"modality": ["imaging"], "aim": [], "outcome_family": [], "unit_structure": []}, "keywords": {"en": ["hyperspectral"], "de": ["hyperspektral"]}, "infrastructure": false, "specialist": true, "requirements": ["Dark and white reference calibration provenance recorded."], "status": "candidate"},
+    {"id": "cttir.imaging.hyperspectral", "family": "cttir", "stage": "preprocess", "title": "Hyperspectral image calibration and spectral analysis", "packages": ["hyperspectR"], "adapter": null, "applies": {"modality": ["imaging"], "aim": [], "outcome_family": [], "unit_structure": []}, "keywords": {"en": ["hyperspectral"], "de": ["hyperspektral*"]}, "infrastructure": false, "specialist": true, "requirements": ["Dark and white reference calibration provenance recorded."], "status": "candidate"},
     {"id": "cttir.assay.qview_import", "family": "cttir", "stage": "import", "title": "Q-View multiplex ELISA project import", "packages": ["qviewparsR"], "adapter": null, "applies": {"modality": ["tabular"], "aim": [], "outcome_family": [], "unit_structure": []}, "keywords": {"en": ["q-view", "qview", "multiplex elisa"], "de": ["q-view", "multiplex-elisa"]}, "infrastructure": false, "specialist": true, "requirements": ["Binary project files are parsed by the specialist package; plate layout and standards reviewed."], "status": "candidate"},
     {"id": "cttir.rna.processing", "family": "cttir", "stage": "preprocess", "title": "RNA-seq processing from FASTQ/BAM to counts", "packages": ["bambamR"], "adapter": null, "applies": {"modality": ["bulk_rna"], "aim": [], "outcome_family": [], "unit_structure": []}, "keywords": {"en": ["fastq", "read counting", "alignment"], "de": ["fastq", "alignment"]}, "infrastructure": false, "specialist": true, "requirements": ["Count matrix provenance and design/replicate metadata required."], "status": "candidate"},
     {"id": "cttir.delphi.study", "family": "cttir", "stage": "analysis", "title": "Round-based Delphi consensus studies", "packages": ["delphyr"], "adapter": null, "applies": {"modality": [], "aim": [], "outcome_family": [], "unit_structure": []}, "keywords": {"en": ["delphi"], "de": ["delphi"]}, "infrastructure": false, "specialist": true, "requirements": ["Consensus rules declared before rounds."], "status": "candidate"},
     {"id": "cttir.bibliometrics.mapping", "family": "cttir", "stage": "analysis", "title": "Question-driven bibliometric science mapping", "packages": ["scimapR"], "adapter": null, "applies": {"modality": [], "aim": [], "outcome_family": [], "unit_structure": []}, "keywords": {"en": ["bibliometric", "scientometric", "science mapping"], "de": ["bibliometrie", "szientometrie"]}, "infrastructure": false, "specialist": true, "requirements": ["Database export provenance and query dates recorded."], "status": "candidate"},
-    {"id": "cttir.spectroscopy.libs", "family": "cttir", "stage": "preprocess", "title": "Laser-induced breakdown spectroscopy preprocessing", "packages": ["libscanR"], "adapter": null, "applies": {"modality": [], "aim": [], "outcome_family": [], "unit_structure": []}, "keywords": {"en": ["laser-induced breakdown", "libs spectr"], "de": ["laserinduzierte plasmaspektroskopie"]}, "infrastructure": false, "specialist": true, "requirements": ["Calibration standards and baseline settings recorded."], "status": "candidate"},
-    {"id": "cttir.mri.sci", "family": "cttir", "stage": "preprocess", "title": "Spinal cord injury MRI/CT pipeline", "packages": ["scimagR"], "adapter": null, "applies": {"modality": ["imaging"], "aim": [], "outcome_family": [], "unit_structure": []}, "keywords": {"en": ["spinal cord injury", "mri segmentation"], "de": ["rückenmarksverletzung", "rueckenmarksverletzung"]}, "infrastructure": false, "specialist": true, "requirements": ["External Spinal Cord Toolbox installation and versions recorded."], "status": "candidate"},
+    {"id": "cttir.spectroscopy.libs", "family": "cttir", "stage": "preprocess", "title": "Laser-induced breakdown spectroscopy preprocessing", "packages": ["libscanR"], "adapter": null, "applies": {"modality": [], "aim": [], "outcome_family": [], "unit_structure": []}, "keywords": {"en": ["laser-induced breakdown", "libs spectr*"], "de": ["laserinduzierte plasmaspektroskopie"]}, "infrastructure": false, "specialist": true, "requirements": ["Calibration standards and baseline settings recorded."], "status": "candidate"},
+    {"id": "cttir.mri.sci", "family": "cttir", "stage": "preprocess", "title": "Spinal cord injury MRI/CT pipeline", "packages": ["scimagR"], "adapter": null, "applies": {"modality": ["imaging"], "aim": [], "outcome_family": [], "unit_structure": []}, "keywords": {"en": ["spinal cord injury mri", "spinal cord mri", "spinal cord imaging", "spinal cord toolbox", "spinal cord segmentation", "mri segmentation"], "de": ["rückenmarks-mrt", "rueckenmarks-mrt", "rückenmarksbildgebung", "rueckenmarksbildgebung"]}, "infrastructure": false, "specialist": true, "requirements": ["External Spinal Cord Toolbox installation and versions recorded."], "status": "candidate"},
     {"id": "cttir.pressure.mapping", "family": "cttir", "stage": "preprocess", "title": "Capacitive pressure distribution analysis", "packages": ["pressR"], "adapter": null, "applies": {"modality": [], "aim": [], "outcome_family": [], "unit_structure": []}, "keywords": {"en": ["pressure distribution", "pressure mapping", "in-shoe pressure"], "de": ["druckverteilung", "druckmessung"]}, "infrastructure": false, "specialist": true, "requirements": ["Sensor layout and calibration recorded."], "status": "candidate"}
   ]
 }
