@@ -356,10 +356,20 @@ reexport_owners <- function(index, record) {
 # One pinned dependency; `stage` is added to the stages already recorded.
 dependency_row <- function(previous, package, family, record, stage, approval, required = TRUE) {
   roles <- if (is.null(previous)) character() else unlist(previous$stages)
-  list(package = package, family = family,
+  row <- list(package = package, family = family,
     version = if (is.null(record)) NULL else record$version,
     source_hash = if (is.null(record)) NULL else record$source_hash,
     required = required, stages = as.list(unique(c(roles, stage))), approval = approval)
+  # Bioconductor revisions belong to one release, which fixes the compatible R.
+  release <- bioc_release_of(record)
+  if (!is.null(release)) row$bioc_release <- release
+  row
+}
+
+bioc_release_of <- function(record) {
+  revision <- if (is.null(record)) NULL else record$revision
+  if (!is.character(revision) || length(revision) != 1L || !grepl("^bioc-[0-9]+[.][0-9]+:", revision)) return(NULL)
+  sub("^bioc-([0-9]+[.][0-9]+):.*$", "\\1", revision)
 }
 
 route_dependencies <- function(route, catalog) {

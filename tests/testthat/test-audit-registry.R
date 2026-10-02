@@ -587,3 +587,17 @@ test_that("the resource JSON mirror is compared row by row, not only by counts",
   report <- audit(scope = "knowledge")
   expect_equal(report$checks$status[report$checks$id == "RES-001"], "fail")
 })
+
+test_that("RES-007 enforces the Bioconductor release of a project's pins against the running R", {
+  parent <- new_parent()
+  tabular <- project("Tabular pins", "primary_research", "Describe outcomes in a cohort", parent)
+  expect_equal(audit_res_bioc_pins(audit_context(tabular$path, "project", FALSE, FALSE))$status, "not_applicable")
+  cells <- project("Cell pins", "primary_research", "Single-cell RNA-seq of PBMC donors", parent)
+  pins <- Filter(function(d) !is.null(d$bioc_release), read_project(cells$path)$lock$dependencies)
+  expect_gt(length(pins), 0L)
+  expect_true(all(vapply(pins, function(d) identical(d$bioc_release, "3.23"), logical(1))))
+  local_mocked_bindings(running_r_minor = function() "4.5")
+  row <- audit_res_bioc_pins(audit_context(cells$path, "project", FALSE, FALSE))
+  expect_equal(row$status, "fail")
+  expect_match(row$message, "not verified for this R", fixed = TRUE)
+})

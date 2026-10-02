@@ -588,6 +588,47 @@ audit_res_release <- function(context) {
   audit_result("pass", paste0("Bioconductor ", policy$release, " is compatible with the running R."), evidence)
 }
 
+# Projects pinning Bioconductor revisions need the R minor version of that
+# release; installed versions that differ from the pins are refused by the
+# interop helpers when they are given the project pins.
+audit_res_bioc_pins <- function(context) {
+  audit_with_project(context, function(p) {
+    pins <- Filter(function(d) is.character(d$bioc_release), p$lock$dependencies)
+    if (!length(pins)) return(audit_result("not_applicable", "The project pins no Bioconductor package."))
+    releases <- unique(vapply(pins, function(d) d$bioc_release, character(1)))
+    table <- bioc_release_table()
+    r_minor <- table$r_minor[match(releases, table$release)]
+    running <- running_r_minor()
+    installed <- vapply(pins, function(d) {
+      tryCatch(as.character(utils::packageVersion(d$package)), error = function(e) NA_character_)
+    }, character(1))
+    differs <- vapply(seq_along(pins), function(i) {
+      is.na(installed[[i]]) || package_version(installed[[i]]) != package_version(pins[[i]]$version)
+    }, logical(1))
+    mismatches <- character()
+    if (any(differs)) {
+      mismatches <- paste0(vapply(pins[differs], function(d) d$package, character(1)), " ",
+        ifelse(is.na(installed[differs]), "not installed", installed[differs]), " (pinned ",
+        vapply(pins[differs], function(d) d$version, character(1)), ")")
+    }
+    evidence <- list(releases = as.list(releases), r_minor = as.list(r_minor), running_r = running,
+      version_mismatches = as.list(mismatches))
+    if (length(releases) > 1L || anyNA(r_minor) || any(r_minor != running)) {
+      message <- paste0("The project pins Bioconductor ", paste(releases, collapse = ", "), " (R ",
+        paste(r_minor, collapse = ", "), ") but this session runs R ", running,
+        "; those revisions were not verified for this R.")
+      return(audit_result("fail", message, evidence))
+    }
+    if (length(mismatches)) {
+      message <- paste0("Installed Bioconductor-family packages differ from the project pins: ",
+        paste(mismatches, collapse = "; "), ". The interop helpers refuse them when given the project pins.")
+      return(audit_result("warning", message, evidence))
+    }
+    audit_result("pass", paste0("Bioconductor ", releases, " pins match the running R ", running, " and the installed versions."),
+      evidence)
+  })
+}
+
 audit_res_pins <- function(context) {
   audit_with_project(context, function(p) {
     snapshot <- tryCatch(resource_snapshot(p$path), error = function(e) e)
@@ -645,6 +686,10 @@ audit_checks_standard <- function() {
     audit_check("RES-004", "knowledge", "Selected Bioconductor release is compatible with the running R.",
       audit_res_release, required = FALSE, read_effects = c("reads_installation", "reads_catalog_store"),
       evidence_schema = c("release", "source", "r_minor", "running_r", "compatible")),
+    audit_check("RES-007", "project", "Pinned Bioconductor revisions belong to one release compatible with the running R.",
+      audit_res_bioc_pins, required = TRUE, applies = audit_has_path,
+      read_effects = c("reads_project_metadata", "reads_installation"),
+      evidence_schema = c("releases", "r_minor", "running_r", "version_mismatches")),
     audit_check("RES-005", "project", "The project's pinned resource snapshot is retained.",
       audit_res_pins, required = TRUE, applies = audit_has_path, read_effects = c("reads_project_metadata", "reads_catalog_store"),
       evidence_schema = "resource_id"),

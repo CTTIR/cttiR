@@ -225,7 +225,7 @@ test_that("Knowledge previews an update, audit repairs, cancellation and an unav
   expect_true(file.exists(file.path(project, "code", "run_demo.R")))
   unlink(file.path(project, "code", "run_demo.R"))
   app$click("audit-repair", wait_ = FALSE)
-  wait_text(app, "#audit-status", "Project files changed")
+  wait_text(app, "#audit-status", "changed since the repair preview")
   wait_text(app, "#audit-repair_preview", "code/run_demo.R")
   expect_false(file.exists(file.path(project, "code", "validate_project.R")))
   capture(app, "audit-repair", "#audit-repair_preview")
