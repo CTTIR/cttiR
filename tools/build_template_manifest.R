@@ -16,7 +16,8 @@ manifest <- list(
   initializer_invoked = FALSE, workflowr_invoked = FALSE,
   changes = c(previous$changes,
     "Add reviewed standard stages: delimited import, structural checks, dplyr role selection, DescrTab2 or base descriptive tables, accessible ggplot2/patchwork figures, lm/glm/nlme/survival adapters, diagnostics and broom effects.",
-    "Add a synthetic demonstration with independent reference computations and a guarded study-data runner."),
+    "Add a synthetic demonstration with independent reference computations and a guarded study-data runner.",
+    "Write study-data tables, figures and model summaries to reflowR's output/tables, output/figures and output/models folders."),
   source_sha256 = previous$source_sha256,
   files = stats::setNames(lapply(files, hash), files),
   conditional = list(
@@ -26,7 +27,8 @@ manifest <- list(
   limitations = c(
     "Study-data runs require explicit mappings, reviewed settings, analysis approval, a local binding and approved pinned package revisions.",
     "Synthetic demonstration results are adapter checks, not scientific results.",
-    "Prediction, causal, count and specialist analyses have no reviewed adapter in this bundle."),
+    "Prediction, causal, count and specialist analyses have no reviewed adapter in this bundle.",
+    "Analysis pages follow reflowR's three-page minimal preset, not its eight-step standard preset."),
   hash_normalization = "UTF-8 text with LF line endings and final newline"
 )
 manifest$conditional <- manifest$conditional[names(manifest$conditional) %in% files]

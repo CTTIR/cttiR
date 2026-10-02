@@ -28,7 +28,7 @@ test_that("the standard bundle is pinned, integrity-checked and free of user tex
   for (file in code) expect_false(any(grepl("pwned|alert\\(1\\)|injection", readLines(file))))
   expect_equal(read_project(p$path)$lock$template_version, "0.3.0")
   expect_false(dir.exists(file.path(p$path, "demo/outputs")))
-  expect_false(dir.exists(file.path(p$path, "reports/workflow")))
+  expect_false(dir.exists(file.path(p$path, "output")))
   ownership <- stats::setNames(vapply(p$manifest, function(x) x$ownership, character(1)),
     vapply(p$manifest, function(x) x$path, character(1)))
   expect_equal(unname(ownership[c("code/R/cttir_workflow.R", "config/workflow.yml", "analysis/02_eda.Rmd")]),
@@ -141,7 +141,7 @@ test_that("the study-data runner refuses incomplete configuration with a precise
   expect_match(result$stderr, "not ready")
   expect_match(result$stderr, "analysis.mapping.data_source_id")
   expect_match(result$stderr, "analysis.approved")
-  expect_false(dir.exists(file.path(p$path, "reports/workflow")))
+  expect_false(dir.exists(file.path(p$path, "output")))
 })
 
 test_that("the synthetic demo runs in a generated project and labels its outputs", {

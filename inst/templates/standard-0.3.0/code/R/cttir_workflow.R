@@ -483,10 +483,21 @@ cw_write_csv <- function(x, file) {
   invisible(file)
 }
 
+# Study-data outputs follow the reflowR output tree: tables, figures and model
+# summaries in their own folders, with the run receipt beside them.
+cw_study_outputs <- function(root = ".") {
+  base <- file.path(root, "output")
+  list(tables = file.path(base, "tables"), figures = file.path(base, "figures"), models = file.path(base, "models"),
+    receipt = file.path(base, "workflow-receipt.json"))
+}
+
 # Runs the configured stages on supplied in-memory data and writes outputs.
+# `out_dir` is one folder (the synthetic demo) or a list with tables, figures
+# and models folders (cw_study_outputs()).
 cw_run <- function(data, analysis, figures_policy, out_dir, backend = "DescrTab2", synthetic = FALSE,
   label = NULL) {
-  dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+  dirs <- if (is.list(out_dir)) out_dir[c("tables", "figures", "models")] else list(tables = out_dir, figures = out_dir, models = out_dir)
+  for (dir in unique(unlist(dirs))) dir.create(dir, recursive = TRUE, showWarnings = FALSE)
   checked <- cw_check(data, analysis)
   result <- list(label = label, synthetic = synthetic, check = checked, outputs = character())
   if (!identical(checked$state, "passed")) {
@@ -495,10 +506,10 @@ cw_run <- function(data, analysis, figures_policy, out_dir, backend = "DescrTab2
   }
   tidy <- cw_tidy(data, analysis)
   described <- cw_describe(tidy, backend)
-  result$outputs <- c(result$outputs, cw_write_csv(described$table, file.path(out_dir, "descriptives.csv")))
+  result$outputs <- c(result$outputs, cw_write_csv(described$table, file.path(dirs$tables, "descriptives.csv")))
   result$describe <- described[c("backend", "denominators", "inference")]
   if (exists("cf_compose", mode = "function")) {
-    result$figures <- cw_figures(tidy, analysis, figures_policy, out_dir)
+    result$figures <- cw_figures(tidy, analysis, figures_policy, dirs$figures)
     result$outputs <- c(result$outputs, result$figures$files)
   }
   engine <- cw_engine(analysis)
@@ -509,6 +520,8 @@ cw_run <- function(data, analysis, figures_policy, out_dir, backend = "DescrTab2
     result$model <- list(engine = engine, formula = model$formula, warnings = model$warnings,
       rows_used = model$rows_used, reference_levels = model$reference_levels, alias = as.list(model$alias))
     result$diagnostics <- diagnostics
+    result$outputs <- c(result$outputs, cw_write_json(list(model = result$model, diagnostics = diagnostics),
+      file.path(dirs$models, "model-summary.json")))
     if (identical(diagnostics$computational_state, "blocked")) {
       # Estimates from a blocked fit are not reported as results.
       result$status <- "diagnostics_blocked"
@@ -519,7 +532,7 @@ cw_run <- function(data, analysis, figures_policy, out_dir, backend = "DescrTab2
         invokeRestart("muffleWarning")
       })
       result$model$effect_warnings <- effect_warnings
-      result$outputs <- c(result$outputs, cw_write_csv(effects, file.path(out_dir, "effects.csv")))
+      result$outputs <- c(result$outputs, cw_write_csv(effects, file.path(dirs$tables, "effects.csv")))
       result$effects <- effects
     }
   }

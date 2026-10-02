@@ -149,7 +149,7 @@ setup_app <- function(mode = c("fast", "detailed"), launch.browser = interactive
 configure <- function(path = ".", launch.browser = interactive()) {
   app_require()
   scalar_flag(launch.browser, "launch.browser")
-  p <- read_project(path)
+  p <- read_project(path, edited = TRUE)
   shiny::shinyApp(app_ui("detailed", p$path), app_server(p$path),
     options = list(host = "127.0.0.1", launch.browser = launch.browser)
   )

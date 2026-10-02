@@ -27,7 +27,10 @@ models <- strsplit(option("models", ""), ",", fixed = TRUE)[[1]]
 models <- models[nzchar(models)]
 processor <- option("processor", "cpu")
 stopifnot(!is.null(runtime_dir), !is.null(out))
-options(cttiR.runtime_dir = runtime_dir, cttiR.ollama_endpoint = endpoint, cttiR.planner_processor = processor)
+# Benchmarking is how a model earns qualification, so unqualified models are
+# evaluated explicitly here; the label is recorded with every plan.
+options(cttiR.runtime_dir = runtime_dir, cttiR.ollama_endpoint = endpoint, cttiR.planner_processor = processor,
+  cttiR.planner_allow_unqualified = TRUE)
 runtime_request <- internal("runtime_request")
 local_model <- internal("local_model")
 corpus <- internal("planner_cases")(file.path(root, "inst", "benchmarks", "planner-cases.json"))

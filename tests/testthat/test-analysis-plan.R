@@ -116,7 +116,10 @@ test_that("unsupported designs never silently use an independent model", {
 
 test_that("variable names and logical locations remain unevaluated data", {
   config <- mapped_analysis()
-  marker <- tempfile()
+  # A short relative marker keeps the column name within the schema's length
+  # limit whatever the temporary directory path is.
+  withr::local_dir(withr::local_tempdir())
+  marker <- "cttir-marker"
   literal <- paste0("system('touch ", marker, "')")
   config$analysis$mapping$outcome <- literal
   config$data_sources[[1]]$logical_uri <- "/unavailable/private/data.csv"

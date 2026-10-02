@@ -54,7 +54,7 @@ project_readiness <- function(path) {
   demo_reason <- if (demo_ok) "Synthetic demonstration passed with the reviewed stage code." else
     "Run Rscript code/run_demo.R with the unmodified stage code."
   add("demo_verified", demo_ok, demo_reason)
-  run <- read_receipt(p, "reports/workflow/receipt.json")
+  run <- read_receipt(p, "output/workflow-receipt.json")
   data_ok <- !is.null(run) && identical(run$check$state, "passed") && receipt_matches_code(p, run)
   data_reason <- if (data_ok) "The last study-data run passed the structural data checks." else
     "No passing study-data run receipt from the reviewed stage code."

@@ -54,7 +54,7 @@ app_open_server <- function(id, pool, lang = shiny::reactive("en"), path = NULL)
     status <- shiny::reactiveVal(NULL)
     shiny::observeEvent(input$open, {
       tryCatch({
-        p <- read_project(input$path)
+        p <- read_project(input$path, edited = TRUE)
         opened(p$path)
         status(app_status("success", "open.opened"))
       }, error = function(e) {

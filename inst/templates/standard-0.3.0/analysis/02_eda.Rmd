@@ -12,7 +12,7 @@ Real-data models remain disabled until mappings and scientific prerequisites
 are reviewed. The synthetic demonstration is not an analysis of this project.
 
 ```{r workflow-descriptives}
-file <- "../reports/workflow/descriptives.csv"
+file <- "../output/tables/descriptives.csv"
 if (file.exists(file)) {
   knitr::kable(utils::read.csv(file, check.names = FALSE), caption = "Study-data descriptives")
 } else {

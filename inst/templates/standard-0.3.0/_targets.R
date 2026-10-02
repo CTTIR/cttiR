@@ -109,21 +109,21 @@ ct_study <- function(config, requirements) {
     return(ct_missing("study", requirements$missing,
         "The study-data workflow is not ready; no data were read and no analysis was run."))
   }
-  out_dir <- file.path("reports", "workflow")
+  outputs <- cw_study_outputs(".")
   data <- cw_import(config)
-  result <- cw_run(data, config$analysis, config$figures, out_dir,
+  result <- cw_run(data, config$analysis, config$figures, outputs,
     backend = config$workflow$table_backend, synthetic = FALSE)
   cw_write_json(list(status = result$status, scheduler = "targets", check = result$check,
       describe = result$describe, model = result$model, diagnostics = result$diagnostics,
-      import = attr(data, "cw_import"), outputs = basename(result$outputs),
+      import = attr(data, "cw_import"), outputs = sub("^[.]/", "", result$outputs),
       session = cw_session(unlist(lapply(config$workflow$dependencies, function(x) x$package)))),
-    file.path(out_dir, "receipt.json"))
+    outputs$receipt)
   if (!identical(result$status, "completed")) {
     stop("The study-data workflow stopped with status '", result$status,
-      "'; review reports/workflow/receipt.json.", call. = FALSE)
+      "'; review output/workflow-receipt.json.", call. = FALSE)
   }
-  structure(list(status = result$status, receipt = file.path(out_dir, "receipt.json"),
-      outputs = basename(result$outputs), data_read = TRUE), class = "cttir_targets_status")
+  structure(list(status = result$status, receipt = outputs$receipt,
+      outputs = sub("^[.]/", "", result$outputs), data_read = TRUE), class = "cttir_targets_status")
 }
 
 targets::tar_option_set(packages = character())

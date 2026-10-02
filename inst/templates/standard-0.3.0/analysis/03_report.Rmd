@@ -10,7 +10,7 @@ manuscript-specific files under the appropriate publication directory and cite
 the packages actually used, including their versions.
 
 ```{r workflow-effects}
-file <- "../reports/workflow/effects.csv"
+file <- "../output/tables/effects.csv"
 if (file.exists(file)) {
   knitr::kable(utils::read.csv(file, check.names = FALSE), digits = 3, caption = "Study-data effect estimates")
 } else {

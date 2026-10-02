@@ -163,7 +163,7 @@ render_project <- function(spec, route = project_route(spec)) {
       "# Project library and pipeline store (rebuild with renv::restore() and targets::tar_make())\n",
       "renv/library/\nrenv/local/\nrenv/staging/\n_targets/\n",
       "# Derived outputs; study-data reports may contain results\n",
-      "demo/outputs/\ndemo/receipt.json\nreports/workflow/\n",
+      "demo/outputs/\ndemo/receipt.json\noutput/\n",
       ".Rhistory\n.RData\n.Rproj.user/\n")
   }
   files

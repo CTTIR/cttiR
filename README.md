@@ -75,8 +75,9 @@ restores an earlier one. Project pins never change implicitly.
   come from local evidence such as receipts and pinned versions.
 * `setup()` prepares an owned, cloud-disabled Ollama runtime on Linux x86_64.
   The tested local models did not meet the planning thresholds, so the
-  deterministic planner is the default; opt in with
-  `options(cttiR.planner = "local_llm")`.
+  deterministic planner is the default. `options(cttiR.planner = "local_llm")`
+  uses a local model only once it is qualified; trying an unqualified one needs
+  `options(cttiR.planner_allow_unqualified = TRUE)` and is labelled as such.
 * `setup_app()` and `configure()` open the local Shiny application (Fast and
   Detailed creation with a bilingual questionnaire, Ask, Knowledge, Resources,
   Audit and Runtime views).

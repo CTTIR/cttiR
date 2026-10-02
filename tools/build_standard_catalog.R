@@ -232,11 +232,19 @@ engine_calls <- list(
 engine_classes <- list(standard.model_lm = "lm", standard.model_glm_binomial = "glm", standard.model_lme = "lme",
   standard.model_coxph = "coxph")
 
+# Calls a template function builds with call() instead of writing them out, so a
+# static scan cannot see them; every role reaching the function needs them.
+constructed_calls <- list(cw_formula = "survival::Surv")
+
 # Namespaced calls and referenced names of one adapter role.
 role_usage <- function(adapter, units, entries) {
   members <- unit_closure(units, role_roots(units)[[adapter]])
   if (!length(members)) stop("Adapter ", adapter, " has no template entry point.")
   usage <- with_reexport_owners(closure_usage(units, members), entries)
+  key <- paste(usage$package, usage$name, sep = "::")
+  for (call in setdiff(unlist(constructed_calls[intersect(names(constructed_calls), members)]), key)) {
+    usage[nrow(usage) + 1L, ] <- c(strsplit(call, "::", fixed = TRUE)[[1]], "call")
+  }
   names <- unique(as.character(unlist(lapply(members, function(u) units[[u]]$names))))
   calls <- engine_calls[[adapter]]
   if (!is.null(calls)) {

@@ -324,7 +324,7 @@ app_builder_server <- function(id, pool, lang = shiny::reactive("en"), path = NU
       state$refresh
       p <- project_path()
       if (is.null(p)) return(NULL)
-      tryCatch(read_project(p), error = function(e) NULL)
+      tryCatch(read_project(p, edited = TRUE), error = function(e) NULL)
     })
     base_spec <- shiny::reactive(if (existing) project_record()$spec else app_default_base())
 
@@ -383,7 +383,7 @@ app_builder_server <- function(id, pool, lang = shiny::reactive("en"), path = NU
     }
     context <- function() {
       if (!existing) return(current_catalog_manifest())
-      p <- read_project(project_path())
+      p <- read_project(project_path(), edited = TRUE)
       snapshot_manifest(p$lock$catalog_id, p$lock$resource_snapshot)
     }
 

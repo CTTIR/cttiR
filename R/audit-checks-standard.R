@@ -481,7 +481,7 @@ audit_std_execution <- function(context) {
   audit_with_project(context, function(p) {
     route <- project_route(p$spec)
     prediction <- any(vapply(route$stages, function(x) identical(x$capability, "std.prediction.tidymodels") && isTRUE(x$enabled), logical(1)))
-    receipt <- read_receipt(p, "reports/workflow/receipt.json")
+    receipt <- read_receipt(p, "output/workflow-receipt.json")
     receipt_ok <- is.null(receipt) || receipt_matches_code(p, receipt)
     evidence <- list(prediction_stage_enabled = prediction, workflow_receipt = !is.null(receipt),
       receipt_from_reviewed_code = receipt_ok, analysis_approved = isTRUE(p$spec$analysis$approved))

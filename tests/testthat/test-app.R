@@ -314,3 +314,13 @@ test_that("the worker refuses an audit repair whose plan changed since the previ
   expect_equal(result$code, "stale_preview")
   expect_false(file.exists(file.path(p$path, "code", "run_demo.R")))
 })
+
+test_that("the configure view opens a project whose specification was hand-edited", {
+  skip_if_not_installed("shiny")
+  p <- project("Configure Edit", "primary_research", "Describe a cohort", new_parent(),
+    options = list(research = list(design = "cohort")))
+  file <- file.path(p$path, "cttir-project.yml")
+  writeLines(sub("^  design: .*", "  design: case-control", readLines(file)), file)
+  expect_s3_class(configure(p$path, launch.browser = FALSE), "shiny.appobj")
+  expect_equal(read_project(p$path, edited = TRUE)$spec$research$design, "cohort")
+})

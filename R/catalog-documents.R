@@ -35,7 +35,7 @@ document_inventory <- function(path, rights = NULL) {
     file <- file.path(path, rel)
     assert_plain_path(file)
     size <- file.info(file)$size
-    text_format <- tolower(tools::file_ext(rel)) %in% c("rd", "rmd", "rnw", "snw", "rtex", "qmd", "md", "txt", "r", "html", "tex", "bib") ||
+    text_format <- tolower(tools::file_ext(rel)) %in% c("rd", "rmd", "rnw", "snw", "rtex", "rhtml", "qmd", "md", "txt", "r", "html", "tex", "bib") ||
       basename(rel) %in% c("DESCRIPTION", "DESCRIPTION.in", "NAMESPACE", "README", "NEWS", "LICENSE", "LICENCE", "COPYING", "CITATION", "CHANGELOG")
     # Rendered vignette outputs duplicate their sources; binary assets are never
     # stored. Both are hashed up to 25 MB, and oversize renders are reported.
