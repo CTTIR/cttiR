@@ -28,6 +28,7 @@ check_slug <- function(x) {
 #' @export
 validate_spec <- function(spec) {
   if (is.character(spec)) spec <- read_document(spec)
+  check_schema_version(spec)
   spec <- validate_document(spec, "project-spec")
   check_slug(spec$project$slug)
   for (key in c("publications", "data_sources", "packages")) {
