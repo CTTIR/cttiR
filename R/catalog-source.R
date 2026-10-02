@@ -56,12 +56,23 @@ static_functions <- function(text, source_path) {
   result$values
 }
 
-extract_source <- function(path, repository, revision, family = "local", documentation_rights = NULL) {
+extract_source <- function(path, repository, revision, family = "local", documentation_rights = NULL, distribution_version = NULL) {
   scalar_text(path, "source path")
   scalar_text(repository, "repository")
   scalar_text(revision, "revision")
   assert_plain_path(path)
-  description <- read_source_text(file.path(path, "DESCRIPTION"))
+  description_file <- if (is.null(distribution_version)) "DESCRIPTION" else "DESCRIPTION.in"
+  description <- read_source_text(file.path(path, description_file))
+  if (!is.null(distribution_version)) {
+    scalar_text(distribution_version, "R distribution version")
+    if (!grepl("^[0-9]+[.][0-9]+[.][0-9]+$", distribution_version)) {
+      abort_cttir("Only an exact released R distribution version is supported.", "cttir_source_unavailable")
+    }
+    description <- gsub("@VERSION@", distribution_version, description, fixed = TRUE)
+    if (grepl("@[A-Za-z_]+@", description)) {
+      abort_cttir("Unsupported distribution DESCRIPTION substitution.", "cttir_source_unavailable")
+    }
+  }
   input <- textConnection(description)
   desc <- tryCatch(read.dcf(input), error = function(e) {
     abort_cttir("Invalid source DESCRIPTION.", "cttir_source_unavailable")
@@ -76,7 +87,8 @@ extract_source <- function(path, repository, revision, family = "local", documen
   source_files <- sort(list.files(file.path(path, "R"), "\\.[Rr]$", recursive = FALSE, full.names = TRUE))
   if (length(source_files) > 5000L) abort_cttir("Source file count exceeds the configured bound.", "cttir_source_unavailable")
   funcs <- list()
-  hashes <- list(DESCRIPTION = digest::digest(file = file.path(path, "DESCRIPTION"), algo = "sha256"), NAMESPACE = digest::digest(file = file.path(path, "NAMESPACE"), algo = "sha256"))
+  hashes <- list(NAMESPACE = digest::digest(file = file.path(path, "NAMESPACE"), algo = "sha256"))
+  hashes[[description_file]] <- digest::digest(file = file.path(path, description_file), algo = "sha256")
   for (f in source_files) {
     text <- read_source_text(f)
     rel <- substring(f, nchar(path) + 2L)

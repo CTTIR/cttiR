@@ -1,6 +1,38 @@
 # cttiR development state
 
-Updated: 2026-10-02. Version: 0.0.15. License: MIT.
+Updated: 2026-10-02. Version: 0.0.16. License: MIT.
+
+## Milestone 16: local R distribution source indexing
+
+Explicit r_distribution source records index a named package under
+src/library without copying, changing, executing or installing its source.
+DESCRIPTION.in receives only literal @VERSION@ substitution in memory. Exact
+release and COPYING hashes participate in source identity; unknown placeholders,
+development versions, identity conflicts and multiple locations are refused.
+The source corpus preserves the original DESCRIPTION.in. Distribution manuals
+and NEWS are outside this package-subtree inventory and remain explicit gaps.
+Local registration does not authenticate upstream origin or grant role approval.
+
+The acquired R 4.6.1 stats tree indexes 465 exports, 450 statically resolved,
+320 documents (319 stored text), with zero approvals. All 647 originally acquired
+source/license files remained hash-identical. Eight selected installed functions
+previously matched canonical source signatures and bodies. These are candidate
+facts, not compiled numerical qualification or executable workflow approval.
+Validation: 574 assertions, --as-cran zero errors/warnings and only New submission,
+coverage 85.28%, clean lint, installed foundation plus real stats source preview,
+activation/rollback, and pkgdown pass. The separate logo commit is preserved and
+included in the validated archive. pkgdown must run with CI=true to suppress its
+remote favicon-generation step; that initial step failed and was not retried.
+Evidence is recorded under artifacts/implementation/milestone16-*.
+
+Ignored admin/candidate_model_adapter.R and its verifier now pass nine synthetic
+checks: expected lm/GLM/mixed coefficients, an independent Cox likelihood,
+literal-name safety, unchanged inputs, intercept-only fitting, explicit complete
+cases and rank refusal. They are not installed/exported or project-selected.
+Numeric-only predictors, diagnostic/convergence policy, full method evidence and
+role approval remain outstanding before production integration.
+
+Milestone 15 (a94e271) passed all five hosted jobs in run 36990549071.
 
 ## Milestone 15: explicit mapped-data checks
 

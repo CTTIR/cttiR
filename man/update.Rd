@@ -73,6 +73,14 @@ its owner, the active snapshot and any activation journal. The old lock is
 retained under \code{recovered-locks}. Active or unknown writers, corrupt pointers
 and conflicting journals are refused. Preview never recovers locks. Recovery
 itself uses a guard; an interrupted recovery guard requires manual review.
+A local released R source tree can be registered with \code{r_distribution}
+(the directory containing \code{VERSION} and \code{COPYING}) and an exact \code{package}.
+This reads \verb{src/library/<package>/DESCRIPTION.in}, replacing only the literal
+\verb{@VERSION@} marker in memory. Original files are never changed or evaluated.
+Version/license hashes participate in source identity. Development versions,
+unknown substitutions and conflicting location fields are refused. This
+indexes the package subtree, not the distribution manuals or NEWS, and does
+not authenticate a local tree as canonical or approve a workflow.
 A source record may include \code{documentation_rights}, a nonempty description
 of the reviewed rights basis for storing that source's documentation text.
 Without it only document hashes and inventory are retained. This declaration

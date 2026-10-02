@@ -256,6 +256,28 @@ records its pinned reflowR source and MIT notice, while using
 `rmarkdown::render_site` explicitly. It does not invoke `reflow_init()` or
 workflowr and does not claim all upstream reproducibility features.
 
+## Index a local R distribution source
+
+Base package evidence can come from an explicitly acquired, reviewed R source
+tree. Register the distribution root and exact package name; preview remains
+read-only. This never downloads, builds or installs R. The package's original
+`DESCRIPTION.in` stays unchanged, while metadata substitutes the distribution
+version in memory. The distribution `VERSION` and `COPYING` hashes contribute to
+source identity. Documentation storage requires an explicit rights basis.
+
+```{r distribution-source, eval=FALSE}
+options(cttiR.sources = list(list(
+  id = "reviewed-r-source", r_distribution = "/path/to/R-4.6.1",
+  package = "stats", documentation_rights = "Reviewed local storage rights"
+)))
+cttiR::update(sources = "reviewed-r-source", dry_run = TRUE)
+```
+
+This indexes the package subtree, not all distribution manuals or NEWS. A local
+registration is not proof of canonical origin, installed numerical equivalence,
+complete documentation coverage or workflow approval. Development versions and
+ambiguous source locations are refused.
+
 ## Optional local interface and runtime
 
 With `shiny` and `callr` installed, `setup_app()` provides Fast/Detailed creation,

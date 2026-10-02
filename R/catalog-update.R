@@ -5,7 +5,11 @@ update_sources <- function(sources, packages, mode = "local") {
     if (!is.list(entry)) abort_cttir("Invalid source record.")
     scalar_text(entry$id, "source id")
     if (!is.null(entry$package)) scalar_text(entry$package, "source package")
-    if (is.null(entry$github)) {
+    if (!is.null(entry$r_distribution)) {
+      scalar_text(entry$r_distribution, "R distribution path")
+      scalar_text(entry$package, "source package")
+      if (!is.null(entry$path) || !is.null(entry$github)) abort_cttir("A distribution source cannot declare another location.")
+    } else if (is.null(entry$github)) {
       scalar_text(entry$path, "source path")
     } else {
       scalar_text(entry$github, "source github")
@@ -37,7 +41,11 @@ update_sources <- function(sources, packages, mode = "local") {
       if (!identical(entry$name, x$package)) abort_cttir("Remote package identity differs from its registration.", "cttir_source_unavailable")
       return(entry)
     }
-    entry <- extract_source(x$path, paste0("local-source:", x$id), "local", "configured_local", x$documentation_rights)
+    if (!is.null(x$r_distribution)) {
+      entry <- r_distribution_source(x)
+    } else {
+      entry <- extract_source(x$path, paste0("local-source:", x$id), "local", "configured_local", x$documentation_rights)
+    }
     if (!is.null(x$package) && !identical(entry$name, x$package)) {
       abort_cttir("Local package identity differs from its registration.", "cttir_source_unavailable")
     }
@@ -147,6 +155,14 @@ refresh_resource_observations <- function(file, selected) {
 #'   retained under `recovered-locks`. Active or unknown writers, corrupt pointers
 #'   and conflicting journals are refused. Preview never recovers locks. Recovery
 #'   itself uses a guard; an interrupted recovery guard requires manual review.
+#'   A local released R source tree can be registered with `r_distribution`
+#'   (the directory containing `VERSION` and `COPYING`) and an exact `package`.
+#'   This reads `src/library/<package>/DESCRIPTION.in`, replacing only the literal
+#'   `@VERSION@` marker in memory. Original files are never changed or evaluated.
+#'   Version/license hashes participate in source identity. Development versions,
+#'   unknown substitutions and conflicting location fields are refused. This
+#'   indexes the package subtree, not the distribution manuals or NEWS, and does
+#'   not authenticate a local tree as canonical or approve a workflow.
 #'   A source record may include `documentation_rights`, a nonempty description
 #'   of the reviewed rights basis for storing that source's documentation text.
 #'   Without it only document hashes and inventory are retained. This declaration

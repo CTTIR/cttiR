@@ -21,7 +21,7 @@ document_inventory <- function(path, rights = NULL) {
     out
   }
   root <- list.files(path, all.files = FALSE)
-  root <- root[grepl("^(DESCRIPTION|NAMESPACE|README([.].*)?|NEWS([.].*)?|CHANGELOG([.].*)?|LICENSE([.].*)?|LICENCE([.].*)?|COPYING([.].*)?)$", root)]
+  root <- root[grepl("^(DESCRIPTION([.]in)?|NAMESPACE|README([.].*)?|NEWS([.].*)?|CHANGELOG([.].*)?|LICENSE([.].*)?|LICENCE([.].*)?|COPYING([.].*)?)$", root)]
   files <- unique(c(root, collect(file.path(path, "man"), "man/"),
       collect(file.path(path, "vignettes"), "vignettes/"),
       collect(file.path(path, "inst", "doc"), "inst/doc/"),
@@ -41,7 +41,7 @@ document_inventory <- function(path, rights = NULL) {
     if (budget$total > 10000000L) abort_cttir("Documentation exceeds the ten-megabyte package bound.", "cttir_source_unavailable")
     hash <- digest::digest(file = file, algo = "sha256")
     text_format <- tolower(tools::file_ext(rel)) %in% c("rd", "rmd", "rnw", "snw", "rtex", "qmd", "md", "txt", "r", "html", "tex", "bib") ||
-      basename(rel) %in% c("DESCRIPTION", "NAMESPACE", "README", "NEWS", "LICENSE", "LICENCE", "COPYING", "CITATION", "CHANGELOG")
+      basename(rel) %in% c("DESCRIPTION", "DESCRIPTION.in", "NAMESPACE", "README", "NEWS", "LICENSE", "LICENCE", "COPYING", "CITATION", "CHANGELOG")
     kind <- if (startsWith(rel, "man/")) "reference" else if (startsWith(rel, "vignettes/") || startsWith(rel, "inst/doc/")) "vignette" else "package_document"
     stored <- !is.null(rights) && text_format
     content <- if (stored) read_source_text(file) else NULL

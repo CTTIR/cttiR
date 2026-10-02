@@ -1,3 +1,9 @@
+# cttiR 0.0.16
+
+* Index explicitly registered local R distribution package sources without
+  changing or evaluating them. Track the exact release and license hashes;
+  refuse development versions, unknown substitutions and identity conflicts.
+
 # cttiR 0.0.15
 
 * Check explicitly supplied analysis data against typed mappings without changing
