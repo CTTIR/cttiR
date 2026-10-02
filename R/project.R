@@ -139,6 +139,17 @@ project_manifest <- function(files, template_version = "0.1.0") {
 #' @param dry_run If TRUE, return a plan without writing any files.
 #' @return A `cttir_project` containing path, spec, plan, readiness, manifest and
 #'   warnings. An identical repeat is read-only and preserves user edits.
+#'   `readiness$analysis` reports candidate routing, missing fields and capability
+#'   gaps. It never opens data or executes a model, even with `analysis$approved`.
+#' @details Optional `analysis$mapping` records `data_source_id`, `outcome`,
+#'   `predictors`, `subject`, `time`, `event`, `event_value`, `non_event_value`,
+#'   `estimand`, `time_origin`, `time_unit` and `missing_data`. Dataset IDs must
+#'   refer to `data_sources`. Column names are literal data, not R expressions.
+#'   An explicitly empty predictor list denotes an intercept-only intention.
+#'   Missing-data choices are `unknown`, `fail` and `complete_case`; these record
+#'   intent and never remove observations during planning. Predictive and causal
+#'   designs are marked as requiring additional supported adapters. Scientific
+#'   and revision-specific workflow approval remain separate prerequisites.
 #' @export
 #' @examples
 #' p <- project("Example", "methods", "Plan a reproducible comparison",
@@ -223,7 +234,7 @@ project_impl <- function(name, type, goal, path = getwd(), config = NULL,
     path = target, spec = spec, plan = plan,
     readiness = list(
       level = "scaffold_ready", materialized = exists || !dry_run,
-      blockers = warnings[1:3]
+      blockers = warnings[1:3], analysis = analysis_configuration(spec)
     ), manifest = manifest,
     warnings = warnings, dry_run = dry_run
   ), class = "cttir_project")

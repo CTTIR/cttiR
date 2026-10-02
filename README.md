@@ -3,7 +3,7 @@
 CTTIR Project Builder creates research project scaffolds from three inputs:
 a name, research type and goal.
 
-This is development milestone `0.0.11`. It provides an offline
+This is development milestone `0.0.12`. It provides an offline
 builder, schema validation and a searchable resource snapshot. It does not yet
 provide the complete research workflow described in the development plan.
 
@@ -41,6 +41,12 @@ fields. Unknown keys are rejected. Publication and dataset arrays merge by ID.
 New publication entries need all fields of the resolved publication schema.
 Unsupported integration requests fail explicitly. Validate documents with
 `cttiR::validate_config()` and `cttiR::validate_spec()`.
+
+Optional `analysis$mapping` records dataset and variable roles, event coding,
+estimand, time meaning and missing-data intent. The builder reports missing
+fields and candidate engines in `p$readiness$analysis`; sync returns the same
+assessment as `result$analysis`. These assessments do not read data or authorize
+model fitting. Predictive, causal and unsupported designs remain explicit gaps.
 
 `cttiR::packages()` and `cttiR::search()` inspect a separate static API catalog
 from 30 public package roots across 40 enumerated CTTIR repositories. It contains
@@ -109,8 +115,8 @@ To build and test locally with the declared dependencies installed:
 
 ```sh
 R CMD build .
-R CMD check --no-manual cttiR_0.0.11.tar.gz
-R CMD INSTALL cttiR_0.0.11.tar.gz
+R CMD check --no-manual cttiR_0.0.12.tar.gz
+R CMD INSTALL cttiR_0.0.12.tar.gz
 ```
 
 MIT licensed. Milestone 0.0.5 passed hosted checks on Linux release/oldrel/devel,

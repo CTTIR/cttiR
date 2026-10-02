@@ -1,6 +1,26 @@
 # cttiR development state
 
-Updated: 2026-10-02. Version: 0.0.11. License: MIT.
+Updated: 2026-10-02. Version: 0.0.12. License: MIT.
+
+## Milestone 12: typed analysis mapping and prerequisite assessment
+
+Optional analysis mappings now record a registered dataset ID, literal variable
+roles, predictors, event/non-event codes, estimand, time origin/units and explicit
+missing-data intent. References and conflicting roles are validated. Builder and
+sync return a shared read-only assessment of missing fields, candidate engines
+and unsupported designs. Audits distinguish recorded configuration from pending
+workflow approval. No data are opened and no model/formula is evaluated, including
+when the user has recorded analysis approval. Predictive/causal designs never
+fall through to an independent association model. Mixed-model structure review,
+canonical package evidence and executable adapter approval remain open.
+
+Evidence: tests/testthat/test-analysis-plan.R and the executed analysis-mapping
+vignette example. Local validation: 481 assertions, --as-cran zero errors/warnings and only New
+submission; coverage 84.32%. Lint, installed examples and pkgdown pass. Hosted
+results are tracked in ignored artifacts/implementation/status.json and
+milestone12-* receipts.
+
+Milestone 11 (9fe2a9e) passed all five hosted jobs in run 36977928396.
 
 ## Milestone 11: explicit local draft persistence
 

@@ -170,6 +170,12 @@ audit <- function(path = NULL, scope = c("installation", "knowledge", "project")
           }
         })
         add("STD-002", "project", "not_tested", FALSE, "Workflow adapter validation remains pending.")
+        analysis <- analysis_configuration(p$spec)
+        add("STD-003", "project", if (analysis$state == "incomplete") "warning" else "pass", FALSE,
+          paste("Analysis configuration:", analysis$state,
+            "- missing fields:", length(analysis$missing_fields),
+            "- capability gaps:", length(analysis$capability_gaps),
+            "; no data or model validation performed."))
       }
     }
   }

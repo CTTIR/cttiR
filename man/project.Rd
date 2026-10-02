@@ -33,12 +33,25 @@ project(
 \value{
 A \code{cttir_project} containing path, spec, plan, readiness, manifest and
 warnings. An identical repeat is read-only and preserves user edits.
+\code{readiness$analysis} reports candidate routing, missing fields and capability
+gaps. It never opens data or executes a model, even with \code{analysis$approved}.
 }
 \description{
 The foundation build uses deterministic templates, without network calls,
 model inference, package installation or execution of study code. The planned
 standard workflow is explicitly pending reflowR integration. Advanced workflow
 options that are not implemented raise a typed error instead of being ignored.
+}
+\details{
+Optional \code{analysis$mapping} records \code{data_source_id}, \code{outcome},
+\code{predictors}, \code{subject}, \code{time}, \code{event}, \code{event_value}, \code{non_event_value},
+\code{estimand}, \code{time_origin}, \code{time_unit} and \code{missing_data}. Dataset IDs must
+refer to \code{data_sources}. Column names are literal data, not R expressions.
+An explicitly empty predictor list denotes an intercept-only intention.
+Missing-data choices are \code{unknown}, \code{fail} and \code{complete_case}; these record
+intent and never remove observations during planning. Predictive and causal
+designs are marked as requiring additional supported adapters. Scientific
+and revision-specific workflow approval remain separate prerequisites.
 }
 \examples{
 p <- project("Example", "methods", "Plan a reproducible comparison",

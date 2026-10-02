@@ -75,7 +75,9 @@ sync_plan <- function(project, bundle) {
 #' @param config Optional configuration list or YAML/JSON path.
 #' @param options Configuration overrides taking precedence over `config`.
 #' @param dry_run Return a read-only plan by default.
-#' @return A `cttir_sync` with actions, conflicts, changed files, journal and readiness.
+#' @return A `cttir_sync` with actions, conflicts, changed files, journal, readiness
+#'   and an `analysis` configuration assessment. Recording mappings does not
+#'   approve or execute an analysis.
 #' @export
 sync <- function(path = ".", config = NULL, options = list(), dry_run = TRUE) {
   sync_impl(path, config, options, dry_run)
@@ -105,7 +107,8 @@ sync_impl <- function(path = ".", config = NULL, options = list(), dry_run = TRU
     path = p$path, actions = plan, conflicts = conflicts,
     changed_files = if (dry_run || length(conflicts)) character() else plan$path[plan$action %in% c("create", "update")],
     state = if (length(conflicts)) "conflict" else if (dry_run) "planned" else "applied",
-    journal = journal, readiness = spec$workflow$readiness
+    journal = journal, readiness = spec$workflow$readiness,
+    analysis = analysis_configuration(spec)
   ), class = "cttir_sync")
 }
 

@@ -16,7 +16,9 @@ sync(path = ".", config = NULL, options = list(), dry_run = TRUE)
 \item{dry_run}{Return a read-only plan by default.}
 }
 \value{
-A \code{cttir_sync} with actions, conflicts, changed files, journal and readiness.
+A \code{cttir_sync} with actions, conflicts, changed files, journal, readiness
+and an \code{analysis} configuration assessment. Recording mappings does not
+approve or execute an analysis.
 }
 \description{
 Preserves identity, catalog pins and user-owned files. Edited managed files

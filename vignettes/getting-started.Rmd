@@ -101,6 +101,47 @@ or interface message is translated. User-owned analysis/manuscript files are
 preserved. Edited managed files cause a conflict. Applied changes have backups and
 a journal, but a multi-file update is not one atomic filesystem operation.
 
+## Record analysis mappings without running a model
+
+Dataset identifiers link the analysis to its registry entry. Column names are
+literal names, including names containing spaces; they are never parsed as R
+expressions. Unknown decisions stay visible. This example records an intended
+continuous-outcome association and leaves approval unresolved:
+
+```{r analysis-mapping}
+analysis_config <- list(
+  data_sources = list(list(
+    id = "source01", label = "Example registry entry", logical_uri = NULL,
+    format = "csv", access_class = "unknown", checksum = NULL,
+    checksum_status = "unknown", schema_ref = NULL
+  )),
+  analysis = list(
+    aim = "explanatory", outcome_family = "continuous",
+    unit_structure = "independent", engine = "stats::lm", approved = FALSE,
+    mapping = list(
+      data_source_id = "source01", outcome = "response",
+      predictors = list("exposure"), estimand = "A specified conditional association",
+      missing_data = "fail"
+    )
+  )
+)
+mapped <- cttiR::project(
+  "Mapping example", "methods", "Record a proposed analysis configuration",
+  path = example_root, config = analysis_config, dry_run = TRUE
+)
+mapped$readiness$analysis[c("state", "candidate_engine", "missing_fields", "executable")]
+stopifnot(!mapped$readiness$analysis$executable, !dir.exists(mapped$path))
+```
+
+Binary and survival configurations require explicit event/non-event codes;
+survival also requires time origin and units. Longitudinal configurations require
+subject/time mappings and a separate review of random effects and residual
+structure. Predictive, causal and other unsupported designs remain capability
+gaps. An explicitly empty predictor list records an intercept-only intention.
+`complete_case` records a reviewed missing-data intention; planning never removes
+rows. Even a fully recorded configuration and `approved = TRUE` cannot bypass
+pending adapter/revision approval, dataset checks or model diagnostics.
+
 ## Query evidence without approving a workflow
 
 The API catalog and resource registry are separate evidence layers. A discovered

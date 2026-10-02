@@ -44,6 +44,7 @@ validate_spec <- function(spec) {
       (spec$analysis$aim == "unknown" || spec$analysis$unit_structure == "unknown")) {
     abort_cttir("Analysis approval requires a known aim and unit structure.", "cttir_schema_error")
   }
+  validate_analysis_mapping(spec)
   invisible(spec)
 }
 

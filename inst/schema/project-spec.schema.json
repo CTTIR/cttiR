@@ -530,6 +530,115 @@
         },
         "approved": {
           "type": "boolean"
+        },
+        "mapping": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "data_source_id": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+            },
+            "outcome": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+            },
+            "subject": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+            },
+            "time": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+            },
+            "event": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+            },
+            "predictors": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+              },
+              "uniqueItems": true,
+              "maxItems": 50
+            },
+            "event_value": {
+              "type": [
+                "string",
+                "integer",
+                "null"
+              ],
+              "maxLength": 128
+            },
+            "non_event_value": {
+              "type": [
+                "string",
+                "integer",
+                "null"
+              ],
+              "maxLength": 128
+            },
+            "estimand": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1,
+              "maxLength": 65536
+            },
+            "time_origin": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1,
+              "maxLength": 65536
+            },
+            "time_unit": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "minLength": 1,
+              "maxLength": 65536
+            },
+            "missing_data": {
+              "enum": [
+                "unknown",
+                "fail",
+                "complete_case"
+              ]
+            }
+          }
         }
       },
       "required": [

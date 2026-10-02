@@ -1,3 +1,10 @@
+# cttiR 0.0.12
+
+* Record typed dataset, variable, event-coding and missing-data mappings.
+* Report missing scientific configuration and unsupported design/engine choices
+  without reading datasets, evaluating formulas or fitting models.
+* Check dataset references and conflicting variable roles in creation and sync.
+
 # cttiR 0.0.11
 
 * Export and restore bounded local JSON drafts without retaining accepted plans.
