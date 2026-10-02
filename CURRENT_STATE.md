@@ -1,6 +1,36 @@
 # cttiR development state
 
-Updated: 2026-10-01. Version: 0.0.7. License: MIT.
+Updated: 2026-10-01. Version: 0.0.8. License: MIT.
+
+## Milestone 8: bounded public GitHub refresh
+
+Adds mode=remote for explicit public GitHub source registrations (owner/repository,
+expected package, optional ref/subdirectory). It resolves one commit, rejects
+truncated trees, verifies downloaded Git blob hashes and stages source without
+executing code. Fetches use fixed public endpoints, no private authentication or
+redirects, per-request timeout/size limits, a checked source-time budget and file/
+byte bounds. Local mode never fetches remote registrations. Explicit package
+selection skips unrelated registrations with declared package identities.
+
+Real reflowR commit cd1243a068ff2c8fb6796e34b58f6c6ce6af87e8 passed remote preview,
+activation, preserved old project pin, GitHub resource observation and rollback.
+No installs or model pulls occurred. Resources retain their curation. Initial
+resource observation times mean preview/applied composite IDs may differ even
+when API content IDs match; repeat unchanged applied sources retain their IDs.
+Fixtures test hash mismatch, truncated trees, unsafe destinations, symlinks,
+nested package roots, identity mismatches and malformed metadata. Evidence is
+in artifacts/implementation/milestone8-*.
+
+Final source check: 388 assertions pass, zero errors/warnings and only New
+submission NOTE. Lint, installed examples and pkgdown pass. Automated coverage
+is 83.33% (remote backend 68.24%, supplemented by live remote evidence).
+
+Automatic discovery, non-GitHub source backends, registry curation across all
+standard/IMBI sources, pruning, release migration and automatic lock recovery
+remain incomplete. A public GitHub backend alone does not complete update gates.
+
+Milestone 7 commit 5efb4250ab575420cd5b70ff873ad905cca78e6f passed all five
+hosted jobs in run 36973407118.
 
 ## Milestone 7: revision-aligned documentation corpus
 
@@ -221,7 +251,7 @@ intentionally bundled under `inst/`.
 
 Full v7 acceptance is not complete. Continue in this order:
 
-1. Complete bounded CTTIR/standard/IMBI remote source refresh and release policy,
+1. Complete CTTIR/standard/IMBI registry coverage and non-GitHub remote source refresh and release policy,
    source filtering, discovery, retained-history recovery and report schemas.
 2. Build the reviewed reflowR template adapter and standard tidy/table/model
    adapters; test actual synthetic lm/GLM, mixed and survival workflows. Add

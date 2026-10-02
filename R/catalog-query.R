@@ -86,7 +86,7 @@ search <- function(query, packages = NULL, path = NULL, limit = 20L) {
     if (!is.null(packages) && !p$name %in% packages) next
     for (hit in if (grepl("::", query, fixed = TRUE)) list() else document_hits(p, query)) {
       source <- if (startsWith(p$repository, "https://github.com/")) {
-        paste0(p$repository, "/blob/", p$revision, "/", hit$path)
+        paste0(p$repository, "/blob/", p$revision, "/", p$source_subdir, hit$path)
       } else {
         paste0(p$repository, "#", hit$path)
       }
@@ -100,7 +100,7 @@ search <- function(query, packages = NULL, path = NULL, limit = 20L) {
       exact <- q %in% tolower(c(symbol, entry$name))
       if (!exact && !grepl(q, haystack, fixed = TRUE)) next
       evidence <- if (startsWith(p$repository, "https://github.com/")) {
-        paste0(p$repository, "/blob/", p$revision, "/", entry$source_path)
+        paste0(p$repository, "/blob/", p$revision, "/", p$source_subdir, entry$source_path)
       } else {
         paste0(p$repository, "#", entry$source_path)
       }

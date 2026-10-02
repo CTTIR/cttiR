@@ -3,7 +3,7 @@
 \name{update}
 \alias{update}
 \alias{update_knowledge}
-\title{Refresh explicitly registered local package sources}
+\title{Refresh explicitly registered package sources}
 \usage{
 update(
   sources = NULL,
@@ -24,8 +24,9 @@ update_knowledge(...)
 
 \item{packages}{Optional vector of exact package names within selected sources.}
 
-\item{mode}{\code{local} reads configured sources without network access. \code{remote}
-is reserved and currently fails before any mutation.}
+\item{mode}{\code{local} reads configured local sources without network access.
+\code{remote} also fetches registered public GitHub repositories at one resolved
+commit, verifying each file against its Git blob hash.}
 
 \item{dry_run}{Compute the candidate and diff in disposable temporary storage.}
 
@@ -55,6 +56,18 @@ revisions. Failed extraction preserves the previous active catalog.
 \details{
 Register trusted local source directories with
 \code{options(cttiR.sources = list(list(id = "local-example", path = source_dir)))}.
+For public GitHub sources, replace \code{path} with \code{github = "owner/repository"}
+and \code{package = "ExpectedPackageName"}; optional \code{ref} selects a commit,
+tag or branch (default \code{HEAD}), and \code{subdir} selects a nested package root.
+Local mode skips remote registrations unless explicitly selected, in which
+case it reports that remote mode is required. Remote mode still reads local
+registrations locally. Redirects and private authentication are not used.
+Remote fetches allow at most 5000 tree entries, 250 selected files, 20 MB
+total, and one MB per file. A two-minute source budget is checked between
+requests, each of which has a 30-second timeout. Truncated trees fail closed.
+A newly added resource observation records its actual observation time, so
+its preview and applied composite IDs can differ even when API content is
+identical. Repeating an already applied unchanged source retains its ID.
 A source record may include \code{documentation_rights}, a nonempty description
 of the reviewed rights basis for storing that source's documentation text.
 Without it only document hashes and inventory are retained. This declaration

@@ -3,7 +3,7 @@
 CTTIR Project Builder creates research project scaffolds from three inputs:
 a name, research type and goal.
 
-This is development milestone `0.0.7`. It provides an offline
+This is development milestone `0.0.8`. It provides an offline
 builder, schema validation and a searchable resource snapshot. It does not yet
 provide the complete research workflow described in the development plan.
 
@@ -57,13 +57,15 @@ approval.
 natural-language planning or generate approved workflow code. Project pins
 prevent silent substitution of another API snapshot.
 
-`cttiR::update()` refreshes explicitly registered local source directories into
+`cttiR::update()` refreshes explicitly registered sources into
 immutable API and resource snapshots, then activates both through one pointer.
 It never installs packages or changes existing project pins. Use `dry_run = TRUE`
 for a disposable preview and `cttiR::rollback_knowledge(id)` for a rollback preview.
-Removed exports stay removed in the active revision. Remote refresh, discovery,
-pruning and Bioconductor release migration remain unsupported and fail explicitly.
-See `help("update", package = "cttiR")` for local source registration.
+Removed exports stay removed in the active revision. `mode = "remote"` supports
+registered public GitHub repositories, resolves one commit, and verifies bounded
+source downloads against Git blob hashes. Local mode never fetches remote records.
+Discovery, pruning, non-GitHub fetch backends and Bioconductor release migration
+remain pending. See `help("update", package = "cttiR")` for registration details.
 
 The bundled resource snapshot contains **229 research package candidates** from
 2026-09-26. It preserves source URLs, observed versions, lifecycle information and
@@ -99,8 +101,8 @@ To build and test locally with the declared dependencies installed:
 
 ```sh
 R CMD build .
-R CMD check --no-manual cttiR_0.0.7.tar.gz
-R CMD INSTALL cttiR_0.0.7.tar.gz
+R CMD check --no-manual cttiR_0.0.8.tar.gz
+R CMD INSTALL cttiR_0.0.8.tar.gz
 ```
 
 MIT licensed. Milestone 0.0.5 passed hosted checks on Linux release/oldrel/devel,

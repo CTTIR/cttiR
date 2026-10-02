@@ -1,3 +1,10 @@
+# cttiR 0.0.8
+
+* Refresh explicitly registered public GitHub package sources at resolved commits.
+* Verify Git blob hashes and reject truncated trees, links, unsafe paths and oversized sources.
+* Preserve project pins and existing snapshots across remote fetch failures and rollback.
+* Record remote resource observations separately from local observations without changing curation.
+
 # cttiR 0.0.7
 
 * Store bounded, revision-aligned documentation with explicit rights and omission records.

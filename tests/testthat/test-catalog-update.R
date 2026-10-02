@@ -5,7 +5,7 @@ test_that("update preview leaves no store and rejects unsupported policies", {
   expect_false(plan$activation)
   expect_false(file.exists(f$store))
   expect_equal(update_knowledge(dry_run = TRUE)$new_id, plan$new_id)
-  expect_error(update(mode = "remote"), class = "cttir_source_unavailable")
+  expect_equal(update(mode = "remote", dry_run = TRUE)$new_id, plan$new_id)
   expect_error(update(catalogs = "invalid"), class = "cttir_input_error")
   expect_error(update(sources = "missing", dry_run = TRUE), class = "cttir_input_error")
   expect_error(update(packages = "missing", dry_run = TRUE), class = "cttir_source_unavailable")

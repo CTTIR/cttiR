@@ -1,9 +1,17 @@
-update_sources <- function(sources, packages) {
+update_sources <- function(sources, packages, mode = "local") {
   registry <- getOption("cttiR.sources", list())
   if (!is.list(registry)) abort_cttir("cttiR.sources must be a list of source records.")
   for (entry in registry) {
     if (!is.list(entry)) abort_cttir("Invalid source record.")
-    for (key in c("id", "path")) scalar_text(entry[[key]], paste("source", key))
+    scalar_text(entry$id, "source id")
+    if (!is.null(entry$package)) scalar_text(entry$package, "source package")
+    if (is.null(entry$github)) {
+      scalar_text(entry$path, "source path")
+    } else {
+      scalar_text(entry$github, "source github")
+      scalar_text(entry$package, "source package")
+      if (!is.null(entry$path)) abort_cttir("A source cannot declare both local and remote locations.")
+    }
     if (!grepl("^[A-Za-z][A-Za-z0-9._-]*$", entry$id)) abort_cttir("Invalid registry source ID.")
   }
   ids <- vapply(registry, function(x) x$id, character(1))
@@ -18,11 +26,26 @@ update_sources <- function(sources, packages) {
     abort_cttir("packages must contain exact package names.")
   }
   result <- lapply(registry, function(x) {
+    if (!is.null(packages) && !is.null(x$package) && !x$package %in% packages) return(NULL)
+    if (!is.null(x$github)) {
+      if (!is.null(packages) && !x$package %in% packages) return(NULL)
+      if (mode != "remote") {
+        if (!is.null(sources) || !is.null(packages)) abort_cttir("A selected remote source requires mode = 'remote'.", "cttir_source_unavailable")
+        return(NULL)
+      }
+      entry <- github_source(x)
+      if (!identical(entry$name, x$package)) abort_cttir("Remote package identity differs from its registration.", "cttir_source_unavailable")
+      return(entry)
+    }
     entry <- extract_source(x$path, paste0("local-source:", x$id), "local", "configured_local", x$documentation_rights)
+    if (!is.null(x$package) && !identical(entry$name, x$package)) {
+      abort_cttir("Local package identity differs from its registration.", "cttir_source_unavailable")
+    }
     entry$revision <- paste0("local-", entry$source_hash)
     entry$freshness <- "remote_currency_unknown"
     entry
   })
+  result <- Filter(Negate(is.null), result)
   names <- vapply(result, function(x) x$name, character(1))
   if (anyDuplicated(names)) abort_cttir("Multiple source records resolve to the same package.")
   if (!is.null(packages)) {
@@ -65,17 +88,19 @@ refresh_resource_observations <- function(file, selected) {
     for (entry in selected) {
       id <- DBI::dbGetQuery(con, "SELECT package_id FROM packages WHERE name = ?", params = list(entry$name))$package_id
       if (!length(id)) next
-      observation <- paste0("local:", id)
+      remote <- identical(entry$family, "configured_github")
+      observation <- paste0(if (remote) "github:" else "local:", id)
       previous <- DBI::dbGetQuery(con, "SELECT source_sha256 FROM observations WHERE observation_id = ?", params = list(observation))$source_sha256
       if (length(previous) && identical(previous, entry$source_hash)) next
       DBI::dbExecute(con, "DELETE FROM observations WHERE observation_id = ?", params = list(observation))
       DBI::dbExecute(con, paste(
         "INSERT INTO observations (observation_id, package_id, repository, observed_version, title, license,",
         "source_url, documentation_url, observed_at, fetch_status, source_sha256, freshness)",
-        "VALUES (?, ?, 'Local', ?, ?, ?, ?, ?, ?, 'local_source_read', ?, 'remote_currency_unknown')"
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
       ), params = list(
-        observation, id, entry$version, entry$title, entry$license,
-        entry$repository, paste0(entry$repository, "#DESCRIPTION"), format(Sys.time(), tz = "UTC", usetz = TRUE), entry$source_hash
+        observation, id, if (remote) "GitHub" else "Local", entry$version, entry$title, entry$license,
+        entry$repository, paste0(entry$repository, "#DESCRIPTION"), format(Sys.time(), tz = "UTC", usetz = TRUE),
+        if (remote) "public_commit_fetched" else "local_source_read", entry$source_hash, entry$freshness
       ))
     }
   })
@@ -85,7 +110,7 @@ refresh_resource_observations <- function(file, selected) {
   invisible(file)
 }
 
-#' Refresh explicitly registered local package sources
+#' Refresh explicitly registered package sources
 #'
 #' Builds complete immutable API and resource snapshots before one atomic pointer
 #' activation. Never installs packages, executes source code, changes project pins
@@ -93,8 +118,9 @@ refresh_resource_observations <- function(file, selected) {
 #' revisions. Failed extraction preserves the previous active catalog.
 #' @param sources Optional vector of registered source IDs.
 #' @param packages Optional vector of exact package names within selected sources.
-#' @param mode `local` reads configured sources without network access. `remote`
-#'   is reserved and currently fails before any mutation.
+#' @param mode `local` reads configured local sources without network access.
+#'   `remote` also fetches registered public GitHub repositories at one resolved
+#'   commit, verifying each file against its Git blob hash.
 #' @param dry_run Compute the candidate and diff in disposable temporary storage.
 #' @param include_embeddings Request derived embeddings. No embedding backend is
 #'   yet configured; lexical search remains usable with a warning.
@@ -104,6 +130,18 @@ refresh_resource_observations <- function(file, selected) {
 #' @param bioc_version Release migration is not supported by the local updater.
 #' @details Register trusted local source directories with
 #'   `options(cttiR.sources = list(list(id = "local-example", path = source_dir)))`.
+#'   For public GitHub sources, replace `path` with `github = "owner/repository"`
+#'   and `package = "ExpectedPackageName"`; optional `ref` selects a commit,
+#'   tag or branch (default `HEAD`), and `subdir` selects a nested package root.
+#'   Local mode skips remote registrations unless explicitly selected, in which
+#'   case it reports that remote mode is required. Remote mode still reads local
+#'   registrations locally. Redirects and private authentication are not used.
+#'   Remote fetches allow at most 5000 tree entries, 250 selected files, 20 MB
+#'   total, and one MB per file. A two-minute source budget is checked between
+#'   requests, each of which has a 30-second timeout. Truncated trees fail closed.
+#'   A newly added resource observation records its actual observation time, so
+#'   its preview and applied composite IDs can differ even when API content is
+#'   identical. Repeating an already applied unchanged source retains its ID.
 #'   A source record may include `documentation_rights`, a nonempty description
 #'   of the reviewed rights basis for storing that source's documentation text.
 #'   Without it only document hashes and inventory are retained. This declaration
@@ -128,8 +166,8 @@ update <- function(
   if (!is.character(catalogs) || !length(catalogs) || anyNA(catalogs) || any(!catalogs %in% c("knowledge", "resources"))) {
     abort_cttir("catalogs must select knowledge and/or resources.")
   }
-  if (mode != "local" || prune || discover || !is.null(bioc_version)) {
-    abort_cttir("This updater supports local registered sources without pruning, discovery or release migration.", "cttir_source_unavailable", "unsupported_update_policy")
+  if (prune || discover || !is.null(bioc_version)) {
+    abort_cttir("Pruning, discovery and release migration are not yet supported.", "cttir_source_unavailable", "unsupported_update_policy")
   }
   root <- catalog_store()
   if (!dry_run) {
@@ -139,7 +177,7 @@ update <- function(
   before <- resolve_catalog()
   old_resources <- resource_snapshot()
   previous <- snapshot_manifest(before$content_id, old_resources$id)
-  selected <- update_sources(sources, packages)
+  selected <- update_sources(sources, packages, mode)
   after <- before
   if ("knowledge" %in% catalogs) {
     indexed <- stats::setNames(before$packages, vapply(before$packages, function(x) x$name, character(1)))
@@ -163,8 +201,8 @@ update <- function(
   resource_id <- if (identical(resource_hash, old_resources$sha256)) old_resources$id else resource_hash
   manifest <- snapshot_manifest(id, resource_id)
   changed <- !identical(previous, manifest)
-  warnings <- "Remote currency was not checked; workflow approvals are not granted by extraction."
-  if (!length(selected)) warnings <- c(warnings, "No local source records are configured or selected.")
+  warnings <- if (mode == "local") "Remote currency was not checked; workflow approvals are not granted by extraction." else "Only registered sources were checked; fetched revisions remain unapproved."
+  if (!length(selected)) warnings <- c(warnings, "No available source records are configured or selected.")
   if (include_embeddings) warnings <- c(warnings, "Embedding backend unavailable; lexical catalog retained.")
   api_changes <- api_diff(before, after)
   doc_changes <- documentation_diff(before, after)

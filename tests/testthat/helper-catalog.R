@@ -27,3 +27,28 @@ document_fixture <- function(env = parent.frame()) {
   writeLines("# Changes\nnews_token_alpha", file.path(f$source, "NEWS.md"))
   f
 }
+
+remote_fixture <- function(env = parent.frame()) {
+  f <- local_update_fixture(env)
+  files <- list(DESCRIPTION = paste(readLines(file.path(f$source, "DESCRIPTION")), collapse = "\n"),
+    NAMESPACE = "export(keep)", "R/api.R" = "keep <- function(x = 1) x",
+    "README.md" = "Remote fixture documentation")
+  blobs <- lapply(files, charToRaw)
+  sha <- paste(rep("a", 40), collapse = "")
+  tree <- lapply(names(blobs), function(path) {
+    list(path = path, type = "blob", mode = "100644", size = length(blobs[[path]]),
+      sha = digest::digest(c(charToRaw(paste0("blob ", length(blobs[[path]]))), as.raw(0L), blobs[[path]]), algo = "sha1", serialize = FALSE))
+  })
+  json <- function(url, ...) {
+    if (grepl("/commits/", url, fixed = TRUE)) return(list(sha = sha))
+    list(truncated = FALSE, tree = tree)
+  }
+  download <- function(url, path, max_bytes) {
+    rel <- sub(paste0("^.*", sha, "/"), "", url)
+    writeBin(blobs[[rel]], path)
+    invisible(path)
+  }
+  list(f = f, json = json, download = download, tree = tree, sha = sha,
+    record = list(id = "remote", github = "CTTIR/syntheticFixture", package = "cttirFixtureA",
+      documentation_rights = "Synthetic test fixture"))
+}
