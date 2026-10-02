@@ -1,6 +1,27 @@
 # cttiR development state
 
-Updated: 2026-10-01. Version: 0.0.8. License: MIT.
+Updated: 2026-10-02. Version: 0.0.9. License: MIT.
+
+## Milestone 9: guarded catalog writer recovery
+
+Pointer activation now records a journal before its atomic replacement. Applied
+updates recover only a verified stopped local writer, check the complete active
+API/resource snapshot, and require a journaled pointer to match its recorded
+preimage or postimage. Interrupted writer metadata is renamed into retained
+recovered-locks evidence, not deleted. Snapshots and project pins are untouched.
+Live, unknown or foreign-host writers, corrupt pointers and conflicting journals
+are refused. Preview stays read-only and never recovers a lock. An interrupted
+recovery guard itself still requires manual review; no stale-time assumption is
+used to override ownership. An inactive incomplete candidate does not displace a
+verified active preimage.
+
+A real installed 0.0.9 worker was terminated after activation: live writer refusal,
+postimage preservation, retained journal and rollback passed. Source check: 406
+assertions, zero errors/warnings and only the New submission NOTE. Installed
+examples, lint and pkgdown pass. Hosted evidence is pending publication.
+
+Milestone 8 commit bd045faeb2c1ada573cf4799a9015e141bd2ceda passed all five
+hosted jobs in run 36974366046.
 
 ## Milestone 8: bounded public GitHub refresh
 

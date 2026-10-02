@@ -68,6 +68,11 @@ requests, each of which has a 30-second timeout. Truncated trees fail closed.
 A newly added resource observation records its actual observation time, so
 its preview and applied composite IDs can differ even when API content is
 identical. Repeating an already applied unchanged source retains its ID.
+Applied updates can recover a stopped local writer lock only after checking
+its owner, the active snapshot and any activation journal. The old lock is
+retained under \code{recovered-locks}. Active or unknown writers, corrupt pointers
+and conflicting journals are refused. Preview never recovers locks. Recovery
+itself uses a guard; an interrupted recovery guard requires manual review.
 A source record may include \code{documentation_rights}, a nonempty description
 of the reviewed rights basis for storing that source's documentation text.
 Without it only document hashes and inventory are retained. This declaration

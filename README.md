@@ -3,7 +3,7 @@
 CTTIR Project Builder creates research project scaffolds from three inputs:
 a name, research type and goal.
 
-This is development milestone `0.0.8`. It provides an offline
+This is development milestone `0.0.9`. It provides an offline
 builder, schema validation and a searchable resource snapshot. It does not yet
 provide the complete research workflow described in the development plan.
 
@@ -66,6 +66,10 @@ registered public GitHub repositories, resolves one commit, and verifies bounded
 source downloads against Git blob hashes. Local mode never fetches remote records.
 Discovery, pruning, non-GitHub fetch backends and Bioconductor release migration
 remain pending. See `help("update", package = "cttiR")` for registration details.
+Applied updates can recover a verified stopped local catalog writer after checking
+the active snapshot and any activation journal. Writer evidence is retained;
+previews never recover locks. Unknown/live writers and corrupt snapshots require
+manual review.
 
 The bundled resource snapshot contains **229 research package candidates** from
 2026-09-26. It preserves source URLs, observed versions, lifecycle information and
@@ -101,8 +105,8 @@ To build and test locally with the declared dependencies installed:
 
 ```sh
 R CMD build .
-R CMD check --no-manual cttiR_0.0.8.tar.gz
-R CMD INSTALL cttiR_0.0.8.tar.gz
+R CMD check --no-manual cttiR_0.0.9.tar.gz
+R CMD INSTALL cttiR_0.0.9.tar.gz
 ```
 
 MIT licensed. Milestone 0.0.5 passed hosted checks on Linux release/oldrel/devel,

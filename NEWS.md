@@ -1,3 +1,10 @@
+# cttiR 0.0.9
+
+* Journal catalog pointer activation and retain interrupted writer evidence.
+* Recover locks only for verified stopped local writers with an intact active snapshot.
+* Refuse live or unknown writers, conflicting journals and corrupt active snapshots.
+* Keep catalog previews read-only even when an abandoned writer lock is present.
+
 # cttiR 0.0.8
 
 * Refresh explicitly registered public GitHub package sources at resolved commits.

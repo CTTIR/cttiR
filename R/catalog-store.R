@@ -128,6 +128,8 @@ activate_catalog <- function(manifest, previous) {
   staged <- tempfile("active-", tmpdir = root, fileext = ".json")
   on.exit(unlink(staged), add = TRUE)
   write_bytes(paste0(json_text(manifest), "\n"), staged)
+  write_bytes(paste0(json_text(list(schema_version = 1L, previous = previous, candidate = manifest)), "\n"),
+    file.path(root, "write-lock", "activation.json"))
   # Same-directory rename replaces the pointer only after both immutable outputs
   # are verified. Failed rename preserves the prior pointer; orphan snapshots are safe.
   tryCatch(fs::file_move(staged, active), error = function(e) {
@@ -138,8 +140,12 @@ activate_catalog <- function(manifest, previous) {
 
 catalog_lock <- function(root) {
   dir.create(root, recursive = TRUE, showWarnings = FALSE)
+  guard <- file.path(root, "recovery-lock")
+  assert_plain_path(guard)
+  if (file.exists(guard)) abort_cttir("Catalog recovery may be active; retry after it finishes.", "cttir_transaction_conflict")
   lock <- file.path(root, "write-lock")
   assert_plain_path(lock)
+  if (dir.exists(lock)) recover_catalog_lock(root)
   if (!dir.create(lock, showWarnings = FALSE)) {
     abort_cttir("Catalog has an active or interrupted writer; inspect the lock owner before recovery.", "cttir_transaction_conflict")
   }
