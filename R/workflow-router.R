@@ -170,6 +170,10 @@ route_workflow <- function(spec, requested = "auto", catalog = catalog_snapshot(
     }
   }
   stages <- c(stages, list(route_stage(registry, catalog, "report", "std.report.render")))
+  # Orchestration is infrastructure: it adds targets to the lean manifest only when requested.
+  if (identical(spec$workflow$pipeline, "targets")) {
+    stages <- c(stages, list(route_stage(registry, catalog, "pipeline", "std.pipeline.targets")))
+  }
   ecosystem <- list()
   if (!modality %in% c("unknown", "tabular")) {
     allow_seurat <- isTRUE(spec$ecosystem$seurat_for_relevant_gaps)

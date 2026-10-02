@@ -133,7 +133,27 @@ render_project <- function(spec, route = project_route(spec)) {
       "   `Rscript code/run_workflow.R`, which stops and lists anything still missing.\n",
       "6. Run `Rscript code/render_report.R` to render the pages in `analysis/`.\n\n",
       "The layout adapts the pinned reflowR minimal template (see `metadata/workflow-template.json`);\n",
-      "reflow_init and workflowr are not invoked. Dependencies are listed, not installed.\n")
+      "reflow_init and workflowr are not invoked. Dependencies are listed, not installed.\n\n",
+      "Optional reproducibility features are enabled only through explicit `workflow` options\n",
+      "(the `options` argument of `cttiR::project()` or `cttiR::sync()`):\n\n",
+      "- `pipeline: targets` adds `_targets.R`; `targets::tar_make()` validates the structure,\n",
+      "  runs the synthetic demonstration and reports missing study inputs without reading data.\n",
+      "- `environment: renv` with `prepare_environment: true` installs only the listed\n",
+      "  dependencies into a project library and writes `renv.lock` from the installed versions.\n",
+      "  `renv.lock` is derived output that sync never overwrites as a template; recreate the\n",
+      "  library elsewhere with `renv::restore()`. `network: offline` (default) downloads nothing.\n",
+      "- `git: true` runs `git init` in this directory only; nothing is staged or committed.\n",
+      "  `.gitignore` excludes raw data, private records, local bindings, project libraries and\n",
+      "  study-data reports, but it cannot untrack files that are already committed.\n")
+    files[[".gitignore"]] <- paste0(
+      "# Study data, private records and machine-local state\n",
+      "data/raw/\ndata/interim/\ndata/processed/\nadministration/private/\n",
+      ".cttir/local.yml\n.cttir/environment.json\n",
+      "# Project library and pipeline store (rebuild with renv::restore() and targets::tar_make())\n",
+      "renv/library/\nrenv/local/\nrenv/staging/\n_targets/\n",
+      "# Derived outputs; study-data reports may contain results\n",
+      "demo/outputs/\ndemo/receipt.json\nreports/workflow/\n",
+      ".Rhistory\n.RData\n.Rproj.user/\n")
   }
   files
 }
@@ -158,6 +178,15 @@ project_manifest <- function(files, template_version = "0.1.0") {
 #' standard workflow is explicitly pending reflowR integration. Advanced workflow
 #' options that are not implemented raise a typed error instead of being ignored.
 #'
+#' Explicit `workflow` options add reviewed integrations. `pipeline = "targets"`
+#' writes `_targets.R` and adds targets to the dependency manifest.
+#' `environment = "renv"` with `prepare_environment = TRUE` prepares a project
+#' library in an isolated R process after the scaffold has been published,
+#' honoring `network` (`"offline"` by default). `git = TRUE` runs `git init` in
+#' the new project root only, never inside another work tree, and never stages
+#' or commits. Failures of these steps keep the scaffold and are reported as
+#' readiness blockers with a recovery command.
+#'
 #' @param name Nonempty project title. A portable child-directory slug is derived.
 #' @param type One of `primary_research`, `secondary_research`, `methods`,
 #'   `review`, `software`, `mixed`, or `other`.
@@ -168,6 +197,9 @@ project_manifest <- function(files, template_version = "0.1.0") {
 #' @param dry_run If TRUE, return a plan without writing any files.
 #' @return A `cttir_project` containing path, spec, plan, readiness, manifest and
 #'   warnings. An identical repeat is read-only and preserves user edits.
+#'   `readiness$level` becomes `environment_ready` only when `renv.lock` and the
+#'   project library match the pinned dependencies; `readiness$environment` and
+#'   `readiness$git` report the evidence and any recovery command.
 #'   `readiness$analysis` reports candidate routing, missing fields and capability
 #'   gaps. It never opens data or executes a model, even with `analysis$approved`.
 #' @details Optional `analysis$mapping` records `data_source_id`, `outcome`,
@@ -248,7 +280,10 @@ project_impl <- function(name, type, goal, path = getwd(), config = NULL,
       }
     }
   }
-  blockers <- project_blockers(spec, bundle)
+  environment <- environment_status(bundle$lock$dependencies, if (exists) target else NULL, spec$workflow$environment)
+  git <- git_status(if (exists) target else NULL, spec$workflow$git, parent)
+  readiness <- readiness_with(list(level = "scaffold_ready", materialized = exists || !dry_run), spec, bundle, environment, git)
+  blockers <- readiness$blockers
   warnings <- blockers
   if (exists) {
     changed <- vapply(names(files), function(f) !identical(digest::digest(file = file.path(target, f), algo = "sha256"), content_hash(files[[f]])), logical(1))
@@ -257,10 +292,10 @@ project_impl <- function(name, type, goal, path = getwd(), config = NULL,
   result <- structure(list(
     path = target, spec = spec, plan = plan,
     readiness = list(
-      level = "scaffold_ready", materialized = exists || !dry_run,
+      level = readiness$level, materialized = exists || !dry_run,
       blockers = blockers, analysis = analysis_configuration(spec),
       workflow = if (is.null(bundle$route)) NULL else route_summary(bundle$route),
-      environment = environment_status(bundle$lock$dependencies)
+      environment = environment, git = git
     ), manifest = manifest,
     warnings = warnings, dry_run = dry_run
   ), class = "cttir_project")
@@ -287,19 +322,25 @@ project_impl <- function(name, type, goal, path = getwd(), config = NULL,
   if (file.exists(target) || !file.rename(stage, target)) {
     abort_cttir("The destination changed or publication of staged files failed.", "cttir_transaction_conflict", "rename_failed")
   }
+  # Explicit options act on the published scaffold; their failures stay pending.
+  environment <- environment_step(target, spec, bundle$lock$dependencies)
+  git <- if (isTRUE(spec$workflow$git)) git_initialize(target) else git_status(target, FALSE)
+  result$readiness <- readiness_with(result$readiness, spec, bundle, environment, git)
+  result$warnings <- result$readiness$blockers
   result
 }
 
-project_blockers <- function(spec, bundle) {
+project_blockers <- function(spec, bundle, environment = environment_status(bundle$lock$dependencies)) {
   if (is.null(bundle$route)) return(c("reflowR_integration_pending", "environment_pending", "knowledge_catalog_pending"))
   c(if (length(bundle$route$approval_pending)) "workflow_approval_pending",
-    if (!identical(environment_status(bundle$lock$dependencies)$state, "installed_versions_match")) "environment_pending",
+    if (!environment$state %in% c("installed_versions_match", "environment_ready")) "environment_pending",
     if (length(bundle$route$gaps)) "capability_gaps_recorded")
 }
 
 # Reads installed package metadata only (no namespace loading) and compares it
 # with the pinned dependency versions. Never installs anything.
-environment_status <- function(dependencies) {
+environment_status <- function(dependencies, root = NULL, mode = "none") {
+  if (identical(mode, "renv")) return(renv_environment_status(dependencies, root))
   if (!length(dependencies)) return(list(state = "no_dependencies_recorded", missing = list(), mismatched = list()))
   installed <- utils::installed.packages(fields = "Version")
   missing <- character()

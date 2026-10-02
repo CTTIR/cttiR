@@ -21,9 +21,14 @@ sync_spec <- function(saved, config, options) {
   }
   merged <- merge_config(merge_config(saved, config), options)
   merged$knowledge <- NULL
-  # Only the table backend of the current standard bundle may change in place;
-  # it alters managed configuration and pinned dependencies, never user files.
-  changeable <- if (identical(saved$provenance$template_version, current_template_version)) "table_backend" else character()
+  # Only these workflow options of the current standard bundle may change in
+  # place; they alter managed configuration, pinned dependencies and explicit
+  # environment/Git steps, never user files. The profile stays fixed.
+  changeable <- if (identical(saved$provenance$template_version, current_template_version)) {
+    c("table_backend", "pipeline", "environment", "prepare_environment", "network", "git")
+  } else {
+    character()
+  }
   fixed <- setdiff(union(names(merged$workflow), names(saved$workflow)), changeable)
   if (!identical(merged$workflow[fixed], saved$workflow[fixed]) || !identical(merged$packages, saved$packages)) {
     abort_cttir("Workflow and dependency migration are not yet supported.", "cttir_api_mismatch")
@@ -83,9 +88,17 @@ sync_plan <- function(project, bundle) {
 #' @param config Optional configuration list or YAML/JSON path.
 #' @param options Configuration overrides taking precedence over `config`.
 #' @param dry_run Return a read-only plan by default.
-#' @return A `cttir_sync` with actions, conflicts, changed files, journal, readiness
-#'   and an `analysis` configuration assessment. Recording mappings does not
-#'   approve or execute an analysis.
+#' @details For current standard projects, `workflow` options `pipeline`,
+#'   `environment`, `prepare_environment`, `network`, `git` and `table_backend`
+#'   may change; the profile stays fixed. An applied sync then runs the explicit
+#'   environment and Git steps; dry runs only read their state. `renv.lock` is
+#'   derived output and is never planned as a template file. A lockfile whose
+#'   project library is absent on this machine is not rewritten: the recovery
+#'   command restores it with `renv::restore()`.
+#' @return A `cttir_sync` with actions, conflicts, changed files, journal, the
+#'   computed readiness level, blockers, `environment` and `git` status and an
+#'   `analysis` configuration assessment. Recording mappings does not approve or
+#'   execute an analysis.
 #' @export
 sync <- function(path = ".", config = NULL, options = list(), dry_run = TRUE) {
   sync_impl(path, config, options, dry_run)
@@ -110,12 +123,21 @@ sync_impl <- function(path = ".", config = NULL, options = list(), dry_run = TRU
     abort_cttir("Project files changed after preview; preview again before applying.", "cttir_transaction_conflict")
   conflicts <- plan$path[plan$action == "conflict"]
   journal <- NULL
-  if (!dry_run && !length(conflicts)) journal <- transact_files(p$path, bundle$files, plan)
+  # Dry runs and conflicts only read the environment and Git state from disk.
+  environment <- environment_status(bundle$lock$dependencies, p$path, spec$workflow$environment)
+  git <- git_status(p$path, isTRUE(spec$workflow$git))
+  if (!dry_run && !length(conflicts)) {
+    journal <- transact_files(p$path, bundle$files, plan)
+    environment <- environment_step(p$path, spec, bundle$lock$dependencies)
+    if (isTRUE(spec$workflow$git)) git <- git_initialize(p$path)
+  }
+  readiness <- readiness_with(list(), spec, bundle, environment, git)
   structure(list(
     path = p$path, actions = plan, conflicts = conflicts,
     changed_files = if (dry_run || length(conflicts)) character() else plan$path[plan$action %in% c("create", "update")],
     state = if (length(conflicts)) "conflict" else if (dry_run) "planned" else "applied",
-    journal = journal, readiness = spec$workflow$readiness,
+    journal = journal, readiness = readiness$level, blockers = readiness$blockers,
+    environment = environment, git = git,
     analysis = analysis_configuration(spec)
   ), class = "cttir_sync")
 }

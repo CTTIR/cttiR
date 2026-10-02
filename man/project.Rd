@@ -33,6 +33,9 @@ project(
 \value{
 A \code{cttir_project} containing path, spec, plan, readiness, manifest and
 warnings. An identical repeat is read-only and preserves user edits.
+\code{readiness$level} becomes \code{environment_ready} only when \code{renv.lock} and the
+project library match the pinned dependencies; \code{readiness$environment} and
+\code{readiness$git} report the evidence and any recovery command.
 \code{readiness$analysis} reports candidate routing, missing fields and capability
 gaps. It never opens data or executes a model, even with \code{analysis$approved}.
 }
@@ -43,6 +46,15 @@ standard workflow is explicitly pending reflowR integration. Advanced workflow
 options that are not implemented raise a typed error instead of being ignored.
 }
 \details{
+Explicit \code{workflow} options add reviewed integrations. \code{pipeline = "targets"}
+writes \verb{_targets.R} and adds targets to the dependency manifest.
+\code{environment = "renv"} with \code{prepare_environment = TRUE} prepares a project
+library in an isolated R process after the scaffold has been published,
+honoring \code{network} (\code{"offline"} by default). \code{git = TRUE} runs \verb{git init} in
+the new project root only, never inside another work tree, and never stages
+or commits. Failures of these steps keep the scaffold and are reported as
+readiness blockers with a recovery command.
+
 Optional \code{analysis$mapping} records \code{data_source_id}, \code{outcome},
 \code{predictors}, \code{subject}, \code{time}, \code{event}, \code{event_value}, \code{non_event_value},
 \code{estimand}, \code{time_origin}, \code{time_unit} and \code{missing_data}. Dataset IDs must
