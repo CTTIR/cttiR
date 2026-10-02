@@ -36,7 +36,7 @@
         "<y>",
         "<group>"
       ],
-      "code": "# Accessible scatter: colour-blind-flagged Brewer palette plus shapes.\ncolours <- RColorBrewer::brewer.pal(3, \"Dark2\")\nplot <- ggplot2::ggplot(data, ggplot2::aes(x = .data[[\"<x>\"]], y = .data[[\"<y>\"]],\n    colour = .data[[\"<group>\"]], shape = .data[[\"<group>\"]])) +\n  ggplot2::geom_point() + ggplot2::scale_colour_manual(values = colours)\npatchwork::wrap_plots(list(plot)) + patchwork::plot_annotation(tag_levels = \"A\")"
+      "code": "# Accessible scatter: colour-blind-flagged Brewer palette plus shapes. Dark2 holds\n# at most 8 colours and is never recycled or interpolated; more groups need\n# labelled facets or direct labels instead of more colours.\ngroups <- unique(data[[\"<group>\"]])\nstopifnot(length(groups) <= 8L)\ncolours <- RColorBrewer::brewer.pal(max(3L, length(groups)), \"Dark2\")[seq_along(groups)]\nplot <- ggplot2::ggplot(data, ggplot2::aes(x = .data[[\"<x>\"]], y = .data[[\"<y>\"]],\n    colour = .data[[\"<group>\"]], shape = .data[[\"<group>\"]])) +\n  ggplot2::geom_point() + ggplot2::scale_colour_manual(values = colours)\npatchwork::wrap_plots(list(plot)) + patchwork::plot_annotation(tag_levels = \"A\")"
     },
     {
       "capability": "std.model.lm",
