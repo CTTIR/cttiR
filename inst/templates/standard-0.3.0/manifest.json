@@ -35,7 +35,7 @@
     "analysis/synthetic_demo.Rmd": "51b1252d158abc6e8dff42ca5c145e3ead512edf30cba847ff6837e3f555a055",
     "code/R/cttir_figures.R": "0b131efa5eab0df496ef165fffb2b1b0529327d506919b74ee0088180bd1cc61",
     "code/R/cttir_interop.R": "3e589c5bab8283d318cd71fda3d5057ba4d005629a86dc9092592333d4756a6f",
-    "code/R/cttir_workflow.R": "0b09de088e8c05f58441ab08a51dcb1f6a35060128851e6615181735219a5579",
+    "code/R/cttir_workflow.R": "7721e780b00d22ea0b57f7322c19bc8fd5dd4579558d905ba055f1c77c488a9f",
     "code/render_report.R": "7a227c4c8744446bc5e6c2c903a8b1f40e0fa08f77126a7523299cbf121968fd",
     "code/run_demo.R": "07c59b2bfe290c57d0b7c533fe6adff7585a46d04d42b1859112069f12a25b61",
     "code/run_workflow.R": "bfd13e4b3f69592dbbce4072b9309bd3b6ec54cc14bb38be9d1e9ecbd18e01e4",

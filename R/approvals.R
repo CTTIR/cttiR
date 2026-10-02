@@ -65,12 +65,27 @@ stored_topic_aliases <- function(stored) {
 documentation_counts <- function(corpus) {
   docs <- if (is.null(corpus)) list() else corpus$documents
   kind <- vapply(docs, function(d) as.character(d$kind), character(1))
-  topic <- kind == "reference" & grepl("[.]Rd$", vapply(docs, function(d) as.character(d$path), character(1)))
+  paths <- vapply(docs, function(d) as.character(d$path), character(1))
+  topic <- kind == "reference" & grepl("[.]Rd$", paths)
   stored <- vapply(docs, function(d) identical(d$storage, "source_text"), logical(1))
   reasons <- vapply(docs[(topic | kind == "vignette") & !stored], document_storage_reason, character(1))
+  # A vignette is identified by its source document; inst/doc copies of the same
+  # source, rendered outputs and build assets are not separate vignettes.
+  source <- vignette_source_name(paths)
+  vignettes <- unique(source[!is.na(source)])
+  vignettes_stored <- unique(source[!is.na(source) & stored])
   list(reference_topics_indexed = sum(topic), reference_topics_stored = sum(topic & stored),
+    vignette_sources_indexed = length(vignettes), vignette_sources_stored = length(vignettes_stored),
     vignette_files_indexed = sum(kind == "vignette"), vignette_files_stored = sum(kind == "vignette" & stored),
     not_stored_reasons = as.list(table(reasons)))
+}
+
+vignette_source_name <- function(paths) {
+  pattern <- "^(vignettes|inst/doc)/([^/]+)[.](Rmd|Rnw|qmd|Rmarkdown|Rhtml|Rtex)$"
+  out <- rep(NA_character_, length(paths))
+  hit <- grepl(pattern, paths, ignore.case = TRUE)
+  out[hit] <- sub(pattern, "\\2", paths[hit], ignore.case = TRUE)
+  out
 }
 
 #' Coverage of one approval decision against one package revision

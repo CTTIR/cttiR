@@ -379,13 +379,15 @@ test_that("KB-006 names an unavailable pinned snapshot instead of substituting s
 test_that("KB-006 reports stored and indexed documentation instead of claiming complete coverage", {
   withr::local_options(cttiR.catalog_dir = file.path(new_parent(), "store"))
   result <- audit_kb_approvals(kb_context())
-  expect_identical(result$status, "pass")
-  expect_false(grepl("complete coverage", result$message, fixed = TRUE))
   docs <- result$evidence$documentation
+  # Vignettes are part of the required corpus (spec 30): a missing source warns.
+  expect_identical(result$status, if (docs$vignette_sources_stored < docs$vignette_sources_indexed) "warning" else "pass")
+  expect_false(grepl("complete coverage", result$message, fixed = TRUE))
   expect_match(result$message, paste(docs$reference_topics_stored, "of", docs$reference_topics_indexed, "reference topics"),
     fixed = TRUE)
-  expect_match(result$message, paste(docs$vignette_files_stored, "of", docs$vignette_files_indexed, "vignette files"),
+  expect_match(result$message, paste(docs$vignette_sources_stored, "of", docs$vignette_sources_indexed, "vignette sources"),
     fixed = TRUE)
+  expect_gt(docs$vignette_sources_indexed, 0)
   expect_gt(docs$vignette_files_indexed, docs$vignette_files_stored)
   expect_gt(docs$reference_topics_indexed, docs$reference_topics_stored)
   expect_identical(length(docs$packages), result$evidence$approved_packages)

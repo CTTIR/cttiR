@@ -708,11 +708,17 @@ cw_run_demo <- function(root = ".", out_dir = file.path(root, "demo", "outputs")
     reference <- if (identical(result$status, "completed")) cw_reference_check(name, tidy, cw_model(tidy, case$analysis), case) else NULL
     receipt$cases[[name]] <- list(status = result$status, engine = result$model$engine,
       describe_backend = result$describe$backend, reference = reference,
+      figure_accessibility = result$figures$accessibility,
       diagnostics = vapply(result$diagnostics$findings, function(x) x$code, character(1)),
       outputs = if (write) basename(result$outputs) else character())
     if (!write) unlink(directory, recursive = TRUE)
   }
   receipt$status <- if (all(vapply(receipt$cases, function(x) identical(x$status, "completed") && isTRUE(x$reference$pass), logical(1)))) "passed" else "failed"
+  # The demo status reflects the reference checks; accessibility findings are
+  # reported separately so they are reviewed rather than hidden or blocking.
+  figure_findings <- unique(unlist(lapply(receipt$cases, function(x) x$figure_accessibility$findings)))
+  receipt$figure_accessibility <- list(
+    status = if (length(figure_findings)) "findings_recorded" else "pass", findings = as.list(figure_findings))
   receipt$session <- cw_session(c("readr", "dplyr", "DescrTab2", "ggplot2", "patchwork", "viridisLite",
     "RColorBrewer", "colorspace", "nlme", "survival", "broom", "broom.mixed", "yaml", "jsonlite"))
   receipt$code_sha256 <- cw_code_hashes(root)
@@ -783,6 +789,15 @@ cw_figures <- function(tidy, analysis, policy, out_dir) {
   spec <- cf_figure_spec(id = "overview", mapping = mapping, policy = policy, colours = colours,
     encodings = if (is.null(group)) NULL else list(shape = shapes), width = 8, height = 3.6,
     units = "in", dpi = 200, background = "#FFFFFF")
-  cf_save(composed, file, spec)
-  list(files = c(file, paste0(file, ".json")), accessibility = spec$accessibility$status, panels = names(panels))
+  # Unresolved accessibility findings are recorded with the outputs instead of
+  # surfacing only as R warnings; colour is never the only encoding of a group.
+  findings <- character()
+  saved <- withCallingHandlers(cf_save(composed, file, spec), warning = function(w) {
+    findings <<- c(findings, conditionMessage(w))
+    invokeRestart("muffleWarning")
+  })
+  status <- attr(saved, "accessibility")
+  list(files = c(file, paste0(file, ".json")), panels = names(panels),
+    accessibility = list(status = if (is.null(status)) "not_checked" else status, findings = findings,
+      non_colour_encoding = if (is.null(group)) "not_needed" else "shape"))
 }

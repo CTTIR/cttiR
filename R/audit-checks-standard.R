@@ -533,6 +533,7 @@ audit_kb_approvals <- function(context) {
     standard_capabilities = length(standard), standard_without_approval = as.list(unname(pending_text)),
     documentation = list(reference_topics_stored = total("reference_topics_stored"),
       reference_topics_indexed = total("reference_topics_indexed"),
+      vignette_sources_stored = total("vignette_sources_stored"), vignette_sources_indexed = total("vignette_sources_indexed"),
       vignette_files_stored = total("vignette_files_stored"), vignette_files_indexed = total("vignette_files_indexed"),
       packages = docs))
   prefix <- ""
@@ -551,11 +552,13 @@ audit_kb_approvals <- function(context) {
       "are approval-pending: ", paste(pending_text, collapse = "; "), ".")
     return(audit_result("fail", message, evidence))
   }
+  documentation <- evidence$documentation
+  vignettes_missing <- documentation$vignette_sources_stored < documentation$vignette_sources_indexed
   message <- paste0(prefix, complete, " approvals across ", packages, " package revisions cover their required callables, ",
-    "topics and documents. Their corpora store ", evidence$documentation$reference_topics_stored, " of ",
-    evidence$documentation$reference_topics_indexed, " reference topics and ", evidence$documentation$vignette_files_stored,
-    " of ", evidence$documentation$vignette_files_indexed, " vignette files as text; the rest are indexed by hash only.")
-  audit_result(if (is.null(pin_note)) "pass" else "warning", message, evidence)
+    "topics and documents. Their corpora store ", documentation$reference_topics_stored, " of ",
+    documentation$reference_topics_indexed, " reference topics and ", documentation$vignette_sources_stored,
+    " of ", documentation$vignette_sources_indexed, " vignette sources as text; the rest are indexed by hash only.")
+  audit_result(if (is.null(pin_note) && !vignettes_missing) "pass" else "warning", message, evidence)
 }
 
 audit_res_separation <- function(context) {
