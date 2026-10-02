@@ -4,7 +4,8 @@ capability_fields <- c("id", "family", "stage", "title", "packages", "adapter", 
   "infrastructure", "specialist", "requirements", "status")
 
 capability_stages <- c("project", "import", "check", "tidy", "describe", "figures", "model", "effects",
-  "report", "pipeline", "environment", "preprocess", "analysis", "design", "interop")
+  "report", "pipeline", "environment", "preprocess", "analysis", "design", "interop", "container", "bridge",
+  "aggregation", "normalization", "annotation", "interchange", "acceleration", "data_distribution")
 
 # Reviewed capability records are static package resources, one file per module.
 capability_registry <- function() {
