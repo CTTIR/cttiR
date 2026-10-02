@@ -57,6 +57,7 @@ runtime_owner <- function(root, endpoint) {
       environment <- ps::ps_environ(handle)
       manifest <- read_document(resource_file("runtime", "manifest.json"))
       isTRUE(ps::ps_is_running(handle)) && state$executable %in% args &&
+        runtime_executable_matches(state$pid, state$executable) &&
         "serve" %in% args && identical(unname(environment[["OLLAMA_NO_CLOUD"]]), "1") &&
         identical(unname(environment[["OLLAMA_HOST"]]), endpoint) &&
         identical(state$binary_sha256, manifest$binary_sha256) &&
@@ -117,6 +118,23 @@ acquire_runtime <- function(root, manifest) {
   file.path(target, "bin", "ollama")
 }
 
+# Plain local model tags only: name[:tag]. Registry hosts, namespaces, URLs and
+# cloud-backed tags are refused before any request.
+valid_model_tag <- function(model) {
+  is.character(model) && length(model) == 1L && !is.na(model) &&
+    grepl("^[A-Za-z0-9][A-Za-z0-9._-]{0,127}(:[A-Za-z0-9][A-Za-z0-9._-]{0,127})?$", model) &&
+    !grepl("cloud", model, ignore.case = TRUE)
+}
+
+# On Linux the kernel's view of the process image must be the owned binary; a
+# process that merely names that path among its arguments does not qualify.
+runtime_executable_matches <- function(pid, executable) {
+  if (!identical(Sys.info()[["sysname"]], "Linux")) return(TRUE)
+  image <- Sys.readlink(file.path("/proc", as.integer(pid), "exe"))
+  !is.na(image) && nzchar(image) &&
+    identical(normalizePath(image, mustWork = FALSE), normalizePath(executable, mustWork = FALSE))
+}
+
 local_model <- function(endpoint, model) {
   tags <- runtime_request(endpoint, "tags")$models
   names <- vapply(tags, function(x) x$name, character(1))
@@ -142,7 +160,8 @@ local_model <- function(endpoint, model) {
 #' Calling this function explicitly permits its reported downloads and startup.
 #' Dry runs never create directories or contact a daemon. Offline mode reuses
 #' verified local artifacts and never pulls a model.
-#' @param model Model tag, or `auto` for the recorded candidate. The candidate is
+#' @param model Plain local model tag (`name` or `name:tag`, no registry host,
+#'   namespace or URL), or `auto` for the recorded candidate. The candidate is
 #'   not yet qualified for workflow planning; runtime readiness is a separate gate.
 #' @param install_ollama Allow portable acquisition when the runtime is absent.
 #' @param offline Forbid acquisition and model downloads.
@@ -155,8 +174,8 @@ local_model <- function(endpoint, model) {
 setup <- function(model = "auto", install_ollama = TRUE, offline = FALSE, dry_run = FALSE) {
   scalar_text(model, "model")
   for (key in c("install_ollama", "offline", "dry_run")) scalar_flag(get(key), key)
-  if (!grepl("^[A-Za-z0-9][A-Za-z0-9._:/-]*$", model) || grepl("cloud", model, ignore.case = TRUE)) {
-    abort_cttir("Supply a local model tag without cloud execution.")
+  if (!valid_model_tag(model)) {
+    abort_cttir("Supply a plain local model tag (name or name:tag) without cloud execution.")
   }
   manifest <- read_document(resource_file("runtime", "manifest.json"))
   automatic <- model == "auto"
