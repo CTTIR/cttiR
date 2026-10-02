@@ -207,6 +207,7 @@ sync <- function(path = ".", config = NULL, options = list(), dry_run = TRUE) {
 
 sync_impl <- function(path = ".", config = NULL, options = list(), dry_run = TRUE, expected_plan = NULL) {
   scalar_flag(dry_run, "dry_run")
+  options <- utf8_input(options)
   p <- read_project(path, edited = TRUE)
   spec <- sync_spec(p$spec, config, options, p$edited_spec, p$path)
   bundle <- carry_user_records(project_bundle(spec, p$lock), p, refresh = TRUE)

@@ -15,7 +15,7 @@ Encoding: UTF-8
 Depends: R (>= 4.1.0)
 Imports: DBI, RSQLite, digest, fs, httr2, jsonlite, jsonvalidate, processx, ps, uuid, yaml
 Suggests: broom, broom.mixed, callr (>= 3.7.0), colorspace, DelayedArray, dplyr,
-    ggplot2, knitr, lme4, Matrix, nlme, patchwork, png, RColorBrewer, readr,
+    ggplot2, knitr, lme4, Matrix, nlme, patchwork, pkgload, png, RColorBrewer, readr,
     renv (>= 1.0.0), rmarkdown, S4Vectors, Seurat, SeuratObject, shiny (>= 1.7.0),
     shinytest2, SingleCellExperiment, SummarizedExperiment, survival, targets,
     testthat (>= 3.2.0), viridisLite, withr

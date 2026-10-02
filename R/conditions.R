@@ -18,6 +18,23 @@ scalar_text <- function(x, field) {
   invisible(x)
 }
 
+# Strings typed in a non-UTF-8 session (e.g. the C locale) arrive unmarked;
+# valid UTF-8 bytes are marked as such, so names and goals compare and hash the
+# same in every locale.
+utf8_input <- function(x) {
+  if (is.character(x)) {
+    unmarked <- !is.na(x) & Encoding(x) == "unknown" & validUTF8(x)
+    Encoding(x)[unmarked] <- "UTF-8"
+    return(enc2utf8(x))
+  }
+  if (is.list(x)) {
+    kept <- attributes(x)
+    x <- lapply(x, utf8_input)
+    attributes(x) <- kept
+  }
+  x
+}
+
 scalar_flag <- function(x, field) {
   if (!is.logical(x) || length(x) != 1L || is.na(x)) {
     abort_cttir(paste(field, "must be TRUE or FALSE."), field = field)

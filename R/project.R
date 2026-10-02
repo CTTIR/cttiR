@@ -424,6 +424,10 @@ project <- function(name, type, goal, path = getwd(), config = NULL,
 project_impl <- function(name, type, goal, path = getwd(), config = NULL,
   options = list(), dry_run = FALSE, expected_catalog = NULL) {
   scalar_flag(dry_run, "dry_run")
+  name <- utf8_input(name)
+  type <- utf8_input(type)
+  goal <- utf8_input(goal)
+  options <- utf8_input(options)
   scalar_text(path, "path")
   assert_plain_path(path)
   if (!dir.exists(path)) abort_cttir("The parent directory must already exist.")

@@ -253,7 +253,13 @@ read_catalog <- function(file) {
   })
   id <- catalog$content_id
   catalog$content_id <- NULL
-  if (!identical(catalog$schema_version, 1L) || !identical(id, content_hash(catalog_json(catalog)))) {
+  # write_catalog() stores the canonical serialization followed by the content
+  # ID, so hashing the text without that final field verifies the ID without
+  # re-encoding every package; any other layout is checked by re-serialization.
+  suffix <- paste0(",\"content_id\":\"", if (is.character(id) && length(id) == 1L) id else "", "\"}")
+  stored_canonical <- is.character(id) && length(id) == 1L && endsWith(text, suffix) &&
+    identical(id, content_hash(paste0(substr(text, 1L, nchar(text) - nchar(suffix)), "}")))
+  if (!identical(catalog$schema_version, 1L) || !(stored_canonical || identical(id, content_hash(catalog_json(catalog))))) {
     abort_cttir("Catalog schema or logical hash is invalid.", "cttir_catalog_corrupt")
   }
   catalog$content_id <- id

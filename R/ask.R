@@ -86,7 +86,7 @@ ask_patterns <- list(
   ),
   capability = list(
     std.describe.descrtab2 = c("overview table", "demographic", "characteristics", "summary of the (sample|population|patients|cohort)",
-      "übersichtstabelle", "uebersichtstabelle", "patientenmerkmale", "merkmale der"),
+      "\u00fcbersichtstabelle", "uebersichtstabelle", "patientenmerkmale", "merkmale der"),
     std.import.delimited = c("(read|load|import)( in)? [a-z ]*(csv|tsv|delimited|text file)", "(csv|tsv)",
       "einlesen", "importieren"),
     std.figures.accessible = c("greyscale", "grayscale", "\\bchart\\b", "\\bplot", "visuali[sz]", "graustufen")
@@ -125,13 +125,13 @@ ask_unsupported_methods <- list(
     nearest = c(std.model.glm_binomial = "only for a genuinely binary outcome; collapsing categories discards information")),
   gee = list(label = "generalized estimating equations (GEE)",
     patterns = c("\\bgee\\b", "\\bgenerali[sz]ed estimating equation", "\\bgeeglm\\b", "\\bgeepack\\b",
-      "\\b(verallgemeinerte|generalisierte)n? sch(ä|ae)tzgleichung"),
+      "\\b(verallgemeinerte|generalisierte)n? sch(\u00e4|ae)tzgleichung"),
     candidates = "std.model.lme4",
     nearest = c(std.model.lme = "subject-specific random-intercept model for continuous outcomes only")),
   count_models = list(label = "count and rate models (Poisson, negative binomial, zero-inflated)",
     patterns = c("\\bpoisson", "\\bnegative[- ]binomial", "\\bzero[- ]inflat", "\\bhurdle model", "\\bquasi-?poisson",
       "\\bcount (model|outcome|regression|data)", "\\b(incidence )?rate ratio", "\\boverdispers",
-      "\\bnegativ[- ]binomial", "\\bnull[- ]?inflat", "z(ä|ae)hldaten", "\\binzidenzratenverh"),
+      "\\bnegativ[- ]binomial", "\\bnull[- ]?inflat", "z(\u00e4|ae)hldaten", "\\binzidenzratenverh"),
     candidates = "std.model.glm_count", nearest = character()),
   quantile_regression = list(label = "quantile regression",
     patterns = c("\\bquantile regression", "\\bmedian regression", "\\bquantreg\\b", "\\bquantils?regression",
@@ -366,6 +366,7 @@ ask_prerequisites <- function(id) {
 #'   full reviewed stage library.
 #' @export
 ask <- function(question, path = NULL, verified_only = TRUE) {
+  question <- utf8_input(question)
   scalar_text(question, "question")
   scalar_flag(verified_only, "verified_only")
   catalog <- resolve_catalog(path)

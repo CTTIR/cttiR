@@ -143,7 +143,9 @@ test_that("the bundled catalog verifies and serializes identically in a C locale
       search = nrow(cttiR::search("reflowR::reflow_init")), packages = nrow(cttiR::packages()),
       resources = nrow(cttiR::resources("Seurat", limit = 5L)), plan = class(plan)[[1]],
       answer = class(cttiR::ask("reflowR::reflow_init"))[[1]],
-      title = charToRaw(extracted$title), hash = ns$content_hash(ns$json_text(extracted)))
+      title = charToRaw(extracted$title), hash = ns$content_hash(ns$json_text(extracted)),
+      # Unmarked UTF-8 bytes, as typed in a C-locale session.
+      slug = ns$safe_slug(rawToChar(as.raw(c(0x53, 0x74, 0x72, 0x61, 0xc3, 0x9f, 0x65, 0x20, 0xc3, 0x84, 0x72, 0x7a, 0x74, 0x65)))))
   }, args = list(root = root, store = file.path(parent, "store"), source = source, parent = parent),
   env = c(callr::rcmd_safe_env(), LC_ALL = "C", LANG = "C"))
   skip_if(is.null(result), "The C locale is unavailable on this platform.")
@@ -155,5 +157,6 @@ test_that("the bundled catalog verifies and serializes identically in a C locale
   expect_identical(result$answer, "cttir_answer")
   expect_identical(result$title, charToRaw(title))
   expect_identical(result$hash, content_hash(json_text(local)))
+  expect_identical(result$slug, safe_slug("Stra\u00dfe \u00c4rzte"))
   expect_false(file.exists(file.path(parent, "c_locale")))
 })
