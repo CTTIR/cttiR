@@ -3,7 +3,7 @@
 CTTIR Project Builder creates research project scaffolds from three inputs:
 a name, research type and goal.
 
-This is development milestone `0.0.10`. It provides an offline
+This is development milestone `0.0.11`. It provides an offline
 builder, schema validation and a searchable resource snapshot. It does not yet
 provide the complete research workflow described in the development plan.
 
@@ -93,11 +93,15 @@ With the suggested `shiny` and `callr` packages installed, `cttiR::setup_app()`
 opens a local Fast/Detailed builder. `cttiR::configure(path)` previews and applies
 explicit changes through the same synchronization engine. Read-only tools run in
 background workers; stale previews are refused. Detailed configuration currently
-uses validated JSON. The full questionnaire, saved drafts and visual review are
-still pending. This interface is for local use, not remote multi-user hosting.
+uses validated JSON. Export and restore an unfinished draft as a local JSON file;
+restoring requires a fresh preview and keeps the current parent directory.
+Configure drafts are bound to their project identity. Exported answers may include
+sensitive user text, so review the file before sharing. The full questionnaire
+and remaining workflow views are still pending. This interface is for local use, not remote multi-user hosting.
 
-Still pending: reflowR and analysis adapters, verified API/documentation catalog,
-remote catalog refresh, workflow-model qualification, grounded planning, the complete application workflow,
+Still pending: complete standard analysis adapters, approved documentation for all
+workflow dependencies, non-GitHub source refresh, workflow-model qualification,
+grounded planning, the complete application workflow,
 the complete workflow lifecycle and full audit coverage. Unimplemented
 APIs are not exported as placeholders. See [CURRENT_STATE.md](CURRENT_STATE.md).
 
@@ -105,8 +109,8 @@ To build and test locally with the declared dependencies installed:
 
 ```sh
 R CMD build .
-R CMD check --no-manual cttiR_0.0.10.tar.gz
-R CMD INSTALL cttiR_0.0.10.tar.gz
+R CMD check --no-manual cttiR_0.0.11.tar.gz
+R CMD INSTALL cttiR_0.0.11.tar.gz
 ```
 
 MIT licensed. Milestone 0.0.5 passed hosted checks on Linux release/oldrel/devel,

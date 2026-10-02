@@ -12,6 +12,7 @@ app_config <- function(text) {
   value <- tryCatch(jsonlite::fromJSON(text, simplifyVector = FALSE), error = function(e) {
     abort_cttir("Detailed configuration must be valid JSON.")
   })
+  if (!is.list(value)) abort_cttir("Detailed configuration must be a JSON object.", "cttir_schema_error")
   validate_config(value)
 }
 
@@ -91,6 +92,14 @@ builder_ui <- function(id, mode, path) {
       shiny::textAreaInput(ns("config"), "Optional configuration (JSON)", value = "{}", rows = 8),
       shiny::helpText("Unknown is a valid scientific state. Detailed values remain in the draft when switching to Fast mode.")
     ),
+    shiny::tags$details(
+      shiny::tags$summary("Save or resume a draft"),
+      shiny::helpText("Export a JSON file to a location you choose. It includes your text and configuration; review them for sensitive content. The parent directory, local bindings and accepted preview are not exported."),
+      shiny::downloadButton(ns("save_draft"), "Export draft"),
+      shiny::fileInput(ns("load_draft"), "Restore a draft and replace current answers", accept = ".json"),
+      shiny::helpText("Restoring requires a new preview. A creation draft uses the currently selected parent directory; a Configure draft must belong to this project."),
+      shiny::textOutput(ns("draft_status"))
+    ),
     shiny::actionButton(ns("preview"), "Preview changes", class = "btn-primary"),
     shiny::actionButton(ns("apply"), if (existing) "Apply reviewed changes" else "Create reviewed project"),
     shiny::actionButton(ns("cancel"), "Cancel preview"),
@@ -108,7 +117,7 @@ builder_ui <- function(id, mode, path) {
 
 builder_server <- function(id, path = NULL, worker = app_worker) {
   shiny::moduleServer(id, function(input, output, session) {
-    state <- shiny::reactiveValues(job = NULL, preview = NULL, accepted = NULL, result = NULL, tool_result = NULL, status = "Ready. No files have been changed.")
+    state <- shiny::reactiveValues(job = NULL, preview = NULL, accepted = NULL, result = NULL, tool_result = NULL, status = "Ready. No files have been changed.", revision = 0L, draft_hash = NULL, exported_hash = NULL)
     draft <- shiny::reactive({
       config <- app_config(input$config)
       if (!is.null(path)) {
@@ -117,6 +126,69 @@ builder_server <- function(id, path = NULL, worker = app_worker) {
       list(name = input$name, type = input$type, goal = input$goal, path = input$parent, config = config)
     })
     signature <- function(args) content_hash(json_text(args))
+    draft_record <- function() {
+      args <- draft()
+      app_draft_validate(list(
+        schema_version = 1L, operation = if (is.null(path)) "create" else "configure",
+        mode = if (identical(input$mode, "detailed")) "detailed" else "fast",
+        project = if (is.null(path)) args[c("name", "type", "goal")] else NULL,
+        project_id = if (is.null(path)) NULL else read_project(path)$spec$project$id,
+        config = args$config
+      ))
+    }
+    shiny::observe({
+      current <- signature(list(input$name, input$type, input$goal, input$parent, input$config))
+      if (!identical(current, shiny::isolate(state$draft_hash))) {
+        state$draft_hash <- current
+        state$revision <- shiny::isolate(state$revision) + 1L
+        state$accepted <- NULL
+        state$preview <- NULL
+      }
+    })
+    restore_draft <- function(value) {
+      if (!is.null(state$job)) abort_cttir("Wait for the current operation before restoring a draft.")
+      value <- app_draft_validate(value)
+      operation <- if (is.null(path)) "create" else "configure"
+      if (!identical(value$operation, operation) ||
+          (!is.null(path) && !identical(value$project_id, read_project(path)$spec$project$id))) {
+        abort_cttir("This draft belongs to a different project or builder mode.", "cttir_schema_error")
+      }
+      state$accepted <- NULL
+      state$preview <- NULL
+      state$result <- NULL
+      shiny::updateRadioButtons(session, "mode", selected = value$mode)
+      shiny::updateTextAreaInput(session, "config", value = json_text(value$config, TRUE))
+      if (is.null(path)) {
+        shiny::updateTextInput(session, "name", value = value$project$name)
+        shiny::updateSelectInput(session, "type", selected = value$project$type)
+        shiny::updateTextAreaInput(session, "goal", value = value$project$goal)
+      }
+      state$exported_hash <- signature(value)
+      state$status <- "Draft restored. Check the answers and parent directory, then preview again."
+      invisible(value)
+    }
+    output$save_draft <- shiny::downloadHandler(
+      filename = function() "cttir-draft.json",
+      contentType = "application/json",
+      content = function(file) {
+        value <- draft_record()
+        writeLines(json_text(value, TRUE), file, useBytes = TRUE)
+        state$exported_hash <- signature(value)
+      }
+    )
+    shiny::observeEvent(input$load_draft, {
+      tryCatch(restore_draft(app_draft_read(input$load_draft$datapath)),
+        error = function(e) state$status <- if (inherits(e, "cttir_error")) conditionMessage(e) else "Could not restore the draft."
+      )
+    })
+    output$draft_status <- shiny::renderText({
+      current <- tryCatch(signature(draft_record()), error = function(e) NULL)
+      if (!is.null(current) && identical(current, state$exported_hash)) {
+        paste("Revision", state$revision, "matches the last exported or restored draft. Keep that file to resume.")
+      } else {
+        paste("Revision", state$revision, "has unexported answers. Export before leaving; drafts are not saved automatically.")
+      }
+    })
     context <- function() {
       if (is.null(path)) return(current_catalog_manifest())
       p <- read_project(path)
@@ -221,6 +293,12 @@ builder_server <- function(id, path = NULL, worker = app_worker) {
         return()
       }
       if (job$purpose == "preview") {
+        current_args <- tryCatch(draft(), error = function(e) NULL)
+        current_args$dry_run <- TRUE
+        if (!identical(signature(current_args), signature(job$args))) {
+          state$status <- "The draft changed while planning. Preview again."
+          return()
+        }
         if (!identical(job$catalog, content_hash(json_text(context())))) {
           state$status <- "The catalog changed while planning. Preview again."
           return()
@@ -262,6 +340,11 @@ builder_server <- function(id, path = NULL, worker = app_worker) {
 #' the local interface. Fast and Detailed share one draft and the package APIs.
 #' Preview, catalog queries and audits use isolated background R workers. Creation
 #' requires a reviewed preview. Scientific analysis is never executed by the UI.
+#' Drafts can be exported to JSON and restored explicitly. They retain answers
+#' but exclude the parent directory, local data bindings and accepted plans.
+#' Restored drafts require a new preview; Configure drafts are bound to the
+#' existing project identity. Exported text may contain user-supplied sensitive
+#' information. Drafts are not automatically saved.
 #' @param mode Initial `fast` or `detailed` view.
 #' @param launch.browser Open the browser when the application is run.
 #' @return A `shiny.appobj`. Shiny and callr must be installed. Run locally only;

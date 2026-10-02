@@ -1,3 +1,11 @@
+# cttiR 0.0.11
+
+* Export and restore bounded local JSON drafts without retaining accepted plans.
+* Require JSON objects in UI configuration and drafts, preventing strings from
+  being interpreted as local configuration file paths.
+* Reject foreign project drafts and preview results whose answers changed while
+  the background worker was running.
+
 # cttiR 0.0.10
 
 * Add an executable introductory vignette covering offline creation, synchronization,

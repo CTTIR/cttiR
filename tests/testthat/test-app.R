@@ -8,15 +8,6 @@ test_that("application construction never creates a project", {
   expect_error(app_config('{"unknown":true}'), class = "cttir_schema_error")
 })
 
-app_test_worker <- function(operation, args) {
-  if (isFALSE(args$dry_run) && operation == "project") expect_type(attr(args, "cttir_catalog_fingerprint"), "character")
-  if (isFALSE(args$dry_run) && operation == "sync") expect_type(attr(args, "cttir_sync_plan"), "character")
-  result <- tryCatch(list(ok = TRUE, value = do.call(getExportedValue("cttiR", operation), args)),
-    error = function(e) list(ok = FALSE, message = conditionMessage(e))
-  )
-  list(is_alive = function() FALSE, get_result = function() result, kill = function() TRUE)
-}
-
 test_that("Fast and Detailed share a draft and require a current preview", {
   skip_if_not_installed("shiny")
   parent <- new_parent()

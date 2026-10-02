@@ -1,6 +1,25 @@
 # cttiR development state
 
-Updated: 2026-10-02. Version: 0.0.10. License: MIT.
+Updated: 2026-10-02. Version: 0.0.11. License: MIT.
+
+## Milestone 11: explicit local draft persistence
+
+The local interface exports bounded JSON answers and restores creation/Configure
+drafts. Drafts omit parent paths, data bindings and accepted plans; Configure
+restores require the same project identity. Unknown keys, duplicate keys, large
+files, malformed JSON and path-valued configuration are refused. Restoring or
+editing answers invalidates the accepted preview, including answers changed
+while a background preview is running. Revision/export status makes unsaved
+answers visible. There is no automatic saving or complete questionnaire yet.
+
+Browser export updated the live status correctly. Browser upload chooser and
+application screenshot capture timed out; these browser checks remain incomplete.
+A narrow viewport DOM check found no document overflow; the file input is hidden
+by its upload control. Server tests cover restore, project isolation, fresh
+preview/application, active-job refusal and stale-result rejection. Full source
+check passed with 437 assertions, zero errors/warnings and only New submission.
+Coverage is 83.76%; installed examples, lint and pkgdown pass. Evidence is under
+artifacts/implementation/milestone11-*. Hosted validation follows publication.
 
 ## Milestone 10: executable introductory vignette
 
@@ -23,9 +42,9 @@ choice); it produced labelled NA test results once per variable. These are local
 candidate smokes only. Source revision alignment, full corpus, mapping/guards,
 generated adapters and workflow approvals are still pending.
 
-Milestone 9 commit 84be55527f58e18be087eda99b70c54e6ad4024c is on main. Four
-hosted jobs passed; oldrel dependency provisioning is still running in run
-36974981221. This is not a completed five-platform pass for that commit.
+Milestone 9 commit 84be55527f58e18be087eda99b70c54e6ad4024c is on main. All five
+hosted jobs passed in run 36974981221. Milestone 10 (bd787b5) is published;
+all five hosted jobs passed in run 36976603611.
 
 ## Milestone 9: guarded catalog writer recovery
 
@@ -43,7 +62,7 @@ verified active preimage.
 A real installed 0.0.9 worker was terminated after activation: live writer refusal,
 postimage preservation, retained journal and rollback passed. Source check: 406
 assertions, zero errors/warnings and only the New submission NOTE. Installed
-examples, lint and pkgdown pass. Four hosted jobs passed; oldrel provisioning remains pending as recorded above.
+examples, lint and pkgdown pass. All five hosted jobs passed.
 
 Milestone 8 commit bd045faeb2c1ada573cf4799a9015e141bd2ceda passed all five
 hosted jobs in run 36974366046.

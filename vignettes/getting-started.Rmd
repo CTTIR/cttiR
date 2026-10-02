@@ -199,8 +199,12 @@ workflowr and does not claim all upstream reproducibility features.
 
 With `shiny` and `callr` installed, `setup_app()` provides Fast/Detailed creation,
 and `configure(path)` uses the same synchronization engine. It is a local
-interface; the full typed questionnaire, saved drafts and visual review are
-still incomplete.
+interface. Use **Save or resume a draft** to export a JSON file or restore saved
+answers. Drafts contain user text/configuration but exclude the parent directory,
+local bindings and accepted preview. Restoring requires a fresh preview, and
+Configure drafts must match the project identity. Review sensitive content before
+sharing; drafts are not saved automatically. The full typed questionnaire and
+remaining workflow views are still incomplete.
 
 ```{r optional-tools, eval=FALSE}
 cttiR::setup_app()

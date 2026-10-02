@@ -20,4 +20,9 @@ Returns a Shiny application. Printing it in an interactive R session launches
 the local interface. Fast and Detailed share one draft and the package APIs.
 Preview, catalog queries and audits use isolated background R workers. Creation
 requires a reviewed preview. Scientific analysis is never executed by the UI.
+Drafts can be exported to JSON and restored explicitly. They retain answers
+but exclude the parent directory, local data bindings and accepted plans.
+Restored drafts require a new preview; Configure drafts are bound to the
+existing project identity. Exported text may contain user-supplied sensitive
+information. Drafts are not automatically saved.
 }
