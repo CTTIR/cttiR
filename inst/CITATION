@@ -1,0 +1,10 @@
+bibentry(
+  bibtype = "Manual",
+  title = "{cttiR}: CTTIR Project Builder",
+  author = person("R.", "Heller", email = "raban.heller@uni-ulm.de"),
+  year = "2026",
+  note = paste("R package version", meta$Version),
+  url = "https://github.com/CTTIR/cttiR",
+  textVersion = paste0("Heller R (2026). cttiR: CTTIR Project Builder. R package version ",
+    meta$Version, ". https://github.com/CTTIR/cttiR")
+)
