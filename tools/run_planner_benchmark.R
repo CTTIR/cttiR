@@ -64,6 +64,7 @@ progress <- function(label) {
 
 compact_rows <- function(rows) {
   lapply(rows, function(r) {
+    r$proposal$capability_ids <- as.list(r$proposal$capability_ids)
     list(id = r$id, cold = r$cold, planner_mode = r$planner_mode, fallback_reason = r$fallback_reason,
       attempts = r$attempts, errors = as.list(r$errors), latency_seconds = round(r$latency_seconds, 3),
       load_seconds = round(r$load_seconds, 3), prompt_tokens = r$prompt_tokens, output_tokens = r$output_tokens,
@@ -154,7 +155,11 @@ if (length(qualified)) {
 }
 report <- list(
   schema_version = 1L, benchmark = "m22-planner", corpus_version = corpus$corpus_version,
-  prompt_version = corpus$prompt_version, started = format(started, "%Y-%m-%dT%H:%M:%S%z"),
+  prompt_version = corpus$prompt_version,
+  prompt_system_sha256 = internal("content_hash")(internal("planner_prompt")("x", "x", "x")$system),
+  corpus_sha256 = digest::digest(file = file.path(root, "inst", "benchmarks", "planner-cases.json"), algo = "sha256"),
+  schema_sha256 = digest::digest(file = file.path(root, "inst", "schema", "planner.schema.json"), algo = "sha256"),
+  started = format(started, "%Y-%m-%dT%H:%M:%S%z"),
   finished = format(Sys.time(), "%Y-%m-%dT%H:%M:%S%z"), hardware = hardware, endpoint = endpoint,
   processor_profile = processor, selection_policy = policy,
   deterministic = results$deterministic, candidates = unname(candidates),
