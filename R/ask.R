@@ -11,6 +11,43 @@ ask_stage_order <- c("project", "import", "check", "tidy", "describe", "figures"
 ask_injection_markers <- c("ignore previous", "ignore all previous", "ignore the above", "disregard",
   "system prompt", "you are now", "new instructions", "vergiss", "ignoriere")
 
+# Phrase patterns for questions (regular expressions on lower-case text). They
+# complement registry keywords with common ways of naming outcome types,
+# repeated measurements and tasks; they only propose capabilities to look up.
+ask_patterns <- list(
+  outcome_family = list(
+    time_to_event = c("time (until|to|till) (the )?(death|relapse|event|failure|recurrence|progression|discharge)",
+      "lost to follow", "censor", "zeit bis (zum|zur)", "zensiert"),
+    binary = c("yes( or |/| vs\\.? )no", "\\bwhether\\b", "readmi", "dichotom", "ja( oder |/)nein",
+      "eingetreten ist oder nicht", "occurred or not"),
+    continuous = c("regress [a-z ]+ on ", "blood pressure", "glucose", "laborwert", "continuous")
+  ),
+  unit_structure = list(
+    longitudinal = c("repeatedly", "each (participant|patient|subject)", "per (participant|patient|subject)",
+      "several (visits|time ?points)", "over (the )?(visits|follow-up)", "wiederholt", "pro (patient|teilnehmer)")
+  ),
+  capability = list(
+    std.describe.descrtab2 = c("overview table", "demographic", "characteristics", "summary of the (sample|population|patients|cohort)",
+      "übersichtstabelle", "uebersichtstabelle", "patientenmerkmale", "merkmale der"),
+    std.import.delimited = c("(read|load|import)( in)? [a-z ]*(csv|tsv|delimited|text file)", "(csv|tsv)",
+      "einlesen", "importieren"),
+    std.figures.accessible = c("greyscale", "grayscale", "\\bchart\\b", "\\bplot", "visuali[sz]", "graustufen")
+  )
+)
+
+ask_pattern_hit <- function(text, patterns) any(vapply(patterns, function(p) grepl(p, text, perl = TRUE), logical(1)))
+
+ask_signals <- function(text, registry) {
+  signals <- infer_goal(text, registry)
+  for (field in c("outcome_family", "unit_structure")) {
+    if (!identical(signals[[field]], "unknown")) next
+    hits <- names(Filter(function(patterns) ask_pattern_hit(text, patterns), ask_patterns[[field]]))
+    if (length(hits) == 1L) signals[[field]] <- hits
+  }
+  if (identical(signals$aim, "unknown") && !identical(signals$outcome_family, "unknown")) signals$aim <- "explanatory"
+  signals
+}
+
 ask_snippets <- function() {
   doc <- read_document(resource_file("extdata", "ask-snippets.json"))
   stats::setNames(doc$snippets, vapply(doc$snippets, function(x) x$capability, character(1)))
@@ -35,6 +72,9 @@ ask_matches <- function(text, registry, signals) {
   ids <- character()
   for (cap in registry$capabilities) {
     if (keyword_hit(text, cap$keywords) || grepl(tolower(cap$title), text, fixed = TRUE)) ids <- c(ids, cap$id)
+  }
+  for (id in names(ask_patterns$capability)) {
+    if (ask_pattern_hit(text, ask_patterns$capability[[id]])) ids <- c(ids, id)
   }
   # A named but unsupported method must not be answered with a nearby engine.
   unsupported_method <- any(vapply(ids, function(id) {
@@ -133,7 +173,7 @@ ask <- function(question, path = NULL, verified_only = TRUE) {
   signals <- if (injected) {
     list(aim = "unknown", outcome_family = "unknown", unit_structure = "unknown", modality = "unknown")
   } else {
-    infer_goal(text, registry)
+    ask_signals(text, registry)
   }
   symbols <- unique(regmatches(question, gregexpr(symbol_pattern, question))[[1]])
   symbol_rows <- lapply(symbols, ask_symbol, catalog = catalog, verified_only = verified_only)
