@@ -59,6 +59,20 @@ stored_topic_aliases <- function(stored) {
   unique(aliases)
 }
 
+# Stored versus indexed reference topics (Rd files) and vignette files of one
+# revision. A complete approval covers only what its decision requires; the rest
+# of the corpus may be indexed by hash without stored text, and reports say so.
+documentation_counts <- function(corpus) {
+  docs <- if (is.null(corpus)) list() else corpus$documents
+  kind <- vapply(docs, function(d) as.character(d$kind), character(1))
+  topic <- kind == "reference" & grepl("[.]Rd$", vapply(docs, function(d) as.character(d$path), character(1)))
+  stored <- vapply(docs, function(d) identical(d$storage, "source_text"), logical(1))
+  reasons <- vapply(docs[(topic | kind == "vignette") & !stored], document_storage_reason, character(1))
+  list(reference_topics_indexed = sum(topic), reference_topics_stored = sum(topic & stored),
+    vignette_files_indexed = sum(kind == "vignette"), vignette_files_stored = sum(kind == "vignette" & stored),
+    not_stored_reasons = as.list(table(reasons)))
+}
+
 #' Coverage of one approval decision against one package revision
 #'
 #' Complete requires the exact package/version/source hash; every required
@@ -66,7 +80,10 @@ stored_topic_aliases <- function(stored) {
 #' stored for this revision; every required topic is an alias in a stored Rd
 #' file; DESCRIPTION (or DESCRIPTION.in), NAMESPACE and every required document
 #' are stored as source text; the source document manifest is complete; at least
-#' one fixture passed and none failed; and a rights basis is recorded.
+#' one fixture passed and none failed; and a rights basis is recorded. Vignettes
+#' and reference topics a decision does not require are not part of `state`; their
+#' stored and indexed counts are reported in `counts` so completeness is never
+#' read as full documentation coverage.
 #' @param package_record One package record from `extract_source()` or a catalog.
 #' @param approval One validated decision.
 #' @return A list with `state`, `missing` and `counts`.
@@ -130,14 +147,14 @@ approval_coverage <- function(package_record, approval) {
   list(
     state = if (all(lengths(missing) == 0L)) "complete" else "incomplete",
     missing = missing,
-    counts = list(
+    counts = c(list(
       required_callables = length(callables), covered_callables = sum(covered),
       required_methods = length(methods), covered_methods = sum(method_covered),
       required_objects = length(objects), covered_objects = sum(object_covered),
       required_topics = length(topics), stored_topics = length(intersect(topics, aliases)),
       required_documents = length(documents), stored_documents = sum(documents %in% names(stored)),
       fixtures = length(results), passing_fixtures = sum(results == "pass")
-    )
+    ), documentation_counts(corpus))
   )
 }
 
@@ -290,6 +307,22 @@ approval_diff <- function(before, after) {
     }
   }
   out
+}
+
+# Approval state of every adapter-tested standard-workflow capability in one
+# catalog, decided exactly as the router decides it. The time-to-event figure
+# panel additionally needs survival approved for the figures adapter.
+standard_capability_approvals <- function(catalog, registry = capability_registry()) {
+  caps <- Filter(function(x) startsWith(x$id, "std.") && identical(x$status, "adapter_tested"), registry$capabilities)
+  figures <- caps[["std.figures.accessible"]]
+  if (!is.null(figures)) {
+    figures$packages <- figure_packages(registry, list(outcome_family = "time_to_event"))
+    caps[["std.figures.accessible:time_to_event"]] <- figures
+  }
+  lapply(caps, function(cap) {
+    approval <- capability_approval(cap, catalog)
+    list(status = approval$status, missing = as.list(approval$missing))
+  })
 }
 
 # API comparisons ignore reviewer decisions, which are reported by approval_diff().

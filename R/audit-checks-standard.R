@@ -138,14 +138,26 @@ audit_std_execution <- function(context) {
 }
 
 audit_kb_approvals <- function(context) {
-  catalog <- if (is.null(context$path)) resolve_catalog() else tryCatch(resolve_catalog(context$path), error = function(e) resolve_catalog())
+  catalog <- if (is.null(context$path)) resolve_catalog() else tryCatch(resolve_catalog(context$path), error = function(e) e)
+  pin_note <- NULL
+  if (inherits(catalog, "error")) {
+    # Never substitute silently: name the pin and say which catalog was used.
+    p <- audit_project(context)
+    pin <- if (is.null(p) || inherits(p, "error") || !is.character(p$lock$catalog_id)) "unknown" else p$lock$catalog_id
+    reason <- audit_condition_message(catalog)
+    catalog <- resolve_catalog()
+    pin_note <- list(pin = pin, reason = reason, used = catalog$content_id)
+  }
   decisions <- 0L
   complete <- 0L
   incomplete <- character()
   packages <- 0L
+  docs <- list()
   for (package in catalog$packages) {
     approvals <- Filter(function(x) identical(x$status, "approved"), package$approvals)
-    if (length(approvals)) packages <- packages + 1L
+    if (!length(approvals)) next
+    packages <- packages + 1L
+    docs[[package$name]] <- documentation_counts(package$documentation_corpus)
     for (approval in approvals) {
       decisions <- decisions + 1L
       if (identical(approval_coverage(package, approval)$state, "complete")) {
@@ -155,11 +167,41 @@ audit_kb_approvals <- function(context) {
       }
     }
   }
+  total <- function(field) sum(vapply(docs, function(x) x[[field]], numeric(1)))
+  standard <- standard_capability_approvals(catalog)
+  pending <- Filter(function(x) !identical(x$status, "approved"), standard)
+  pending_text <- vapply(names(pending), function(id) {
+    paste0(id, " (", paste(unlist(pending[[id]]$missing), collapse = ", "), ")")
+  }, character(1))
   evidence <- list(catalog_id = catalog$content_id, approved_packages = packages, decisions = decisions,
-    complete = complete, incomplete = as.list(incomplete))
-  if (!decisions) return(audit_result("fail", "The catalog has no workflow approvals; supported-profile readiness cannot pass.", evidence))
-  if (length(incomplete)) return(audit_result("fail", "Some approvals no longer have complete documentation or API coverage.", evidence))
-  audit_result("pass", paste0(complete, " approvals across ", packages, " package revisions have complete coverage."), evidence)
+    complete = complete, incomplete = as.list(incomplete),
+    pinned_catalog = if (!is.null(pin_note)) pin_note else if (is.null(context$path)) "not_applicable" else "used",
+    standard_capabilities = length(standard), standard_without_approval = as.list(unname(pending_text)),
+    documentation = list(reference_topics_stored = total("reference_topics_stored"),
+      reference_topics_indexed = total("reference_topics_indexed"),
+      vignette_files_stored = total("vignette_files_stored"), vignette_files_indexed = total("vignette_files_indexed"),
+      packages = docs))
+  prefix <- ""
+  if (!is.null(pin_note)) {
+    prefix <- paste0("The project's pinned catalog snapshot ", pin_note$pin, " is unavailable (", pin_note$reason,
+      "); these results were computed against the active catalog ", pin_note$used, " instead. ")
+  }
+  if (!decisions) {
+    return(audit_result("fail", paste0(prefix, "The catalog has no workflow approvals; supported-profile readiness cannot pass."), evidence))
+  }
+  if (length(incomplete)) {
+    return(audit_result("fail", paste0(prefix, "Some approvals no longer have complete documentation or API coverage."), evidence))
+  }
+  if (length(pending)) {
+    message <- paste0(prefix, "Standard workflow capabilities have no valid approval in this catalog, so their stages ",
+      "are approval-pending: ", paste(pending_text, collapse = "; "), ".")
+    return(audit_result("fail", message, evidence))
+  }
+  message <- paste0(prefix, complete, " approvals across ", packages, " package revisions cover their required callables, ",
+    "topics and documents. Their corpora store ", evidence$documentation$reference_topics_stored, " of ",
+    evidence$documentation$reference_topics_indexed, " reference topics and ", evidence$documentation$vignette_files_stored,
+    " of ", evidence$documentation$vignette_files_indexed, " vignette files as text; the rest are indexed by hash only.")
+  audit_result(if (is.null(pin_note)) "pass" else "warning", message, evidence)
 }
 
 audit_res_separation <- function(context) {

@@ -121,3 +121,22 @@ test_that("diff failures cannot activate a candidate snapshot", {
   expect_error(update(), class = "cttir_catalog_corrupt")
   expect_equal(read_document(file.path(f$store, "active.json")), before)
 })
+
+test_that("documents dropped from a bundled corpus record why", {
+  f <- document_fixture()
+  corpus <- document_inventory(f$source, "Synthetic rights")
+  compact <- compact_document_corpus(corpus, "man/keep.Rd")
+  dropped <- Filter(function(d) identical(d$storage, "indexed_not_bundled"), compact$documents)
+  expect_setequal(vapply(dropped, function(d) d$path, character(1)),
+    c("DESCRIPTION", "NAMESPACE", "NEWS.md", "vignettes/guide.Rmd"))
+  expect_true(all(vapply(dropped, function(d) identical(d$reason, "not_required_for_approved_role"), logical(1))))
+  expect_true(all(vapply(dropped, function(d) grepl("not for rights reasons", d$rights_note, fixed = TRUE), logical(1))))
+  expect_true(validate_document_corpus(compact))
+  expect_identical(compact$coverage$indexed_not_bundled, 4L)
+  expect_identical(document_storage_reason(list(storage = "indexed_not_bundled")), "not_required_for_approved_role")
+  expect_identical(document_storage_reason(list(storage = "rights_not_confirmed")), "rights_not_confirmed")
+  expect_true(is.na(document_storage_reason(list(storage = "source_text"))))
+  stored <- which(vapply(compact$documents, function(d) identical(d$storage, "source_text"), logical(1)))
+  compact$documents[[stored[[1]]]]$reason <- "size_budget"
+  expect_error(validate_document_corpus(compact), class = "cttir_catalog_corrupt")
+})
