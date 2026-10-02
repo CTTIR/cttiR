@@ -35,8 +35,9 @@ approval_decisions <- function() {
 validate_approvals <- function(document) {
   document <- validate_document(document, "approvals")
   for (decision in document$decisions) {
-    if (!length(c(approval_text(decision$required_callables), approval_text(decision$required_methods),
-        approval_text(decision$required_objects)))) {
+    scope <- c(approval_text(decision$required_callables), approval_text(decision$required_methods),
+      approval_text(decision$required_objects))
+    if (!length(scope)) {
       abort_cttir("An approval decision must name the callables, methods or objects it covers.",
         "cttir_schema_error", "empty_approval_scope")
     }

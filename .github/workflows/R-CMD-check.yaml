@@ -11,18 +11,20 @@ permissions:
 jobs:
   check:
     runs-on: ${{ matrix.config.os }}
+    name: ${{ matrix.config.os }} (${{ matrix.config.r }}${{ matrix.config.full && ', all suggests' || '' }})
     strategy:
       fail-fast: false
       matrix:
         config:
-          - {os: ubuntu-latest, r: release}
-          - {os: windows-latest, r: release}
-          - {os: macos-latest, r: release}
-          - {os: ubuntu-latest, r: oldrel-1}
-          - {os: ubuntu-latest, r: devel}
+          - {os: ubuntu-latest, r: release, full: true}
+          - {os: windows-latest, r: release, full: false}
+          - {os: macos-latest, r: release, full: false}
+          - {os: ubuntu-latest, r: oldrel-1, full: false}
+          - {os: ubuntu-latest, r: devel, full: false}
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
+      _R_CHECK_FORCE_SUGGESTS_: ${{ matrix.config.full && 'true' || 'false' }}
     steps:
       - uses: actions/checkout@v4
       - uses: r-lib/actions/setup-pandoc@v2
@@ -30,9 +32,37 @@ jobs:
         with:
           r-version: ${{ matrix.config.r }}
           use-public-rspm: true
-      - uses: r-lib/actions/setup-r-dependencies@v2
+      - name: Install all suggested packages
+        if: matrix.config.full
+        uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::rcmdcheck
+          needs: check
+      - name: Install hard dependencies and the standard workflow suggests
+        if: ${{ !matrix.config.full }}
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          dependencies: '"hard"'
+          extra-packages: |
+            any::rcmdcheck
+            any::testthat
+            any::knitr
+            any::rmarkdown
+            any::callr
+            any::withr
+            any::shiny
+            any::dplyr
+            any::readr
+            any::ggplot2
+            any::patchwork
+            any::viridisLite
+            any::RColorBrewer
+            any::colorspace
+            any::png
+            any::broom
+            any::broom.mixed
+            any::nlme
+            any::survival
           needs: check
       - uses: r-lib/actions/check-r-package@v2
         with:

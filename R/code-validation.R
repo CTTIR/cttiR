@@ -153,8 +153,8 @@ validate_generated_code <- function(text, catalog = NULL, approved_only = TRUE) 
       valid_owner <- !is.null(owned) && identical(owned$kind, "function") &&
         owned$verification %in% c("static_api_verified", "installed_api_verified")
       has_approval <- function(x) any(vapply(effective_approvals(x), function(a) identical(a$status, "approved"), logical(1)))
-      approved_route <- !approved_only || (valid_owner && !is.null(approved(owner)[[export]]) &&
-        all(vapply(chain, has_approval, logical(1))))
+      chain_approved <- all(vapply(chain, has_approval, logical(1)))
+      approved_route <- !approved_only || (valid_owner && !is.null(approved(owner)[[export]]) && chain_approved)
       if (!valid_owner || !approved_route) {
         return(add(expr, package, export, "rejected", paste0("reexport_use_owner:", entry$owner_package)))
       }

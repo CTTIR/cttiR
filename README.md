@@ -1,123 +1,96 @@
 # cttiR <img src="man/figures/logo.png" align="right" width="150" alt="cttiR hex logo" />
 
-CTTIR Project Builder creates research project scaffolds from three inputs:
-a name, research type and goal.
+**CTTIR Project Builder — three inputs, one research-ready project.**
 
-This is development milestone `0.0.18`. It provides an offline
-builder, schema validation and a searchable resource snapshot. It does not yet
-provide the complete research workflow described in the development plan.
+cttiR creates a standardized research project from a name, a research type and
+a goal, routes it to a reviewed analysis workflow, and keeps a revision-scoped
+knowledge catalog of the packages that workflow is allowed to call.
 
 ```r
 p <- cttiR::project(
-  "Example Study",
-  "primary_research",
-  "Describe longitudinal measurements",
+  "Example Study", "primary_research",
+  "Describe outcomes and plan an adjusted regression for a tabular cohort",
   path = tempdir()
 )
-print(p)
-
-cttiR::resources("cytometry", repository = "Bioconductor", limit = 5)
+p
 ```
 
-`path` is an existing **parent directory**. This example creates its
-`example_study/` child. Use `dry_run = TRUE` for a read-only preview. Repeating
-the same request preserves accepted identity and edited files. Different inputs,
-unsafe paths and conflicting destinations produce typed errors.
+`path` is an existing **parent** directory; this creates `example_study/`.
+Use `dry_run = TRUE` for a read-only preview. Creation never reads data,
+installs packages, calls a model or contacts a network.
 
-Each project contains a YAML specification, a separate build lock, file ownership
-metadata, a data registry and dictionary, an analysis plan, publication folders
-and a read-only validation script. Data, scientific decisions and approvals remain
-unknown until supplied. No packages are installed, no model is called, no remote
-requests are made and no study code is executed during creation. New projects include a hashed adaptation of the reflowR minimal layout.
-Explicit `Rscript code/render_report.R` uses rmarkdown to render placeholder
-pages and a labelled synthetic example. The pinned provenance and MIT notice
-are included; reflow_init and workflowr are not invoked. Full reflowR analysis
-integration and dependency preparation remain pending. The lock records
-scaffold provenance; it is not an `renv.lock`.
+## What a project contains
 
-Configuration accepts named lists or local YAML/JSON files. Required arguments
-take precedence over configuration; `options` overrides other configuration
-fields. Unknown keys are rejected. Publication and dataset arrays merge by ID.
-New publication entries need all fields of the resolved publication schema.
-Unsupported integration requests fail explicitly. Validate documents with
-`cttiR::validate_config()` and `cttiR::validate_spec()`.
+* `cttir-project.yml`, `cttir-lock.json` and ownership metadata; publication
+  subprojects with their own analysis, manuscript, figure and table trees.
+* The adapted reflowR layout and a reviewed stage library in `code/R/`:
+  delimited import, structural checks, tidy role selection, DescrTab2 or base
+  descriptive tables (no tests), accessible ggplot2/patchwork figures,
+  lm/glm/nlme/survival adapters, diagnostics and broom effect estimates.
+* `config/workflow.yml` with the routed profile, stages, approval status and
+  dependency versions pinned from the catalog snapshot.
+* `Rscript code/run_demo.R`: every stage on synthetic data, with each model
+  adapter checked against an independent reference computation.
+* `Rscript code/run_workflow.R`: study data only after mappings, reviewed model
+  settings, recorded approval, a local binding and approved pinned packages are
+  present — otherwise it lists exactly what is missing.
+* Optional `targets` pipeline, renv environment (prepared in an isolated
+  process) and Git initialisation of the project root only.
 
-Optional `analysis$mapping` records dataset and variable roles, event coding,
-estimand, time meaning and missing-data intent. The builder reports missing
-fields and candidate engines in `p$readiness$analysis`; sync returns the same
-assessment as `result$analysis`. These assessments do not read data or authorize
-model fitting. Predictive, causal and unsupported designs remain explicit gaps.
+## Routing
 
-`cttiR::packages()` and `cttiR::search()` inspect a separate static API catalog
-from 30 public package roots across 40 enumerated CTTIR repositories. It contains
-1,340 export records, with 1,323 statically resolved function signatures.
-The pinned reflowR revision additionally includes 31 licensed documentation texts,
-with image omissions recorded. Search returns bounded literal excerpts. Local
-source registration can declare a reviewed `documentation_rights` basis; otherwise
-only documentation inventory and hashes are retained. Documentation-only changes
-and removed documents participate in immutable updates and rollback. Previous
-bundled catalog pins remain available. Indexed documents do not grant workflow
-approval.
+The router selects `standard_reflowR` when no approved CTTIR specialist adapter
+matches, `hybrid` when approved specialist stages cover part of the work, and
+records specialist candidates without adapters as explicit gaps. Goal keywords
+only suggest unset fields (recorded as `inferred` decisions); explicit options
+always win, and nothing is approved by inference. Biological modalities list
+Bioconductor and Seurat capabilities; clinical tabular goals never route there.
 
-`cttiR::ask()` returns matching source evidence; it does not yet perform
-natural-language planning or generate approved workflow code. Project pins
-prevent silent substitution of another API snapshot.
+## Knowledge catalog and approvals
 
-`cttiR::update()` refreshes explicitly registered sources into
-immutable API and resource snapshots, then activates both through one pointer.
-It never installs packages or changes existing project pins. Use `dry_run = TRUE`
-for a disposable preview and `cttiR::rollback_knowledge(id)` for a rollback preview.
-Removed exports stay removed in the active revision. `mode = "remote"` supports
-registered public GitHub repositories, resolves one commit, and verifies bounded
-source downloads against Git blob hashes. Local mode never fetches remote records.
-Discovery, pruning, non-GitHub fetch backends and Bioconductor release migration
-remain pending. See `help("update", package = "cttiR")` for registration details.
-Applied updates can recover a verified stopped local catalog writer after checking
-the active snapshot and any activation journal. Writer evidence is retained;
-previews never recover locks. Unknown/live writers and corrupt snapshots require
-manual review.
-
-The bundled resource snapshot contains **229 research package candidates** from
-2026-09-26. It preserves source URLs, observed versions, lifecycle information and
-verification limitations. These are dated observations, not current availability
-claims or approved executable adapters. Querying does not install packages.
-Project-scoped queries honor the recorded resource pin and fail if unavailable.
-
-`cttiR::sync()` previews explicit configuration changes and preserves edited files.
-`cttiR::audit()` inspects local integrity; `cttiR::doctor()` provides brief diagnostics.
-Repairs restore missing managed files whose baseline can be verified and recover
-interrupted transactions only when the writer has stopped and hashes match.
-
-`cttiR::setup(dry_run = TRUE)` previews local runtime setup. Explicit setup can
-acquire the pinned portable Ollama runtime on Linux x86_64, verify a local model
-and run a bounded CPU structured-output probe. It refuses unmanaged daemons and
-cloud-backed models. Runtime/model files stay outside the package. Offline mode
-reuses verified artifacts; no model is pulled. The candidate model has passed a
-real inference smoke test but is not yet qualified for workflow planning.
-
-With the suggested `shiny` and `callr` packages installed, `cttiR::setup_app()`
-opens a local Fast/Detailed builder. `cttiR::configure(path)` previews and applies
-explicit changes through the same synchronization engine. Read-only tools run in
-background workers; stale previews are refused. Detailed configuration currently
-uses validated JSON. Export and restore an unfinished draft as a local JSON file;
-restoring requires a fresh preview and keeps the current parent directory.
-Configure drafts are bound to their project identity. Exported answers may include
-sensitive user text, so review the file before sharing. The full questionnaire
-and remaining workflow views are still pending. This interface is for local use, not remote multi-user hosting.
-
-Still pending: complete standard analysis adapters, approved documentation for all
-workflow dependencies, non-GitHub source refresh, workflow-model qualification,
-grounded planning, the complete application workflow,
-the complete workflow lifecycle and full audit coverage. Unimplemented
-APIs are not exported as placeholders. See [CURRENT_STATE.md](CURRENT_STATE.md).
-
-To build and test locally with the declared dependencies installed:
-
-```sh
-R CMD build .
-R CMD check --no-manual cttiR_0.0.18.tar.gz
-R CMD INSTALL cttiR_0.0.18.tar.gz
+```r
+cttiR::packages()                       # 62 package revisions with coverage and approvals
+cttiR::search("nlme::lme")              # revision-scoped evidence
+cttiR::ask("Fit a mixed model for repeated measures")
+cttiR::resources("cytometry", repository = "Bioconductor")
 ```
 
-MIT licensed. Milestone 0.0.5 passed hosted checks on Linux release/oldrel/devel,
-Windows and macOS. Full product acceptance gates remain incomplete.
+The bundled catalog indexes 30 public CTTIR package roots and the standard
+workflow family from verified CRAN, Bioconductor and R 4.6.1 sources. Reviewed
+approvals bind each workflow role to an exact source revision with stored
+reference topics and passing fixture tests; generated code calls only approved
+APIs, which `audit()` re-checks. `ask()` answers from that catalog with cited,
+validated snippets and reports gaps instead of inventing APIs.
+`update()` refreshes registered local, GitHub, CRAN or Bioconductor sources into
+new immutable snapshots (never installing packages); `rollback_knowledge()`
+restores an earlier one. Project pins never change implicitly.
+
+## Maintenance and checks
+
+* `sync()` previews and applies explicit configuration changes and preserves
+  edited user files.
+* `audit()` runs a registry of installation, knowledge, project and standard
+  workflow checks with an explicit repair allowlist; `doctor()` is the brief
+  read-only subset. Readiness levels (`scaffold_ready` to `analysis_ready`)
+  come from local evidence such as receipts and pinned versions.
+* `setup()` prepares an owned, cloud-disabled Ollama runtime on Linux x86_64.
+  The tested local models did not meet the planning thresholds, so the
+  deterministic planner is the default; opt in with
+  `options(cttiR.planner = "local_llm")`.
+* `setup_app()` and `configure()` open the local Shiny application (Fast and
+  Detailed creation with a bilingual questionnaire, Ask, Knowledge, Resources,
+  Audit and Runtime views).
+
+See the vignettes for the getting-started walkthrough, the standard workflow,
+knowledge and approvals, and audit/runtime/privacy. The development record is
+in [CURRENT_STATE.md](CURRENT_STATE.md).
+
+## Limits
+
+Approvals cover pinned package revisions and adapters, not scientific
+conclusions. Prediction, causal, count, Bayesian and specialist CTTIR analyses
+have no reviewed adapter yet and are reported as gaps. Keyword-based answers are
+safe but recall on unseen phrasing is limited (see the held-out benchmark).
+Runtime acquisition is verified on Linux x86_64 only.
+
+MIT licensed.

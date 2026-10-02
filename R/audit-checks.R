@@ -508,7 +508,31 @@ audit_res_bundled <- function(context) {
   if (!result$integrity || result$foreign_key_violations > 0L) {
     return(audit_result("fail", "The bundled resource database failed integrity or foreign-key checks.", result))
   }
-  audit_result("pass", "Verified.", result)
+  parity <- resource_json_parity()
+  result$json_mirror <- parity
+  if (!isTRUE(parity$hash_matches) || length(parity$mismatched_tables)) {
+    return(audit_result("fail", "The JSON mirror differs from its imported hash or from the SQLite table counts.", result))
+  }
+  audit_result("pass", "SQLite integrity, foreign keys and SQLite/JSON parity verified.", result)
+}
+
+# The JSON mirror is stored gzip-compressed; its decompressed bytes must equal the
+# originally imported file, and its table row counts must match the database.
+resource_json_parity <- function() {
+  con <- gzfile(resource_file("extdata", "package-resources.json.gz"), "rb")
+  bytes <- tryCatch(readBin(con, "raw", n = 20000000L), finally = close(con))
+  expected <- read_document(resource_file("extdata", "mirror-hashes.json"))[["package-resources.json"]]
+  mirror <- jsonlite::fromJSON(rawToChar(bytes), simplifyVector = FALSE)
+  db <- DBI::dbConnect(RSQLite::SQLite(), resource_file("extdata", "package-resources.sqlite"), flags = RSQLite::SQLITE_RO)
+  on.exit(DBI::dbDisconnect(db), add = TRUE)
+  tables <- setdiff(names(mirror), "manifest")
+  counts <- vapply(tables, function(table) {
+    if (!DBI::dbExistsTable(db, table)) return(NA_integer_)
+    as.integer(DBI::dbGetQuery(db, paste0("SELECT COUNT(*) AS n FROM \"", table, "\""))$n)
+  }, integer(1))
+  mismatched <- tables[is.na(counts) | counts != lengths(mirror[tables])]
+  list(hash_matches = identical(digest::digest(bytes, algo = "sha256", serialize = FALSE), expected),
+    tables = length(tables), mismatched_tables = as.list(mismatched))
 }
 
 # Project ----------------------------------------------------------------------
@@ -543,11 +567,7 @@ audit_checks_project <- function() {
       repair_id = "recover_interrupted_transaction", evidence_schema = c("pending", "write_lock", "recovery_lock")),
     project_check("PRJ-008", "Interrupted transaction journals are recoverable from verified backups.",
       audit_prj_journals, required = TRUE, read_effects = c("reads_project_metadata", "reads_runtime_metadata"),
-      repair_id = "recover_interrupted_transaction", evidence_schema = c("journals", "paths")),
-    project_check("STD-002", "Standard workflow adapter and reflowR integration evidence.",
-      audit_std_adapter, required = FALSE, read_effects = "reads_project_metadata"),
-    project_check("STD-003", "Recorded analysis configuration completeness (no data or model validation).",
-      audit_std_analysis, required = FALSE, read_effects = "reads_project_metadata")
+      repair_id = "recover_interrupted_transaction", evidence_schema = c("journals", "paths"))
   )
 }
 
@@ -790,22 +810,6 @@ audit_prj_journals <- function(context) {
   audit_result("warning", message, list(journals = journals, paths = paths))
 }
 
-audit_std_adapter <- function(context) {
-  audit_with_project(context, function(p) {
-    audit_result("not_tested", "Workflow adapter validation remains pending.")
-  })
-}
-
-audit_std_analysis <- function(context) {
-  audit_with_project(context, function(p) {
-    analysis <- analysis_configuration(p$spec)
-    audit_result(if (analysis$state == "incomplete") "warning" else "pass",
-      paste("Analysis configuration:", analysis$state,
-        "- missing fields:", length(analysis$missing_fields),
-        "- capability gaps:", length(analysis$capability_gaps),
-        "; no data or model validation performed."))
-  })
-}
 
 # Integration ------------------------------------------------------------------
 

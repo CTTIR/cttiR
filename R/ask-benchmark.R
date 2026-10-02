@@ -20,8 +20,8 @@ ask_benchmark <- function(cases = read_document(resource_file("benchmarks", "ask
       supported = , cross = all(expected %in% approved),
       negative = {
         absent <- if (is.null(case$symbol_absent)) NULL else case$symbol_absent
-        clean <- is.null(absent) || (!grepl(absent, a$code, fixed = TRUE) &&
-          any(grepl(absent, unlist(a$gaps), fixed = TRUE)))
+        reported <- !is.null(absent) && any(grepl(absent, unlist(a$gaps), fixed = TRUE))
+        clean <- is.null(absent) || (!grepl(absent, a$code, fixed = TRUE) && reported)
         clean && !any(grepl("^std[.]model[.]", approved))
       },
       gap = case$gap %in% unlist(a$capabilities) && !case$gap %in% approved &&

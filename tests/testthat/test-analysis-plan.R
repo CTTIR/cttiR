@@ -129,7 +129,7 @@ test_that("variable names and logical locations remain unevaluated data", {
 test_that("project audits distinguish recorded configuration from workflow approval", {
   p <- project("Audit mapping", "methods", "Goal", new_parent(), mapped_analysis())
   report <- audit(p$path, scope = "project")
-  expect_equal(report$checks$status[report$checks$id == "STD-003"], "pass")
-  expect_equal(report$checks$status[report$checks$id == "STD-002"], "not_tested")
+  status <- stats::setNames(report$checks$status, report$checks$id)
+  expect_equal(unname(status[c("STD-001", "STD-002", "STD-003", "STD-004", "STD-005")]), rep("pass", 5))
   expect_false(analysis_configuration(read_project(p$path)$spec)$executable)
 })

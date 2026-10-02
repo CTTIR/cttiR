@@ -1,3 +1,37 @@
+# cttiR 0.1.0
+
+* Route every project through a deterministic capability router: the standard
+  reflowR profile is selected when no approved CTTIR specialist adapter matches,
+  approved specialist stages yield a hybrid profile, and infrastructure never
+  counts as specialist evidence. Goal keywords suggest only unset fields.
+* New projects use template 0.3.0: the adapted reflowR layout plus a reviewed
+  stage library (delimited import, structural checks, dplyr role selection,
+  DescrTab2 or base descriptive tables without tests, accessible
+  ggplot2/patchwork figures, lm/glm/nlme/survival adapters, diagnostics and
+  broom effects), a synthetic demonstration checked against independent
+  references and a guarded study-data runner.
+* Bundle the standard package family (tidyverse components, DescrTab2,
+  ggplot2/patchwork/palettes, model engines, broom, rendering, targets, renv,
+  Bioconductor containers, Seurat and R 4.6.1 base packages) from verified
+  sources, with 57 reviewed approvals bound to exact source revisions.
+* `ask()` returns grounded steps, prerequisites, approved revisions, citations
+  and reviewed snippets validated against the approved function table.
+* Optional targets pipelines, renv environments prepared in an isolated process
+  and Git initialisation of the generated project only.
+* Accessible figure policy validation, Bioconductor/Seurat interoperability
+  helpers with loss reports and donor-level pseudobulk, and modality routing.
+* CRAN and Bioconductor source backends, remote resource refresh, bounded
+  discovery, pruning with tombstones and Bioconductor release policy in
+  `update()`.
+* Audit check registry with standard-workflow, resource and approval checks,
+  allowlisted repairs (including catalog pointer recovery) and readiness levels
+  derived from local receipts.
+* A modular Shiny application with a bilingual conditional questionnaire,
+  knowledge, resources, audit and runtime views.
+* A schema-constrained local-model planner with deterministic fallback and a
+  live benchmark; no tested model met the thresholds, so planning stays
+  deterministic by default.
+
 # cttiR 0.0.18
 
 * Record typed model choices separately from variable mappings: intercept/link,

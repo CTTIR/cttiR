@@ -29,3 +29,10 @@ test_that("project resource queries honor pins without fallback", {
   jsonlite::write_json(x, lock, auto_unbox = TRUE)
   expect_error(resources(path = p$path), class = "cttir_source_unavailable")
 })
+
+test_that("the compressed JSON mirror is the imported file and matches the database", {
+  parity <- resource_json_parity()
+  expect_true(parity$hash_matches)
+  expect_gte(parity$tables, 10L)
+  expect_length(parity$mismatched_tables, 0L)
+})

@@ -79,7 +79,8 @@ audit_result <- function(status, message, evidence = NULL) {
 
 # Integrators append further providers here, e.g. audit_checks_standard.
 audit_check_providers <- function() {
-  list(audit_checks_installation, audit_checks_knowledge, audit_checks_project, audit_checks_integration)
+  list(audit_checks_installation, audit_checks_knowledge, audit_checks_project, audit_checks_integration,
+    audit_checks_standard)
 }
 
 audit_builtin_checks <- function() {

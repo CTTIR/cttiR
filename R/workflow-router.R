@@ -169,8 +169,9 @@ route_workflow <- function(spec, requested = "auto", catalog = catalog_snapshot(
       gaps <- c(gaps, "unsupported_outcome_or_unit_structure")
     }
   }
-  stages <- c(stages, list(route_stage(registry, catalog, "demo", "std.demo.synthetic"),
-    route_stage(registry, catalog, "report", "std.report.render")))
+  closing <- list(route_stage(registry, catalog, "demo", "std.demo.synthetic"),
+    route_stage(registry, catalog, "report", "std.report.render"))
+  stages <- c(stages, closing)
   # Orchestration is infrastructure: it adds targets to the lean manifest only when requested.
   if (identical(spec$workflow$pipeline, "targets")) {
     stages <- c(stages, list(route_stage(registry, catalog, "pipeline", "std.pipeline.targets")))

@@ -21,10 +21,11 @@ test_that("static extraction never executes code and preserves unresolved export
   expect_error(read_catalog(file), class = "cttir_catalog_corrupt")
 })
 
-test_that("the public catalog exposes revision-scoped evidence without approval claims", {
+test_that("the public catalog exposes revision-scoped evidence and approvals only where reviewed", {
   p <- packages()
   expect_gte(nrow(p), 28)
-  expect_true(all(p$approved == 0L))
+  expect_true(all(p$approved[p$provider == "CTTIR"] == 0L))
+  expect_true(any(p$approved > 0L))
   hit <- search("reflowR::reflow_init")
   expect_equal(nrow(hit), 1L)
   expect_match(hit$snippet, "git = TRUE", fixed = TRUE)
@@ -79,7 +80,9 @@ test_that("reindexed bundled evidence retains the previous immutable snapshot", 
   expect_true(all(vapply(previous$packages, function(x) is.null(x$static_assignment_version), logical(1))))
   hit <- search("delphyr::accept_panel_invitation")
   expect_match(hit$evidence, "/packages/delphyr/R/invitations.R", fixed = TRUE)
-  expect_equal(sum(vapply(current$packages, function(x) x$coverage$approved, numeric(1))), 0)
+  cttir <- Filter(function(x) identical(x$family, "CTTIR"), current$packages)
+  expect_equal(sum(vapply(cttir, function(x) x$coverage$approved, numeric(1))), 0)
+  expect_equal(sum(vapply(previous$packages, function(x) x$coverage$approved, numeric(1))), 0)
 })
 
 test_that("nested source citations add exactly one directory prefix", {

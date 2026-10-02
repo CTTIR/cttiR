@@ -177,14 +177,26 @@ ask <- function(question, path = NULL, verified_only = TRUE) {
         row$revision, row$export, row$reason, NA_character_, row$citation)
     }
   }
+  if (!verified_only) {
+    # Unverified mode also cites literal documentation excerpts, labelled as such.
+    documents <- search(question, path = path, limit = 10L)
+    documents <- documents[documents$kind == "document", , drop = FALSE]
+    for (i in seq_len(nrow(documents))) {
+      evidence[nrow(evidence) + 1L, ] <- list(documents$id[[i]], documents$package[[i]], NA_character_,
+        documents$revision[[i]], NA_character_, "documentation_indexed", NA_character_, documents$evidence[[i]])
+    }
+  }
   evidence <- unique(evidence)
   gaps <- character()
   for (stage in pending) {
     cap <- registry$capabilities[[stage$capability]]
-    alternatives <- vapply(Filter(function(x) identical(x$stage, cap$stage) && identical(x$status, "adapter_tested") &&
-        identical(capability_approval(x, catalog)$status, "approved"), registry$capabilities), function(x) x$id, character(1))
-    gaps <- c(gaps, paste0(stage$capability, " (", cap$title, "): ", stage$status,
-      if (length(alternatives)) paste0("; nearest approved alternatives: ", paste(alternatives, collapse = ", ")) else ""))
+    same_stage <- Filter(function(x) {
+      identical(x$stage, cap$stage) && identical(x$status, "adapter_tested") &&
+        identical(capability_approval(x, catalog)$status, "approved")
+    }, registry$capabilities)
+    alternatives <- vapply(same_stage, function(x) x$id, character(1))
+    nearest <- if (length(alternatives)) paste0("; nearest approved alternatives: ", paste(alternatives, collapse = ", ")) else ""
+    gaps <- c(gaps, paste0(stage$capability, " (", cap$title, "): ", stage$status, nearest))
   }
   for (row in symbol_rows) {
     if (!identical(row$status, "ok")) gaps <- c(gaps, paste0(row$symbol, ": ", if (row$found) row$reason else "not in the pinned catalog revision"))
@@ -194,8 +206,9 @@ ask <- function(question, path = NULL, verified_only = TRUE) {
     cap <- registry$capabilities[[x$capability]]
     paste0(x$stage, ": ", cap$title, " [", x$capability, "; ", paste(unlist(x$packages), collapse = ", "), "]")
   }, character(1))
-  prerequisites <- unique(unlist(c(lapply(approved, function(x) unlist(registry$capabilities[[x$capability]]$requirements)),
-    lapply(approved, function(x) ask_prerequisites(x$capability)))))
+  requirements <- lapply(approved, function(x) unlist(registry$capabilities[[x$capability]]$requirements))
+  mapping_needs <- lapply(approved, function(x) ask_prerequisites(x$capability))
+  prerequisites <- unique(unlist(c(requirements, mapping_needs)))
   index <- stats::setNames(catalog$packages, vapply(catalog$packages, function(p) p$name, character(1)))
   used <- unique(unlist(lapply(approved, function(x) setdiff(unlist(x$packages), "base"))))
   packages <- data.frame(package = used,

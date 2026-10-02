@@ -149,10 +149,15 @@ test_that("oversize rendered vignettes and binary assets are inventoried but not
 
 test_that("historical snapshots without approval or object evidence remain readable", {
   withr::local_options(cttiR.catalog_dir = file.path(new_parent(), "store"))
-  catalog <- resolve_catalog()
-  expect_true(all(vapply(catalog$packages, function(x) is.null(x$approvals) && is.null(x$s4), logical(1))))
-  expect_true(all(packages()$approved_roles == ""))
-  expect_equal(nrow(approved_callables(catalog)), 0L)
-  expect_equal(nrow(approval_diff(catalog, catalog)), 0L)
+  history <- list.files(resource_file("extdata", "history"), "[.]json[.]gz$")
+  for (id in sub("[.]json[.]gz$", "", history)) {
+    catalog <- catalog_snapshot(id)
+    expect_true(all(vapply(catalog$packages, function(x) is.null(x$approvals) && is.null(x$s4), logical(1))))
+    expect_equal(nrow(approved_callables(catalog)), 0L)
+    expect_equal(nrow(approval_diff(catalog, catalog)), 0L)
+  }
+  current <- resolve_catalog()
+  expect_gt(nrow(approved_callables(current)), 0L)
+  expect_true(any(nzchar(packages()$approved_roles)))
   expect_identical(search("reflowR::reflow_init")$verification, "static_api_verified")
 })

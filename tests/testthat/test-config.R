@@ -57,7 +57,8 @@ test_that("unimplemented integrations are never silently claimed", {
     ), class = "cttir_input_error")
   p <- project("Standard", "methods", "Goal", tempdir(), dry_run = TRUE)
   expect_equal(p$spec$workflow$profile, "standard_reflowR")
-  expect_contains(p$readiness$blockers, "workflow_approval_pending")
+  expect_false("workflow_approval_pending" %in% p$readiness$blockers)
+  expect_true(all(vapply(p$readiness$workflow$stages, function(x) identical(x$status, "approved"), logical(1))))
   expect_equal(p$spec$workflow$table_backend, "DescrTab2")
   bad <- p$spec
   bad$schema_version <- 2L

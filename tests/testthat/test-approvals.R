@@ -125,9 +125,10 @@ test_that("attached approvals ignore other revisions and never count incomplete 
 test_that("decision files are validated strictly", {
   f <- approval_fixture()
   hash <- source_hash_of(f)
-  expect_length(approval_decisions(), 0L)
+  bundled_count <- length(validate_approvals(read_document(resource_file("extdata", "approvals.json"))))
+  expect_length(approval_decisions(), bundled_count)
   write_decisions(f$decisions, list(decision(hash)))
-  expect_length(approval_decisions(), 1L)
+  expect_length(approval_decisions(), bundled_count + 1L)
   bad <- decision(hash)
   bad$unexpected <- "field"
   invalid <- list(bad, decision("not-a-hash"), decision(hash, status = "granted"),
@@ -143,7 +144,8 @@ test_that("decision files are validated strictly", {
   expect_error(approval_decisions(), class = "cttir_input_error")
   bundled <- read_document(resource_file("extdata", "approvals.json"))
   expect_identical(bundled$schema_version, 1L)
-  expect_length(bundled$decisions, 0L)
+  expect_gt(length(bundled$decisions), 0L)
+  expect_true(all(vapply(bundled$decisions, function(d) identical(d$status, "approved"), logical(1))))
 })
 
 test_that("G27: revision-scoped approvals survive pins and rollback but not source changes", {
