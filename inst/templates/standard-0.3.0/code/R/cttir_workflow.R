@@ -640,61 +640,65 @@ cw_run_demo <- function(root = ".", out_dir = file.path(root, "demo", "outputs")
 
 # Figure panels built only from aliased columns with the project figure policy.
 cw_figures <- function(tidy, analysis, policy, out_dir) {
+  policy <- cf_check_policy(if (is.null(policy)) cf_policy_default() else policy)
   data <- tidy$data
   panels <- list()
   outcome_label <- if ("response" %in% names(data)) cw_label(tidy, "response") else cw_label(tidy, "time")
-  factors <- grep("^x[0-9]+$", names(data), value = TRUE)
+  predictors <- grep("^x[0-9]+$", names(data), value = TRUE)
   group <- NULL
-  for (name in factors) if (is.factor(data[[name]]) && is.null(group)) group <- name
   numeric_x <- NULL
-  for (name in factors) if (is.numeric(data[[name]]) && is.null(numeric_x)) numeric_x <- name
+  for (name in predictors) {
+    if (is.factor(data[[name]]) && is.null(group)) group <- name
+    if (is.numeric(data[[name]]) && is.null(numeric_x)) numeric_x <- name
+  }
   colours <- NULL
+  shapes <- NULL
   if (!is.null(group)) {
-    levels_all <- levels(data[[group]])
-    colours <- cf_palette_categorical(levels_all, policy)
-    shapes <- cf_shapes(levels_all)
+    colours <- cf_palette_categorical(levels(data[[group]]), policy)
+    shapes <- cf_shapes(levels(data[[group]]))
   }
   if ("response" %in% names(data)) {
     panels$distribution <- ggplot2::ggplot(data, ggplot2::aes(x = response)) +
-      ggplot2::geom_histogram(bins = 15, fill = "#3B528B", colour = "white") +
+      ggplot2::geom_histogram(bins = 15, fill = viridisLite::viridis(1, begin = 0.3), colour = "white") +
       ggplot2::labs(x = outcome_label, y = "Count") + ggplot2::theme_minimal(base_size = 11)
   } else {
     km <- survival::survfit(survival::Surv(time, event) ~ 1, data = data)
     curve <- data.frame(time = c(0, km$time), survival = c(1, km$surv))
     panels$distribution <- ggplot2::ggplot(curve, ggplot2::aes(x = time, y = survival)) +
-      ggplot2::geom_step(colour = "#3B528B", linewidth = 0.8) +
+      ggplot2::geom_step(colour = viridisLite::viridis(1, begin = 0.3), linewidth = 0.8) +
       ggplot2::labs(x = cw_label(tidy, "time"), y = "Event-free proportion") +
       ggplot2::coord_cartesian(ylim = c(0, 1)) + ggplot2::theme_minimal(base_size = 11)
   }
+  mapping <- list(x = list(variable = outcome_label, type = "continuous"))
   if (all(c("subject", "time", "response") %in% names(data))) {
+    trajectory <- viridisLite::viridis(2, begin = 0.25, end = 0.6)
     panels$relationship <- ggplot2::ggplot(data, ggplot2::aes(x = time, y = response, group = subject)) +
-      ggplot2::geom_line(alpha = 0.35, colour = "#21908C") +
-      ggplot2::stat_summary(ggplot2::aes(group = 1), fun = mean, geom = "line", linewidth = 1, colour = "#440154") +
-      ggplot2::labs(x = cw_label(tidy, "time"), y = outcome_label) + ggplot2::theme_minimal(base_size = 11)
+      ggplot2::geom_line(alpha = 0.35, colour = trajectory[[2]]) +
+      ggplot2::stat_summary(ggplot2::aes(group = 1), fun = mean, geom = "line", linewidth = 1,
+        colour = trajectory[[1]], linetype = "dashed") +
+      ggplot2::labs(x = cw_label(tidy, "time"), y = outcome_label,
+        caption = "Thin lines: units; dashed line: mean") + ggplot2::theme_minimal(base_size = 11)
   } else if (!is.null(numeric_x) && "response" %in% names(data)) {
-    mapping <- if (is.null(group)) {
+    aesthetics <- if (is.null(group)) {
       ggplot2::aes(x = .data[[numeric_x]], y = response)
     } else {
       ggplot2::aes(x = .data[[numeric_x]], y = response, colour = .data[[group]], shape = .data[[group]])
     }
-    plot <- ggplot2::ggplot(data, mapping) + ggplot2::geom_point(size = 2, alpha = 0.85) +
-      ggplot2::labs(x = cw_label(tidy, numeric_x), y = outcome_label,
-        colour = if (is.null(group)) NULL else cw_label(tidy, group),
-        shape = if (is.null(group)) NULL else cw_label(tidy, group)) +
-      ggplot2::theme_minimal(base_size = 11)
+    plot <- ggplot2::ggplot(data, aesthetics) + ggplot2::geom_point(size = 2, alpha = 0.85) +
+      ggplot2::labs(x = cw_label(tidy, numeric_x), y = outcome_label) + ggplot2::theme_minimal(base_size = 11)
     if (!is.null(group)) {
-      plot <- plot + ggplot2::scale_colour_manual(values = colours, drop = FALSE) +
-        ggplot2::scale_shape_manual(values = shapes, drop = FALSE)
+      label <- cw_label(tidy, group)
+      plot <- plot + ggplot2::scale_colour_manual(name = label, values = colours, drop = FALSE) +
+        ggplot2::scale_shape_manual(name = label, values = shapes, drop = FALSE)
+      mapping$colour <- list(variable = label, type = "categorical", levels = levels(data[[group]]))
     }
     panels$relationship <- plot
   }
   composed <- cf_compose(unname(panels), tags = TRUE, collect_guides = FALSE)
   file <- file.path(out_dir, "figure-overview.png")
-  checks <- if (is.null(colours)) NULL else cf_check_accessibility(unname(colours))
-  spec <- cf_figure_spec(id = "overview", mapping = list(panels = names(panels), group = if (is.null(group)) NULL else cw_label(tidy, group)),
-    policy = policy, colours = if (is.null(colours)) list() else as.list(colours),
-    encodings = if (is.null(group)) list() else list(shape = as.list(shapes)),
-    width = 8, height = 3.6, units = "in", dpi = 200, background = "#FFFFFF", checks = checks)
-  cf_save(composed, file, spec, width = 8, height = 3.6, units = "in", dpi = 200)
-  list(files = c(file, paste0(file, ".json")), accessibility = checks, panels = names(panels))
+  spec <- cf_figure_spec(id = "overview", mapping = mapping, policy = policy, colours = colours,
+    encodings = if (is.null(group)) NULL else list(shape = shapes), width = 8, height = 3.6,
+    units = "in", dpi = 200, background = "#FFFFFF")
+  cf_save(composed, file, spec)
+  list(files = c(file, paste0(file, ".json")), accessibility = spec$accessibility$status, panels = names(panels))
 }
