@@ -773,8 +773,7 @@ cw_figures <- function(tidy, analysis, policy, out_dir) {
       ggplot2::labs(x = cw_label(tidy, numeric_x), y = outcome_label) + ggplot2::theme_minimal(base_size = 11)
     if (!is.null(group)) {
       label <- cw_label(tidy, group)
-      plot <- plot + ggplot2::scale_colour_manual(name = label, values = colours, drop = FALSE) +
-        ggplot2::scale_shape_manual(name = label, values = shapes, drop = FALSE)
+      plot <- plot + cf_scale_categorical(colours, policy, shapes = shapes, name = label)
       mapping$colour <- list(variable = label, type = "categorical", levels = levels(data[[group]]))
     }
     panels$relationship <- plot

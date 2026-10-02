@@ -104,8 +104,46 @@ test_that("the static interop source uses only reviewed namespaces and no packag
   }
   expect_equal(names(formals(env$ci_se_tidy_view)), c("se", "assay", "features", "samples", "max_cells"))
   expect_equal(formals(env$ci_se_tidy_view)$max_cells, 1e5)
-  expect_equal(names(formals(env$ci_conversion_report)), c("from", "to"))
-  expect_equal(names(formals(env$ci_pseudobulk)), c("obj_or_sce", "donor", "group"))
+  expect_equal(names(formals(env$ci_conversion_report)), c("from", "to", "pins"))
+  expect_equal(names(formals(env$ci_pseudobulk)), c("obj_or_sce", "donor", "group", "allow_single_cell_samples", "pins"))
+  expect_false(formals(env$ci_pseudobulk)$allow_single_cell_samples)
+})
+
+test_that("package requirements can enforce exact pinned versions", {
+  env <- interop_template()
+  installed <- as.character(utils::packageVersion("utils"))
+  expect_true(env$ci_need("utils"))
+  expect_true(env$ci_need("utils", installed))
+  # package_version() semantics: "-" and "." separators compare equal.
+  expect_true(env$ci_need("utils", gsub(".", "-", installed, fixed = TRUE)))
+  expect_true(env$ci_need("utils", package_version(installed)))
+  expect_error(env$ci_need("utils", "0.0.1"), paste0("'utils' ", installed, " is installed but the project pins 0.0.1"))
+  expect_error(env$ci_need("utils", "not a version"), "must be one version")
+  expect_error(env$ci_need("utils", c("1.0", "2.0")), "must be one version")
+  expect_error(env$ci_need("cttirNoSuchPackage", "1.0.0"), "not installed")
+  deps <- list(list(package = "Seurat", version = "5.5.1", required = TRUE, stages = list("analysis")),
+    list(package = "Matrix", version = NULL, required = TRUE))
+  expect_identical(env$ci_pinned_version(deps, "Seurat"), "5.5.1")
+  expect_null(env$ci_pinned_version(deps, "Matrix"))
+  expect_null(env$ci_pinned_version(deps, "ggplot2"))
+  expect_null(env$ci_pinned_version(NULL, "Seurat"))
+  expect_identical(env$ci_pinned_version(c(Seurat = "5.5.1"), "Seurat"), "5.5.1")
+  expect_identical(env$ci_pinned_version(list(Seurat = "5.5.1"), "Seurat"), "5.5.1")
+  table <- data.frame(package = c("Seurat", "Matrix"), version = c("5.5.1", NA))
+  expect_identical(env$ci_pinned_version(table, "Seurat"), "5.5.1")
+  expect_null(env$ci_pinned_version(table, "Matrix"))
+  expect_error(env$ci_pinned_version(data.frame(name = "Seurat"), "Seurat"), "'package' and 'version'")
+  expect_error(env$ci_pinned_version("5.5.1", "Seurat"), "dependency list")
+
+  skip_if_not_installed("SummarizedExperiment")
+  skip_if_not_installed("S4Vectors")
+  skip_if_not_installed("Matrix")
+  skip_if_not_installed("DelayedArray")
+  se <- se_fixture()$se
+  wrong <- list(list(package = "SummarizedExperiment", version = "0.0.1"))
+  expect_error(env$ci_conversion_report(se, se, pins = wrong), "'SummarizedExperiment' .* pins 0.0.1")
+  right <- list(list(package = "SummarizedExperiment", version = as.character(utils::packageVersion("SummarizedExperiment"))))
+  expect_true(attr(env$ci_conversion_report(se, se, pins = right), "lossless"))
 })
 
 test_that("a bounded tidy view keeps keys and order without realizing the full assay", {
@@ -263,6 +301,75 @@ test_that("SingleCellExperiment to Seurat conversion reports altExps, reductions
   expect_true(env$ci_validate_s4(back$object)$valid)
 })
 
+test_that("reductions filed under an alternative experiment are reported where they went", {
+  skip_if_not_installed("SingleCellExperiment")
+  skip_if_not_installed("SummarizedExperiment")
+  skip_if_not_installed("Matrix")
+  skip_if_not_installed("Seurat")
+  skip_if_not_installed("SeuratObject")
+  env <- interop_template()
+  set.seed(3)
+  cells <- sprintf("cell%02d", 1:20)
+  rna <- Matrix::Matrix(matrix(rpois(120, 2), 6, 20, dimnames = list(paste0("gene", 1:6), cells)), sparse = TRUE)
+  adt <- Matrix::Matrix(matrix(rpois(40, 5), 2, 20, dimnames = list(c("ADT1", "ADT2"), cells)), sparse = TRUE)
+  s <- SeuratObject::CreateSeuratObject(counts = rna)
+  s[["ADT"]] <- SeuratObject::CreateAssay5Object(counts = adt)
+  embeddings <- matrix(rnorm(40), 20, 2, dimnames = list(cells, c("PC_1", "PC_2")))
+  s[["pca"]] <- SeuratObject::CreateDimReducObject(embeddings = embeddings, key = "PC_", assay = "RNA")
+  SeuratObject::DefaultAssay(s) <- "ADT"
+  conv <- suppressWarnings(env$ci_convert(s, "SingleCellExperiment"))
+  sce <- conv$object
+  expect_length(SingleCellExperiment::reducedDimNames(sce), 0L)
+  expect_true("PCA" %in% SingleCellExperiment::reducedDimNames(SingleCellExperiment::altExp(sce, "RNA")))
+  r <- conv$report
+  expect_equal(field_status(r, "reducedDim:pca"), "transformed")
+  expect_match(r$detail[r$field == "reducedDim:pca"],
+    "embedding values identical \\(computed on assay 'RNA'\\); moved to target altExp 'RNA', not the main experiment")
+  expect_false(any(r$status[startsWith(r$field, "reducedDim:")] == "lost"))
+  # The SingleCellExperiment side profiles altExp reductions under their location.
+  same <- env$ci_conversion_report(sce, sce)
+  expect_equal(field_status(same, "reducedDim:RNA/PCA"), "preserved")
+  dropped <- sce
+  alt <- SingleCellExperiment::altExp(dropped, "RNA")
+  SingleCellExperiment::reducedDims(alt) <- list()
+  SingleCellExperiment::altExp(dropped, "RNA") <- alt
+  lost <- env$ci_conversion_report(sce, dropped)
+  expect_equal(field_status(lost, "reducedDim:RNA/PCA"), "lost")
+  table <- env$ci_conversion_report(sce, as.data.frame(SummarizedExperiment::colData(sce)))
+  expect_equal(field_status(table, "reducedDim:RNA/PCA"), "lost")
+})
+
+test_that("altExps without the requested data assay are reported, not fatal", {
+  skip_if_not_installed("SingleCellExperiment")
+  skip_if_not_installed("SummarizedExperiment")
+  skip_if_not_installed("S4Vectors")
+  skip_if_not_installed("Matrix")
+  skip_if_not_installed("Seurat")
+  skip_if_not_installed("SeuratObject")
+  env <- interop_template()
+  sce <- sce_fixture()
+  adt <- SummarizedExperiment::assay(SingleCellExperiment::altExp(sce, "ADT"), "counts")
+  SingleCellExperiment::altExp(sce, "ADT") <- SummarizedExperiment::SummarizedExperiment(assays = list(counts = adt))
+  conv <- suppressWarnings(env$ci_convert(sce, "Seurat"))
+  expect_s4_class(conv$object, "Seurat")
+  expect_equal(SeuratObject::Assays(conv$object), "RNA")
+  expect_length(conv$limitations, 1L)
+  expect_match(conv$limitations, "altExp 'ADT' was not converted: it has no assay 'logcounts'")
+  expect_identical(attr(conv$report, "limitations"), conv$limitations)
+  expect_equal(field_status(conv$report, "altExp:ADT"), "lost")
+  expect_match(conv$report$detail[conv$report$field == "altExp:ADT"], "no assay 'logcounts'")
+  expect_false(attr(conv$report, "lossless"))
+  expect_equal(field_status(conv$report, "assay:logcounts"), "transformed")
+  counts_only <- suppressWarnings(env$ci_convert(sce, "Seurat", data = NULL))
+  expect_equal(sort(SeuratObject::Assays(counts_only$object)), c("ADT", "RNA"))
+  expect_length(counts_only$limitations, 0L)
+  no_log <- sce
+  SummarizedExperiment::assay(no_log, "logcounts") <- NULL
+  expect_error(env$ci_convert(no_log, "Seurat"), "main experiment has no assay 'logcounts'")
+  expect_error(env$ci_convert(sce, "Seurat", counts = NULL, data = NULL), "cannot both be NULL")
+  expect_error(env$ci_convert(sce, "Seurat", pins = list(Seurat = "0.0.1")), "'Seurat' .* pins 0.0.1")
+})
+
 test_that("observed Seurat 5.5.1 conversion behavior stays recorded in the registry", {
   skip_if_not_installed("SingleCellExperiment")
   skip_if_not_installed("Seurat")
@@ -287,6 +394,11 @@ test_that("observed Seurat 5.5.1 conversion behavior stays recorded in the regis
   expect_equal(field_status(back, "reducedDim:PCA"), "preserved")
   expect_equal(field_status(back, "altExp:ADT"), "transformed")
   expect_match(back$detail[back$field == "altExp:ADT"], "kept as target altExp 'ADT'.*features: preserved.*assay:counts preserved.*assay:data transformed")
+  # With the default assay left at ADT, Seurat files PCA under altExp 'RNA'.
+  moved <- suppressWarnings(env$ci_convert(conv$object, "SingleCellExperiment"))
+  expect_equal(SingleCellExperiment::reducedDimNames(SingleCellExperiment::altExp(moved$object, "RNA")), "PCA")
+  expect_equal(field_status(moved$report, "reducedDim:PCA"), "transformed")
+  expect_match(moved$report$detail[moved$report$field == "reducedDim:PCA"], "values identical.*moved to target altExp 'RNA'")
   caps <- interop_capabilities()$capabilities
   conversion <- Filter(function(x) x$id == "seurat.interop.sce_conversion", caps)[[1L]]
   expect_true(any(grepl("Seurat 5.5.1", unlist(conversion$requirements), fixed = TRUE)))
@@ -388,6 +500,26 @@ test_that("donor-level pseudobulk sums raw counts and refuses too few donors", {
   no_counts <- SingleCellExperiment::SingleCellExperiment(assays = list(logcounts = Matrix::Matrix(log1p(m), sparse = TRUE)),
     colData = S4Vectors::DataFrame(donor = donor, group = group, row.names = cells))
   expect_error(env$ci_pseudobulk(no_counts, "donor", "group"), "'counts' assay")
+  expect_equal(pb$design$single_cell_samples, 0L)
+  expect_false(pb$design$allow_single_cell_samples)
+
+  # Cells are not replicates: a per-cell identifier is never a donor column.
+  SummarizedExperiment::colData(sce)$cell_id <- cells
+  expect_error(env$ci_pseudobulk(sce, "cell_id", "group"), "'cell_id' has a different value for each of the 36 cells")
+  expect_error(env$ci_pseudobulk(sce, "cell_id", "group", allow_single_cell_samples = TRUE), "identifies cells")
+  seu$cell_id <- cells
+  expect_error(env$ci_pseudobulk(seu, "cell_id", "group"), "identifies cells")
+  # One donor contributing a single cell is refused unless explicitly allowed.
+  lone <- sce
+  SummarizedExperiment::colData(lone)$donor[1] <- "d_lone"
+  lone_id <- paste(group[1], "d_lone", sep = "|")
+  expect_error(env$ci_pseudobulk(lone, "donor", "group"), paste0("1 pseudobulk sample\\(s\\) contain a single cell \\(", lone_id, "\\)"))
+  allowed <- env$ci_pseudobulk(lone, "donor", "group", allow_single_cell_samples = TRUE)
+  expect_equal(allowed$samples$n_cells[allowed$samples$pseudobulk_id == lone_id], 1L)
+  expect_equal(allowed$design$single_cell_samples, 1L)
+  expect_true(allowed$design$allow_single_cell_samples)
+  expect_equal(sum(allowed$counts), sum(m))
+  expect_error(env$ci_pseudobulk(lone, "donor", "group", allow_single_cell_samples = NA), "TRUE or FALSE")
 })
 
 test_that("a mixed-model S4 fit maps to broom output matching its fixed effects", {

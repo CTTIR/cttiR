@@ -143,7 +143,8 @@ test_that("the figure template is static reviewed code with explicit namespaces"
   defined <- terminal$text[which(terminal$token == "SYMBOL" & c(terminal$token[-1], "") == "LEFT_ASSIGN")]
   expect_true(all(c(
     "cf_palette_categorical", "cf_palette_ordered", "cf_scale_continuous", "cf_scale_diverging",
-    "cf_shapes", "cf_linetypes", "cf_check_accessibility", "cf_compose", "cf_figure_spec", "cf_save"
+    "cf_shapes", "cf_linetypes", "cf_scale_categorical", "cf_check_accessibility", "cf_compose",
+    "cf_figure_spec", "cf_save"
   ) %in% defined))
 })
 
@@ -223,13 +224,13 @@ test_that("continuous and diverging scales keep explicit limits, midpoint and NA
   expect_identical(toupper(colours[[1]]), substr(viridisLite::viridis(1, option = "D"), 1, 7))
   expect_identical(toupper(colours[[3]]), "#FDE725")
   expect_identical(colours[[4]], colours[[3]])
-  expect_identical(colours[[5]], "#808080")
+  expect_identical(colours[[5]], policy$na_colour)
 
   cividis <- ggplot2::ggplot(data, ggplot2::aes(x, y, fill = value)) + ggplot2::geom_tile() +
     env$cf_scale_continuous(modifyList(policy, list(continuous_palette = "cividis")), aesthetic = "fill", limits = c(0, 1), oob = "censor")
   fills <- ggplot2::layer_data(cividis)$fill
   expect_identical(toupper(fills[[1]]), substr(viridisLite::viridis(1, option = "E"), 1, 7))
-  expect_identical(fills[[4]], "#808080")
+  expect_identical(fills[[4]], policy$na_colour)
   expect_error(env$cf_scale_continuous(policy, limits = c(1, 0)), "increasing")
   expect_error(env$cf_scale_continuous(policy, aesthetic = "size"), "colour' or 'fill")
 
@@ -241,7 +242,7 @@ test_that("continuous and diverging scales keep explicit limits, midpoint and NA
   fills <- toupper(ggplot2::layer_data(plot)$fill)
   expect_identical(fills[1:3], brbg[c(1, 6, 11)])
   expect_identical(fills[[4]], brbg[[11]])
-  expect_identical(fills[[5]], "#808080")
+  expect_identical(fills[[5]], policy$na_colour)
 
   asymmetric <- env$cf_scale_diverging(policy, midpoint = 1, limits = c(0, 5), symmetric = FALSE)
   expect_identical(asymmetric$limits, c(0, 5))
@@ -264,9 +265,82 @@ test_that("categorical NA values use the distinct NA colour", {
   plot <- ggplot2::ggplot(data, ggplot2::aes(x, y, colour = group)) + ggplot2::geom_point() +
     ggplot2::scale_colour_manual(values = colours, na.value = policy$na_colour)
   drawn <- ggplot2::layer_data(plot)$colour
-  expect_identical(drawn[[3]], "#808080")
+  expect_identical(drawn[[3]], policy$na_colour)
   expect_identical(drawn[[4]], colours[["unknown"]])
-  expect_false(colours[["unknown"]] == "#808080")
+  expect_false(colours[["unknown"]] == policy$na_colour)
+})
+
+test_that("missing categories stay visible with a labelled NA colour and NA shape", {
+  env <- figure_env()
+  policy <- env$cf_policy_default()
+  levels <- c("ctrl", "low", "high")
+  data <- data.frame(x = 1:7, y = 1:7, group = factor(c("ctrl", NA, "low", "high", NA, "ctrl", "low"), levels = levels))
+  colours <- env$cf_palette_categorical(levels, policy)
+  shapes <- env$cf_shapes(levels)
+  expect_identical(attr(shapes, "na_value"), 5L)
+  expect_false(attr(shapes, "na_value") %in% env$cf_shape_set)
+  scatter <- ggplot2::ggplot(data, ggplot2::aes(x, y, colour = group, shape = group)) + ggplot2::geom_point() +
+    env$cf_scale_categorical(colours, policy, shapes = shapes, name = "Group")
+  expect_silent(drawn <- ggplot2::layer_data(scatter))
+  expect_identical(nrow(drawn), nrow(data))
+  missing <- is.na(data$group)
+  expect_true(all(drawn$colour[missing] == policy$na_colour))
+  expect_true(all(drawn$shape[missing] == 5L))
+  expect_false(anyNA(drawn$shape))
+  expect_identical(drawn$shape[!missing], unname(shapes[as.character(data$group[!missing])]))
+
+  # One merged legend whose last key is the missing category, labelled.
+  built <- ggplot2::ggplot_build(scatter)
+  scales <- Filter(function(s) any(s$aesthetics %in% c("colour", "shape")), built$plot$scales$scales)
+  for (s in scales) expect_identical(s$get_labels(s$get_breaks()), c(levels, "Missing"))
+  grob <- ggplot2::ggplotGrob(scatter)
+  legend_labels <- unlist(lapply(grob$grobs[grepl("^guide-box", grob$layout$name)], grob_labels))
+  expect_identical(sum(legend_labels == "Group"), 1L)
+  expect_true("Missing" %in% legend_labels)
+
+  # Keys follow the colour map, not the data's level order; no missing key
+  # appears when nothing is missing.
+  reordered <- data.frame(x = 1:3, y = 1:3, group = factor(c("high", "low", "ctrl"), levels = rev(levels)))
+  complete <- ggplot2::ggplot(reordered, ggplot2::aes(x, y, colour = group, shape = group)) + ggplot2::geom_point() +
+    env$cf_scale_categorical(colours, policy, shapes = shapes, name = "Group", na_label = "Not recorded")
+  complete_scales <- Filter(function(s) "colour" %in% s$aesthetics, ggplot2::ggplot_build(complete)$plot$scales$scales)
+  expect_identical(complete_scales[[1]]$get_labels(complete_scales[[1]]$get_breaks()), levels)
+  relabelled <- ggplot2::ggplot(data, ggplot2::aes(x, y, colour = group)) + ggplot2::geom_point() +
+    env$cf_scale_categorical(colours, policy, na_label = "Not recorded")
+  relabelled_scale <- ggplot2::ggplot_build(relabelled)$plot$scales$get_scales("colour")
+  expect_identical(relabelled_scale$get_labels(relabelled_scale$get_breaks()), c(levels, "Not recorded"))
+
+  lines <- env$cf_linetypes(levels)
+  expect_false(attr(lines, "na_value") %in% env$cf_linetype_set)
+  path <- ggplot2::ggplot(data, ggplot2::aes(x, y, linetype = group, group = 1)) + ggplot2::geom_point() +
+    ggplot2::scale_linetype_manual(values = lines, na.value = attr(lines, "na_value"))
+  expect_true(all(ggplot2::layer_data(path)$linetype[missing] == attr(lines, "na_value")))
+  expect_error(env$cf_scale_categorical(unname(colours), policy), "named level")
+})
+
+test_that("the default NA colour never collides with eligible palette colours", {
+  env <- figure_env()
+  policy <- env$cf_policy_default()
+  # Every Dark2 or Paired colour that meets 3:1 contrast on white stays at least
+  # CIEDE2000 10 from the NA colour in every simulation.
+  for (palette in c("Dark2", "Paired")) {
+    all <- RColorBrewer::brewer.pal(RColorBrewer::brewer.pal.info[palette, "maxcolors"], palette)
+    for (colour in all[env$cf_contrast(all, "#FFFFFF") >= 3]) {
+      checks <- env$cf_check_accessibility(c(level = colour), na_colour = policy$na_colour, checks = policy$checks)
+      expect_true(all(checks$status == "pass"), label = paste(palette, colour))
+    }
+  }
+  # Up to three default levels, missing values add no finding; the remaining
+  # grayscale finding is between Dark2 colours of equal lightness.
+  for (n in 1:3) {
+    colours <- env$cf_palette_categorical(paste0("g", seq_len(n)), policy)
+    checks <- env$cf_check_accessibility(colours, na_colour = policy$na_colour, checks = policy$checks)
+    expect_false(any(grepl("(missing)", attr(checks, "findings"), fixed = TRUE)), label = paste(n, "levels"))
+    expect_identical(checks$status[checks$check != "grayscale"], rep("pass", 4L))
+  }
+  expect_identical(attr(checks, "findings"), "grayscale: closest pair g1 | g2 differs by CIEDE2000 2.5 < 10.0")
+  old <- env$cf_check_accessibility(colours, na_colour = "#808080", checks = policy$checks)
+  expect_true(any(grepl("(missing)", attr(old, "findings"), fixed = TRUE)))
 })
 
 test_that("redundant shapes and line types are distinct and stable", {
@@ -360,6 +434,49 @@ test_that("patchwork composition keeps panel order, tags and guide policy", {
   expect_error(env$cf_compose(list(panel("a")), widths = c(-1)), "positive")
 })
 
+test_that("collected guides must share one meaning per legend title", {
+  env <- figure_env()
+  policy <- env$cf_policy_default()
+  levels <- c("a", "b", "c")
+  data <- data.frame(x = 1:6, y = 1:6, group = factor(rep(levels, 2), levels = levels))
+  colours <- env$cf_palette_categorical(levels, policy)
+  shapes <- env$cf_shapes(levels)
+  scatter <- function(values, data_levels = levels, title = "group") {
+    data$group <- factor(as.character(data$group), levels = data_levels)
+    ggplot2::ggplot(data, ggplot2::aes(x, y, colour = group, shape = group)) + ggplot2::geom_point() +
+      env$cf_scale_categorical(values, policy, shapes = shapes, name = title)
+  }
+  same <- env$cf_compose(list(left = scatter(colours), right = scatter(colours)), collect_guides = TRUE)
+  expect_identical(attr(same, "cf_layout")$guides, "collect")
+  grob <- patchwork::patchworkGrob(same)
+  expect_identical(sum(unlist(lapply(grob$grobs[grepl("^guide-box", grob$layout$name)], grob_labels)) == "group"), 1L)
+  swapped <- stats::setNames(rev(unname(colours)), names(colours))
+  expect_error(env$cf_compose(list(left = scatter(colours), right = scatter(swapped)), collect_guides = TRUE),
+    "Panels 'left' and 'right' both have a legend titled 'group' but map it differently \\(colour, shape")
+  # cf_scale_categorical() keys follow the colour map, so data level order is irrelevant.
+  expect_s3_class(env$cf_compose(list(scatter(colours), scatter(colours, rev(levels))), collect_guides = TRUE), "patchwork")
+  plain <- ggplot2::ggplot(data, ggplot2::aes(x, y, colour = group)) + ggplot2::geom_point() +
+    ggplot2::scale_colour_manual("group", values = colours)
+  unscaled <- ggplot2::ggplot(data, ggplot2::aes(x, y, colour = group)) + ggplot2::geom_point() + ggplot2::labs(colour = "group")
+  only_colour <- ggplot2::ggplot(data, ggplot2::aes(x, y, colour = group)) + ggplot2::geom_point() +
+    env$cf_scale_categorical(colours, policy, name = "group")
+  expect_error(env$cf_compose(list(a = only_colour, b = plain), collect_guides = TRUE), "Panel 'b'.*needs explicit breaks")
+  expect_error(env$cf_compose(list(a = only_colour, b = unscaled), collect_guides = TRUE), "Panel 'b'.*has no explicit scale")
+  expect_error(env$cf_compose(list(a = scatter(colours), b = only_colour), collect_guides = TRUE), "map it differently")
+  heat <- function(limits) {
+    ggplot2::ggplot(expand.grid(x = 1:3, y = 1:3), ggplot2::aes(x, y, fill = x * y)) + ggplot2::geom_tile() +
+      env$cf_scale_continuous(policy, "fill", limits = limits, name = "score")
+  }
+  expect_error(env$cf_compose(list(heat(c(0, 9)), heat(c(0, 20))), collect_guides = TRUE), "titled 'score'")
+  expect_error(env$cf_compose(list(heat(c(0, 9)), heat(NULL)), collect_guides = TRUE), "needs explicit limits")
+  expect_s3_class(env$cf_compose(list(heat(c(0, 9)), heat(c(0, 9))), collect_guides = TRUE), "patchwork")
+  # Different titles are separate legends; a legend in one panel only, or
+  # kept guides, are never compared.
+  expect_s3_class(env$cf_compose(list(scatter(colours), scatter(swapped, title = "other")), collect_guides = TRUE), "patchwork")
+  expect_s3_class(env$cf_compose(list(unscaled, heat(NULL)), collect_guides = TRUE), "patchwork")
+  expect_s3_class(env$cf_compose(list(scatter(colours), scatter(swapped))), "patchwork")
+})
+
 test_that("figures are saved at final size with a JSON sidecar", {
   env <- figure_env()
   skip_if_not_installed("png")
@@ -370,8 +487,7 @@ test_that("figures are saved at final size with a JSON sidecar", {
   colours <- env$cf_palette_categorical(groups, policy)
   shapes <- env$cf_shapes(groups)
   scatter <- ggplot2::ggplot(points, ggplot2::aes(x, y, colour = group, shape = group)) +
-    ggplot2::geom_point(size = 2) + ggplot2::scale_colour_manual(values = colours, na.value = policy$na_colour) +
-    ggplot2::scale_shape_manual(values = shapes)
+    ggplot2::geom_point(size = 2) + env$cf_scale_categorical(colours, policy, shapes = shapes)
   grid <- expand.grid(x = 1:6, y = 1:4)
   grid$value <- grid$x * grid$y / 24
   heatmap <- ggplot2::ggplot(grid, ggplot2::aes(x, y, fill = value)) + ggplot2::geom_tile() +
@@ -385,16 +501,33 @@ test_that("figures are saved at final size with a JSON sidecar", {
     env$cf_figure_spec("fig01", mapping, policy, colours, width = 4, height = 2),
     "non-colour encoding"
   )
+  # Encodings that carry no values do not satisfy the redundancy requirement.
+  empty_encodings <- list(list(shape = NULL), list(shape = integer()), list(shape = NA), list(label = FALSE),
+    list(facet = ""), list(colour = shapes))
+  for (empty in empty_encodings) {
+    expect_error(env$cf_figure_spec("fig01", mapping, policy, colours, encodings = empty, width = 4, height = 2),
+      "NULL or empty encodings do not count")
+  }
+  expect_error(env$cf_figure_spec("fig01", mapping, policy, colours, encodings = list(shape = shapes[1:2]), width = 4, height = 2),
+    "does not cover the levels of 'group': high dose")
+  faceted <- env$cf_figure_spec("fig01", mapping, policy, colours, encodings = list(facet = "group"), width = 4, height = 2)
+  expect_identical(faceted$encodings$facet, "group")
   spec <- env$cf_figure_spec("fig01", mapping, policy, colours, encodings = list(shape = shapes),
     width = 4, height = 2, units = "in", dpi = 100, provenance = list(data = "synthetic"))
   expect_identical(spec$accessibility$status, "warning")
   expect_identical(spec$accessibility$checks$check, c("normal", "protanopia", "deuteranopia", "tritanopia", "grayscale"))
+  expect_identical(as.character(spec$accessibility$findings),
+    "grayscale: closest pair control | low dose differs by CIEDE2000 2.5 < 10.0")
+  expect_identical(spec$na$shape, 5L)
 
   dir <- withr::local_tempdir()
   file <- file.path(dir, "fig01.png")
   expect_error(env$cf_save(figure, file, spec, width = 5), "differs from the figure spec")
   expect_false(file.exists(file))
-  out <- env$cf_save(figure, file, spec)
+  # A failed check is reported when the figure is written, not only in the sidecar.
+  expect_warning(out <- env$cf_save(figure, file, spec),
+    "Figure 'fig01' has unresolved accessibility findings \\(recorded in fig01.png.json\\): grayscale")
+  expect_identical(attr(out, "accessibility"), "warning")
   expect_true(file.exists(file))
   expect_identical(unname(out[["sidecar"]]), paste0(file, ".json"))
   image <- png::readPNG(file)
@@ -414,9 +547,12 @@ test_that("figures are saved at final size with a JSON sidecar", {
   expect_identical(sidecar$palettes$categorical$name, "Dark2")
   expect_identical(sidecar$palettes$categorical$pinned, "RColorBrewer 1.1-3")
   expect_identical(sidecar$palettes$continuous$option, "D")
-  expect_identical(sidecar$na$colour, "#808080")
+  expect_identical(sidecar$na$colour, policy$na_colour)
+  expect_identical(sidecar$na$shape, 5L)
   expect_identical(unlist(sidecar$panels$panel_ids), c("scatter", "heatmap"))
   expect_identical(unlist(sidecar$panels$tags), c("A", "B"))
+  expect_identical(sidecar$accessibility$status, "warning")
+  expect_identical(unlist(sidecar$accessibility$findings), as.character(spec$accessibility$findings))
   expect_identical(length(sidecar$accessibility$checks), 5L)
   expect_identical(sidecar$accessibility$checks[[1]]$check, "normal")
   expect_match(sidecar$accessibility$statement, "not a guarantee")
@@ -425,6 +561,15 @@ test_that("figures are saved at final size with a JSON sidecar", {
 
   continuous_only <- env$cf_figure_spec("fig02", mapping["fill"], policy, width = 3, height = 3)
   expect_identical(continuous_only$accessibility$status, "not_checked")
+  quiet <- env$cf_save(heatmap, file.path(dir, "fig02.png"), continuous_only)
+  expect_identical(attr(quiet, "accessibility"), "not_checked")
+  one <- env$cf_palette_categorical("control", policy)
+  passing <- env$cf_figure_spec("fig04", list(colour = list(variable = "group", type = "categorical", levels = "control")),
+    policy, one, encodings = list(shape = shapes["control"]), width = 3, height = 3, dpi = 50)
+  expect_identical(passing$accessibility$status, "pass")
+  expect_identical(as.character(passing$accessibility$findings), character())
+  expect_silent(passed <- env$cf_save(scatter, file.path(dir, "fig04.png"), passing))
+  expect_identical(attr(passed, "accessibility"), "pass")
   expect_error(env$cf_figure_spec("../bad", mapping, policy, colours, encodings = list(shape = shapes), width = 1, height = 1), "identifier")
   expect_error(
     env$cf_figure_spec("fig03", list(fill = list(variable = "delta", type = "diverging")), policy, width = 1, height = 1),

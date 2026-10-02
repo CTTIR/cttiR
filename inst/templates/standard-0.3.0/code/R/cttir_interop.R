@@ -19,19 +19,54 @@ ci_stop <- function(...) stop(paste0(...), call. = FALSE)
 
 ci_prefix <- function(prefix, x) if (length(x)) paste0(prefix, x) else character()
 
-ci_need <- function(pkg) {
+# Requires an installed package. With `version` (for example the pin from the
+# config/workflow.yml dependencies) the installed version must equal it exactly;
+# package_version() compares numerically, so "1.1-3" equals "1.1.3".
+ci_need <- function(pkg, version = NULL) {
   if (!requireNamespace(pkg, quietly = TRUE)) {
     ci_stop("Package '", pkg, "' is required for this step but is not installed. Install it deliberately; nothing is installed automatically.")
+  }
+  if (!is.null(version)) {
+    ok <- (is.character(version) && length(version) == 1L && !is.na(version) && nzchar(version)) ||
+      (inherits(version, "package_version") && length(version) == 1L)
+    pinned <- if (ok) tryCatch(package_version(as.character(version)), error = function(e) NULL)
+    if (is.null(pinned)) ci_stop("The pinned version for '", pkg, "' must be one version such as '1.1-3'.")
+    installed <- utils::packageVersion(pkg)
+    if (installed != pinned) {
+      ci_stop("Package '", pkg, "' ", as.character(installed), " is installed but the project pins ", as.character(version),
+        ". Install the pinned version deliberately or review and update the pin; nothing is installed automatically.")
+    }
   }
   invisible(TRUE)
 }
 
+# Pinned version of `pkg` in `pins`: a dependency list as in config/workflow.yml
+# (entries with 'package' and 'version', also as a data.frame) or a named
+# character vector or list. NULL when no pins are given or the package is not pinned.
+ci_pinned_version <- function(pins, pkg) {
+  if (is.null(pins)) return(NULL)
+  if (is.data.frame(pins)) {
+    if (!all(c("package", "version") %in% names(pins))) ci_stop("A pins table needs 'package' and 'version' columns.")
+    hit <- which(pins$package == pkg)
+    return(if (length(hit) && !is.na(pins$version[[hit[[1L]]]])) as.character(pins$version[[hit[[1L]]]]) else NULL)
+  }
+  if (!is.null(names(pins))) {
+    if (!pkg %in% names(pins)) return(NULL)
+    return(if (is.list(pins)) pins[[pkg]] else unname(pins[[pkg]]))
+  }
+  if (!is.list(pins)) ci_stop("pins must be a dependency list (package, version) or a named vector of versions.")
+  for (dep in pins) if (is.list(dep) && identical(dep$package, pkg)) return(dep$version)
+  NULL
+}
+
 # Load the namespace that defines an S4 object's class so that its documented
 # methods dispatch (for example after readRDS()). Only installed packages named
-# by the object's own class attribute are loaded.
-ci_load_class_pkg <- function(x) {
+# by the object's own class attribute are loaded; a pinned version is enforced.
+ci_load_class_pkg <- function(x, pins = NULL) {
   pkg <- attr(class(x), "package")
-  if (isS4(x) && is.character(pkg) && length(pkg) == 1L && nzchar(pkg) && !isNamespaceLoaded(pkg)) ci_need(pkg)
+  if (!isS4(x) || !is.character(pkg) || length(pkg) != 1L || !nzchar(pkg)) return(invisible(TRUE))
+  version <- ci_pinned_version(pins, pkg)
+  if (!is.null(version) || !isNamespaceLoaded(pkg)) ci_need(pkg, version)
   invisible(TRUE)
 }
 
@@ -176,15 +211,25 @@ ci_experiment_seurat <- function(x, a) {
     assay_class = ci_class_label(ao))
 }
 
-ci_profile <- function(x) {
-  ci_load_class_pkg(x)
+# Reductions are recorded with their location: `where` is NA for the main
+# experiment (SingleCellExperiment) or the object-wide reductions (Seurat), or
+# the name of the altExp holding them. Seurat reductions also record the assay
+# they were computed on, which decides where Seurat places them in a
+# SingleCellExperiment.
+ci_reduction <- function(name, value, where = NA_character_, assay = NULL) {
+  list(name = name, value = value, where = where, assay = assay)
+}
+
+ci_profile <- function(x, pins = NULL) {
+  ci_load_class_pkg(x, pins)
   if (methods::is(x, "Seurat")) {
-    ci_need("SeuratObject")
+    ci_need("SeuratObject", ci_pinned_version(pins, "SeuratObject"))
     def <- SeuratObject::DefaultAssay(x)
     exps <- lapply(SeuratObject::Assays(x), function(a) ci_experiment_seurat(x, a))
     names(exps) <- SeuratObject::Assays(x)
-    reduced <- lapply(SeuratObject::Reductions(x), function(r) SeuratObject::Embeddings(x, reduction = r))
-    names(reduced) <- SeuratObject::Reductions(x)
+    reduced <- lapply(SeuratObject::Reductions(x), function(r) {
+      ci_reduction(r, SeuratObject::Embeddings(x, reduction = r), assay = SeuratObject::DefaultAssay(x[[r]]))
+    })
     return(list(kind = "Seurat", class = ci_class_label(x), dim = dim(x), samples = SeuratObject::Cells(x),
         main_name = def, main = exps[[def]], alts = exps[setdiff(names(exps), def)], reduced = reduced,
         col_data = ci_columns(x[[]]), metadata = ci_meta(SeuratObject::Misc(x)),
@@ -196,8 +241,17 @@ ci_profile <- function(x) {
     reduced <- list()
     main_name <- NA_character_
     if (sce) {
-      for (n in SingleCellExperiment::altExpNames(x)) alts[[n]] <- ci_experiment_se(SingleCellExperiment::altExp(x, n))
-      for (n in SingleCellExperiment::reducedDimNames(x)) reduced[[n]] <- SingleCellExperiment::reducedDim(x, n)
+      for (n in SingleCellExperiment::reducedDimNames(x)) {
+        reduced[[length(reduced) + 1L]] <- ci_reduction(n, SingleCellExperiment::reducedDim(x, n))
+      }
+      for (n in SingleCellExperiment::altExpNames(x)) {
+        alt <- SingleCellExperiment::altExp(x, n)
+        alts[[n]] <- ci_experiment_se(alt)
+        if (!methods::is(alt, "SingleCellExperiment")) next
+        for (r in SingleCellExperiment::reducedDimNames(alt)) {
+          reduced[[length(reduced) + 1L]] <- ci_reduction(r, SingleCellExperiment::reducedDim(alt, r), where = n)
+        }
+      }
       mn <- SingleCellExperiment::mainExpName(x)
       if (!is.null(mn)) main_name <- mn
     }
@@ -357,30 +411,54 @@ ci_report_objects <- function(src, tgt) {
         if (!is.null(sub)) paste0("; ", paste(paste0(sub$field, " ", sub$status), collapse = ", ")) else ""))
   }
   rows <- c(rows, ci_compare_columns(src$col_data, tgt$col_data, "colData", "sample"))
-  for (n in names(src$reduced)) {
-    hit <- names(tgt$reduced)[tolower(names(tgt$reduced)) == tolower(n)]
-    if (!length(hit)) {
-      rows[[length(rows) + 1L]] <- ci_row(paste0("reducedDim:", n), "lost", "no target reduction with this name")
+  used <- integer()
+  for (r in src$reduced) {
+    k <- ci_match_reduction(r, tgt$reduced, used)
+    if (is.na(k)) {
+      rows[[length(rows) + 1L]] <- ci_row(ci_reduction_field(r), "lost",
+        "no target reduction with this name in the main experiment or any alternative experiment")
       next
     }
-    s_m <- as.matrix(src$reduced[[n]])
-    t_m <- as.matrix(tgt$reduced[[hit[[1L]]]])
+    used <- c(used, k)
+    t <- tgt$reduced[[k]]
+    s_m <- as.matrix(r$value)
+    t_m <- as.matrix(t$value)
     rk <- ci_align_keys(rownames(s_m), rownames(t_m), "sample")
     idx <- if (is.null(rk$index)) seq_len(nrow(t_m)) else rk$index
     equal <- !anyNA(idx) && identical(dim(s_m), dim(t_m)) &&
       isTRUE(all.equal(unname(s_m), unname(t_m[idx, , drop = FALSE]), tolerance = 1e-12, check.attributes = FALSE))
-    same_names <- identical(hit[[1L]], n) && identical(colnames(s_m), colnames(t_m))
-    rows[[length(rows) + 1L]] <- ci_row(paste0("reducedDim:", n), if (equal && same_names && rk$status == "preserved") "preserved" else "transformed",
+    same_names <- identical(t$name, r$name) && identical(colnames(s_m), colnames(t_m))
+    moved <- !identical(t$where, r$where)
+    location <- if (is.na(t$where)) paste0("target main ", tgt$vocabulary$experiment) else
+      paste0("target ", tgt$vocabulary$alt, " '", t$where, "'")
+    rows[[length(rows) + 1L]] <- ci_row(ci_reduction_field(r),
+      if (equal && same_names && !moved && rk$status == "preserved") "preserved" else "transformed",
       paste0(if (equal) "embedding values identical" else "embedding values differ or could not be aligned",
-        if (!identical(hit[[1L]], n)) paste0("; renamed -> '", hit[[1L]], "'") else "",
+        if (!is.null(r$assay)) paste0(" (computed on ", src$vocabulary$experiment, " '", r$assay, "')") else "",
+        if (moved) paste0("; moved to ", location, if (is.na(t$where)) "" else ", not the main experiment") else "",
+        if (!identical(t$name, r$name)) paste0("; renamed -> '", t$name, "'") else "",
         if (!identical(colnames(s_m), colnames(t_m))) paste0("; components ", paste(utils::head(colnames(s_m), 2L), collapse = ","),
           " -> ", paste(utils::head(colnames(t_m), 2L), collapse = ",")) else ""))
   }
-  for (n in names(tgt$reduced)[!tolower(names(tgt$reduced)) %in% tolower(names(src$reduced))]) {
-    rows[[length(rows) + 1L]] <- ci_row(paste0("reducedDim:", n), "transformed", "added in target; no source counterpart")
+  for (k in setdiff(seq_along(tgt$reduced), used)) {
+    rows[[length(rows) + 1L]] <- ci_row(ci_reduction_field(tgt$reduced[[k]]), "transformed", "added in target; no source counterpart")
   }
   rows <- c(rows, ci_compare_metadata(src$metadata, tgt$metadata))
   rows
+}
+
+ci_reduction_field <- function(r) paste0("reducedDim:", if (is.na(r$where)) "" else paste0(r$where, "/"), r$name)
+
+# Target reduction for a source reduction: same name (ignoring case), preferring
+# the same location, then the main experiment, then any alternative experiment.
+ci_match_reduction <- function(r, targets, used) {
+  if (!length(targets)) return(NA_integer_)
+  nm <- vapply(targets, function(t) t$name, character(1))
+  where <- vapply(targets, function(t) t$where, character(1))
+  hit <- setdiff(which(tolower(nm) == tolower(r$name)), used)
+  if (!length(hit)) return(NA_integer_)
+  pick <- c(hit[where[hit] %in% r$where], hit[is.na(where[hit])], hit)
+  pick[[1L]]
 }
 
 ci_compare_metadata <- function(src_md, tgt_md) {
@@ -470,7 +548,7 @@ ci_report_data_frame <- function(src, df) {
       lapply(c(names(src$col_data$atomic), src$col_data$nested), function(n) ci_row(paste0("colData:", n), "lost", "sample annotations not represented")))
   }
   rows <- c(rows, lapply(names(src$alts), function(n) ci_row(paste0("altExp:", n), "lost", "alternative experiments are not represented in a data.frame")),
-    lapply(names(src$reduced), function(n) ci_row(paste0("reducedDim:", n), "lost", "reduced dimensions are not represented in a data.frame")))
+    lapply(src$reduced, function(r) ci_row(ci_reduction_field(r), "lost", "reduced dimensions are not represented in a data.frame")))
   md <- ci_compare_metadata(src$metadata, list())
   if (length(src$metadata)) md <- lapply(md, function(r) {
     r$detail <- "object metadata is not represented in a data.frame"
@@ -582,11 +660,12 @@ ci_select <- function(sel, keys, n, what) {
 # `to` is one of those or a data.frame. Status is preserved, transformed or
 # lost. Values are compared block-wise after key alignment. The attribute
 # "lossless" is TRUE only when every field is preserved; equal dimensions
-# alone never make a conversion lossless.
-ci_conversion_report <- function(from, to) {
+# alone never make a conversion lossless. `pins` (optional, see
+# ci_pinned_version()) enforces exact versions of the packages used.
+ci_conversion_report <- function(from, to, pins = NULL) {
   if (is.data.frame(from)) ci_stop("from must be a SummarizedExperiment, SingleCellExperiment or Seurat object.")
-  src <- ci_profile(from)
-  rows <- if (is.data.frame(to)) ci_report_data_frame(src, to) else ci_report_objects(src, ci_profile(to))
+  src <- ci_profile(from, pins)
+  rows <- if (is.data.frame(to)) ci_report_data_frame(src, to) else ci_report_objects(src, ci_profile(to, pins))
   out <- do.call(rbind, rows)
   rownames(out) <- NULL
   attr(out, "lossless") <- all(out$status == "preserved")
@@ -597,29 +676,57 @@ ci_conversion_report <- function(from, to) {
 # Explicit SingleCellExperiment <-> Seurat conversion with a loss report.
 #
 # Calls Seurat::as.Seurat() or Seurat::as.SingleCellExperiment() and returns
-# list(object, report). The conversion is never described as lossless unless
-# every reported field is preserved.
-ci_convert <- function(x, to = c("Seurat", "SingleCellExperiment"), counts = "counts", data = "logcounts") {
+# list(object, report, limitations). The conversion is never described as
+# lossless unless every reported field is preserved. as.Seurat() needs the
+# `counts` and `data` assays in every experiment it converts: an altExp that
+# lacks one (for example ADT with counts only) is left out, reported as lost and
+# listed in `limitations` (also attribute "limitations" of the report).
+ci_convert <- function(x, to = c("Seurat", "SingleCellExperiment"), counts = "counts", data = "logcounts",
+  pins = NULL) {
   to <- match.arg(to)
-  ci_load_class_pkg(x)
-  ci_need("Seurat")
+  ci_load_class_pkg(x, pins)
+  ci_need("Seurat", ci_pinned_version(pins, "Seurat"))
+  limitations <- character()
+  skipped <- character()
   if (identical(to, "Seurat")) {
     if (!methods::is(x, "SingleCellExperiment")) ci_stop("Conversion to Seurat requires a SingleCellExperiment.")
-    obj <- Seurat::as.Seurat(x, counts = counts, data = data)
+    required <- c(counts, data)
+    if (!length(required)) ci_stop("counts and data cannot both be NULL; name at least one assay to convert.")
+    absent <- setdiff(required, SummarizedExperiment::assayNames(x))
+    if (length(absent)) {
+      ci_stop("The main experiment has no assay ", paste0("'", absent, "'", collapse = ", "),
+        "; name existing assays in counts/data (data = NULL converts counts only).")
+    }
+    alts <- SingleCellExperiment::altExpNames(x)
+    for (n in alts) {
+      lacking <- setdiff(required, SummarizedExperiment::assayNames(SingleCellExperiment::altExp(x, n)))
+      if (!length(lacking)) next
+      skipped <- c(skipped, n)
+      reason <- paste0("altExp '", n, "' was not converted: it has no assay ", paste0("'", lacking, "'", collapse = ", "),
+        " and Seurat::as.Seurat() needs the same counts/data assays in every experiment")
+      limitations <- c(limitations, reason)
+    }
+    obj <- Seurat::as.Seurat(x, counts = counts, data = data, assay = if (length(skipped)) setdiff(alts, skipped) else NULL)
   } else {
     if (!methods::is(x, "Seurat")) ci_stop("Conversion to SingleCellExperiment requires a Seurat object.")
     obj <- Seurat::as.SingleCellExperiment(x)
   }
-  list(object = obj, report = ci_conversion_report(x, obj))
+  report <- ci_conversion_report(x, obj, pins)
+  for (k in seq_along(skipped)) {
+    hit <- report$field == paste0("altExp:", skipped[[k]])
+    report$detail[hit] <- paste0(report$detail[hit], "; ", limitations[[k]])
+  }
+  attr(report, "limitations") <- limitations
+  list(object = obj, report = report, limitations = limitations)
 }
 
 # Assay/layer inventory of a Seurat object with counts/data semantics checks.
 #
 # One row per assay layer. Value checks walk column blocks and never realize
 # a whole layer at once. `issue` is empty when no problem was detected.
-ci_seurat_layers <- function(obj) {
-  ci_load_class_pkg(obj)
-  ci_need("SeuratObject")
+ci_seurat_layers <- function(obj, pins = NULL) {
+  ci_load_class_pkg(obj, pins)
+  ci_need("SeuratObject", ci_pinned_version(pins, "SeuratObject"))
   if (!methods::is(obj, "Seurat")) ci_stop("obj must be a Seurat object.")
   def <- SeuratObject::DefaultAssay(obj)
   rows <- list()
@@ -668,18 +775,23 @@ ci_seurat_layers <- function(obj) {
 #
 # Accepts a SingleCellExperiment/SummarizedExperiment with a "counts" assay or
 # a Seurat object whose default assay has a single "counts" layer. `donor` and
-# `group` name sample-level columns. Refuses missing labels, non-count values
-# and any group with fewer than two donors. Returns list(counts, samples,
-# design); pseudobulk samples, not cells, are the replicates downstream.
-ci_pseudobulk <- function(obj_or_sce, donor, group) {
+# `group` name sample-level columns. Refuses missing labels, non-count values,
+# any group with fewer than two donors and a donor column with a distinct value
+# for every cell (a cell identifier). A pseudobulk sample built from one cell
+# is refused unless allow_single_cell_samples = TRUE. Returns list(counts,
+# samples, design); pseudobulk samples, not cells, are the replicates downstream.
+ci_pseudobulk <- function(obj_or_sce, donor, group, allow_single_cell_samples = FALSE, pins = NULL) {
   x <- obj_or_sce
   for (arg in list(donor, group)) {
     if (!is.character(arg) || length(arg) != 1L || is.na(arg) || !nzchar(arg)) ci_stop("donor and group must each name one sample-level column.")
   }
   if (identical(donor, group)) ci_stop("donor and group must be different columns.")
-  ci_load_class_pkg(x)
+  if (!is.logical(allow_single_cell_samples) || length(allow_single_cell_samples) != 1L || is.na(allow_single_cell_samples)) {
+    ci_stop("allow_single_cell_samples must be TRUE or FALSE.")
+  }
+  ci_load_class_pkg(x, pins)
   if (methods::is(x, "Seurat")) {
-    ci_need("SeuratObject")
+    ci_need("SeuratObject", ci_pinned_version(pins, "SeuratObject"))
     a <- SeuratObject::DefaultAssay(x)
     layers <- SeuratObject::Layers(x[[a]])
     if (!"counts" %in% layers) {
@@ -704,6 +816,11 @@ ci_pseudobulk <- function(obj_or_sce, donor, group) {
   g <- meta[[group]]
   if (length(d) != ncol(counts) || length(g) != ncol(counts)) ci_stop("Cell metadata and counts do not have the same cells.")
   if (anyNA(d) || anyNA(g)) ci_stop("Donor and group labels must not be missing; resolve or exclude those cells explicitly first.")
+  if (length(d) > 1L && !anyDuplicated(as.character(d))) {
+    ci_stop("Column '", donor, "' has a different value for each of the ", length(d), " cells; it identifies cells, not ",
+      "donors or samples. Name the donor or sample column: biological replication is by sample, and cells are not ",
+      "biological replicates.")
+  }
   g_levels <- if (is.factor(g)) levels(droplevels(g)) else sort(unique(as.character(g)))
   d_levels <- if (is.factor(d)) levels(droplevels(d)) else sort(unique(as.character(d)))
   d <- as.character(d)
@@ -715,11 +832,18 @@ ci_pseudobulk <- function(obj_or_sce, donor, group) {
       paste0(names(per_group)[per_group < 2L], " (", per_group[per_group < 2L], ")", collapse = ", "),
       ". Cells are not biological replicates.")
   }
-  facts <- ci_value_facts(counts)
-  if (!facts$integer_valued || !facts$nonnegative || facts$n_missing > 0) ci_stop("counts must be nonnegative integers without missing values (raw counts).")
   pairs <- pairs[order(match(pairs$group, g_levels), match(pairs$donor, d_levels)), , drop = FALSE]
   ids <- paste(pairs$group, pairs$donor, sep = "|")
   j <- match(paste(g, d, sep = "|"), ids)
+  n_cells <- as.integer(tabulate(j, nbins = length(ids)))
+  single <- ids[n_cells < 2L]
+  if (length(single) && !allow_single_cell_samples) {
+    ci_stop(length(single), " pseudobulk sample(s) contain a single cell (", paste(utils::head(single, 5L), collapse = ", "),
+      if (length(single) > 5L) ", ..." else "", "). A one-cell sum is not a donor-level profile: check the donor column, ",
+      "or set allow_single_cell_samples = TRUE after review.")
+  }
+  facts <- ci_value_facts(counts)
+  if (!facts$integer_valued || !facts$nonnegative || facts$n_missing > 0) ci_stop("counts must be nonnegative integers without missing values (raw counts).")
   ind <- Matrix::sparseMatrix(i = seq_along(j), j = j, x = 1, dims = c(length(j), length(ids)))
   if (methods::is(counts, "sparseMatrix") || is.matrix(counts)) {
     res <- as.matrix(counts %*% ind)
@@ -728,11 +852,11 @@ ci_pseudobulk <- function(obj_or_sce, donor, group) {
     for (b in ci_col_blocks(nrow(counts), ncol(counts))) res <- res + ci_block(counts, b) %*% as.matrix(ind[b, , drop = FALSE])
   }
   dimnames(res) <- list(rownames(counts), ids)
-  n_cells <- as.integer(tabulate(j, nbins = length(ids)))
   samples <- data.frame(pseudobulk_id = ids, donor = pairs$donor, group = pairs$group, n_cells = n_cells, stringsAsFactors = FALSE)
   list(counts = res, samples = samples, design = list(adapter = "interop.seurat_v5", adapter_version = "1.0.0",
       source = source, donor_column = donor, group_column = group, n_cells = length(cells),
-      donors_per_group = per_group, unit = "donor x group pseudobulk sample",
+      donors_per_group = per_group, single_cell_samples = length(single),
+      allow_single_cell_samples = allow_single_cell_samples, unit = "donor x group pseudobulk sample",
       note = "Cells were summed within donor and group; use pseudobulk samples, not cells, as replicates."))
 }
 
