@@ -19,7 +19,10 @@ search(query, packages = NULL, path = NULL, limit = 20L)
 A data frame containing stable IDs, revision, snippet, score and source
 evidence. S3 declarations are labelled separately, including private
 implementations; static evidence does not establish installed dispatch or
-tested workflow approval.
+tested workflow approval. Reexports (\code{reexport_declared}) and S4/S7
+declarations (\code{static_declaration_only}) are never callable evidence.
+Only exports covered by a complete reviewed approval of the exact revision
+are labelled \code{workflow_approved} with \code{approved = TRUE}.
 }
 \description{
 Search revision-scoped APIs and stored documentation

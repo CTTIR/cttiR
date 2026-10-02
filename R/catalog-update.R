@@ -54,6 +54,7 @@ update_sources <- function(sources, packages, mode = "local") {
     entry
   })
   result <- Filter(Negate(is.null), result)
+  result <- lapply(result, attach_approvals, decisions = approval_decisions())
   names <- vapply(result, function(x) x$name, character(1))
   if (anyDuplicated(names)) abort_cttir("Multiple source records resolve to the same package.")
   if (!is.null(packages)) {
@@ -68,8 +69,8 @@ api_diff <- function(before, after) {
   old <- stats::setNames(before$packages, vapply(before$packages, function(x) x$name, character(1)))
   new <- stats::setNames(after$packages, vapply(after$packages, function(x) x$name, character(1)))
   for (name in union(names(old), names(new))) {
-    a <- old[[name]]
-    b <- new[[name]]
+    a <- without_approvals(old[[name]])
+    b <- without_approvals(new[[name]])
     if (identical(a, b)) next
     if (is.null(a) || is.null(b)) {
       out[nrow(out) + 1L, ] <- list(name, if (is.null(a)) "package_added" else "package_removed", "", is.null(b))
@@ -182,8 +183,10 @@ refresh_resource_observations <- function(file, selected) {
 #'   of the reviewed rights basis for storing that source's documentation text.
 #'   Without it only document hashes and inventory are retained. This declaration
 #'   must cover the selected documents, including any third-party material.
-#'   Documentation is stored literally, never rendered or evaluated. Each file
-#'   is bounded to one megabyte and each package corpus to ten megabytes. Missing
+#'   Documentation is stored literally, never rendered or evaluated. Each text
+#'   file is bounded to one megabyte and each package corpus to ten megabytes;
+#'   binary assets and rendered `inst/doc` HTML/PDF up to 25 MB are hashed but
+#'   never stored, and oversize renders are reported as such. Missing
 #'   vignettes are reported as absent from the source, not proven unpublished.
 #'   Sources are parsed statically and assigned a content-derived local revision,
 #'   including same-version edits. No checkout is modified. Local observations
@@ -242,6 +245,7 @@ update <- function(
   if (include_embeddings) warnings <- c(warnings, "Embedding backend unavailable; lexical catalog retained.")
   api_changes <- api_diff(before, after)
   doc_changes <- documentation_diff(before, after)
+  approval_changes <- approval_diff(before, after)
   if (changed && !dry_run) {
     retain_api_snapshot(before, root)
     retain_api_snapshot(after, root)
@@ -269,6 +273,7 @@ update <- function(
     ),
     sources = lapply(selected, function(x) list(package = x$name, revision = x$revision, status = "static_extracted")),
     api_diff = api_changes, documentation_diff = doc_changes,
+    approval_diff = approval_changes,
     activation = changed && !dry_run, warnings = warnings
   ), class = "cttir_update")
 }
@@ -310,10 +315,12 @@ rollback_knowledge <- function(version, dry_run = TRUE) {
   changed <- !identical(previous, target)
   api_changes <- api_diff(before, after)
   doc_changes <- documentation_diff(before, after)
+  approval_changes <- approval_diff(before, after)
   if (changed && !dry_run) activate_catalog(target, previous)
   structure(list(
     status = if (dry_run) "planned" else if (changed) "succeeded" else "unchanged",
     previous_id = previous$manifest_id, new_id = target$manifest_id,
+    approval_diff = approval_changes,
     api_diff = api_changes, documentation_diff = doc_changes, activation = changed && !dry_run,
     warnings = "Existing project pins and installed packages are unchanged."
   ), class = "cttir_update")

@@ -30,34 +30,44 @@ document_inventory <- function(path, rights = NULL) {
   if (length(files) > 5000L) abort_cttir("Documentation inventory exceeds the bound.", "cttir_source_unavailable")
   budget <- new.env(parent = emptyenv())
   budget$total <- 0
+  budget$hashed <- 0
   documents <- lapply(files, function(rel) {
     file <- file.path(path, rel)
     assert_plain_path(file)
     size <- file.info(file)$size
-    if (is.na(size) || dir.exists(file) || size > 1048576L) {
-      abort_cttir("A documentation file exceeds the one-megabyte bound or is not regular.", "cttir_source_unavailable")
-    }
-    budget$total <- budget$total + size
-    if (budget$total > 10000000L) abort_cttir("Documentation exceeds the ten-megabyte package bound.", "cttir_source_unavailable")
-    hash <- digest::digest(file = file, algo = "sha256")
     text_format <- tolower(tools::file_ext(rel)) %in% c("rd", "rmd", "rnw", "snw", "rtex", "qmd", "md", "txt", "r", "html", "tex", "bib") ||
       basename(rel) %in% c("DESCRIPTION", "DESCRIPTION.in", "NAMESPACE", "README", "NEWS", "LICENSE", "LICENCE", "COPYING", "CITATION", "CHANGELOG")
+    # Rendered vignette outputs duplicate their sources; binary assets are never
+    # stored. Both are hashed up to 25 MB, and oversize renders are reported.
+    derivative <- startsWith(rel, "inst/doc/") && tolower(tools::file_ext(rel)) %in% c("html", "pdf")
+    limit <- if (text_format && !derivative) 1048576L else 26214400L
+    if (is.na(size) || dir.exists(file) || size > limit) {
+      bound <- if (limit == 1048576L) "one-megabyte" else "25-megabyte asset"
+      abort_cttir(paste0("A documentation file exceeds the ", bound, " bound or is not regular."), "cttir_source_unavailable")
+    }
+    oversize <- text_format && size > 1048576L
+    budget$hashed <- budget$hashed + size
+    if (!oversize && text_format) budget$total <- budget$total + size
+    if (budget$total > 10000000L) abort_cttir("Documentation exceeds the ten-megabyte package bound.", "cttir_source_unavailable")
+    if (budget$hashed > 200000000) abort_cttir("Documentation assets exceed the inventory bound.", "cttir_source_unavailable")
+    hash <- digest::digest(file = file, algo = "sha256")
     kind <- if (startsWith(rel, "man/")) "reference" else if (startsWith(rel, "vignettes/") || startsWith(rel, "inst/doc/")) "vignette" else "package_document"
-    stored <- !is.null(rights) && text_format
+    stored <- !is.null(rights) && text_format && !oversize
     content <- if (stored) read_source_text(file) else NULL
     if (stored && (anyNA(iconv(content, from = "UTF-8", to = "UTF-8")))) {
       abort_cttir("Documentation is not valid UTF-8.", "cttir_source_unavailable")
     }
     list(path = rel, kind = kind, source_sha256 = hash, bytes = size,
-      storage = if (stored) "source_text" else if (!text_format) "asset_metadata_only" else "rights_not_confirmed",
+      storage = if (stored) "source_text" else if (oversize) "oversize_metadata_only" else if (!text_format) "asset_metadata_only" else "rights_not_confirmed",
       rights_basis = rights, content = content,
       content_sha256 = if (stored) content_hash(content) else NULL,
       extraction = "literal_no_execution")
   })
   stored <- vapply(documents, function(x) x$storage == "source_text", logical(1))
+  oversize <- vapply(documents, function(x) x$storage == "oversize_metadata_only", logical(1))
   list(schema_version = 1L, documents = documents,
     coverage = list(discovered = length(documents), stored = sum(stored),
-      metadata_only = sum(!stored), source_manifest_complete = TRUE,
+      metadata_only = sum(!stored), oversize_metadata_only = sum(oversize), source_manifest_complete = TRUE,
       vignette_status = if (any(vapply(documents, function(x) x$kind == "vignette", logical(1)))) "discovered" else "not_present_in_source",
       approval = "pending"))
 }
@@ -75,7 +85,7 @@ validate_document_corpus <- function(corpus) {
     if (identical(doc$storage, "source_text")) {
       if (!is.character(doc$content) || length(doc$content) != 1L || is.na(doc$content) ||
           !identical(content_hash(doc$content), doc$content_sha256) || is.null(doc$rights_basis)) fail()
-    } else if (!doc$storage %in% c("asset_metadata_only", "rights_not_confirmed") || !is.null(doc$content)) {
+    } else if (!doc$storage %in% c("asset_metadata_only", "rights_not_confirmed", "oversize_metadata_only") || !is.null(doc$content)) {
       fail()
     }
   }

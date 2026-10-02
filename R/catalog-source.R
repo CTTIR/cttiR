@@ -87,6 +87,7 @@ extract_source <- function(path, repository, revision, family = "local", documen
   source_files <- sort(list.files(file.path(path, "R"), "\\.[Rr]$", recursive = FALSE, full.names = TRUE))
   if (length(source_files) > 5000L) abort_cttir("Source file count exceeds the configured bound.", "cttir_source_unavailable")
   funcs <- list()
+  declarations <- list()
   hashes <- list(NAMESPACE = digest::digest(file = file.path(path, "NAMESPACE"), algo = "sha256"))
   hashes[[description_file]] <- digest::digest(file = file.path(path, description_file), algo = "sha256")
   for (f in source_files) {
@@ -94,6 +95,7 @@ extract_source <- function(path, repository, revision, family = "local", documen
     rel <- substring(f, nchar(path) + 2L)
     hashes[[rel]] <- digest::digest(file = f, algo = "sha256")
     found <- static_functions(text, rel)
+    declarations[[length(declarations) + 1L]] <- static_object_declarations(text, rel)
     # Multiple assignments are deliberately unresolved, rather than evaluated.
     for (name in names(found)) {
       if (name %in% names(funcs)) {
@@ -128,16 +130,20 @@ extract_source <- function(path, repository, revision, family = "local", documen
     # Only index the plain alias tags; no Rd macros or embedded expressions execute.
     hits <- regmatches(text, gregexpr("\\\\alias\\{[^{}]+\\}", text))[[1]]
     aliases <- sub("\\}$", "", sub("^\\\\alias\\{", "", hits))
+    # Rd-escaped aliases such as `\%>\%` name the unescaped topic.
+    aliases <- gsub("\\\\([%{}\\\\])", "\\1", aliases)
     for (alias in aliases) topics[[alias]] <- list(path = rel, sha256 = hashes[[rel]])
   }
   s3_methods <- static_s3_methods(ns, funcs, topics)
+  directives <- namespace_directives(ns)
+  objects <- object_evidence(declarations, directives, unique(exports))
   corpus <- document_inventory(path, documentation_rights)
   for (doc in corpus$documents) hashes[[doc$path]] <- doc$source_sha256
   revision_hash <- content_hash(json_text(hashes[sort(names(hashes), method = "radix")]))
   entries <- lapply(sort(unique(exports)), function(name) {
     fn <- funcs[[name]]
     topic <- topics[[name]]
-    list(
+    entry <- list(
       name = name, kind = if (is.null(fn) || startsWith(fn$signature, "unresolved")) "unresolved_export" else "function",
       signature = if (is.null(fn)) "unresolved" else fn$signature,
       arguments = if (is.null(fn)) list() else fn$arguments,
@@ -145,7 +151,17 @@ extract_source <- function(path, repository, revision, family = "local", documen
       source_path = if (is.null(fn)) "NAMESPACE" else fn$source_path,
       documentation = topic, approved = FALSE
     )
+    # Reexports, S4 and S7 objects keep non-callable labels; plain functions are unchanged.
+    special <- if (entry$kind == "unresolved_export") classify_export(name, fn, directives, objects) else NULL
+    if (!is.null(special)) {
+      entry$kind <- special$kind
+      entry$signature <- special$signature
+      entry$verification <- special$verification
+      if (!is.null(special$owner_package)) entry$owner_package <- special$owner_package
+    }
+    entry
   })
+  kinds <- vapply(entries, function(x) x$kind, character(1))
   list(
     name = package, version = value("Version"), title = value("Title"),
     description = value("Description"), license = value("License"), repository = repository,
@@ -155,9 +171,15 @@ extract_source <- function(path, repository, revision, family = "local", documen
       exports = length(entries), documented = sum(vapply(entries, function(x) !is.null(x$documentation), logical(1))),
       resolved = sum(vapply(entries, function(x) x$verification == "static_api_verified", logical(1))),
       approved = 0L, s3_declared = length(s3_methods),
-      s3_resolved = sum(vapply(s3_methods, function(x) x$verification == "static_method_verified", logical(1)))
+      s3_resolved = sum(vapply(s3_methods, function(x) x$verification == "static_method_verified", logical(1))),
+      reexports = sum(kinds == "reexport"), s4_classes = length(objects$s4$classes),
+      s4_generics = length(objects$s4$generics), s4_methods = length(objects$s4$methods),
+      s4_unresolved = length(objects$s4$unresolved), s7_classes = length(objects$s7$classes),
+      s7_generics = length(objects$s7$generics)
     ),
-    freshness = "not_rechecked", extraction = "static_no_execution", static_assignment_version = 2L
+    s4 = objects$s4, s7 = objects$s7,
+    freshness = "not_rechecked", extraction = "static_no_execution", static_assignment_version = 2L,
+    evidence_version = 3L
   )
 }
 

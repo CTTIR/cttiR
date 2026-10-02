@@ -12,8 +12,22 @@ packages(path = NULL)
 \value{
 A data frame of package identity, revision, extraction coverage and
 verification limits. S3 counts are missing for historical snapshots without
-a method index. No namespaces are loaded to inspect installed versions.
+a method index. \code{approved} counts callables covered by a complete reviewed
+workflow approval of that exact revision and \code{approved_roles} lists the
+approved roles (comma separated, empty when none). No namespaces are loaded
+to inspect installed versions.
 }
 \description{
 Inspect cataloged package revisions
+}
+\details{
+Workflow approvals are reviewer decisions keyed to an exact package
+\code{source_hash}. \code{\link[=update]{update()}} attaches the bundled reviewed decisions and, when
+set, those in the JSON file named by \code{options(cttiR.approvals = path)} to
+the matching extracted revision inside the immutable snapshot, so project
+pins and \code{\link[=rollback_knowledge]{rollback_knowledge()}} carry them. A decision counts only when
+that revision stores every required topic and document under a rights
+basis, every required callable is a statically verified documented export
+and a recorded fixture passed. Any source change, including documentation
+only, requires a new decision. Decisions never install or run anything.
 }
