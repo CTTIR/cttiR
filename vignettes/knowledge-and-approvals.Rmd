@@ -1,0 +1,118 @@
+---
+title: "Knowledge catalog, approvals and grounded answers"
+output:
+  rmarkdown::html_vignette:
+    mathjax: null
+vignette: >
+  %\VignetteIndexEntry{Knowledge catalog, approvals and grounded answers}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+example_root <- tempfile("cttir-knowledge-")
+dir.create(example_root)
+old_options <- options(cttiR.catalog_dir = file.path(example_root, "catalog"), cttiR.sources = NULL)
+```
+
+cttiR ships an immutable, revision-scoped knowledge catalog. It records public
+exports, statically resolved signatures, S3/S4/S7 declarations, documentation
+inventories and reviewed **workflow approvals** for exact package revisions.
+Generated project code may call only APIs covered by an approval of the
+revision the project pins.
+
+## What is cataloged
+
+```{r packages}
+inventory <- cttiR::packages()
+nrow(inventory)
+table(inventory$provider)
+head(inventory[inventory$approved > 0, c("package", "version", "approved", "approved_roles")], 8)
+```
+
+CTTIR packages are indexed from verified public revisions. The standard
+workflow family (tidyverse components, DescrTab2, ggplot2/patchwork, palettes,
+model engines, broom, rendering, pipeline and environment tools, Bioconductor
+containers and Seurat) is indexed from verified CRAN/Bioconductor source
+archives and the R 4.6.1 distribution.
+
+## Evidence levels
+
+| Level | Meaning |
+|---|---|
+| `static_api_verified` | A literal function definition was parsed; nothing was executed. |
+| `installed_api_verified` | Formals were read from the identical installed version in an isolated process (used where static parsing cannot resolve a constructor-built function). |
+| `reexport_declared` | The export belongs to another package; it is approved only through its owner. |
+| `static_declaration_only` | A literal S4/S7 declaration; dispatch is shown by fixtures, not by parsing. |
+| `workflow_approved` | Covered by a complete reviewed approval of this exact revision. |
+
+An approval names the package revision (`source_hash`), the workflow role and
+adapter version, the required callables, S3 methods and documented objects, the
+stored reference topics and package documents, and the passing fixture tests.
+Any change to the source, including documentation only, produces a new
+revision that needs a new review; older projects keep their pinned approvals.
+
+```{r approvals}
+approved <- cttiR::search("nlme::lme")
+approved[, c("symbol", "verification", "approved")]
+```
+
+The bundled corpus stores the topics and package documents that approvals
+require. Other documents of the same revision are inventoried with their hashes
+as `indexed_not_bundled`; a local `cttiR::update()` with a reviewed
+`documentation_rights` basis can store them.
+
+## Grounded answers
+
+`ask()` reads a question as data, matches it to registered capabilities and
+exact `package::export` names, and returns steps, prerequisites, the approved
+package revisions, citations and a reviewed snippet that validates against the
+approved function table. It never runs code or calls a model.
+
+```{r ask}
+answer <- cttiR::ask("Fit a mixed model for repeated measures and get confidence intervals")
+answer
+answer$evidence[, c("package", "export", "verification", "approval")]
+```
+
+Unsupported procedures return a gap and the nearest approved alternatives
+instead of invented code:
+
+```{r ask-gap}
+cttiR::ask("Run a Bayesian network meta-analysis with brms")$gaps
+cttiR::ask("Does dplyr::old_removed_function exist?")$gaps
+```
+
+The bundled benchmark (`inst/benchmarks/ask-cases.json`) checks citation
+correctness, code validity, abstention and injection resistance. Keyword
+matching is safe but limited on unseen phrasing; the held-out results are
+recorded in `inst/benchmarks/ask-heldout.json`.
+
+## Updating and rolling back
+
+`update()` refreshes registered sources into new immutable snapshots and
+activates them with one pointer change; it never installs packages or changes
+project pins. Registrations can be local directories, public GitHub
+repositories, CRAN or Bioconductor packages (remote mode only) or a local R
+distribution tree. Previews use disposable storage.
+
+```{r update, eval = FALSE}
+options(cttiR.sources = list(
+  list(id = "cran-patchwork", cran = "patchwork", documentation_rights = "<reviewed basis>")
+))
+preview <- cttiR::update(mode = "remote", dry_run = TRUE)
+preview$api_diff
+preview$approval_diff
+applied <- cttiR::update(mode = "remote")
+cttiR::rollback_knowledge(applied$previous_id, dry_run = TRUE)
+```
+
+A refreshed revision whose source differs from an approved one keeps no
+approval until it is reviewed; `approval_diff` reports such invalidations.
+Removed exports never fall back to older bundled revisions.
+
+```{r cleanup, include=FALSE}
+options(old_options)
+unlink(example_root, recursive = TRUE)
+```

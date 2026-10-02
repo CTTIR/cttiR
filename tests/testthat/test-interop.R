@@ -433,7 +433,7 @@ test_that("the bioc/seurat capability registry is valid and truthful about testi
   status <- stats::setNames(vapply(caps, function(x) x$status, character(1)), ids)
   expect_equal(status[["bioc.se.tidy_view"]], "adapter_tested")
   expect_equal(status[["seurat.single_cell.exploration"]], "adapter_tested")
-  tested_packages <- c("SummarizedExperiment", "S4Vectors", "SingleCellExperiment", "Matrix", "Seurat", "SeuratObject")
+  tested_packages <- c("SummarizedExperiment", "S4Vectors", "SingleCellExperiment", "Matrix", "Seurat", "SeuratObject", "methods")
   adapters <- interop_adapters()
   env <- interop_template()
   for (cap in caps) {

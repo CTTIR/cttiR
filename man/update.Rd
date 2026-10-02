@@ -86,8 +86,9 @@ publishes no checksum for those, so a registered \code{md5} is verified when
 given and otherwise the locally computed MD5 is labelled as unverified.
 \item \code{bioc = "pkg"}, optional \code{bioc_version} and \code{version}: the tarball listed in
 \verb{https://bioconductor.org/packages/<release>/bioc/src/contrib/PACKAGES},
-verified against its \code{MD5sum}. Only the version listed in that release index
-can be fetched.
+verified against its \code{MD5sum}. An exact earlier version of the same release
+is fetched from that release's \verb{Archive/} directory, verified against a
+registered \code{md5} when given and otherwise labelled unverified.
 \item \code{r_distribution}: a local released R source tree (directory containing
 \code{VERSION} and \code{COPYING}) with an exact \code{package}. This reads
 \verb{src/library/<package>/DESCRIPTION.in}, replacing only the literal
@@ -139,7 +140,7 @@ and Bioconductor registrations through the indices without downloading their
 tarballs.
 
 \strong{Not supported.} Discovery from Bioconductor VIEWS or package pages,
-archived Bioconductor versions, alternate CRAN paths (such as recommended
+versions from other Bioconductor releases, alternate CRAN paths (such as recommended
 package copies), private repositories, conditional HTTP requests, embeddings
 and automatic promotion of candidates.
 

@@ -72,6 +72,26 @@ document_inventory <- function(path, rights = NULL) {
       approval = "pending"))
 }
 
+# Keep stored text only for the listed paths (for example the topics an approval
+# requires); other stored documents keep their inventory, hash and rights record
+# as `indexed_not_bundled` and can be stored again by a local update.
+compact_document_corpus <- function(corpus, keep) {
+  if (is.null(corpus)) return(corpus)
+  corpus$documents <- lapply(corpus$documents, function(doc) {
+    if (identical(doc$storage, "source_text") && !doc$path %in% keep) {
+      doc$storage <- "indexed_not_bundled"
+      doc$content <- NULL
+      doc$content_sha256 <- NULL
+    }
+    doc
+  })
+  stored <- vapply(corpus$documents, function(x) identical(x$storage, "source_text"), logical(1))
+  corpus$coverage$stored <- sum(stored)
+  corpus$coverage$metadata_only <- sum(!stored)
+  corpus$coverage$indexed_not_bundled <- sum(vapply(corpus$documents, function(x) identical(x$storage, "indexed_not_bundled"), logical(1)))
+  corpus
+}
+
 validate_document_corpus <- function(corpus) {
   if (is.null(corpus)) return(invisible(FALSE))
   fail <- function() abort_cttir("Documentation corpus integrity check failed.", "cttir_catalog_corrupt")
@@ -85,7 +105,8 @@ validate_document_corpus <- function(corpus) {
     if (identical(doc$storage, "source_text")) {
       if (!is.character(doc$content) || length(doc$content) != 1L || is.na(doc$content) ||
           !identical(content_hash(doc$content), doc$content_sha256) || is.null(doc$rights_basis)) fail()
-    } else if (!doc$storage %in% c("asset_metadata_only", "rights_not_confirmed", "oversize_metadata_only") || !is.null(doc$content)) {
+    } else if (!doc$storage %in% c("asset_metadata_only", "rights_not_confirmed", "oversize_metadata_only",
+        "indexed_not_bundled") || !is.null(doc$content)) {
       fail()
     }
   }
@@ -94,10 +115,10 @@ validate_document_corpus <- function(corpus) {
   invisible(TRUE)
 }
 
+# Catalog corpora are validated once when read_catalog() loads a snapshot.
 document_hits <- function(package, query, max_chars = 1200L) {
   corpus <- package$documentation_corpus
   if (is.null(corpus)) return(list())
-  validate_document_corpus(corpus)
   hits <- list()
   for (doc in corpus$documents) {
     if (doc$storage != "source_text") next

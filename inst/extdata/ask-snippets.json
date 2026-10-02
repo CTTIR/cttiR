@@ -5,46 +5,71 @@
     {
       "capability": "std.import.delimited",
       "columns": [],
-      "code": "# Import a registered CSV with explicit types and missing-value codes.\ndata <- readr::read_delim(\"<bound-path>.csv\", delim = \",\",\n  col_types = readr::cols(.default = readr::col_character()),\n  na = c(\"\", \"NA\"), locale = readr::locale(encoding = \"UTF-8\"))\nreadr::problems(data)"
+      "code": "# Import a registered CSV with explicit types and missing-value codes;\n# readr warns about values that do not parse.\ndata <- readr::read_delim(\"<bound-path>.csv\", delim = \",\",\n  col_types = readr::cols(.default = readr::col_character()),\n  na = c(\"\", \"NA\"), locale = readr::locale(encoding = \"UTF-8\"))"
     },
     {
       "capability": "std.tidy.dplyr",
-      "columns": ["<outcome>", "<predictor>"],
+      "columns": [
+        "<outcome>",
+        "<predictor>"
+      ],
       "code": "# Keep only mapped roles and make exclusions explicit.\nroles <- data[c(\"<outcome>\", \"<predictor>\")]\ncomplete <- stats::complete.cases(roles)\nroles <- dplyr::filter(roles, complete)"
     },
     {
       "capability": "std.describe.descrtab2",
-      "columns": ["<variables>"],
+      "columns": [
+        "<variables>"
+      ],
       "code": "# Descriptive table without inferential tests.\nno_test <- list(name = \"Descriptive only - no inference\", abbreviation = \"none\",\n  p = function(...) NA_real_)\ntable <- DescrTab2::descr(data[c(\"<variable-1>\", \"<variable-2>\")],\n  test_options = list(test_override = no_test),\n  format_options = list(print_p = FALSE, print_CI = FALSE))"
     },
     {
       "capability": "std.describe.base",
-      "columns": ["<numeric-variable>"],
+      "columns": [
+        "<numeric-variable>"
+      ],
       "code": "# Descriptive-only summary in base R.\nx <- data[[\"<numeric-variable>\"]]\nc(n = sum(!is.na(x)), missing = sum(is.na(x)), mean = mean(x, na.rm = TRUE),\n  sd = stats::sd(x, na.rm = TRUE))"
     },
     {
       "capability": "std.figures.accessible",
-      "columns": ["<x>", "<y>", "<group>"],
+      "columns": [
+        "<x>",
+        "<y>",
+        "<group>"
+      ],
       "code": "# Accessible scatter: colour-blind-flagged Brewer palette plus shapes.\ncolours <- RColorBrewer::brewer.pal(3, \"Dark2\")\nplot <- ggplot2::ggplot(data, ggplot2::aes(x = .data[[\"<x>\"]], y = .data[[\"<y>\"]],\n    colour = .data[[\"<group>\"]], shape = .data[[\"<group>\"]])) +\n  ggplot2::geom_point() + ggplot2::scale_colour_manual(values = colours)\npatchwork::wrap_plots(list(plot)) + patchwork::plot_annotation(tag_levels = \"A\")"
     },
     {
       "capability": "std.model.lm",
-      "columns": ["response", "x1"],
-      "code": "# Linear model on aliased columns (response, x1, ...); never paste user names into formulas.\nfit <- stats::lm(response ~ x1, data = tidy_data, na.action = stats::na.fail)\nstats::coef(fit)\nbroom::tidy(fit, conf.int = TRUE)"
+      "columns": [
+        "response",
+        "x1"
+      ],
+      "code": "# Linear model on aliased columns (response, x1, ...); never paste user names into formulas.\nfit <- stats::lm(response ~ x1, data = tidy_data, na.action = stats::na.fail)\nstats::coef(fit)"
     },
     {
       "capability": "std.model.glm_binomial",
-      "columns": ["response", "x1"],
-      "code": "# Logistic regression; response coded 1 = event, 0 = non-event.\nfit <- stats::glm(response ~ x1, data = tidy_data, family = stats::binomial(link = \"logit\"),\n  na.action = stats::na.fail)\nbroom::tidy(fit, conf.int = TRUE)"
+      "columns": [
+        "response",
+        "x1"
+      ],
+      "code": "# Logistic regression; response coded 1 = event, 0 = non-event.\nfit <- stats::glm(response ~ x1, data = tidy_data, family = stats::binomial(link = \"logit\"),\n  na.action = stats::na.fail)"
     },
     {
       "capability": "std.model.lme",
-      "columns": ["response", "x1", "subject"],
+      "columns": [
+        "response",
+        "x1",
+        "subject"
+      ],
       "code": "# Random-intercept mixed model; subject identifies the repeated unit.\nfit <- nlme::lme(response ~ x1, data = tidy_data, random = ~ 1 | subject, method = \"REML\",\n  na.action = stats::na.fail)\nnlme::fixef(fit)\nnlme::getVarCov(fit)"
     },
     {
       "capability": "std.model.coxph",
-      "columns": ["time", "event", "x1"],
+      "columns": [
+        "time",
+        "event",
+        "x1"
+      ],
       "code": "# Cox model for right-censored data; event coded 1 = event, 0 = censored.\nfit <- survival::coxph(survival::Surv(time, event) ~ x1, data = tidy_data, ties = \"efron\",\n  na.action = stats::na.fail)\nsurvival::cox.zph(fit)"
     },
     {

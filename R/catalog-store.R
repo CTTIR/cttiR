@@ -99,7 +99,7 @@ retain_api_snapshot <- function(catalog, root) {
   dir.create(stage)
   on.exit(unlink(stage, recursive = TRUE), add = TRUE)
   con <- gzfile(file.path(stage, "api-catalog.json.gz"), "wb", compression = 9)
-  tryCatch(writeBin(charToRaw(json_text(catalog)), con), finally = close(con))
+  tryCatch(writeBin(charToRaw(catalog_json(catalog)), con), finally = close(con))
   id <- read_catalog(file.path(stage, "api-catalog.json.gz"))$content_id
   if (!identical(id, catalog$content_id) || !file.rename(stage, target)) {
     abort_cttir("Could not retain the complete API snapshot.", "cttir_transaction_conflict")

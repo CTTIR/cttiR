@@ -158,13 +158,18 @@ cw_import <- function(config) {
   } else {
     c("", "NA")
   }
-  data <- readr::read_delim(dataset$path, delim = if (identical(dataset$format, "tsv")) "\t" else ",",
-    col_types = types, na = missing_codes, locale = readr::locale(encoding = "UTF-8"),
-    progress = FALSE, show_col_types = FALSE)
-  problems <- readr::problems(data)
+  parse_warnings <- character()
+  data <- withCallingHandlers(
+    readr::read_delim(dataset$path, delim = if (identical(dataset$format, "tsv")) "\t" else ",",
+      col_types = types, na = missing_codes, locale = readr::locale(encoding = "UTF-8"),
+      progress = FALSE, show_col_types = FALSE),
+    warning = function(w) {
+      parse_warnings <<- c(parse_warnings, conditionMessage(w))
+      invokeRestart("muffleWarning")
+    })
   data <- as.data.frame(data, stringsAsFactors = FALSE)
   attr(data, "cw_import") <- list(dataset_id = dataset$id, rows = nrow(data), columns = ncol(data),
-    types_from_dictionary = nrow(rows) > 0L, parsing_problems = nrow(problems))
+    types_from_dictionary = nrow(rows) > 0L, parsing_warnings = parse_warnings)
   data
 }
 

@@ -35,6 +35,11 @@ approval_decisions <- function() {
 validate_approvals <- function(document) {
   document <- validate_document(document, "approvals")
   for (decision in document$decisions) {
+    if (!length(c(approval_text(decision$required_callables), approval_text(decision$required_methods),
+        approval_text(decision$required_objects)))) {
+      abort_cttir("An approval decision must name the callables, methods or objects it covers.",
+        "cttir_schema_error", "empty_approval_scope")
+    }
     for (path in approval_text(decision$required_documents)) relative_file(path)
     for (fixture in decision$fixtures) relative_file(fixture$test_file)
   }
@@ -82,17 +87,30 @@ approval_coverage <- function(package_record, approval) {
   }
   rights <- approval_text(approval$rights_basis)
   if (length(rights) != 1L || is.na(rights) || !nzchar(trimws(rights))) conditions <- c(conditions, "rights_basis_missing")
-  if (!length(callables)) conditions <- c(conditions, "no_required_callables")
+  methods <- unique(approval_text(approval$required_methods))
+  objects <- unique(approval_text(approval$required_objects))
+  if (!length(c(callables, methods, objects))) conditions <- c(conditions, "no_required_api")
   names <- vapply(package_record$exports, function(x) x$name, character(1))
   exports <- stats::setNames(package_record$exports, names)
   topic_stored <- function(topic) {
     !is.null(topic) && is.character(topic$path) && !is.null(stored[[topic$path]]) &&
       identical(stored[[topic$path]]$source_sha256, topic$sha256)
   }
-  covered <- vapply(callables, function(name) {
+  covered <- vapply(callables, function(name) approvable_callable(exports[[name]], topic_stored), logical(1))
+  # S3 implementations reached through dispatch: one statically verified,
+  # unduplicated registration whose own documentation topic is stored.
+  method_covered <- vapply(methods, function(name) {
+    hits <- Filter(function(x) identical(x$implementation, name), package_record$s3_methods)
+    if (length(hits) != 1L || !identical(hits[[1]]$verification, "static_method_verified")) return(FALSE)
+    # An undocumented method is covered by its generic's stored topic in the same revision.
+    generic <- exports[[sub("^.*::", "", hits[[1]]$generic)]]
+    topic_stored(hits[[1]]$documentation) || (!is.null(generic) && topic_stored(generic$documentation))
+  }, logical(1))
+  # Exported data objects cannot be verified as callables; they must be
+  # exported locally (not reexported) and documented in a stored topic.
+  object_covered <- vapply(objects, function(name) {
     entry <- exports[[name]]
-    !is.null(entry) && identical(entry$kind, "function") &&
-      identical(entry$verification, "static_api_verified") && topic_stored(entry$documentation)
+    !is.null(entry) && !identical(entry$kind, "reexport") && topic_stored(entry$documentation)
   }, logical(1))
   aliases <- stored_topic_aliases(stored)
   results <- vapply(approval$fixtures, function(x) as.character(x$result), character(1))
@@ -101,6 +119,8 @@ approval_coverage <- function(package_record, approval) {
   }, character(1))
   missing <- list(
     callables = as.list(callables[!covered]),
+    methods = as.list(methods[!method_covered]),
+    objects = as.list(objects[!object_covered]),
     topics = as.list(setdiff(topics, aliases)),
     documents = as.list(documents[!documents %in% names(stored)]),
     fixtures = as.list(c(failing, if (!any(results == "pass")) "no_passing_fixture")),
@@ -111,11 +131,23 @@ approval_coverage <- function(package_record, approval) {
     missing = missing,
     counts = list(
       required_callables = length(callables), covered_callables = sum(covered),
+      required_methods = length(methods), covered_methods = sum(method_covered),
+      required_objects = length(objects), covered_objects = sum(object_covered),
       required_topics = length(topics), stored_topics = length(intersect(topics, aliases)),
       required_documents = length(documents), stored_documents = sum(documents %in% names(stored)),
       fixtures = length(results), passing_fixtures = sum(results == "pass")
     )
   )
+}
+
+# Callable evidence levels that can back an approval: statically resolved
+# functions, functions whose formals were read from the identical installed
+# version in an isolated process, and literal S4 generic declarations (whose
+# dispatch must be exercised by the approval's fixtures). Each needs a stored topic.
+approvable_callable <- function(entry, topic_stored) {
+  if (is.null(entry) || !topic_stored(entry$documentation)) return(FALSE)
+  (identical(entry$kind, "function") && entry$verification %in% c("static_api_verified", "installed_api_verified")) ||
+    (identical(entry$kind, "s4_generic") && identical(entry$verification, "static_declaration_only"))
 }
 
 #' Attach reviewed decisions to a package record
@@ -146,6 +178,8 @@ attach_approvals <- function(package_record, decisions) {
       role = d$role, profile = d$profile, adapter_id = d$adapter_id, adapter_version = d$adapter_version,
       status = status, decision_status = d$status,
       required_callables = as.list(approval_text(d$required_callables)),
+      required_methods = as.list(approval_text(d$required_methods)),
+      required_objects = as.list(approval_text(d$required_objects)),
       required_topics = as.list(approval_text(d$required_topics)),
       required_documents = as.list(approval_text(d$required_documents)),
       fixtures = lapply(d$fixtures, function(x) x[c("test_file", "test_name", "result", "run_at")]),
@@ -154,7 +188,7 @@ attach_approvals <- function(package_record, decisions) {
   attached <- attached[order(ids(attached), method = "radix")]
   status <- vapply(attached, function(x) x$status, character(1))
   approved <- attached[status == "approved"]
-  covered <- unique(unlist(lapply(approved, function(x) approval_text(x$required_callables))))
+  covered <- unique(unlist(lapply(approved, function(x) c(approval_text(x$required_callables), approval_text(x$required_objects)))))
   package_record$exports <- lapply(package_record$exports, function(entry) {
     entry$approved <- entry$name %in% covered
     entry
@@ -183,7 +217,9 @@ approved_export_index <- function(package) {
     if (!identical(approval$status, "approved")) next
     if (!identical(approval_coverage(package, approval)$state, "complete")) next
     covering <- list(approval_id = approval$approval_id, role = approval$role, profile = approval$profile)
-    for (name in approval_text(approval$required_callables)) index[[name]] <- c(index[[name]], list(covering))
+    for (name in c(approval_text(approval$required_callables), approval_text(approval$required_objects))) {
+      index[[name]] <- c(index[[name]], list(covering))
+    }
   }
   index
 }
@@ -202,7 +238,7 @@ approved_callables <- function(catalog = NULL, packages = NULL) {
     if (!is.null(packages) && !p$name %in% packages) next
     index <- approved_export_index(p)
     for (entry in p$exports) {
-      if (is.null(index[[entry$name]]) || !identical(entry$verification, "static_api_verified")) next
+      if (is.null(index[[entry$name]])) next
       for (approval in index[[entry$name]]) {
         out[nrow(out) + 1L, ] <- list(p$name, p$version, p$source_hash, entry$name, entry$signature,
           approval$approval_id, approval$role)

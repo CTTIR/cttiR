@@ -1,0 +1,113 @@
+---
+title: "Audit, local runtime, privacy and troubleshooting"
+output:
+  rmarkdown::html_vignette:
+    mathjax: null
+vignette: >
+  %\VignetteIndexEntry{Audit, local runtime, privacy and troubleshooting}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+example_root <- tempfile("cttir-audit-")
+dir.create(example_root)
+old_options <- options(cttiR.catalog_dir = file.path(example_root, "catalog"),
+  cttiR.runtime_dir = file.path(example_root, "runtime"))
+```
+
+## doctor(), audit() and update() do different things
+
+| Function | Purpose | Side effects |
+|---|---|---|
+| `doctor()` | brief read-only diagnostics | none |
+| `audit()` | full check registry, reports, optional allowlisted repairs | reports only when `output` is given; repairs only with `repair = TRUE` |
+| `update()` | refresh the knowledge/resource catalogs | new immutable snapshots and one pointer change; never installs packages |
+
+```{r audit}
+p <- cttiR::project("Audit example", "methods", "Describe a tabular comparison", path = example_root)
+report <- cttiR::audit(p$path)
+report
+head(as.data.frame(report)[, c("id", "status", "message")], 10)
+```
+
+The default audit reads metadata only. It never opens referenced datasets,
+runs study pipelines, installs dependencies, starts services or contacts a
+network. The `integration` scope opts into temporary synthetic projects and an
+isolated catalog fixture; `live = TRUE` additionally allows a bounded probe of an
+already running owned local model.
+
+Repairs are an explicit allowlist: restore a missing managed file whose
+baseline is known, roll back an interrupted write whose writer has stopped, and
+repoint a corrupt catalog pointer to the last verified snapshot. Edited files
+are never overwritten.
+
+```{r repair}
+unlink(file.path(p$path, "code", "validate_project.R"))
+cttiR::audit(p$path, scope = "project")$overall_status
+repaired <- cttiR::audit(p$path, scope = "project", repair = TRUE)
+repaired$overall_status
+file.exists(file.path(p$path, "code", "validate_project.R"))
+```
+
+`audit(strict = TRUE)` raises `cttir_audit_failed` after writing any requested
+reports when a required check fails or stays unverified; the condition carries
+the full report for CI use.
+
+## Readiness levels
+
+Project creation always reports `scaffold_ready`. Higher levels come from local
+evidence: matching installed or renv-locked dependency versions
+(`environment_ready`), a passing synthetic demonstration produced by the
+unmodified stage code (`demo_verified`), a passing study-data run receipt
+(`data_ready`) and, finally, recorded mappings, reviewed settings, analysis
+approval and approved stage adapters (`analysis_ready`). None of these is a
+scientific validation of results.
+
+## Local runtime and planner
+
+`setup()` prepares an owned, cloud-disabled Ollama runtime on Linux x86_64 from
+a pinned publisher archive and verifies a local model with a bounded structured
+probe. A dry run is read-only:
+
+```{r setup-plan}
+plan <- cttiR::setup(dry_run = TRUE)
+plan$state
+plan$model$name
+```
+
+The default project planner is deterministic. Tested local models are listed
+with their benchmark results in the runtime manifest; none met the
+pre-registered planning thresholds, so a local model is used only when you opt
+in with `options(cttiR.planner = "local_llm")` and an owned runtime is verified.
+Explicit options always win over suggestions, and replay or `sync()` never
+re-plan.
+
+## Data flow and privacy
+
+* Goals, configuration files, documentation and model output are treated as
+  untrusted data; nothing is evaluated.
+* Study data are never read during creation, synchronization, audit or catalog
+  updates. `check_analysis_data()` and `code/run_workflow.R` read data only when
+  you supply or bind them explicitly.
+* Machine-specific paths belong in the ignored `.cttir/local.yml`.
+* The planner (when enabled) and `ask()` never send text off the machine; the
+  runtime listens on loopback only and refuses cloud-backed models.
+* Exported Shiny drafts can contain your text; review them before sharing.
+
+## Troubleshooting
+
+| Symptom | Next step |
+|---|---|
+| `cttir_transaction_conflict` with an active writer | wait for the other operation; if it crashed, run `cttiR::audit(path, repair = TRUE)` |
+| `cttir_catalog_corrupt` | `cttiR::audit(scope = "knowledge", repair = TRUE)` or `cttiR::rollback_knowledge(<id>, dry_run = FALSE)` |
+| `workflow_approval_pending` blocker | the pinned catalog lacks approvals for a stage; review with `cttiR::packages(path)` |
+| `environment_pending` blocker | install the pinned versions or enable `workflow$environment = "renv"` with `prepare_environment = TRUE` |
+| `code/run_workflow.R` stops with a list | record the listed mappings/settings/approval with `cttiR::sync()` and bind the dataset in `.cttir/local.yml` |
+| `setup()` returns `blocked` | read `$blockers`; offline mode never downloads, and only Linux x86_64 is supported |
+
+```{r cleanup, include=FALSE}
+options(old_options)
+unlink(example_root, recursive = TRUE)
+```

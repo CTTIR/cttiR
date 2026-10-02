@@ -299,8 +299,9 @@ defer_repository_sources <- function(plan) {
 #'   given and otherwise the locally computed MD5 is labelled as unverified.
 #' * `bioc = "pkg"`, optional `bioc_version` and `version`: the tarball listed in
 #'   `https://bioconductor.org/packages/<release>/bioc/src/contrib/PACKAGES`,
-#'   verified against its `MD5sum`. Only the version listed in that release index
-#'   can be fetched.
+#'   verified against its `MD5sum`. An exact earlier version of the same release
+#'   is fetched from that release's `Archive/` directory, verified against a
+#'   registered `md5` when given and otherwise labelled unverified.
 #' * `r_distribution`: a local released R source tree (directory containing
 #'   `VERSION` and `COPYING`) with an exact `package`. This reads
 #'   `src/library/<package>/DESCRIPTION.in`, replacing only the literal
@@ -352,7 +353,7 @@ defer_repository_sources <- function(plan) {
 #' tarballs.
 #'
 #' **Not supported.** Discovery from Bioconductor VIEWS or package pages,
-#' archived Bioconductor versions, alternate CRAN paths (such as recommended
+#' versions from other Bioconductor releases, alternate CRAN paths (such as recommended
 #' package copies), private repositories, conditional HTTP requests, embeddings
 #' and automatic promotion of candidates.
 #'

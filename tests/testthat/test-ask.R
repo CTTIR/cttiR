@@ -1,0 +1,35 @@
+test_that("grounded answers meet the pre-registered benchmark thresholds", {
+  bench <- ask_benchmark()
+  failed <- bench$results[!bench$results$passed, c("id", "kind", "approved")]
+  expect_true(bench$passed, info = paste(capture.output(print(failed)), collapse = "\n"))
+  expect_gte(bench$metrics$cases, 40L)
+  expect_equal(bench$metrics$citation_correctness, 1)
+  expect_equal(bench$metrics$code_validity, 1)
+  expect_setequal(unique(bench$results$lang), c("en", "de"))
+})
+
+test_that("answers never execute code, cite pinned revisions and keep unsupported requests as gaps", {
+  a <- ask("Fit a Cox regression and report the hazard ratio")
+  expect_s3_class(a, "cttir_answer")
+  expect_contains(unlist(a$approved_capabilities), c("std.model.coxph", "std.effects.broom"))
+  expect_match(a$code, "survival::coxph", fixed = TRUE)
+  expect_true(all(startsWith(a$evidence$verification, "workflow_approved")))
+  expect_true(all(grepl("^https://", unlist(a$citations))))
+  gap <- ask("Run a Bayesian model with brms")
+  expect_length(gap$approved_capabilities, 0L)
+  expect_equal(gap$code, "")
+  expect_true(any(startsWith(unlist(gap$gaps), "std.model.bayesian")))
+  removed <- ask("Is dplyr::old_removed_function available?")
+  expect_false(grepl("old_removed_function", removed$code, fixed = TRUE))
+  expect_match(unlist(removed$gaps), "not in the pinned catalog revision")
+  internal <- ask("Use stats:::lm.fit")
+  expect_match(unlist(internal$gaps), "internal_triple_colon")
+  loose <- ask("Make a gtsummary table", verified_only = FALSE)
+  expect_true(any(grepl("std.describe.gtsummary", unlist(loose$gaps), fixed = TRUE)))
+})
+
+test_that("ask uses a project's pinned catalog, not the active one", {
+  p <- project("Ask pin", "methods", "Describe a cohort", new_parent())
+  pinned <- ask("Make a baseline table 1", path = p$path)
+  expect_identical(pinned$catalog_id, read_project(p$path)$lock$catalog_id)
+})

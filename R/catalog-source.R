@@ -183,16 +183,45 @@ extract_source <- function(path, repository, revision, family = "local", documen
   )
 }
 
+.package_json_cache <- new.env(parent = emptyenv())
+
+# Byte-identical to json_text(catalog), assembled from per-package fragments that
+# are cached by an in-memory hash of each record, so unchanged packages are
+# serialized once per session. Content IDs are defined over these exact bytes.
+package_json <- function(package) {
+  key <- digest::digest(package, algo = "sha256")
+  if (exists(key, envir = .package_json_cache, inherits = FALSE)) return(get(key, envir = .package_json_cache))
+  if (length(ls(.package_json_cache)) >= 1000L) rm(list = ls(.package_json_cache), envir = .package_json_cache)
+  text <- json_text(package)
+  assign(key, text, envir = .package_json_cache)
+  text
+}
+
+catalog_json <- function(catalog) {
+  if (!is.list(catalog) || is.null(names(catalog)) || !is.list(catalog$packages) || !length(catalog$packages)) {
+    return(json_text(catalog))
+  }
+  fields <- vapply(names(catalog), function(name) {
+    value <- if (identical(name, "packages")) {
+      paste0("[", paste(vapply(catalog$packages, package_json, character(1)), collapse = ","), "]")
+    } else {
+      json_text(catalog[[name]])
+    }
+    paste0(json_text(name), ":", value)
+  }, character(1))
+  paste0("{", paste(fields, collapse = ","), "}")
+}
+
 write_catalog <- function(packages, path, inventory = list(), tombstones = NULL) {
   names <- vapply(packages, function(p) p$name, character(1))
   if (anyDuplicated(names)) abort_cttir("Catalog package identities are duplicated.", "cttir_catalog_corrupt")
   packages <- packages[order(names, method = "radix")]
   catalog <- list(schema_version = 1L, packages = packages, inventory = inventory)
   if (length(tombstones)) catalog$tombstones <- tombstones
-  catalog$content_id <- content_hash(json_text(catalog))
+  catalog$content_id <- content_hash(catalog_json(catalog))
   con <- gzfile(path, open = "wb", compression = 9)
   on.exit(close(con), add = TRUE)
-  writeBin(charToRaw(json_text(catalog)), con)
+  writeBin(charToRaw(catalog_json(catalog)), con)
   catalog$content_id
 }
 
@@ -217,7 +246,7 @@ read_catalog <- function(file) {
   })
   id <- catalog$content_id
   catalog$content_id <- NULL
-  if (!identical(catalog$schema_version, 1L) || !identical(id, content_hash(json_text(catalog)))) {
+  if (!identical(catalog$schema_version, 1L) || !identical(id, content_hash(catalog_json(catalog)))) {
     abort_cttir("Catalog schema or logical hash is invalid.", "cttir_catalog_corrupt")
   }
   catalog$content_id <- id

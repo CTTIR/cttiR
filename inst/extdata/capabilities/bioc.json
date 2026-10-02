@@ -7,12 +7,44 @@
       "family": "bioconductor",
       "stage": "container",
       "title": "SummarizedExperiment container for coordinated assays and feature/sample metadata",
-      "packages": ["SummarizedExperiment", "S4Vectors"],
-      "adapter": {"id": "interop.bioc_s4", "version": "1.0.0"},
-      "applies": {"modality": ["bulk_rna", "proteomics", "cytometry"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "packages": [
+        "SummarizedExperiment",
+        "S4Vectors",
+        "methods"
+      ],
+      "adapter": {
+        "id": "interop.bioc_s4",
+        "version": "1.0.0"
+      },
+      "applies": {
+        "modality": [
+          "bulk_rna",
+          "proteomics",
+          "cytometry"
+        ],
+        "aim": [],
+        "outcome_family": [],
+        "unit_structure": []
+      },
       "keywords": {
-        "en": ["SummarizedExperiment", "assay matrix", "count matrix", "RNA-seq", "bulk RNA-seq", "feature metadata", "sample metadata"],
-        "de": ["SummarizedExperiment", "Assay-Matrix", "Zaehlmatrix", "RNA-Seq", "Bulk-RNA-Seq", "Merkmalsmetadaten", "Probenmetadaten"]
+        "en": [
+          "SummarizedExperiment",
+          "assay matrix",
+          "count matrix",
+          "RNA-seq",
+          "bulk RNA-seq",
+          "feature metadata",
+          "sample metadata"
+        ],
+        "de": [
+          "SummarizedExperiment",
+          "Assay-Matrix",
+          "Zaehlmatrix",
+          "RNA-Seq",
+          "Bulk-RNA-Seq",
+          "Merkmalsmetadaten",
+          "Probenmetadaten"
+        ]
       },
       "infrastructure": true,
       "specialist": false,
@@ -30,12 +62,40 @@
       "family": "bioconductor",
       "stage": "container",
       "title": "SingleCellExperiment container with reduced dimensions and alternative experiments",
-      "packages": ["SingleCellExperiment", "SummarizedExperiment", "S4Vectors"],
-      "adapter": {"id": "interop.bioc_s4", "version": "1.0.0"},
-      "applies": {"modality": ["single_cell", "cytometry"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "packages": [
+        "SingleCellExperiment",
+        "SummarizedExperiment",
+        "S4Vectors"
+      ],
+      "adapter": {
+        "id": "interop.bioc_s4",
+        "version": "1.0.0"
+      },
+      "applies": {
+        "modality": [
+          "single_cell",
+          "cytometry"
+        ],
+        "aim": [],
+        "outcome_family": [],
+        "unit_structure": []
+      },
       "keywords": {
-        "en": ["SingleCellExperiment", "single-cell", "scRNA-seq", "reducedDims", "altExps", "cell metadata"],
-        "de": ["SingleCellExperiment", "Einzelzell", "Einzelzell-RNA-Seq", "Dimensionsreduktion", "Zellmetadaten"]
+        "en": [
+          "SingleCellExperiment",
+          "single-cell",
+          "scRNA-seq",
+          "reducedDims",
+          "altExps",
+          "cell metadata"
+        ],
+        "de": [
+          "SingleCellExperiment",
+          "Einzelzell",
+          "Einzelzell-RNA-Seq",
+          "Dimensionsreduktion",
+          "Zellmetadaten"
+        ]
       },
       "infrastructure": true,
       "specialist": false,
@@ -52,12 +112,33 @@
       "family": "bioconductor",
       "stage": "container",
       "title": "SpatialExperiment container for spatial coordinates and image metadata",
-      "packages": ["SpatialExperiment"],
+      "packages": [
+        "SpatialExperiment"
+      ],
       "adapter": null,
-      "applies": {"modality": ["spatial"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "applies": {
+        "modality": [
+          "spatial"
+        ],
+        "aim": [],
+        "outcome_family": [],
+        "unit_structure": []
+      },
       "keywords": {
-        "en": ["SpatialExperiment", "spatial transcriptomics", "Visium", "spot coordinates", "tissue image"],
-        "de": ["SpatialExperiment", "raeumliche Transkriptomik", "Visium", "Spotkoordinaten", "Gewebebild"]
+        "en": [
+          "SpatialExperiment",
+          "spatial transcriptomics",
+          "Visium",
+          "spot coordinates",
+          "tissue image"
+        ],
+        "de": [
+          "SpatialExperiment",
+          "raeumliche Transkriptomik",
+          "Visium",
+          "Spotkoordinaten",
+          "Gewebebild"
+        ]
       },
       "infrastructure": true,
       "specialist": false,
@@ -73,12 +154,33 @@
       "family": "bioconductor",
       "stage": "container",
       "title": "MultiAssayExperiment for explicit cross-assay sample mappings",
-      "packages": ["MultiAssayExperiment"],
+      "packages": [
+        "MultiAssayExperiment"
+      ],
       "adapter": null,
-      "applies": {"modality": ["multiomics"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "applies": {
+        "modality": [
+          "multiomics"
+        ],
+        "aim": [],
+        "outcome_family": [],
+        "unit_structure": []
+      },
       "keywords": {
-        "en": ["MultiAssayExperiment", "multi-omics", "multiomics", "sample map", "integrated assays"],
-        "de": ["MultiAssayExperiment", "Multi-Omics", "Multiomics", "Probenzuordnung", "integrierte Assays"]
+        "en": [
+          "MultiAssayExperiment",
+          "multi-omics",
+          "multiomics",
+          "sample map",
+          "integrated assays"
+        ],
+        "de": [
+          "MultiAssayExperiment",
+          "Multi-Omics",
+          "Multiomics",
+          "Probenzuordnung",
+          "integrierte Assays"
+        ]
       },
       "infrastructure": true,
       "specialist": false,
@@ -94,12 +196,33 @@
       "family": "bioconductor",
       "stage": "container",
       "title": "QFeatures for linked quantitative proteomics assay levels",
-      "packages": ["QFeatures"],
+      "packages": [
+        "QFeatures"
+      ],
       "adapter": null,
-      "applies": {"modality": ["proteomics"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "applies": {
+        "modality": [
+          "proteomics"
+        ],
+        "aim": [],
+        "outcome_family": [],
+        "unit_structure": []
+      },
       "keywords": {
-        "en": ["QFeatures", "proteomics", "peptide", "protein quantification", "mass spectrometry"],
-        "de": ["QFeatures", "Proteomik", "Peptid", "Proteinquantifizierung", "Massenspektrometrie"]
+        "en": [
+          "QFeatures",
+          "proteomics",
+          "peptide",
+          "protein quantification",
+          "mass spectrometry"
+        ],
+        "de": [
+          "QFeatures",
+          "Proteomik",
+          "Peptid",
+          "Proteinquantifizierung",
+          "Massenspektrometrie"
+        ]
       },
       "infrastructure": true,
       "specialist": false,
@@ -115,12 +238,33 @@
       "family": "bioconductor",
       "stage": "container",
       "title": "TreeSummarizedExperiment for hierarchical features such as taxonomies",
-      "packages": ["TreeSummarizedExperiment"],
+      "packages": [
+        "TreeSummarizedExperiment"
+      ],
       "adapter": null,
-      "applies": {"modality": ["microbiome"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "applies": {
+        "modality": [
+          "microbiome"
+        ],
+        "aim": [],
+        "outcome_family": [],
+        "unit_structure": []
+      },
       "keywords": {
-        "en": ["TreeSummarizedExperiment", "microbiome", "taxonomy", "phylogenetic tree", "16S"],
-        "de": ["TreeSummarizedExperiment", "Mikrobiom", "Taxonomie", "phylogenetischer Baum", "16S"]
+        "en": [
+          "TreeSummarizedExperiment",
+          "microbiome",
+          "taxonomy",
+          "phylogenetic tree",
+          "16S"
+        ],
+        "de": [
+          "TreeSummarizedExperiment",
+          "Mikrobiom",
+          "Taxonomie",
+          "phylogenetischer Baum",
+          "16S"
+        ]
       },
       "infrastructure": true,
       "specialist": false,
@@ -135,12 +279,39 @@
       "family": "bioconductor",
       "stage": "bridge",
       "title": "Bounded long view of an explicit SummarizedExperiment assay slice",
-      "packages": ["SummarizedExperiment", "S4Vectors"],
-      "adapter": {"id": "interop.se_tidy_view", "version": "1.0.0"},
-      "applies": {"modality": ["bulk_rna", "single_cell", "proteomics", "cytometry"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "packages": [
+        "SummarizedExperiment",
+        "S4Vectors"
+      ],
+      "adapter": {
+        "id": "interop.se_tidy_view",
+        "version": "1.0.0"
+      },
+      "applies": {
+        "modality": [
+          "bulk_rna",
+          "single_cell",
+          "proteomics",
+          "cytometry"
+        ],
+        "aim": [],
+        "outcome_family": [],
+        "unit_structure": []
+      },
       "keywords": {
-        "en": ["tidy view", "long format", "assay slice", "tidy SummarizedExperiment", "preview assay values"],
-        "de": ["Tidy-Ansicht", "Langformat", "Assay-Ausschnitt", "Assaywerte anzeigen"]
+        "en": [
+          "tidy view",
+          "long format",
+          "assay slice",
+          "tidy SummarizedExperiment",
+          "preview assay values"
+        ],
+        "de": [
+          "Tidy-Ansicht",
+          "Langformat",
+          "Assay-Ausschnitt",
+          "Assaywerte anzeigen"
+        ]
       },
       "infrastructure": true,
       "specialist": false,
@@ -157,12 +328,30 @@
       "family": "bioconductor",
       "stage": "bridge",
       "title": "tidySummarizedExperiment dplyr-style interface",
-      "packages": ["tidySummarizedExperiment"],
+      "packages": [
+        "tidySummarizedExperiment"
+      ],
       "adapter": null,
-      "applies": {"modality": ["bulk_rna", "proteomics"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "applies": {
+        "modality": [
+          "bulk_rna",
+          "proteomics"
+        ],
+        "aim": [],
+        "outcome_family": [],
+        "unit_structure": []
+      },
       "keywords": {
-        "en": ["tidySummarizedExperiment", "dplyr SummarizedExperiment", "tidyverse Bioconductor"],
-        "de": ["tidySummarizedExperiment", "dplyr SummarizedExperiment", "Tidyverse Bioconductor"]
+        "en": [
+          "tidySummarizedExperiment",
+          "dplyr SummarizedExperiment",
+          "tidyverse Bioconductor"
+        ],
+        "de": [
+          "tidySummarizedExperiment",
+          "dplyr SummarizedExperiment",
+          "Tidyverse Bioconductor"
+        ]
       },
       "infrastructure": true,
       "specialist": false,
@@ -177,12 +366,29 @@
       "family": "bioconductor",
       "stage": "bridge",
       "title": "tidySingleCellExperiment dplyr-style interface",
-      "packages": ["tidySingleCellExperiment"],
+      "packages": [
+        "tidySingleCellExperiment"
+      ],
       "adapter": null,
-      "applies": {"modality": ["single_cell"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "applies": {
+        "modality": [
+          "single_cell"
+        ],
+        "aim": [],
+        "outcome_family": [],
+        "unit_structure": []
+      },
       "keywords": {
-        "en": ["tidySingleCellExperiment", "dplyr single-cell", "tidyverse single cell"],
-        "de": ["tidySingleCellExperiment", "dplyr Einzelzell", "Tidyverse Einzelzell"]
+        "en": [
+          "tidySingleCellExperiment",
+          "dplyr single-cell",
+          "tidyverse single cell"
+        ],
+        "de": [
+          "tidySingleCellExperiment",
+          "dplyr Einzelzell",
+          "Tidyverse Einzelzell"
+        ]
       },
       "infrastructure": true,
       "specialist": false,
@@ -198,12 +404,35 @@
       "family": "bioconductor",
       "stage": "aggregation",
       "title": "Donor-level pseudobulk aggregation of raw single-cell counts",
-      "packages": ["Matrix"],
-      "adapter": {"id": "interop.seurat_v5", "version": "1.0.0"},
-      "applies": {"modality": ["single_cell"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "packages": [
+        "Matrix"
+      ],
+      "adapter": {
+        "id": "interop.seurat_v5",
+        "version": "1.0.0"
+      },
+      "applies": {
+        "modality": [
+          "single_cell"
+        ],
+        "aim": [],
+        "outcome_family": [],
+        "unit_structure": []
+      },
       "keywords": {
-        "en": ["pseudobulk", "pseudo-bulk", "donor-level", "differential expression single-cell", "aggregate counts"],
-        "de": ["Pseudobulk", "Spenderebene", "differentielle Expression Einzelzell", "Zaehlungen aggregieren"]
+        "en": [
+          "pseudobulk",
+          "pseudo-bulk",
+          "donor-level",
+          "differential expression single-cell",
+          "aggregate counts"
+        ],
+        "de": [
+          "Pseudobulk",
+          "Spenderebene",
+          "differentielle Expression Einzelzell",
+          "Zaehlungen aggregieren"
+        ]
       },
       "infrastructure": false,
       "specialist": true,
@@ -220,12 +449,40 @@
       "family": "seurat",
       "stage": "analysis",
       "title": "Seurat v5 single-cell exploration with Assay5 layer checks",
-      "packages": ["Seurat", "SeuratObject"],
-      "adapter": {"id": "interop.seurat_v5", "version": "1.0.0"},
-      "applies": {"modality": ["single_cell"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "packages": [
+        "Seurat",
+        "SeuratObject"
+      ],
+      "adapter": {
+        "id": "interop.seurat_v5",
+        "version": "1.0.0"
+      },
+      "applies": {
+        "modality": [
+          "single_cell"
+        ],
+        "aim": [],
+        "outcome_family": [],
+        "unit_structure": []
+      },
       "keywords": {
-        "en": ["Seurat", "single-cell", "scRNA-seq", "cell clustering", "UMAP", "marker genes", "Assay5 layers"],
-        "de": ["Seurat", "Einzelzell", "Einzelzell-RNA-Seq", "Zellclustering", "UMAP", "Markergene"]
+        "en": [
+          "Seurat",
+          "single-cell",
+          "scRNA-seq",
+          "cell clustering",
+          "UMAP",
+          "marker genes",
+          "Assay5 layers"
+        ],
+        "de": [
+          "Seurat",
+          "Einzelzell",
+          "Einzelzell-RNA-Seq",
+          "Zellclustering",
+          "UMAP",
+          "Markergene"
+        ]
       },
       "infrastructure": false,
       "specialist": true,
@@ -243,12 +500,36 @@
       "family": "seurat",
       "stage": "interchange",
       "title": "SingleCellExperiment and Seurat conversion with field-level loss report",
-      "packages": ["Seurat", "SeuratObject", "SingleCellExperiment"],
-      "adapter": {"id": "interop.seurat_v5", "version": "1.0.0"},
-      "applies": {"modality": ["single_cell"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "packages": [
+        "Seurat",
+        "SeuratObject",
+        "SingleCellExperiment"
+      ],
+      "adapter": {
+        "id": "interop.seurat_v5",
+        "version": "1.0.0"
+      },
+      "applies": {
+        "modality": [
+          "single_cell"
+        ],
+        "aim": [],
+        "outcome_family": [],
+        "unit_structure": []
+      },
       "keywords": {
-        "en": ["as.Seurat", "as.SingleCellExperiment", "convert Seurat", "Seurat to SingleCellExperiment", "object conversion"],
-        "de": ["Seurat konvertieren", "Seurat nach SingleCellExperiment", "Objektkonvertierung"]
+        "en": [
+          "as.Seurat",
+          "as.SingleCellExperiment",
+          "convert Seurat",
+          "Seurat to SingleCellExperiment",
+          "object conversion"
+        ],
+        "de": [
+          "Seurat konvertieren",
+          "Seurat nach SingleCellExperiment",
+          "Objektkonvertierung"
+        ]
       },
       "infrastructure": true,
       "specialist": false,
@@ -265,12 +546,31 @@
       "family": "seurat",
       "stage": "analysis",
       "title": "Seurat spatial assay exploration",
-      "packages": ["Seurat", "SeuratObject"],
+      "packages": [
+        "Seurat",
+        "SeuratObject"
+      ],
       "adapter": null,
-      "applies": {"modality": ["spatial"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "applies": {
+        "modality": [
+          "spatial"
+        ],
+        "aim": [],
+        "outcome_family": [],
+        "unit_structure": []
+      },
       "keywords": {
-        "en": ["Seurat spatial", "Visium Seurat", "spatial feature plot", "spatial clustering"],
-        "de": ["Seurat raeumlich", "Visium Seurat", "raeumliche Merkmalsdarstellung"]
+        "en": [
+          "Seurat spatial",
+          "Visium Seurat",
+          "spatial feature plot",
+          "spatial clustering"
+        ],
+        "de": [
+          "Seurat raeumlich",
+          "Visium Seurat",
+          "raeumliche Merkmalsdarstellung"
+        ]
       },
       "infrastructure": false,
       "specialist": true,
@@ -286,12 +586,34 @@
       "family": "seurat",
       "stage": "analysis",
       "title": "Seurat multimodal (RNA plus protein) exploration",
-      "packages": ["Seurat", "SeuratObject"],
+      "packages": [
+        "Seurat",
+        "SeuratObject"
+      ],
       "adapter": null,
-      "applies": {"modality": ["single_cell", "multiomics"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "applies": {
+        "modality": [
+          "single_cell",
+          "multiomics"
+        ],
+        "aim": [],
+        "outcome_family": [],
+        "unit_structure": []
+      },
       "keywords": {
-        "en": ["CITE-seq", "multimodal single-cell", "weighted nearest neighbour", "ADT", "RNA and protein"],
-        "de": ["CITE-Seq", "multimodale Einzelzell", "gewichtete naechste Nachbarn", "RNA und Protein"]
+        "en": [
+          "CITE-seq",
+          "multimodal single-cell",
+          "weighted nearest neighbour",
+          "ADT",
+          "RNA and protein"
+        ],
+        "de": [
+          "CITE-Seq",
+          "multimodale Einzelzell",
+          "gewichtete naechste Nachbarn",
+          "RNA und Protein"
+        ]
       },
       "infrastructure": false,
       "specialist": true,
@@ -307,12 +629,33 @@
       "family": "seurat",
       "stage": "normalization",
       "title": "sctransform variance-stabilizing normalization of UMI counts",
-      "packages": ["sctransform", "Seurat"],
+      "packages": [
+        "sctransform",
+        "Seurat"
+      ],
       "adapter": null,
-      "applies": {"modality": ["single_cell"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "applies": {
+        "modality": [
+          "single_cell"
+        ],
+        "aim": [],
+        "outcome_family": [],
+        "unit_structure": []
+      },
       "keywords": {
-        "en": ["sctransform", "SCTransform", "UMI normalization", "variance stabilization", "regularized negative binomial"],
-        "de": ["sctransform", "SCTransform", "UMI-Normalisierung", "Varianzstabilisierung"]
+        "en": [
+          "sctransform",
+          "SCTransform",
+          "UMI normalization",
+          "variance stabilization",
+          "regularized negative binomial"
+        ],
+        "de": [
+          "sctransform",
+          "SCTransform",
+          "UMI-Normalisierung",
+          "Varianzstabilisierung"
+        ]
       },
       "infrastructure": false,
       "specialist": true,
@@ -328,12 +671,38 @@
       "family": "seurat",
       "stage": "analysis",
       "title": "Signac chromatin accessibility and multimodal analysis",
-      "packages": ["Signac", "Seurat", "SeuratObject"],
+      "packages": [
+        "Signac",
+        "Seurat",
+        "SeuratObject"
+      ],
       "adapter": null,
-      "applies": {"modality": ["single_cell", "multiomics"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "applies": {
+        "modality": [
+          "single_cell",
+          "multiomics"
+        ],
+        "aim": [],
+        "outcome_family": [],
+        "unit_structure": []
+      },
       "keywords": {
-        "en": ["Signac", "scATAC-seq", "chromatin accessibility", "fragments", "peaks", "multiome"],
-        "de": ["Signac", "scATAC-Seq", "Chromatin-Zugaenglichkeit", "Fragmente", "Peaks", "Multiom"]
+        "en": [
+          "Signac",
+          "scATAC-seq",
+          "chromatin accessibility",
+          "fragments",
+          "peaks",
+          "multiome"
+        ],
+        "de": [
+          "Signac",
+          "scATAC-Seq",
+          "Chromatin-Zugaenglichkeit",
+          "Fragmente",
+          "Peaks",
+          "Multiom"
+        ]
       },
       "infrastructure": false,
       "specialist": true,
@@ -349,12 +718,32 @@
       "family": "seurat",
       "stage": "annotation",
       "title": "Azimuth reference-based cell annotation",
-      "packages": ["Azimuth", "Seurat"],
+      "packages": [
+        "Azimuth",
+        "Seurat"
+      ],
       "adapter": null,
-      "applies": {"modality": ["single_cell"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "applies": {
+        "modality": [
+          "single_cell"
+        ],
+        "aim": [],
+        "outcome_family": [],
+        "unit_structure": []
+      },
       "keywords": {
-        "en": ["Azimuth", "reference mapping", "cell type annotation", "label transfer"],
-        "de": ["Azimuth", "Referenz-Mapping", "Zelltyp-Annotation", "Label-Transfer"]
+        "en": [
+          "Azimuth",
+          "reference mapping",
+          "cell type annotation",
+          "label transfer"
+        ],
+        "de": [
+          "Azimuth",
+          "Referenz-Mapping",
+          "Zelltyp-Annotation",
+          "Label-Transfer"
+        ]
       },
       "infrastructure": false,
       "specialist": true,
@@ -371,12 +760,31 @@
       "family": "seurat",
       "stage": "analysis",
       "title": "SeuratWrappers interfaces to external methods",
-      "packages": ["SeuratWrappers", "Seurat"],
+      "packages": [
+        "SeuratWrappers",
+        "Seurat"
+      ],
       "adapter": null,
-      "applies": {"modality": ["single_cell"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "applies": {
+        "modality": [
+          "single_cell"
+        ],
+        "aim": [],
+        "outcome_family": [],
+        "unit_structure": []
+      },
       "keywords": {
-        "en": ["SeuratWrappers", "external method wrapper", "RunFastMNN", "RunHarmony wrapper"],
-        "de": ["SeuratWrappers", "externe Methoden", "Wrapper"]
+        "en": [
+          "SeuratWrappers",
+          "external method wrapper",
+          "RunFastMNN",
+          "RunHarmony wrapper"
+        ],
+        "de": [
+          "SeuratWrappers",
+          "externe Methoden",
+          "Wrapper"
+        ]
       },
       "infrastructure": false,
       "specialist": true,
@@ -391,12 +799,33 @@
       "family": "seurat",
       "stage": "interchange",
       "title": "SeuratDisk h5Seurat/h5ad file interchange",
-      "packages": ["SeuratDisk"],
+      "packages": [
+        "SeuratDisk"
+      ],
       "adapter": null,
-      "applies": {"modality": ["single_cell"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "applies": {
+        "modality": [
+          "single_cell"
+        ],
+        "aim": [],
+        "outcome_family": [],
+        "unit_structure": []
+      },
       "keywords": {
-        "en": ["SeuratDisk", "h5Seurat", "h5ad", "AnnData conversion", "file interchange"],
-        "de": ["SeuratDisk", "h5Seurat", "h5ad", "AnnData-Konvertierung", "Dateiaustausch"]
+        "en": [
+          "SeuratDisk",
+          "h5Seurat",
+          "h5ad",
+          "AnnData conversion",
+          "file interchange"
+        ],
+        "de": [
+          "SeuratDisk",
+          "h5Seurat",
+          "h5ad",
+          "AnnData-Konvertierung",
+          "Dateiaustausch"
+        ]
       },
       "infrastructure": true,
       "specialist": false,
@@ -412,12 +841,32 @@
       "family": "seurat",
       "stage": "acceleration",
       "title": "BPCells disk-backed matrices for large cell datasets",
-      "packages": ["BPCells"],
+      "packages": [
+        "BPCells"
+      ],
       "adapter": null,
-      "applies": {"modality": ["single_cell"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "applies": {
+        "modality": [
+          "single_cell"
+        ],
+        "aim": [],
+        "outcome_family": [],
+        "unit_structure": []
+      },
       "keywords": {
-        "en": ["BPCells", "disk-backed matrix", "on-disk counts", "large single-cell dataset", "out-of-memory"],
-        "de": ["BPCells", "festplattenbasierte Matrix", "grosser Einzelzell-Datensatz", "speicherschonend"]
+        "en": [
+          "BPCells",
+          "disk-backed matrix",
+          "on-disk counts",
+          "large single-cell dataset",
+          "out-of-memory"
+        ],
+        "de": [
+          "BPCells",
+          "festplattenbasierte Matrix",
+          "grosser Einzelzell-Datensatz",
+          "speicherschonend"
+        ]
       },
       "infrastructure": true,
       "specialist": false,
@@ -433,12 +882,30 @@
       "family": "seurat",
       "stage": "analysis",
       "title": "presto fast exploratory marker statistics",
-      "packages": ["presto"],
+      "packages": [
+        "presto"
+      ],
       "adapter": null,
-      "applies": {"modality": ["single_cell"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "applies": {
+        "modality": [
+          "single_cell"
+        ],
+        "aim": [],
+        "outcome_family": [],
+        "unit_structure": []
+      },
       "keywords": {
-        "en": ["presto", "fast Wilcoxon", "marker genes", "AUC markers"],
-        "de": ["presto", "schneller Wilcoxon-Test", "Markergene"]
+        "en": [
+          "presto",
+          "fast Wilcoxon",
+          "marker genes",
+          "AUC markers"
+        ],
+        "de": [
+          "presto",
+          "schneller Wilcoxon-Test",
+          "Markergene"
+        ]
       },
       "infrastructure": false,
       "specialist": true,
@@ -454,12 +921,32 @@
       "family": "seurat",
       "stage": "analysis",
       "title": "glmGamPoi gamma-Poisson count models and acceleration",
-      "packages": ["glmGamPoi"],
+      "packages": [
+        "glmGamPoi"
+      ],
       "adapter": null,
-      "applies": {"modality": ["single_cell", "bulk_rna"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "applies": {
+        "modality": [
+          "single_cell",
+          "bulk_rna"
+        ],
+        "aim": [],
+        "outcome_family": [],
+        "unit_structure": []
+      },
       "keywords": {
-        "en": ["glmGamPoi", "gamma-Poisson", "negative binomial GLM", "pseudobulk model"],
-        "de": ["glmGamPoi", "Gamma-Poisson", "negativ-binomiales GLM", "Pseudobulk-Modell"]
+        "en": [
+          "glmGamPoi",
+          "gamma-Poisson",
+          "negative binomial GLM",
+          "pseudobulk model"
+        ],
+        "de": [
+          "glmGamPoi",
+          "Gamma-Poisson",
+          "negativ-binomiales GLM",
+          "Pseudobulk-Modell"
+        ]
       },
       "infrastructure": false,
       "specialist": true,
@@ -475,12 +962,30 @@
       "family": "seurat",
       "stage": "data_distribution",
       "title": "SeuratData example and reference dataset distribution",
-      "packages": ["SeuratData"],
+      "packages": [
+        "SeuratData"
+      ],
       "adapter": null,
-      "applies": {"modality": ["single_cell"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "applies": {
+        "modality": [
+          "single_cell"
+        ],
+        "aim": [],
+        "outcome_family": [],
+        "unit_structure": []
+      },
       "keywords": {
-        "en": ["SeuratData", "example dataset", "reference dataset", "pbmc3k"],
-        "de": ["SeuratData", "Beispieldatensatz", "Referenzdatensatz"]
+        "en": [
+          "SeuratData",
+          "example dataset",
+          "reference dataset",
+          "pbmc3k"
+        ],
+        "de": [
+          "SeuratData",
+          "Beispieldatensatz",
+          "Referenzdatensatz"
+        ]
       },
       "infrastructure": true,
       "specialist": false,

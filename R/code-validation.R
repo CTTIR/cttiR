@@ -130,13 +130,49 @@ validate_generated_code <- function(text, catalog = NULL, approved_only = TRUE) 
     entry <- Filter(function(x) identical(x$name, export), p$exports)
     if (!length(entry)) return(add(expr, package, export, "rejected", "export_absent_from_catalog_revision"))
     entry <- entry[[1]]
+    reason <- if (approved_only) "workflow_approved_export" else "static_api_verified_export"
     if (identical(entry$kind, "reexport")) {
-      return(add(expr, package, export, "rejected", paste0("reexport_use_owner:", entry$owner_package)))
-    }
-    if (!identical(entry$kind, "function") || !identical(entry$verification, "static_api_verified")) {
+      # A reexport is accepted only through its owner's verified (and approved)
+      # export, following at most three reexport hops, and only when every
+      # reexporting revision on the way carries an approval, because loading it
+      # is what registers its methods.
+      chain <- list(p)
+      owner <- p
+      owned <- entry
+      for (hop in seq_len(3L)) {
+        if (!identical(owned$kind, "reexport")) break
+        owner <- packages[[if (is.null(owned$owner_package)) "" else owned$owner_package]]
+        found <- if (is.null(owner)) list() else Filter(function(x) identical(x$name, export), owner$exports)
+        if (!length(found)) {
+          owned <- NULL
+          break
+        }
+        owned <- found[[1]]
+        if (identical(owned$kind, "reexport")) chain <- c(chain, list(owner))
+      }
+      valid_owner <- !is.null(owned) && identical(owned$kind, "function") &&
+        owned$verification %in% c("static_api_verified", "installed_api_verified")
+      has_approval <- function(x) any(vapply(effective_approvals(x), function(a) identical(a$status, "approved"), logical(1)))
+      approved_route <- !approved_only || (valid_owner && !is.null(approved(owner)[[export]]) &&
+        all(vapply(chain, has_approval, logical(1))))
+      if (!valid_owner || !approved_route) {
+        return(add(expr, package, export, "rejected", paste0("reexport_use_owner:", entry$owner_package)))
+      }
+      entry <- owned
+      reason <- paste0(if (approved_only) "workflow_approved_reexport:" else "static_reexport:", owner$name)
+    } else if (identical(entry$kind, "s4_generic") && !is.null(call)) {
+      # S4 generics dispatch on argument classes; their declared signature is not
+      # a complete argument list, so only approval is checked here.
+      if (approved_only && is.null(approved(p)[[export]])) {
+        return(add(expr, package, export, "rejected", "not_workflow_approved_for_revision"))
+      }
+      return(add(expr, package, export, "ok", if (approved_only) "workflow_approved_s4_generic" else "s4_generic_declared"))
+    } else if (!identical(entry$kind, "function") || !entry$verification %in% c("static_api_verified", "installed_api_verified")) {
+      # Exported data objects may be referenced (not called) when documented and approved.
+      object_ok <- is.null(call) && !is.null(entry$documentation) && (!approved_only || !is.null(approved(p)[[export]]))
+      if (object_ok) return(add(expr, package, export, "ok", if (approved_only) "workflow_approved_object" else "documented_object"))
       return(add(expr, package, export, "rejected", paste0("unverified_export:", entry$verification)))
-    }
-    if (approved_only && is.null(approved(p)[[export]])) {
+    } else if (approved_only && is.null(approved(p)[[export]])) {
       return(add(expr, package, export, "rejected", "not_workflow_approved_for_revision"))
     }
     if (!is.null(call)) {
@@ -151,7 +187,7 @@ validate_generated_code <- function(text, catalog = NULL, approved_only = TRUE) 
       }
       if (anyDuplicated(named)) return(add(expr, package, export, "rejected", "duplicate_argument"))
     }
-    add(expr, package, export, "ok", if (approved_only) "workflow_approved_export" else "static_api_verified_export")
+    add(expr, package, export, "ok", reason)
   }
   check_function_value <- function(value, call, name) {
     if (is.symbol(value)) {

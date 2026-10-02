@@ -13,7 +13,8 @@ repository_url_allowed <- function(url) {
       grepl("^https://cloud[.]r-project[.]org/src/contrib/[A-Za-z][A-Za-z0-9.]*_[0-9]+([.-][0-9]+)+[.]tar[.]gz$", url) ||
       grepl("^https://cloud[.]r-project[.]org/src/contrib/Archive/([A-Za-z][A-Za-z0-9.]*)/\\1_[0-9]+([.-][0-9]+)+[.]tar[.]gz$", url) ||
       grepl("^https://bioconductor[.]org/packages/[0-9]+[.][0-9]+/bioc/src/contrib/PACKAGES$", url) ||
-      grepl("^https://bioconductor[.]org/packages/[0-9]+[.][0-9]+/bioc/src/contrib/[A-Za-z][A-Za-z0-9.]*_[0-9]+([.-][0-9]+)+[.]tar[.]gz$", url))
+      grepl("^https://bioconductor[.]org/packages/[0-9]+[.][0-9]+/bioc/src/contrib/[A-Za-z][A-Za-z0-9.]*_[0-9]+([.-][0-9]+)+[.]tar[.]gz$", url) ||
+      grepl("^https://bioconductor[.]org/packages/[0-9]+[.][0-9]+/bioc/src/contrib/Archive/([A-Za-z][A-Za-z0-9.]*)/\\1_[0-9]+([.-][0-9]+)+[.]tar[.]gz$", url))
 }
 
 # Network primitive. Tests replace it; callers re-check every bound afterwards.
@@ -389,23 +390,39 @@ bioc_source <- function(record, context) {
   scalar_text(package, "Bioconductor package")
   if (!grepl(paste0("^", repository_package_pattern, "$"), package)) abort_cttir("Invalid Bioconductor package name.", field = "bioc")
   release <- if (is.null(record$bioc_version)) require_bioc_release(context$policy) else validate_bioc_release(record$bioc_version, "source bioc_version")
+  if (!is.null(record$version)) {
+    scalar_text(record$version, "source version")
+    if (!grepl(paste0("^", repository_version_pattern, "$"), record$version)) abort_cttir("Invalid exact package version.", field = "version")
+  }
+  if (!is.null(record$md5)) {
+    scalar_text(record$md5, "source md5")
+    if (!grepl("^[a-f0-9]{32}$", record$md5)) abort_cttir("md5 must be 32 lowercase hexadecimal characters.", field = "md5")
+  }
   index <- repository_index(context, "Bioconductor", release)
   stanza <- index_stanza(index, package)
   if (is.null(stanza)) {
     abort_cttir(paste0("The package is not listed in the Bioconductor ", release, " software index."),
       "cttir_source_unavailable", "missing_from_selected_index")
   }
-  version <- stanza[["Version"]]
-  if (!is.null(record$version) && !identical(record$version, version)) {
-    abort_cttir("Only the version listed in the selected Bioconductor release index can be fetched.",
-      "cttir_source_unavailable", "version_not_in_release")
+  version <- if (is.null(record$version)) stanza[["Version"]] else record$version
+  current <- identical(stanza[["Version"]], version)
+  if (current && !is.null(record$md5) && !identical(record$md5, stanza[["MD5sum"]])) {
+    abort_cttir("The registered MD5 differs from the Bioconductor index.", "cttir_source_unavailable", "checksum_mismatch")
   }
+  # An exact earlier version of the same release comes from that release's
+  # Archive/ directory, which publishes no checksum.
   base <- paste0("https://bioconductor.org/packages/", release, "/bioc")
-  entry <- repository_archive_source(package, version, paste0(base, "/src/contrib/", package, "_", version, ".tar.gz"),
-    expected_md5 = stanza[["MD5sum"]], checksum_source = "repository_index",
+  url <- if (current) {
+    paste0(base, "/src/contrib/", package, "_", version, ".tar.gz")
+  } else {
+    paste0(base, "/src/contrib/Archive/", package, "/", package, "_", version, ".tar.gz")
+  }
+  entry <- repository_archive_source(package, version, url,
+    expected_md5 = if (current) stanza[["MD5sum"]] else record$md5,
+    checksum_source = if (current) "repository_index" else if (!is.null(record$md5)) "registered_record" else "none_published",
     repository = paste0(base, "/html/", package, ".html"), revision_prefix = paste0("bioc-", release),
     family = "configured_bioconductor", documentation_rights = record$documentation_rights, context = context)
-  entry$freshness <- "repository_current_fetched"
+  entry$freshness <- if (current) "repository_current_fetched" else "repository_archive_fetched"
   entry$bioconductor_release <- release
   entry$repository_index <- list(url = index$url, sha256 = index$sha256, retrieved_at = index$retrieved_at)
   entry

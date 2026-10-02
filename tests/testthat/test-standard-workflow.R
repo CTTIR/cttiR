@@ -156,3 +156,28 @@ test_that("the synthetic demo runs in a generated project and labels its outputs
   expect_true(readiness$checks[[3]]$passed)
   expect_false(readiness$checks[[4]]$passed)
 })
+
+test_that("delimited import honours dictionary types and missing codes without guessing", {
+  skip_if_not_installed("readr")
+  env <- stage_library()
+  root <- new_parent()
+  dir.create(file.path(root, "metadata"))
+  csv <- file.path(root, "cohort.csv")
+  writeLines(c("id,score,group,visit", "a,1.5,x,0", "b,-99,y,1", "c,2.25,,2", "d,abc,x,3"), csv)
+  writeLines(c("dataset_id,variable,type,unit,allowed_values,missing_codes,description",
+    "cohort,id,character,,,,", "cohort,score,numeric,,,-99,", "cohort,group,character,,,,", "cohort,visit,integer,,,,"),
+    file.path(root, "metadata", "data-dictionary.csv"))
+  config <- list(root = root, analysis = list(mapping = list(data_source_id = "cohort")),
+    datasets = list(list(id = "cohort", format = "csv")), bindings = list(list(id = "cohort", path = csv)))
+  data <- env$cw_import(config)
+  expect_equal(nrow(data), 4L)
+  expect_type(data$score, "double")
+  expect_type(data$visit, "integer")
+  expect_true(is.na(data$score[[2]]))
+  expect_true(is.na(data$score[[4]]))
+  info <- attr(data, "cw_import")
+  expect_true(info$types_from_dictionary)
+  expect_gt(length(info$parsing_warnings), 0L)
+  config$bindings <- list()
+  expect_error(env$cw_import(config), "no local binding")
+})
