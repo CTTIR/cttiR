@@ -1,0 +1,225 @@
+{
+  "source_package": "RColorBrewer",
+  "source_package_version": "1.1-3",
+  "source_object": "RColorBrewer::brewer.pal.info",
+  "source_license": "Apache License 2.0",
+  "palette_design": "ColorBrewer palettes by Cynthia A. Brewer",
+  "fields": {
+    "name": "palette name",
+    "maxcolors": "maximum number of distinct colours",
+    "category": "div, qual or seq",
+    "colorblind": "palette-level colour-blind flag as published in brewer.pal.info"
+  },
+  "palettes": [
+    {
+      "name": "BrBG",
+      "maxcolors": 11,
+      "category": "div",
+      "colorblind": true
+    },
+    {
+      "name": "PiYG",
+      "maxcolors": 11,
+      "category": "div",
+      "colorblind": true
+    },
+    {
+      "name": "PRGn",
+      "maxcolors": 11,
+      "category": "div",
+      "colorblind": true
+    },
+    {
+      "name": "PuOr",
+      "maxcolors": 11,
+      "category": "div",
+      "colorblind": true
+    },
+    {
+      "name": "RdBu",
+      "maxcolors": 11,
+      "category": "div",
+      "colorblind": true
+    },
+    {
+      "name": "RdGy",
+      "maxcolors": 11,
+      "category": "div",
+      "colorblind": false
+    },
+    {
+      "name": "RdYlBu",
+      "maxcolors": 11,
+      "category": "div",
+      "colorblind": true
+    },
+    {
+      "name": "RdYlGn",
+      "maxcolors": 11,
+      "category": "div",
+      "colorblind": false
+    },
+    {
+      "name": "Spectral",
+      "maxcolors": 11,
+      "category": "div",
+      "colorblind": false
+    },
+    {
+      "name": "Accent",
+      "maxcolors": 8,
+      "category": "qual",
+      "colorblind": false
+    },
+    {
+      "name": "Dark2",
+      "maxcolors": 8,
+      "category": "qual",
+      "colorblind": true
+    },
+    {
+      "name": "Paired",
+      "maxcolors": 12,
+      "category": "qual",
+      "colorblind": true
+    },
+    {
+      "name": "Pastel1",
+      "maxcolors": 9,
+      "category": "qual",
+      "colorblind": false
+    },
+    {
+      "name": "Pastel2",
+      "maxcolors": 8,
+      "category": "qual",
+      "colorblind": false
+    },
+    {
+      "name": "Set1",
+      "maxcolors": 9,
+      "category": "qual",
+      "colorblind": false
+    },
+    {
+      "name": "Set2",
+      "maxcolors": 8,
+      "category": "qual",
+      "colorblind": true
+    },
+    {
+      "name": "Set3",
+      "maxcolors": 12,
+      "category": "qual",
+      "colorblind": false
+    },
+    {
+      "name": "Blues",
+      "maxcolors": 9,
+      "category": "seq",
+      "colorblind": true
+    },
+    {
+      "name": "BuGn",
+      "maxcolors": 9,
+      "category": "seq",
+      "colorblind": true
+    },
+    {
+      "name": "BuPu",
+      "maxcolors": 9,
+      "category": "seq",
+      "colorblind": true
+    },
+    {
+      "name": "GnBu",
+      "maxcolors": 9,
+      "category": "seq",
+      "colorblind": true
+    },
+    {
+      "name": "Greens",
+      "maxcolors": 9,
+      "category": "seq",
+      "colorblind": true
+    },
+    {
+      "name": "Greys",
+      "maxcolors": 9,
+      "category": "seq",
+      "colorblind": true
+    },
+    {
+      "name": "Oranges",
+      "maxcolors": 9,
+      "category": "seq",
+      "colorblind": true
+    },
+    {
+      "name": "OrRd",
+      "maxcolors": 9,
+      "category": "seq",
+      "colorblind": true
+    },
+    {
+      "name": "PuBu",
+      "maxcolors": 9,
+      "category": "seq",
+      "colorblind": true
+    },
+    {
+      "name": "PuBuGn",
+      "maxcolors": 9,
+      "category": "seq",
+      "colorblind": true
+    },
+    {
+      "name": "PuRd",
+      "maxcolors": 9,
+      "category": "seq",
+      "colorblind": true
+    },
+    {
+      "name": "Purples",
+      "maxcolors": 9,
+      "category": "seq",
+      "colorblind": true
+    },
+    {
+      "name": "RdPu",
+      "maxcolors": 9,
+      "category": "seq",
+      "colorblind": true
+    },
+    {
+      "name": "Reds",
+      "maxcolors": 9,
+      "category": "seq",
+      "colorblind": true
+    },
+    {
+      "name": "YlGn",
+      "maxcolors": 9,
+      "category": "seq",
+      "colorblind": true
+    },
+    {
+      "name": "YlGnBu",
+      "maxcolors": 9,
+      "category": "seq",
+      "colorblind": true
+    },
+    {
+      "name": "YlOrBr",
+      "maxcolors": 9,
+      "category": "seq",
+      "colorblind": true
+    },
+    {
+      "name": "YlOrRd",
+      "maxcolors": 9,
+      "category": "seq",
+      "colorblind": true
+    }
+  ]
+}
