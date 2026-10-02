@@ -112,10 +112,36 @@ test_that("an unavailable required index fails both catalogs while an optional o
   stale <- active_db_query("SELECT fetch_status, freshness, observed_version FROM observations WHERE observation_id = 'cran:r:Seurat'")
   expect_equal(stale$fetch_status, "unavailable_observation")
   expect_equal(stale$freshness, "source_unavailable")
+  shown <- resources("Seurat", repository = "CRAN", limit = 1)
+  expect_equal(shown$freshness, "source_unavailable")
+  expect_equal(shown$fetch_status, "unavailable_observation")
   expect_equal(resources("Seurat", limit = 1)$lifecycle_status, "listed_in_selected_repository")
   bioc <- active_db_query("SELECT fetch_status FROM observations WHERE observation_id = 'bioc-3.23:r:SummarizedExperiment'")
   expect_equal(bioc$fetch_status, "listed_in_selected_index")
   expect_equal(update(mode = "remote", catalogs = "resources")$status, "partial")
+})
+
+test_that("resources() reports the observed freshness of each row, including stale ones", {
+  f <- resource_only_fixture()
+  bundled <- resources(limit = 10000)
+  expect_true(all(c("freshness", "fetch_status") %in% names(bundled)))
+  expect_false(any(bundled$freshness == "not_rechecked"))
+  expect_true(all(bundled$freshness == "snapshot_only_recheck_on_update"))
+  local_repository_mock()
+  update(mode = "remote", catalogs = "resources")
+  bioc_rows <- function() {
+    x <- resources(repository = "Bioconductor", limit = 10000)
+    x[is.na(x$subrepository) | x$subrepository == "bioc", , drop = FALSE]
+  }
+  expect_true(all(bioc_rows()$freshness == "remote_index_checked"))
+  local_repository_mock(fail = bioc_index_url())
+  withr::local_options(cttiR.resource_refresh = list(optional = "bioconductor"))
+  expect_equal(update(mode = "remote", catalogs = "resources")$status, "partial")
+  stale <- bioc_rows()
+  expect_gte(nrow(stale), 90L)
+  expect_true(all(stale$freshness == "source_unavailable"))
+  expect_true(all(stale$fetch_status == "unavailable_observation"))
+  expect_equal(unique(resources("Seurat", repository = "CRAN", limit = 1)$freshness), "remote_index_checked")
 })
 
 test_that("conflicting dual-repository listings are stored separately with a warning", {

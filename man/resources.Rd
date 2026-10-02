@@ -25,7 +25,10 @@ resources(
 }
 \value{
 A data frame with source, observed version, verification and maturity
-fields. Filters combine with AND. Exact package names rank first.
+fields, plus each observation's recorded \code{freshness} and \code{fetch_status} in
+the selected snapshot (for example \code{source_unavailable} and
+\code{unavailable_observation} after an optional index outage). Filters combine
+with AND. Exact package names rank first.
 }
 \description{
 Metadata reflects the supplied 2026-09-26 research snapshot. Candidate status
