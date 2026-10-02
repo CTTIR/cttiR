@@ -464,7 +464,7 @@ test_that("KB-006 fails when a standard workflow capability has no valid approva
   local_mocked_bindings(resolve_catalog = function(path = NULL) strip(catalog, "patchwork"))
   result <- audit_kb_approvals(kb_context())
   expect_identical(result$status, "fail")
-  expect_match(result$message, "std.figures.accessible (patchwork)", fixed = TRUE)
+  expect_match(result$message, "std.figures.accessible (patchwork, patchwork::wrap_plots", fixed = TRUE)
   expect_match(result$message, "approval-pending", fixed = TRUE)
   local_mocked_bindings(resolve_catalog = function(path = NULL) strip(catalog, "survival", "standard.figures_accessible"))
   survival <- audit_kb_approvals(kb_context())

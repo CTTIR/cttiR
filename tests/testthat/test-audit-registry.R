@@ -518,12 +518,15 @@ test_that("hand-edited control metadata fails like an identical project() repeat
   goal <- "Compare blood pressure between two groups"
   root <- project("Lock edit", "primary_research", goal, parent)$path
   lock <- file.path(root, "cttir-lock.json")
-  writeLines(sub('"environment_status": "pending"', '"environment_status": "ready"', readLines(lock)), lock)
+  lines <- readLines(lock)
+  pin <- grep('"version": "1.1-3"', lines, fixed = TRUE)[[1]]
+  lines[[pin]] <- sub("1.1-3", "9.9-9", lines[[pin]], fixed = TRUE)
+  writeLines(lines, lock)
   expect_error(project("Lock edit", "primary_research", goal, parent), class = "cttir_path_conflict")
   report <- audit(root, scope = "project")
   row <- audit_row(report, "PRJ-001")
   expect_equal(row$status, "fail")
-  expect_equal(unlist(row$evidence$changed_control_files), ".cttir/managed-files.json")
+  expect_equal(unlist(row$evidence$changed_control_files), "cttir-lock.json")
   expect_equal(report$overall_status, "fail")
   root <- project("Manifest edit", "primary_research", goal, parent)$path
   code <- file.path(root, "code/R/cttir_workflow.R")

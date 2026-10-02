@@ -6,6 +6,7 @@
   "required_callables": {
     "std.project.reflowr_layout": ["rmarkdown::render_site", "rmarkdown::pandoc_available"],
     "std.import.delimited": ["readr::read_delim", "readr::cols", "readr::col_character", "readr::locale", "yaml::read_yaml"],
+    "std.check.mapped": ["utils::packageVersion"],
     "std.tidy.dplyr": ["dplyr::filter", "dplyr::mutate", "dplyr::arrange"],
     "std.describe.descrtab2": ["DescrTab2::descr"],
     "std.describe.base": ["stats::sd", "stats::quantile"],
