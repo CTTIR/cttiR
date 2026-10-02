@@ -89,8 +89,10 @@ in [CURRENT_STATE.md](CURRENT_STATE.md).
 
 Approvals cover pinned package revisions and adapters, not scientific
 conclusions. Prediction, causal, count, Bayesian and specialist CTTIR analyses
-have no reviewed adapter yet and are reported as gaps. Keyword-based answers are
-safe but recall on unseen phrasing is limited (see the held-out benchmark).
+have no reviewed adapter yet and are reported as gaps. `ask()` matches keywords
+and phrase patterns rather than a language model: on the latest held-out set,
+run once, it found the reviewed capability for 8 of 10 supported questions and
+abstained on every unsupported, ambiguous or injected one.
 Runtime acquisition is verified on Linux x86_64 only.
 
 MIT licensed.

@@ -111,8 +111,10 @@ cw_version_mismatches <- function(dependencies) {
   out <- character()
   for (dep in dependencies) {
     if (!isTRUE(dep$required) || is.null(dep$version) || dep$package %in% c("base", "stats", "utils")) next
-    installed <- tryCatch(as.character(utils::packageVersion(dep$package)), error = function(e) NA_character_)
-    if (is.na(installed) || !identical(installed, as.character(dep$version))) {
+    # package_version() treats "1.1-3" and "1.1.3" as the same version.
+    installed <- tryCatch(utils::packageVersion(dep$package), error = function(e) NULL)
+    pinned <- tryCatch(package_version(as.character(dep$version)), error = function(e) NULL)
+    if (is.null(installed) || is.null(pinned) || installed != pinned) {
       out <- c(out, paste0(dep$package, "@", dep$version))
     }
   }
@@ -213,7 +215,11 @@ cw_check <- function(data, analysis) {
     else if (positive && any(x <= 0, na.rm = TRUE)) add("positive_time_required", column)
   }
   if (!is.null(engine)) {
-    if (engine %in% c("stats::lm", "nlme::lme")) numeric_role(mapping[["outcome"]])
+    if (engine %in% c("stats::lm", "nlme::lme")) {
+      numeric_role(mapping[["outcome"]])
+      # A two-valued outcome under a continuous model is almost always a binary endpoint.
+      if (length(unique(values(mapping[["outcome"]]))) <= 2L) add("two_valued_outcome_for_continuous_model", mapping[["outcome"]])
+    }
     if (engine == "survival::coxph") numeric_role(mapping[["time"]], positive = TRUE)
     if (engine %in% c("stats::glm", "survival::coxph")) {
       column <- if (engine == "stats::glm") mapping[["outcome"]] else mapping[["event"]]
@@ -261,6 +267,9 @@ cw_tidy <- function(data, analysis) {
   binary_code <- as.character(mapping[["event_value"]])
   if (identical(engine, "stats::glm")) out <- dplyr::mutate(out, response = as.integer(as.character(response) == binary_code))
   if ("event" %in% names(out)) out <- dplyr::mutate(out, event = as.integer(as.character(event) == binary_code))
+  binary <- if (length(binary_code) == 1L) intersect(c(if (identical(engine, "stats::glm")) "response", "event"), names(out)) else character()
+  non_event <- mapping[["non_event_value"]]
+  binary_labels <- c(if (is.null(non_event)) paste("not", binary_code) else as.character(non_event), binary_code)
   if ("subject" %in% names(out)) out <- dplyr::mutate(out, subject = factor(as.character(subject)))
   reference <- list()
   for (name in grep("^x[0-9]+$", names(out), value = TRUE)) {
@@ -274,6 +283,7 @@ cw_tidy <- function(data, analysis) {
   }
   if (all(c("subject", "time") %in% names(out))) out <- dplyr::arrange(out, subject, time)
   list(data = as.data.frame(out), alias = source, reference_levels = reference,
+    binary = stats::setNames(rep(list(binary_labels), length(binary)), binary),
     rows_total = nrow(data), rows_used = nrow(out), rows_excluded = nrow(data) - nrow(out))
 }
 
@@ -287,13 +297,24 @@ cw_no_test <- function() {
 }
 
 # Descriptive table without inferential tests; DescrTab2 when selected and
-# installed, otherwise the documented base R descriptive-only fallback.
+# installed, otherwise the documented base R descriptive-only fallback. Binary
+# endpoints are shown as counts under their original codes; with repeated rows
+# per subject only the first observation (earliest time when mapped) is
+# described, so subjects are not counted once per visit.
 cw_describe <- function(tidy, backend = "DescrTab2") {
   data <- tidy$data
+  for (name in names(tidy$binary)) data[[name]] <- factor(data[[name]], levels = c(0L, 1L), labels = make.unique(tidy$binary[[name]]))
+  repeated <- "subject" %in% names(data) && anyDuplicated(data$subject) > 0L
+  if (repeated) data <- data[!duplicated(data$subject), , drop = FALSE]
   columns <- setdiff(names(data), "subject")
   labels <- stats::setNames(lapply(columns, function(x) cw_label(tidy, x)), columns)
-  denominators <- list(rows = nrow(data),
+  # A column mapped to two roles (e.g. time and predictor) is described once.
+  columns <- columns[!duplicated(unlist(labels))]
+  labels <- labels[columns]
+  denominators <- list(rows = nrow(tidy$data),
     subjects = if ("subject" %in% names(data)) length(unique(data$subject)) else NA_integer_,
+    rows_described = nrow(data),
+    unit = if (repeated) "first observation per subject" else "row",
     rows_excluded = tidy$rows_excluded)
   if (identical(backend, "DescrTab2") && requireNamespace("DescrTab2", quietly = TRUE)) {
     described <- suppressWarnings(DescrTab2::descr(data[columns], var_labels = labels,
@@ -588,51 +609,90 @@ cw_demo_cases <- function(seed = 20261002L) {
   )
 }
 
-# Independent reference computations for the four reviewed engines.
-cw_reference_check <- function(case, tidy, model) {
+# Independent reference computations for the four reviewed engines. Event
+# coding is also recounted from the raw synthetic data, independently of cw_tidy().
+cw_reference_check <- function(case, tidy, model, input = NULL) {
   data <- tidy$data
   fit <- model$fit
   check <- function(name, observed, expected, tolerance) {
     list(name = name, observed = unname(observed), expected = unname(expected), tolerance = tolerance,
       pass = length(observed) == length(expected) && all(abs(observed - expected) <= tolerance))
   }
+  checks <- list()
+  if (!is.null(input) && case %in% c("binary", "survival")) {
+    mapping <- input$analysis$mapping
+    column <- if (case == "binary") mapping[["outcome"]] else mapping[["event"]]
+    coded <- if (case == "binary") data$response else data$event
+    checks$coding <- check("event coding vs raw synthetic data", sum(coded),
+      sum(as.character(input$data[[column]]) == as.character(mapping[["event_value"]])), 0)
+  }
   if (case == "continuous") {
     x <- stats::model.matrix(~ x1 + x2, data)
-    return(check("lm coefficients vs normal equations", stats::coef(fit),
-      solve(crossprod(x), crossprod(x, data$response))[, 1], 1e-8))
-  }
-  if (case == "binary") {
+    checks$model <- check("lm coefficients vs normal equations", stats::coef(fit),
+      solve(crossprod(x), crossprod(x, data$response))[, 1], 1e-8)
+  } else if (case == "binary") {
     x <- cbind(1, data$x1)
     beta <- c(0, 0)
     for (i in seq_len(50L)) {
       p <- stats::plogis(drop(x %*% beta))
       beta <- beta + solve(crossprod(x, x * (p * (1 - p))), crossprod(x, data$response - p))[, 1]
     }
-    return(check("glm coefficients vs hand-written Newton-Raphson", stats::coef(fit), beta, 1e-6))
-  }
-  if (case == "longitudinal") {
-    ml <- nlme::lme(response ~ x1, data = data, random = ~ 1 | subject, method = "ML")
-    beta <- nlme::fixef(ml)
-    sigma2 <- ml$sigma^2
-    tau2 <- as.numeric(nlme::getVarCov(ml))[[1]]
-    total <- 0
-    for (s in split(data, data$subject)) {
-      v <- diag(sigma2, nrow(s)) + tau2
-      r <- s$response - drop(cbind(1, s$x1) %*% beta)
-      total <- total - 0.5 * (nrow(s) * log(2 * pi) + as.numeric(determinant(v)$modulus) + drop(t(r) %*% solve(v, r)))
+    checks$model <- check("glm coefficients vs hand-written Newton-Raphson", stats::coef(fit), beta, 1e-6)
+  } else if (case == "longitudinal") {
+    # The adapter's own fit is checked: generalised least squares and the dense
+    # Gaussian (restricted) likelihood at its variance estimates, and that
+    # nearby variances do not improve the criterion it maximised.
+    restricted <- identical(fit$method, "REML")
+    x <- stats::model.matrix(~ x1, data)
+    groups <- split(seq_len(nrow(data)), data$subject)
+    criterion <- function(tau2, sigma2) {
+      xvx <- 0
+      xvy <- 0
+      logdet <- 0
+      for (rows in groups) {
+        v <- diag(sigma2, length(rows)) + tau2
+        xi <- x[rows, , drop = FALSE]
+        xvx <- xvx + crossprod(xi, solve(v, xi))
+        xvy <- xvy + crossprod(xi, solve(v, data$response[rows]))
+        logdet <- logdet + as.numeric(determinant(v)$modulus)
+      }
+      beta <- solve(xvx, xvy)[, 1]
+      quad <- 0
+      for (rows in groups) {
+        v <- diag(sigma2, length(rows)) + tau2
+        r <- data$response[rows] - drop(x[rows, , drop = FALSE] %*% beta)
+        quad <- quad + drop(crossprod(r, solve(v, r)))
+      }
+      n <- nrow(x) - if (restricted) ncol(x) else 0L
+      extra <- if (restricted) as.numeric(determinant(xvx)$modulus) else 0
+      list(beta = beta, loglik = -0.5 * (n * log(2 * pi) + logdet + extra + quad))
     }
-    return(check("ML log-likelihood vs dense Gaussian marginal likelihood", as.numeric(stats::logLik(ml)), total, 1e-6))
+    sigma2 <- fit$sigma^2
+    tau2 <- as.numeric(nlme::getVarCov(fit))[[1]]
+    at <- criterion(tau2, sigma2)
+    nearby <- vapply(list(c(1.05, 1), c(0.95, 1), c(1, 1.05), c(1, 0.95)),
+      function(f) criterion(tau2 * f[[1]], sigma2 * f[[2]])$loglik, numeric(1))
+    checks$model <- check("lme fixed effects vs generalised least squares at the fitted variances",
+      nlme::fixef(fit), at$beta, 1e-6)
+    checks$likelihood <- check(paste(if (restricted) "REML" else "ML", "log-likelihood vs dense Gaussian computation"),
+      as.numeric(stats::logLik(fit)), at$loglik, 1e-6)
+    checks$optimum <- list(name = "criterion is not improved by variances 5% away from the fit", observed = at$loglik,
+      expected = max(nearby), tolerance = 0, pass = all(at$loglik >= nearby))
+  } else {
+    ordered <- data[order(data$time), ]
+    partial <- function(beta) {
+      eta <- beta * ordered$x1
+      sum(vapply(which(ordered$event == 1L), function(i) {
+        risk <- ordered$time >= ordered$time[[i]]
+        eta[[i]] - log(sum(exp(eta[risk])))
+      }, numeric(1)))
+    }
+    reference <- stats::optimize(partial, c(-2, 2), maximum = TRUE, tol = 1e-12)$maximum
+    checks$model <- check("Cox Breslow coefficient vs direct partial likelihood maximisation", stats::coef(fit), reference, 1e-5)
   }
-  ordered <- data[order(data$time), ]
-  partial <- function(beta) {
-    eta <- beta * ordered$x1
-    sum(vapply(which(ordered$event == 1L), function(i) {
-      risk <- ordered$time >= ordered$time[[i]]
-      eta[[i]] - log(sum(exp(eta[risk])))
-    }, numeric(1)))
-  }
-  reference <- stats::optimize(partial, c(-2, 2), maximum = TRUE, tol = 1e-12)$maximum
-  check("Cox Breslow coefficient vs direct partial likelihood maximisation", stats::coef(fit), reference, 1e-5)
+  checks <- unname(checks)
+  list(name = paste(vapply(checks, function(x) x$name, character(1)), collapse = "; "),
+    pass = all(vapply(checks, function(x) isTRUE(x$pass), logical(1))), checks = checks)
 }
 
 cw_run_demo <- function(root = ".", out_dir = file.path(root, "demo", "outputs"), figures_policy = NULL,
@@ -645,7 +705,7 @@ cw_run_demo <- function(root = ".", out_dir = file.path(root, "demo", "outputs")
     directory <- if (write) file.path(out_dir, name) else tempfile(paste0("cttir-demo-", name, "-"))
     result <- cw_run(case$data, case$analysis, figures_policy, directory, backend, synthetic = TRUE, label = label)
     tidy <- cw_tidy(case$data, case$analysis)
-    reference <- if (identical(result$status, "completed")) cw_reference_check(name, tidy, cw_model(tidy, case$analysis)) else NULL
+    reference <- if (identical(result$status, "completed")) cw_reference_check(name, tidy, cw_model(tidy, case$analysis), case) else NULL
     receipt$cases[[name]] <- list(status = result$status, engine = result$model$engine,
       describe_backend = result$describe$backend, reference = reference,
       diagnostics = vapply(result$diagnostics$findings, function(x) x$code, character(1)),

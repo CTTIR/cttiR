@@ -77,7 +77,11 @@ check_analysis_data <- function(data, spec) {
     }
   }
   engine <- if (descriptive) "descriptive" else plan$candidate_engine
-  if (engine %in% c("stats::lm", "nlme::lme")) numeric_role(mapping[["outcome"]])
+  if (engine %in% c("stats::lm", "nlme::lme")) {
+    numeric_role(mapping[["outcome"]])
+    # A two-valued outcome under a continuous model is almost always a binary endpoint.
+    if (length(unique(values(mapping[["outcome"]]))) <= 2L) add("two_valued_outcome_for_continuous_model", mapping[["outcome"]])
+  }
   if (engine == "survival::coxph") numeric_role(mapping[["time"]], positive = TRUE)
   if (engine %in% c("stats::glm", "survival::coxph")) {
     column <- if (engine == "stats::glm") mapping[["outcome"]] else mapping[["event"]]
