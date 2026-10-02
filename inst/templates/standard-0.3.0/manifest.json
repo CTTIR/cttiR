@@ -33,6 +33,7 @@
     "analysis/index.Rmd": "6eecb2a2ab04e43a4c043337187ae01c28055f9ab37cda122c3c245880c24f48",
     "analysis/synthetic_demo.Rmd": "51b1252d158abc6e8dff42ca5c145e3ead512edf30cba847ff6837e3f555a055",
     "code/R/cttir_figures.R": "4aa727b9690dc6440f6aff66c54332945440d29bb8f93f1c602ef502d445ff6c",
+    "code/R/cttir_interop.R": "43983bea2aa33a69effd7a66373adb838318ded86737c0bcc4f7399209448e85",
     "code/R/cttir_workflow.R": "aadf83de49fa27604d792d14e8f3032b134328fe39be3f40641cd760bbb9d879",
     "code/render_report.R": "7a227c4c8744446bc5e6c2c903a8b1f40e0fa08f77126a7523299cbf121968fd",
     "code/run_demo.R": "07c59b2bfe290c57d0b7c533fe6adff7585a46d04d42b1859112069f12a25b61",
@@ -40,7 +41,11 @@
     "demo/README.md": "234a4e36d535ac3445bd3769a8d644abdbcac98bd8c263deae249483db889735",
     "licenses/reflowR-MIT.txt": "29b77db3f6c608670bc28cfc77ebba736f75c6abb9d8a32aec917051f4d52cdd"
   },
-  "conditional": {},
+  "conditional": {
+    "code/R/cttir_interop.R": {
+      "modality": ["single_cell", "bulk_rna", "spatial", "multiomics", "cytometry", "proteomics"]
+    }
+  },
   "limitations": ["Study-data runs require explicit mappings, reviewed settings, analysis approval, a local binding and approved pinned package revisions.", "Synthetic demonstration results are adapter checks, not scientific results.", "Prediction, causal, count and specialist analyses have no reviewed adapter in this bundle."],
   "hash_normalization": "UTF-8 text with LF line endings and final newline"
 }

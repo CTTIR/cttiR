@@ -206,3 +206,25 @@ test_that("publications reference shared datasets only by registry ID", {
   expect_error(project("Bad ref", "methods", "Goal", tempdir(), dry_run = TRUE, options = list(
     publications = list(list(id = "pub01", data_source_ids = list("missing"))))), class = "cttir_schema_error")
 })
+
+test_that("biological modalities route to ecosystem candidates, never clinical tabular goals", {
+  route_goal <- function(goal) {
+    p <- project("Modality", "primary_research", goal, tempdir(), dry_run = TRUE)
+    list(modality = p$spec$ecosystem$modality, route = route_workflow(p$spec, "standard_reflowR"))
+  }
+  sc <- route_goal("Single-cell RNA-seq clustering of immune cells from three donors")
+  expect_equal(sc$modality, "single_cell")
+  ids <- vapply(sc$route$ecosystem, function(x) x$capability, character(1))
+  expect_contains(ids, c("seurat.single_cell.exploration", "bioc.single_cell.donor_pseudobulk"))
+  expect_equal(sc$route$profile, "standard_reflowR")
+  expect_false(any(grepl("specialist_adapter_pending:seurat", unlist(sc$route$gaps))))
+  expect_equal(route_goal("Integrate multi-omics proteomics and transcriptomics")$modality, "multiomics")
+  clinical <- route_goal("Compare blood pressure between treatment arms in a clinical cohort")
+  expect_length(clinical$route$ecosystem, 0)
+  deps <- route_dependencies(sc$route, catalog_snapshot(resolve_catalog()$content_id))
+  expect_false("Seurat" %in% vapply(deps, function(x) x$package, character(1)))
+  off <- project("No Seurat", "primary_research", "Single-cell RNA-seq clustering", tempdir(), dry_run = TRUE,
+    options = list(ecosystem = list(seurat_for_relevant_gaps = FALSE)))
+  off_ids <- vapply(route_workflow(off$spec, "standard_reflowR")$ecosystem, function(x) x$capability, character(1))
+  expect_false(any(startsWith(off_ids, "seurat.")))
+})

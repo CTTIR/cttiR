@@ -41,6 +41,9 @@ capability_registry <- function() {
   registry
 }
 
+# Specialist routing evidence is reserved for CTTIR-family capabilities.
+is_cttir_specialist <- function(cap) isTRUE(cap$specialist) && identical(cap$family, "cttir")
+
 keyword_hit <- function(text, keywords) {
   words <- unlist(c(keywords$en, keywords$de), use.names = FALSE)
   if (!length(words)) return(FALSE)
@@ -56,11 +59,13 @@ infer_goal <- function(goal, registry = capability_registry()) {
     if (!length(hits)) return("unknown")
     if (ordered || length(hits) == 1L) hits[[1]] else "unknown"
   }
+  # Registry order encodes specificity: "single-cell RNA-seq" is single-cell,
+  # not bulk RNA; multi-omics needs its own explicit keywords.
   modalities <- vapply(Filter(function(m) keyword_hit(text, m$keywords), registry$modalities),
     function(m) m$id, character(1))
-  modality <- if (length(modalities) == 1L) modalities else if (length(modalities) > 1L) "multiomics" else "unknown"
+  modality <- if (length(modalities)) modalities[[1]] else "unknown"
   matched <- Filter(function(cap) {
-    !cap$infrastructure && (cap$specialist || cap$stage == "design") && keyword_hit(text, cap$keywords)
+    !cap$infrastructure && (is_cttir_specialist(cap) || cap$stage == "design") && keyword_hit(text, cap$keywords)
   }, registry$capabilities)
   list(
     aim = pick(registry$rules$aim, TRUE),
@@ -169,15 +174,14 @@ route_workflow <- function(spec, requested = "auto", catalog = catalog_snapshot(
   if (!modality %in% c("unknown", "tabular")) {
     allow_seurat <- isTRUE(spec$ecosystem$seurat_for_relevant_gaps)
     relevant <- Filter(function(cap) {
-      modality %in% cap$applies$modality && !cap$specialist && !identical(cap$family, "standard") &&
+      modality %in% cap$applies$modality && !cap$family %in% c("cttir", "standard") &&
         (allow_seurat || !identical(cap$family, "seurat"))
     }, registry$capabilities)
     ecosystem <- lapply(relevant, function(cap) route_stage(registry, catalog, cap$stage, cap$id, enabled = FALSE))
     gaps <- c(gaps, paste0("modality_workflow_requires_review:", modality))
   }
-  is_specialist <- function(id) isTRUE(registry$capabilities[[id]]$specialist)
-  by_keyword <- Filter(is_specialist, signals$keyword_capabilities)
-  by_modality <- Filter(function(cap) cap$specialist && modality %in% cap$applies$modality, registry$capabilities)
+  by_keyword <- Filter(function(id) is_cttir_specialist(registry$capabilities[[id]]), signals$keyword_capabilities)
+  by_modality <- Filter(function(cap) is_cttir_specialist(cap) && modality %in% cap$applies$modality, registry$capabilities)
   specialist_ids <- unique(c(unlist(by_keyword), vapply(by_modality, function(cap) cap$id, character(1))))
   specialist <- lapply(specialist_ids, function(id) route_stage(registry, catalog, registry$capabilities[[id]]$stage, id, enabled = FALSE))
   available <- Filter(function(x) identical(x$status, "approved"), specialist)
