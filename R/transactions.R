@@ -129,6 +129,8 @@ transact_files <- function(root, files, plan) {
             intact <- FALSE
             next
           }
+          # A file whose replacement never happened already holds its preimage.
+          if (identical(now, actions$old_hash[[i]])) next
           if (is.na(actions$old_hash[[i]])) {
             unlink(dest)
           } else if (!file.copy(file.path(journal_dir, "backup", as.character(i)), dest, overwrite = TRUE)) {

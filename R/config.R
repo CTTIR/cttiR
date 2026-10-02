@@ -47,6 +47,7 @@ validate_document <- function(x, kind) {
 #' validate_config(list(research = list(data_origin = "existing_dataset")))
 validate_config <- function(config) {
   if (is.character(config)) config <- read_document(config)
+  check_schema_version(config, "configuration")
   config <- validate_document(config, "config")
   for (key in c("publications", "data_sources", "packages")) {
     field <- if (key == "packages") "name" else "id"

@@ -188,6 +188,13 @@ setup <- function(model = "auto", install_ollama = TRUE, offline = FALSE, dry_ru
       assert_plain_path(file.path(root, "models"))
       owner <- runtime_owner(root, endpoint)
       if (is.null(owner)) {
+        executable <- file.path(root, paste0("ollama-", manifest$runtime_version), "bin", "ollama")
+        assert_plain_path(executable)
+        # Nothing could be started without a verified runtime, so block before any
+        # request, including the loopback port probe.
+        if (!file.exists(executable) && (offline || !install_ollama)) {
+          abort_cttir("The verified runtime is absent and acquisition is disabled.", "cttir_runtime_unavailable")
+        }
         reachable <- tryCatch(
           {
             runtime_request(endpoint, "version", timeout = 2)
@@ -196,12 +203,7 @@ setup <- function(model = "auto", install_ollama = TRUE, offline = FALSE, dry_ru
           error = function(e) FALSE
         )
         if (reachable) abort_cttir("The port belongs to an unmanaged daemon; choose an unused loopback port.", "cttir_runtime_unavailable", "unmanaged_daemon")
-        executable <- file.path(root, paste0("ollama-", manifest$runtime_version), "bin", "ollama")
-        assert_plain_path(executable)
-        if (!file.exists(executable)) {
-          if (offline || !install_ollama) abort_cttir("The verified runtime is absent and acquisition is disabled.", "cttir_runtime_unavailable")
-          executable <- acquire_runtime(root, manifest)
-        }
+        if (!file.exists(executable)) executable <- acquire_runtime(root, manifest)
         if (!identical(digest::digest(file = executable, algo = "sha256"), manifest$binary_sha256)) {
           abort_cttir("Runtime binary checksum mismatch.", "cttir_runtime_unavailable")
         }

@@ -1,10 +1,12 @@
-recover_transactions <- function(root) {
+# Read-only validation of interrupted project transactions. Returns the pending
+# journals with verified rows, or aborts when automatic recovery is unsafe.
+transaction_recovery_plan <- function(root) {
   assert_plain_path(root)
   journals <- pending_transactions(root)
-  if (!length(journals)) {
-    return(list())
-  }
   lockdir <- file.path(root, ".cttir/write-lock")
+  if (!length(journals)) {
+    return(list(journals = list(), lockdir = lockdir))
+  }
   owner_file <- file.path(lockdir, "owner.json")
   assert_plain_path(owner_file)
   if (!file.exists(owner_file)) {
@@ -19,10 +21,7 @@ recover_transactions <- function(root) {
   if (alive) abort_cttir("The recorded writer is still running; recovery is refused.", "cttir_transaction_conflict")
   recovery_lock <- file.path(root, ".cttir/recovery-lock")
   assert_plain_path(recovery_lock)
-  if (!dir.create(recovery_lock, showWarnings = FALSE)) {
-    abort_cttir("Another recovery may be active.", "cttir_transaction_conflict")
-  }
-  on.exit(unlink(recovery_lock, recursive = TRUE), add = TRUE)
+  if (dir.exists(recovery_lock)) abort_cttir("Another recovery may be active.", "cttir_transaction_conflict")
   prepared <- list()
   for (dir in journals) {
     record <- read_document(file.path(dir, "journal.json"))
@@ -54,23 +53,80 @@ recover_transactions <- function(root) {
     }
     prepared <- append(prepared, list(list(dir = dir, record = record, rows = rows)))
   }
-  for (entry in prepared) {
-    for (i in rev(seq_along(entry$rows))) {
-      row <- entry$rows[[i]]
-      dest <- file.path(root, row$path)
-      now <- file_hash(dest)
-      if (identical(now, row$old_hash)) next
-      if (!identical(now, row$new_hash)) abort_cttir("File changed during recovery.", "cttir_transaction_conflict")
-      if (is.na(row$old_hash)) {
-        if (unlink(dest) != 0L) abort_cttir("Could not remove a transaction-owned file.", "cttir_transaction_conflict")
-      } else {
-        replace_file(file.path(entry$dir, "backup", as.character(i)), dest)
-      }
-      if (!identical(file_hash(dest), row$old_hash)) abort_cttir("Recovery verification failed.", "cttir_transaction_conflict")
-    }
-    entry$record$status <- "rolled_back"
-    write_bytes(paste0(json_text(entry$record, TRUE), "\n"), file.path(entry$dir, "journal.json"))
+  list(journals = prepared, lockdir = lockdir)
+}
+
+# Applies a validated plan. Every file and journal touched is first copied to an
+# undo area inside the recovery guard; if any step fails, all touched bytes are
+# restored, so an unsuccessful recovery leaves the prior state unchanged.
+recover_transactions <- function(root) {
+  plan <- transaction_recovery_plan(root)
+  if (!length(plan$journals)) {
+    return(list())
   }
-  unlink(lockdir, recursive = TRUE)
-  lapply(prepared, function(x) list(id = "recover_interrupted_transaction", journal = x$dir, status = "rolled_back"))
+  recovery_lock <- file.path(root, ".cttir/recovery-lock")
+  if (!dir.create(recovery_lock, showWarnings = FALSE)) {
+    abort_cttir("Another recovery may be active.", "cttir_transaction_conflict")
+  }
+  undo_state <- new.env(parent = emptyenv())
+  undo_state$saved <- list()
+  undo_state$keep_guard <- FALSE
+  on.exit(if (!undo_state$keep_guard) unlink(recovery_lock, recursive = TRUE), add = TRUE)
+  undo <- file.path(recovery_lock, "undo")
+  dir.create(undo)
+  preserve <- function(dest) {
+    copy <- file.path(undo, as.character(length(undo_state$saved) + 1L))
+    if (!file.copy(dest, copy) || !identical(file_hash(copy), file_hash(dest))) {
+      abort_cttir("Could not preserve a file before recovery.", "cttir_transaction_conflict")
+    }
+    undo_state$saved[[length(undo_state$saved) + 1L]] <- list(dest = dest, copy = copy, hash = file_hash(dest))
+  }
+  tryCatch(
+    {
+      for (entry in plan$journals) {
+        for (i in rev(seq_along(entry$rows))) {
+          row <- entry$rows[[i]]
+          dest <- file.path(root, row$path)
+          now <- file_hash(dest)
+          if (identical(now, row$old_hash)) next
+          if (!identical(now, row$new_hash)) abort_cttir("File changed during recovery.", "cttir_transaction_conflict")
+          preserve(dest)
+          if (is.na(row$old_hash)) {
+            if (unlink(dest) != 0L) abort_cttir("Could not remove a transaction-owned file.", "cttir_transaction_conflict")
+          } else {
+            replace_file(file.path(entry$dir, "backup", as.character(i)), dest)
+          }
+          if (!identical(file_hash(dest), row$old_hash)) abort_cttir("Recovery verification failed.", "cttir_transaction_conflict")
+        }
+      }
+      for (entry in plan$journals) {
+        journal <- file.path(entry$dir, "journal.json")
+        preserve(journal)
+        entry$record$status <- "rolled_back"
+        write_bytes(paste0(json_text(entry$record, TRUE), "\n"), journal)
+      }
+    },
+    error = function(e) {
+      for (item in rev(undo_state$saved)) {
+        restored <- tryCatch(
+          {
+            if (!isTRUE(file.copy(item$copy, item$dest, overwrite = TRUE))) stop("copy")
+            identical(file_hash(item$dest), item$hash)
+          },
+          error = function(x) FALSE
+        )
+        if (!restored) undo_state$keep_guard <- TRUE
+      }
+      if (undo_state$keep_guard) {
+        abort_cttir("Recovery failed and could not restore every file; the recovery guard keeps undo copies for manual review.",
+          "cttir_transaction_conflict", "recovery_incomplete")
+      }
+      stop(e)
+    }
+  )
+  unlink(plan$lockdir, recursive = TRUE)
+  lapply(plan$journals, function(x) {
+    list(id = "recover_interrupted_transaction", journal = x$dir, status = "rolled_back",
+      paths = vapply(x$rows, function(r) r$path, character(1)))
+  })
 }

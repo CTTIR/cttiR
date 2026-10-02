@@ -13,5 +13,6 @@ doctor(path = NULL)
 A \code{cttir_audit} from the shared inspection engine.
 }
 \description{
-Brief read-only diagnostics
+Runs the default audit scopes through the same check engine as \code{\link[=audit]{audit()}},
+never with repairs, live probes or reports.
 }
