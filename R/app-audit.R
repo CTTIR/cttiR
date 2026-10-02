@@ -50,7 +50,7 @@ app_audit_ui <- function(id) {
     shiny::uiOutput(ns("summary")),
     shiny::checkboxGroupInput(ns("show"), app_tr("audit.filter"), inline = TRUE,
       choiceNames = lapply(app_audit_statuses, function(x) app_tr(paste0("value.", x))), choiceValues = app_audit_statuses,
-      selected = app_audit_statuses),
+      selected = c("fail", "warning", "not_tested")),
     shiny::checkboxInput(ns("required_only"), app_tr("audit.required_only"), value = FALSE),
     shiny::uiOutput(ns("checks")),
     app_section("audit.export",
@@ -103,7 +103,8 @@ app_audit_server <- function(id, pool, lang = shiny::reactive("en"), project = s
       run(args, "job.audit", function(value) {
         state$result <- value
         state$args <- signature(args)
-        state$status <- app_status("success", "audit.done", status = app_value_label(value$overall_status, lang()))
+        kind <- if (identical(value$overall_status, "pass")) "success" else "warning"
+        state$status <- app_status(kind, "audit.done", status = app_value_label(value$overall_status, lang()))
       })
     })
     shiny::observeEvent(input$export, {
@@ -172,7 +173,9 @@ app_audit_server <- function(id, pool, lang = shiny::reactive("en"), project = s
       shown <- checks[keep, , drop = FALSE]
       if (isTRUE(input$required_only) && "required" %in% names(shown)) shown <- shown[shown$required %in% TRUE, , drop = FALSE]
       columns <- c(app_audit_columns, setdiff(names(shown), app_audit_columns))
-      app_table(shown, lang(), columns = columns, badges = c("status", "severity"))
+      shiny::tagList(
+        shiny::tags$p(class = "cttir-note", app_t("audit.shown", lang(), shown = nrow(shown), total = nrow(checks))),
+        app_table(shown, lang(), columns = columns, badges = c("status", "severity"), optional = c("scope", "required")))
     })
     output$reports <- shiny::renderUI({
       reports <- state$reports

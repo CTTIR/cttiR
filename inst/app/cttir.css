@@ -15,16 +15,18 @@
 }
 html, body { background: var(--cttir-bg); color: var(--cttir-text); }
 body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-size: 16px; line-height: 1.5; }
-h1 { font-size: 1.75rem; margin: 0.5rem 0 0.75rem; }
-h2 { font-size: 1.35rem; margin: 1.25rem 0 0.5rem; }
-h3 { font-size: 1.1rem; margin: 1rem 0 0.4rem; }
-h4 { font-size: 1rem; font-weight: 700; margin: 0.9rem 0 0.3rem; }
+h1 { font-size: 28px; line-height: 1.25; margin: 8px 0 12px; font-weight: 700; }
+h2 { font-size: 22px; line-height: 1.3; margin: 20px 0 8px; font-weight: 700; }
+h3 { font-size: 18px; line-height: 1.3; margin: 16px 0 6px; font-weight: 700; }
+h4 { font-size: 16px; font-weight: 700; margin: 14px 0 4px; }
 a { color: var(--cttir-primary); text-decoration: underline; }
 a:hover, a:focus { color: var(--cttir-primary-dark); }
 code, pre { color: var(--cttir-text); background: var(--cttir-surface); overflow-wrap: anywhere; word-break: break-word; }
 pre { white-space: pre-wrap; max-width: 100%; border: 1px solid var(--cttir-border); }
 .help-block, .cttir-note, .cttir-help, .cttir-hint { color: var(--cttir-muted); }
-.cttir-lead { font-size: 1.1rem; }
+.cttir-lead { font-size: 18px; }
+h1[tabindex="-1"]:focus, #cttir-content:focus { outline: none !important; }
+summary { display: list-item; }
 
 /* Navigation */
 .navbar-default { background: #f8fafc; border-color: var(--cttir-border); }
@@ -47,16 +49,18 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus, summary:focus,
 /* Layout */
 .container-fluid { max-width: 1180px; margin: 0 auto; }
 .cttir-view { max-width: 1100px; margin: 0 auto 48px; overflow-wrap: anywhere; }
-.cttir-topbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; justify-content: space-between; margin: 0 auto 8px; max-width: 1100px; }
+.cttir-topbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; justify-content: space-between; margin: 0 auto 8px; max-width: 1100px; padding: 0 15px; }
 .cttir-topbar .form-group { margin-bottom: 0; }
-.cttir-lang label { font-weight: 600; margin-right: 6px; }
-.cttir-lang .shiny-input-container { display: flex; align-items: center; gap: 6px; }
+.cttir-lang label { font-weight: 600; margin: 0; white-space: nowrap; }
+.cttir-lang .shiny-input-container { display: flex; align-items: center; gap: 8px; width: auto !important; }
+.cttir-lang select { width: auto; min-width: 9em; }
 .cttir-local-badge { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 12px;
-  background: var(--cttir-neutral-bg); color: var(--cttir-neutral-text); border: 1px solid var(--cttir-border); font-size: 0.9rem; }
+  background: var(--cttir-neutral-bg); color: var(--cttir-neutral-text); border: 1px solid var(--cttir-border); font-size: 14px; }
 .shiny-input-container:not(.shiny-input-container-inline) { width: 100%; max-width: 100%; }
 .cttir-view .form-control { max-width: 100%; }
 .cttir-fields, .cttir-filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0 20px; }
-.cttir-fields > .shiny-input-container:nth-child(3), .cttir-fields > .help-block { grid-column: 1 / -1; }
+.cttir-fields > .shiny-input-container:nth-child(3), .cttir-fields > .shiny-input-container:nth-child(4),
+.cttir-fields > .help-block { grid-column: 1 / -1; }
 .cttir-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
 .cttir-actions .btn { white-space: normal; }
 .btn { min-height: 40px; }
@@ -71,12 +75,12 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus, summary:focus,
 /* Cards */
 .cttir-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-top: 16px; }
 .cttir-card { border: 1px solid var(--cttir-border); border-radius: 8px; padding: 16px; background: var(--cttir-surface); display: flex; flex-direction: column; }
-.cttir-card h2 { margin-top: 0; font-size: 1.2rem; }
+.cttir-card h2 { margin-top: 0; font-size: 20px; }
 .cttir-card p { flex: 1; }
 .cttir-card .btn { align-self: flex-start; }
 
 /* Status cues: icon and text, never colour alone */
-.cttir-badge { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 10px; font-size: 0.875rem;
+.cttir-badge { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 10px; font-size: 14px; line-height: 1.4;
   font-weight: 600; border: 1px solid transparent; white-space: nowrap; }
 .cttir-badge-icon { font-weight: 700; }
 .cttir-badge-ok { background: var(--cttir-ok-bg); color: var(--cttir-ok-text); border-color: #86efac; }
@@ -108,9 +112,11 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus, summary:focus,
 .cttir-advanced { margin: 12px 0; }
 .cttir-advanced > summary, details > summary { cursor: pointer; font-weight: 600; padding: 6px 0; }
 .cttir-table-wrap { max-width: 100%; overflow-x: auto; }
-.cttir-table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 0.95rem; }
+.cttir-table { width: 100%; border-collapse: collapse; margin: 8px 0; font-size: 14px; }
 .cttir-table caption { color: var(--cttir-text); font-weight: 600; }
-.cttir-table th, .cttir-table td { border: 1px solid var(--cttir-border); padding: 6px 8px; text-align: left; vertical-align: top; overflow-wrap: anywhere; }
+.cttir-table th, .cttir-table td { border: 1px solid var(--cttir-border); padding: 6px 8px; text-align: left; vertical-align: top; overflow-wrap: break-word; word-break: normal; hyphens: manual; }
+.cttir-table td.cttir-break { overflow-wrap: anywhere; }
+.cttir-review-panel > h2:first-child, .cttir-review-panel > h3:first-child { margin-top: 4px; }
 .cttir-table th { background: var(--cttir-surface); }
 
 /* Questionnaire */
@@ -120,17 +126,18 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus, summary:focus,
 .cttir-steps li.active a::before { content: "\25B6\00a0"; }
 .cttir-step-label { font-weight: 600; }
 .cttir-fieldset { border: 1px solid var(--cttir-border); border-radius: 8px; padding: 8px 16px; margin: 8px 0; min-width: 0; }
-.cttir-fieldset legend { width: auto; border: 0; padding: 0 6px; margin: 0; font-size: 1.1rem; font-weight: 700; }
+.cttir-fieldset legend { width: auto; border: 0; padding: 0 6px; margin: 0; font-size: 18px; font-weight: 700; }
 .cttir-question { padding: 8px 0 4px; border-bottom: 1px dashed var(--cttir-border); }
 .cttir-question:last-child { border-bottom: 0; }
 .cttir-question-review { border-left: 5px solid #b45309; padding-left: 10px; background: #fffbeb; }
 .cttir-question .shiny-input-container > label, .cttir-question .control-label { font-weight: 700; }
-.cttir-help, .cttir-hint { margin: 2px 0 4px; font-size: 0.95rem; }
+.cttir-help, .cttir-hint { margin: 2px 0 4px; font-size: 15px; }
 .cttir-review { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 4px 0 6px; }
 .cttir-hidden-answers { border: 1px solid #fcd34d; background: #fffbeb; border-radius: 8px; padding: 8px 16px; margin: 8px 0; }
 
 @media (max-width: 640px) {
-  h1 { font-size: 1.45rem; }
+  h1 { font-size: 24px; }
+  .cttir-optional { display: none; }
   .cttir-dl { grid-template-columns: 1fr; }
   .cttir-dl dt { margin-top: 6px; }
   .cttir-table-wrap { overflow-x: visible; }
@@ -138,7 +145,16 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus, summary:focus,
   .cttir-table, .cttir-table tbody, .cttir-table tr, .cttir-table td { display: block; width: 100%; }
   .cttir-table tr { border: 1px solid var(--cttir-border); border-radius: 6px; margin-bottom: 8px; }
   .cttir-table td { border: 0; border-bottom: 1px solid var(--cttir-surface); }
-  .cttir-table td::before { content: attr(data-label); display: block; font-weight: 700; color: var(--cttir-muted); font-size: 0.85rem; }
+  .cttir-table td::before { content: attr(data-label); display: block; font-weight: 700; color: var(--cttir-muted); font-size: 13px; }
+  .cttir-table .cttir-optional { display: none; }
+  .cttir-table-scroll { overflow-x: auto; }
+  .cttir-table-scroll .cttir-table { display: table; width: auto; min-width: 100%; }
+  .cttir-table-scroll .cttir-table thead { position: static; }
+  .cttir-table-scroll .cttir-table tbody { display: table-row-group; }
+  .cttir-table-scroll .cttir-table tr { display: table-row; border: 0; margin: 0; }
+  .cttir-table-scroll .cttir-table td { display: table-cell; width: auto; border: 1px solid var(--cttir-border); }
+  .cttir-table-scroll .cttir-table td::before { content: none; }
+  .cttir-table-wrap .cttir-table td.cttir-optional, .cttir-table-wrap .cttir-table th.cttir-optional { display: none; }
   .cttir-topbar { justify-content: flex-start; }
   .radio-inline, .checkbox-inline { display: block; margin-left: 0; padding-left: 20px; }
 }

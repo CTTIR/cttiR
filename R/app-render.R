@@ -29,7 +29,7 @@ app_badge <- function(value, lang = "en", kind = NULL, label = NULL) {
     label %||% app_value_label(value, lang))
 }
 
-app_link <- function(url, text = url) {
+app_link <- function(url, text = sub("^https?://(www[.])?(github[.]com/)?", "", url)) {
   if (is.character(url) && length(url) == 1L && !is.na(url) && grepl("^https?://[^[:space:]<>\"']+$", url)) {
     return(shiny::tags$a(href = url, target = "_blank", rel = "noopener noreferrer", text))
   }
@@ -45,23 +45,38 @@ app_cell <- function(value, column, lang, badges, links) {
   as.character(value)
 }
 
-# Responsive table: on narrow screens each row becomes a labelled block.
+# Responsive table: on narrow screens each row becomes a labelled block and
+# optional columns are hidden to keep the page short.
 app_table <- function(df, lang = "en", columns = NULL, badges = character(), links = character(),
-  caption = NULL, max_rows = 200L, label_prefix = "field.") {
+  caption = NULL, max_rows = 200L, label_prefix = "field.", optional = character(), stack = TRUE, label = NULL, drop_empty = FALSE) {
   if (!is.data.frame(df) || !nrow(df)) return(shiny::tags$p(class = "cttir-empty", app_t("common.no_rows", lang)))
   columns <- intersect(columns %||% names(df), names(df))
+  if (drop_empty) columns <- Filter(function(column) !all(is.na(df[[column]])), columns)
   shown <- utils::head(df, max_rows)
   labels <- vapply(columns, app_value_label, character(1), lang = lang, prefix = label_prefix)
+  # Columns holding long unbroken tokens (hashes, paths, URLs) may wrap anywhere;
+  # other cells wrap at word boundaries so headers and words stay intact.
+  long_token <- vapply(columns, function(column) {
+    values <- unlist(lapply(shown[[column]], function(x) as.character(unlist(x))))
+    if (column %in% links) values <- sub("^https?://(www[.])?(github[.]com/)?", "", values)
+    tokens <- unlist(strsplit(values[!is.na(values)], "[[:space:]]+"))
+    length(tokens) > 0L && max(nchar(tokens)) > 24L
+  }, logical(1))
+  cell_class <- function(j, cell = FALSE) {
+    classes <- c(if (columns[[j]] %in% optional) "cttir-optional", if (cell && long_token[[j]]) "cttir-break")
+    if (length(classes)) paste(classes, collapse = " ")
+  }
   rows <- lapply(seq_len(nrow(shown)), function(i) {
     shiny::tags$tr(lapply(seq_along(columns), function(j) {
       value <- shown[[columns[[j]]]][[i]]
-      shiny::tags$td(`data-label` = labels[[j]], app_cell(value, columns[[j]], lang, badges, links))
+      shiny::tags$td(class = cell_class(j, TRUE), `data-label` = labels[[j]], app_cell(value, columns[[j]], lang, badges, links))
     }))
   })
-  shiny::tags$div(class = "cttir-table-wrap",
+  shiny::tags$div(class = if (stack) "cttir-table-wrap" else "cttir-table-wrap cttir-table-scroll",
+    tabindex = if (!stack) "0", role = if (!stack) "region", `aria-label` = if (!stack) label %||% caption %||% app_t("common.table", lang),
     shiny::tags$table(class = "cttir-table",
       if (!is.null(caption)) shiny::tags$caption(caption),
-      shiny::tags$thead(shiny::tags$tr(lapply(labels, function(x) shiny::tags$th(scope = "col", x)))),
+      shiny::tags$thead(shiny::tags$tr(lapply(seq_along(labels), function(j) shiny::tags$th(scope = "col", class = cell_class(j), labels[[j]])))),
       shiny::tags$tbody(rows)
     ),
     if (nrow(df) > max_rows) shiny::tags$p(class = "cttir-note", app_t("common.rows_truncated", lang, shown = max_rows, total = nrow(df)))

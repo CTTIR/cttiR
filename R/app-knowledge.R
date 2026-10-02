@@ -201,7 +201,9 @@ app_knowledge_server <- function(id, pool, lang = shiny::reactive("en"), project
       if (is.null(value)) return(shiny::tags$p(class = "cttir-empty", app_t("knowledge.packages_lazy", lang())))
       columns <- c("package", "version", "provider", "installed_version", "pinned_version",
         "exports", "resolved", "documented", "approved", "documents_stored", "freshness", "repository")
-      app_table(value, lang(), columns = columns, badges = "freshness", links = "repository")
+      app_table(value, lang(), columns = columns, badges = "freshness", links = "repository",
+        optional = c("installed_version", "pinned_version", "resolved", "documented", "documents_stored", "repository"),
+        stack = FALSE, label = app_t("knowledge.coverage", lang()), drop_empty = TRUE)
     })
     output$update_result <- shiny::renderUI({
       if (!is.null(state$update_result)) return(app_update_ui(state$update_result, lang(), applied = TRUE))
