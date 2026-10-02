@@ -16,13 +16,23 @@ sync(path = ".", config = NULL, options = list(), dry_run = TRUE)
 \item{dry_run}{Return a read-only plan by default.}
 }
 \value{
-A \code{cttir_sync} with actions, conflicts, changed files, journal, readiness
-and an \code{analysis} configuration assessment. Recording mappings does not
-approve or execute an analysis.
+A \code{cttir_sync} with actions, conflicts, changed files, journal, the
+computed readiness level, blockers, \code{environment} and \code{git} status and an
+\code{analysis} configuration assessment. Recording mappings does not approve or
+execute an analysis.
 }
 \description{
 Preserves identity, catalog pins and user-owned files. Edited managed files
 yield a conflict; no writes occur if any conflict is present. Applied changes
 have per-file backups and a journal. The operation is not a multi-file atomic
 filesystem transaction. Interrupted writers require review.
+}
+\details{
+For current standard projects, \code{workflow} options \code{pipeline},
+\code{environment}, \code{prepare_environment}, \code{network}, \code{git} and \code{table_backend}
+may change; the profile stays fixed. An applied sync then runs the explicit
+environment and Git steps; dry runs only read their state. \code{renv.lock} is
+derived output and is never planned as a template file. A lockfile whose
+project library is absent on this machine is not rewritten: the recovery
+command restores it with \code{renv::restore()}.
 }

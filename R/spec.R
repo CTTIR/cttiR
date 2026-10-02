@@ -181,14 +181,26 @@ check_explicit_identity <- function(config, options) {
 }
 
 # Only integrations with reviewed adapters are accepted; others fail explicitly.
+# targets, renv and Git are accepted for the current bundle when coherent.
 check_supported_workflow <- function(spec, combined) {
   pending <- function(message, field) {
     abort_cttir(message, "cttir_api_mismatch", "integration_pending", field = field)
   }
+  incoherent <- function(message, field, remediation) {
+    abort_cttir(message, "cttir_input_error", "incoherent_workflow", field = field, remediation = remediation)
+  }
   workflow <- spec$workflow
-  if (workflow$prepare_environment || workflow$git || workflow$pipeline != "none" ||
-      workflow$environment != "none" || workflow$readiness != "scaffold_ready") {
-    pending("Dependency preparation, Git and pipeline integration are pending in this build.", "/workflow")
+  if (!identical(workflow$readiness, "scaffold_ready")) {
+    incoherent("Readiness is computed from evidence and cannot be requested.", "/workflow/readiness",
+      "Remove workflow.readiness; project() and sync() report the verified level.")
+  }
+  if (isTRUE(workflow$prepare_environment) && !identical(workflow$environment, "renv")) {
+    incoherent("Environment preparation requires workflow.environment = 'renv'.", "/workflow/prepare_environment",
+      "Set workflow.environment to 'renv' or prepare_environment to FALSE.")
+  }
+  if ((workflow$git || workflow$pipeline != "none" || workflow$environment != "none") &&
+      !identical(spec$provenance$template_version, current_template_version)) {
+    pending("targets, renv and Git integration require the current standard template bundle.", "/workflow")
   }
   if (!identical(workflow$reporting, "generic")) pending("Only the reviewed reflowR-layout rendering is supported.", "/workflow/reporting")
   if (!workflow$table_backend %in% c("DescrTab2", "none")) {
