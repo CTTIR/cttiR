@@ -35,8 +35,16 @@ test_that("setup refuses an unmanaged daemon without model requests", {
   local_mocked_bindings(runtime_request = function(endpoint, route, ...) {
     expect_equal(route, "version")
     list(version = "0.34.4")
+  }, acquire_runtime = function(...) stop("unexpected acquisition"))
+  # The port probe precedes acquisition; offline setup without a runtime never probes.
+  expect_match(setup()$blockers, "unmanaged daemon", fixed = TRUE)
+  requests <- 0L
+  local_mocked_bindings(runtime_request = function(...) {
+    requests <<- requests + 1L
+    stop("unexpected request")
   })
-  expect_match(setup(offline = TRUE)$blockers, "unmanaged daemon", fixed = TRUE)
+  expect_match(setup(offline = TRUE)$blockers, "acquisition is disabled", fixed = TRUE)
+  expect_equal(requests, 0L)
 })
 
 test_that("local model metadata refuses cloud backed execution", {
