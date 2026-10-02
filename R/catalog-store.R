@@ -49,8 +49,12 @@ resource_snapshot <- function(path = NULL) {
   list(id = id, file = file, sha256 = expected)
 }
 
-snapshot_manifest <- function(api_id, resource_id) {
+# The recorded Bioconductor release policy is part of the composite state, so it
+# is activated and rolled back atomically with both catalogs. A manifest without
+# `bioc_release` records no policy (the release is derived from the running R).
+snapshot_manifest <- function(api_id, resource_id, bioc_release = NULL) {
   x <- list(schema_version = 1L, content_id = api_id, resource_id = resource_id)
+  if (!is.null(bioc_release)) x$bioc_release <- bioc_release
   x$manifest_id <- content_hash(json_text(x))
   x
 }
@@ -58,13 +62,54 @@ snapshot_manifest <- function(api_id, resource_id) {
 validate_manifest <- function(x) {
   id <- x$manifest_id
   x$manifest_id <- NULL
+  release <- x$bioc_release
   if (!identical(x$schema_version, 1L) || !identical(content_hash(json_text(x)), id) ||
       !is.character(x$content_id) || length(x$content_id) != 1L || !grepl("^[a-f0-9]{64}$", x$content_id) ||
-      !is.character(x$resource_id) || length(x$resource_id) != 1L || (!identical(x$resource_id, read_document(resource_file("extdata", "resource-manifest.json"))$content_id) && !grepl("^[a-f0-9]{64}$", x$resource_id))) {
+      !is.character(x$resource_id) || length(x$resource_id) != 1L || (!identical(x$resource_id, read_document(resource_file("extdata", "resource-manifest.json"))$content_id) && !grepl("^[a-f0-9]{64}$", x$resource_id)) ||
+      (!is.null(release) && (!is.character(release) || length(release) != 1L || !release %in% bioc_release_table()$release))) {
     abort_cttir("Invalid composite catalog manifest.", "cttir_catalog_corrupt")
   }
   x$manifest_id <- id
   x
+}
+
+# bioc-policy.json mirrors the active manifest for readers of the store policy
+# file; the manifest stays authoritative. Run after every activation.
+sync_bioc_policy <- function(manifest, root = catalog_store()) {
+  release <- manifest$bioc_release
+  if (is.null(release)) {
+    file <- bioc_policy_file(root)
+    if (file.exists(file) && !file.remove(file)) {
+      abort_cttir("Could not clear the Bioconductor release policy of the previous snapshot.", "cttir_transaction_conflict")
+    }
+  } else if (!identical(tryCatch(read_bioc_policy(root)$release, cttir_error = function(e) NULL), release)) {
+    write_bioc_policy(release, root)
+  }
+  invisible(manifest)
+}
+
+# Retained composite snapshot IDs, newest first.
+retained_manifest_ids <- function(root = catalog_store()) {
+  directory <- file.path(root, "manifests")
+  assert_plain_path(directory)
+  files <- list.files(directory, pattern = "^[a-f0-9]{64}[.]json$", full.names = TRUE)
+  files <- files[order(-as.numeric(file.info(files)$mtime), basename(files))]
+  sub("[.]json$", "", basename(files))
+}
+
+verified_manifest_ids <- function(root = catalog_store()) {
+  Filter(function(id) {
+    file <- file.path(root, "manifests", paste0(id, ".json"))
+    !is.null(tryCatch(validate_snapshot_content(read_document(file)), error = function(e) NULL))
+  }, retained_manifest_ids(root))
+}
+
+# The verified snapshot named by the active pointer, or the reason it does not
+# verify. update() refuses a damaged snapshot; rollback may replace it.
+active_snapshot <- function() {
+  failed <- function(e) list(catalog = NULL, resources = NULL, problem = conditionMessage(e))
+  tryCatch(list(catalog = resolve_catalog(), resources = resource_snapshot(), problem = NULL),
+    cttir_catalog_corrupt = failed, cttir_source_unavailable = failed)
 }
 
 catalog_snapshot <- function(id) {
@@ -110,8 +155,11 @@ retain_api_snapshot <- function(catalog, root) {
 activate_catalog <- function(manifest, previous) {
   root <- catalog_store()
   manifest <- validate_manifest(manifest)
-  current <- snapshot_manifest(resolve_catalog()$content_id, resource_snapshot()$id)
-  if (!identical(current, previous)) abort_cttir("The active catalog changed during staging.", "cttir_transaction_conflict")
+  # Pointer identity only: callers verify content, and rollback may replace a
+  # pointer whose snapshot no longer verifies.
+  if (!identical(current_catalog_manifest(), previous)) {
+    abort_cttir("The active catalog changed during staging.", "cttir_transaction_conflict")
+  }
   directory <- file.path(root, "manifests")
   dir.create(directory, showWarnings = FALSE)
   for (x in list(previous, manifest)) {

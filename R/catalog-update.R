@@ -346,8 +346,9 @@ defer_repository_sources <- function(plan) {
 #' name. Discovered rows are quarantined and never promoted. An explicit
 #' `bioc_version` that differs from the stored policy stages a separate
 #' observation set (release in each observation ID) and records the new policy
-#' in the catalog store only after a successful applied run; project pins keep
-#' their resource snapshots. Upstream-only, base R, historical Bioconductor and
+#' in the composite snapshot only after a successful applied run, so
+#' [rollback_knowledge()] restores the policy together with both catalogs; project
+#' pins keep their resource snapshots. Upstream-only, base R, historical Bioconductor and
 #' data packages are not refreshed by index. A resources-only run observes CRAN
 #' and Bioconductor registrations through the indices without downloading their
 #' tarballs.
@@ -376,7 +377,9 @@ defer_repository_sources <- function(plan) {
 #' stopped local writer lock only after checking its owner, the active snapshot
 #' and any activation journal; the old lock is retained under `recovered-locks`.
 #' Active or unknown writers, corrupt pointers and conflicting journals are
-#' refused, and previews never recover locks.
+#' refused, and previews never recover locks. An active snapshot that fails
+#' verification is refused with the verified retained IDs that
+#' [rollback_knowledge()] can restore.
 #' @return A `cttir_update` with `status` (`planned`, `unchanged`, `succeeded`,
 #'   `partial`; failures raise with a `failed` report), previous/new composite
 #'   IDs, per-catalog IDs, per-source status and report, repository index
@@ -405,14 +408,28 @@ update <- function(
   plan <- registry_plan(sources, packages, prune)
   if (!"knowledge" %in% catalogs) plan <- defer_repository_sources(plan)
   root <- catalog_store()
-  policy <- bioc_release_policy(bioc_version, root)
   if (!dry_run) {
     lock <- catalog_lock(root)
     on.exit(unlink(lock, recursive = TRUE), add = TRUE)
   }
-  before <- resolve_catalog()
-  old_resources <- resource_snapshot()
-  previous <- snapshot_manifest(before$content_id, old_resources$id)
+  previous <- current_catalog_manifest()
+  active <- active_snapshot()
+  if (!is.null(active$problem)) {
+    verified <- verified_manifest_ids(root)
+    abort_cttir(paste("The active catalog snapshot failed verification and cannot be updated:", active$problem,
+        "It is kept unchanged for inspection."), "cttir_catalog_corrupt", "active_snapshot_corrupt",
+      remediation = paste0("Restore a verified retained snapshot with rollback_knowledge(version, dry_run = FALSE). ",
+        if (length(verified)) paste0("Verified snapshot IDs: ", paste(verified, collapse = ", "), ".") else
+          "No retained snapshot currently verifies."))
+  }
+  before <- active$catalog
+  old_resources <- active$resources
+  if (!identical(previous$content_id, before$content_id) || !identical(previous$resource_id, old_resources$id)) {
+    abort_cttir("The active catalog changed while the update started.", "cttir_transaction_conflict")
+  }
+  # The manifest is authoritative; repair a policy mirror left by an interrupted activation.
+  if (!dry_run && !is.null(previous$bioc_release)) sync_bioc_policy(previous, root)
+  policy <- bioc_release_policy(bioc_version, root)
   stage <- tempfile("cttir-catalog-")
   dir.create(stage)
   on.exit(unlink(stage, recursive = TRUE), add = TRUE)
@@ -474,7 +491,8 @@ update <- function(
     }
     resource_hash <- digest::digest(file = resource_file, algo = "sha256")
     resource_id <- if (identical(resource_hash, old_resources$sha256)) old_resources$id else resource_hash
-    manifest <- snapshot_manifest(id, resource_id)
+    release <- if (!is.null(bioc_version)) bioc_version else if (!is.na(policy$stored)) policy$stored
+    manifest <- snapshot_manifest(id, resource_id, release)
     changed <- !identical(previous, manifest)
     partial <- length(unavailable) > 0L || isTRUE(resource_result$partial)
     api_changes <- api_diff(before, after)
@@ -486,9 +504,9 @@ update <- function(
       if (!identical(resource_id, old_resources$id)) retain_resource_snapshot(resource_file, root, resource_id)
       activate_catalog(manifest, previous)
       activated <- TRUE
+      sync_bioc_policy(manifest, root)
     }
     recorded <- !dry_run && policy$changes_policy
-    if (recorded) write_bioc_policy(bioc_version, root)
     warnings <- update_warnings(mode, selected, include_embeddings, unavailable, resource_result, tombstones,
       plan, prune, policy, discover, dry_run)
     structure(list(
@@ -562,9 +580,19 @@ update_warnings <- function(mode, selected, include_embeddings, unavailable, res
 update_knowledge <- function(...) update(...)
 
 #' Restore a retained composite catalog without changing project pins
-#' @param version Composite snapshot ID returned by [update()].
+#'
+#' Restores the API snapshot, resource snapshot and recorded Bioconductor
+#' release policy of a retained composite snapshot together. The target must
+#' verify completely. A damaged active snapshot does not block restoring a
+#' verified one: the damage is reported in `active_problem` and `warnings`, the
+#' damaged files are kept for inspection, and the impact against them is not
+#' computed.
+#' @param version Composite snapshot ID returned by [update()]. Unknown IDs fail
+#'   with a message listing the retained IDs.
 #' @param dry_run Preview only; the default makes no changes.
-#' @return A `cttir_update` containing IDs, API impact and activation outcome.
+#' @return A `cttir_update` containing IDs, API impact, activation outcome,
+#'   `active_problem` (`NA` when the active snapshot verified) and the restored
+#'   `bioc_release` policy (`NA` release when none is recorded).
 #' @export
 rollback_knowledge <- function(version, dry_run = TRUE) {
   scalar_text(version, "version")
@@ -577,11 +605,23 @@ rollback_knowledge <- function(version, dry_run = TRUE) {
   }
   file <- file.path(root, "manifests", paste0(version, ".json"))
   assert_plain_path(file)
+  if (!file.exists(file)) {
+    available <- retained_manifest_ids(root)
+    abort_cttir(paste0("No retained composite snapshot has ID ", version, ". ", if (length(available)) {
+      paste0("Retained snapshot IDs (newest first): ", paste(available, collapse = ", "), ".")
+    } else {
+      "No composite snapshots are retained yet; update() retains them when it activates a change."
+    }), code = "unknown_snapshot", field = "version",
+    remediation = "Use a previous_id or new_id reported by update() or rollback_knowledge().")
+  }
   target <- validate_manifest(read_document(file))
   if (!identical(target$manifest_id, version)) abort_cttir("Snapshot ID mismatch.", "cttir_catalog_corrupt")
-  before <- resolve_catalog()
   after <- catalog_snapshot(target$content_id)
-  previous <- snapshot_manifest(before$content_id, resource_snapshot()$id)
+  previous <- current_catalog_manifest()
+  # A damaged active snapshot must not block restoring a verified one. It is
+  # reported, never deleted, and its impact cannot be computed.
+  active <- active_snapshot()
+  before <- if (is.null(active$problem)) active$catalog else after
   base_resource <- read_document(resource_file("extdata", "resource-manifest.json"))$content_id
   if (!identical(target$resource_id, base_resource)) {
     resource <- file.path(root, "resource-snapshots", target$resource_id, "package-resources.sqlite")
@@ -594,13 +634,25 @@ rollback_knowledge <- function(version, dry_run = TRUE) {
   api_changes <- api_diff(before, after)
   doc_changes <- documentation_diff(before, after)
   approval_changes <- approval_diff(before, after)
-  if (changed && !dry_run) activate_catalog(target, previous)
+  if (changed && !dry_run) {
+    activate_catalog(target, previous)
+    sync_bioc_policy(target, root)
+  }
+  warnings <- "Existing project pins and installed packages are unchanged."
+  if (!is.null(active$problem)) {
+    damaged <- paste0("The active snapshot ", previous$manifest_id, " failed verification (", active$problem,
+      "); it is retained unchanged for inspection, and its API, documentation and approval impact could not be computed.")
+    warnings <- c(damaged, warnings)
+  }
   structure(list(
     status = if (dry_run) "planned" else if (changed) "succeeded" else "unchanged",
     previous_id = previous$manifest_id, new_id = target$manifest_id,
     approval_diff = approval_changes,
     api_diff = api_changes, documentation_diff = doc_changes, activation = changed && !dry_run,
-    warnings = "Existing project pins and installed packages are unchanged."
+    active_problem = if (is.null(active$problem)) NA_character_ else active$problem,
+    bioc_release = list(release = if (is.null(target$bioc_release)) NA_character_ else target$bioc_release,
+      recorded = !is.null(target$bioc_release)),
+    warnings = warnings
   ), class = "cttir_update")
 }
 

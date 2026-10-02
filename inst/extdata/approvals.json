@@ -58,18 +58,6 @@
       "fixtures": [
         {
           "test_file": "tests/testthat/test-interop.R",
-          "test_name": "SingleCellExperiment to Seurat conversion reports altExps, reductions and losses",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
-        },
-        {
-          "test_file": "tests/testthat/test-interop.R",
-          "test_name": "observed Seurat 5.5.1 conversion behavior stays recorded in the registry",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
-        },
-        {
-          "test_file": "tests/testthat/test-interop.R",
           "test_name": "Seurat v5 Assay5 layers are inventoried with counts and data semantics",
           "result": "pass",
           "run_at": "2026-10-02T16:53:39Z"
@@ -81,7 +69,7 @@
           "run_at": "2026-10-02T16:53:39Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:05Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'GPL (>= 2) | file LICENCE' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -115,31 +103,7 @@
         },
         {
           "test_file": "tests/testthat/test-figures.R",
-          "test_name": "default figure policies validate and normalize",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "invalid figure policies raise typed errors with JSON pointers",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "the figure template is static reviewed code with explicit namespaces",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
           "test_name": "categorical palettes are verified, stable and never recycled",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "ordered categories use discretized viridis in explicit order",
           "result": "pass",
           "run_at": "2026-10-02T16:53:19Z"
         },
@@ -157,19 +121,7 @@
         },
         {
           "test_file": "tests/testthat/test-figures.R",
-          "test_name": "redundant shapes and line types are distinct and stable",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
           "test_name": "accessibility checks report every simulation and record findings",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "patchwork composition keeps panel order, tags and guide policy",
           "result": "pass",
           "run_at": "2026-10-02T16:53:19Z"
         },
@@ -186,7 +138,7 @@
           "run_at": "2026-10-02T16:53:17Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:06Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'Apache License 2.0' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -253,33 +205,9 @@
           "test_name": "Seurat v5 Assay5 layers are inventoried with counts and data semantics",
           "result": "pass",
           "run_at": "2026-10-02T16:53:39Z"
-        },
-        {
-          "test_file": "tests/testthat/test-interop.R",
-          "test_name": "donor-level pseudobulk sums raw counts and refuses too few donors",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
-        },
-        {
-          "test_file": "tests/testthat/test-interop.R",
-          "test_name": "a mixed-model S4 fit maps to broom output matching its fixed effects",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
-        },
-        {
-          "test_file": "tests/testthat/test-interop.R",
-          "test_name": "the bioc/seurat capability registry is valid and truthful about testing",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
-        },
-        {
-          "test_file": "tests/testthat/test-interop.R",
-          "test_name": "invalid capability registries are rejected",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:05Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'Artistic-2.0' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -368,15 +296,9 @@
           "test_name": "Seurat v5 Assay5 layers are inventoried with counts and data semantics",
           "result": "pass",
           "run_at": "2026-10-02T16:53:39Z"
-        },
-        {
-          "test_file": "tests/testthat/test-interop.R",
-          "test_name": "donor-level pseudobulk sums raw counts and refuses too few donors",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:05Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'MIT + file LICENSE' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -390,29 +312,29 @@
       "adapter_version": "1.0.0",
       "status": "approved",
       "required_callables": [
-        "Layers",
-        "LayerData",
         "DefaultAssay",
         "Assays",
+        "Layers",
+        "LayerData",
+        "Version",
+        "Cells",
         "Reductions",
         "Embeddings",
-        "Cells",
         "Misc",
-        "Version",
         "as.Seurat"
       ],
       "required_methods": [],
       "required_objects": [],
       "required_topics": [
-        "Layers",
-        "LayerData",
         "DefaultAssay",
         "Assays",
+        "Layers",
+        "LayerData",
+        "Version",
+        "Cells",
         "Reductions",
         "Embeddings",
-        "Cells",
         "Misc",
-        "Version",
         "as.Seurat"
       ],
       "required_documents": [
@@ -444,7 +366,7 @@
           "run_at": "2026-10-02T16:53:39Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:05Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'MIT + file LICENSE' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -519,33 +441,9 @@
           "test_name": "Seurat v5 Assay5 layers are inventoried with counts and data semantics",
           "result": "pass",
           "run_at": "2026-10-02T16:53:39Z"
-        },
-        {
-          "test_file": "tests/testthat/test-interop.R",
-          "test_name": "donor-level pseudobulk sums raw counts and refuses too few donors",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
-        },
-        {
-          "test_file": "tests/testthat/test-interop.R",
-          "test_name": "a mixed-model S4 fit maps to broom output matching its fixed effects",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
-        },
-        {
-          "test_file": "tests/testthat/test-interop.R",
-          "test_name": "the bioc/seurat capability registry is valid and truthful about testing",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
-        },
-        {
-          "test_file": "tests/testthat/test-interop.R",
-          "test_name": "invalid capability registries are rejected",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:05Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'GPL-3' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -596,15 +494,9 @@
           "test_name": "Seurat v5 Assay5 layers are inventoried with counts and data semantics",
           "result": "pass",
           "run_at": "2026-10-02T16:53:39Z"
-        },
-        {
-          "test_file": "tests/testthat/test-interop.R",
-          "test_name": "donor-level pseudobulk sums raw counts and refuses too few donors",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:05Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'GPL-3' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -618,20 +510,20 @@
       "adapter_version": "1.0.0",
       "status": "approved",
       "required_callables": [
-        "assays",
-        "assayNames",
+        "colData",
         "assay",
         "rowData",
-        "colData"
+        "assays",
+        "assayNames"
       ],
       "required_methods": [],
       "required_objects": [],
       "required_topics": [
-        "assays",
-        "assayNames",
+        "colData",
         "assay",
         "rowData",
-        "colData"
+        "assays",
+        "assayNames"
       ],
       "required_documents": [
         "NEWS",
@@ -685,27 +577,9 @@
           "test_name": "donor-level pseudobulk sums raw counts and refuses too few donors",
           "result": "pass",
           "run_at": "2026-10-02T16:53:39Z"
-        },
-        {
-          "test_file": "tests/testthat/test-interop.R",
-          "test_name": "a mixed-model S4 fit maps to broom output matching its fixed effects",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
-        },
-        {
-          "test_file": "tests/testthat/test-interop.R",
-          "test_name": "the bioc/seurat capability registry is valid and truthful about testing",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
-        },
-        {
-          "test_file": "tests/testthat/test-interop.R",
-          "test_name": "invalid capability registries are rejected",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:05Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'Artistic-2.0' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -719,20 +593,20 @@
       "adapter_version": "1.0.0",
       "status": "approved",
       "required_callables": [
-        "assays",
         "assayNames",
         "assay",
         "rowData",
-        "colData"
+        "colData",
+        "assays"
       ],
       "required_methods": [],
       "required_objects": [],
       "required_topics": [
-        "assays",
         "assayNames",
         "assay",
         "rowData",
-        "colData"
+        "colData",
+        "assays"
       ],
       "required_documents": [
         "NEWS",
@@ -758,7 +632,7 @@
           "run_at": "2026-10-02T16:53:39Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:05Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'Artistic-2.0' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -930,67 +804,7 @@
       "fixtures": [
         {
           "test_file": "tests/testthat/test-figures.R",
-          "test_name": "the pinned RColorBrewer table is bundled without importing RColorBrewer",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "default figure policies validate and normalize",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "invalid figure policies raise typed errors with JSON pointers",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "the figure template is static reviewed code with explicit namespaces",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "categorical palettes are verified, stable and never recycled",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "ordered categories use discretized viridis in explicit order",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "continuous and diverging scales keep explicit limits, midpoint and NA colour",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "categorical NA values use the distinct NA colour",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "redundant shapes and line types are distinct and stable",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
           "test_name": "accessibility checks report every simulation and record findings",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "patchwork composition keeps panel order, tags and guide policy",
           "result": "pass",
           "run_at": "2026-10-02T16:53:19Z"
         },
@@ -1007,7 +821,7 @@
           "run_at": "2026-10-02T16:53:17Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:06Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'BSD_3_clause + file LICENSE' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -1142,10 +956,6 @@
       "adapter_version": "0.3.0",
       "status": "approved",
       "required_callables": [
-        "waiver",
-        "scale_colour_viridis_c",
-        "scale_colour_gradientn",
-        "ggsave",
         "ggplot",
         "aes",
         "geom_histogram",
@@ -1157,15 +967,15 @@
         "stat_summary",
         "geom_point",
         "scale_colour_manual",
-        "scale_shape_manual"
+        "scale_shape_manual",
+        "waiver",
+        "scale_colour_viridis_c",
+        "scale_colour_gradientn",
+        "ggsave"
       ],
       "required_methods": [],
       "required_objects": [],
       "required_topics": [
-        "waiver",
-        "scale_colour_viridis_c",
-        "scale_colour_gradientn",
-        "ggsave",
         "ggplot",
         "aes",
         "geom_histogram",
@@ -1177,7 +987,11 @@
         "stat_summary",
         "geom_point",
         "scale_colour_manual",
-        "scale_shape_manual"
+        "scale_shape_manual",
+        "waiver",
+        "scale_colour_viridis_c",
+        "scale_colour_gradientn",
+        "ggsave"
       ],
       "required_documents": [
         "NEWS.md",
@@ -1187,42 +1001,6 @@
       "fixtures": [
         {
           "test_file": "tests/testthat/test-figures.R",
-          "test_name": "the pinned RColorBrewer table is bundled without importing RColorBrewer",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "default figure policies validate and normalize",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "invalid figure policies raise typed errors with JSON pointers",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "the figure template is static reviewed code with explicit namespaces",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "categorical palettes are verified, stable and never recycled",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "ordered categories use discretized viridis in explicit order",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
           "test_name": "continuous and diverging scales keep explicit limits, midpoint and NA colour",
           "result": "pass",
           "run_at": "2026-10-02T16:53:19Z"
@@ -1230,18 +1008,6 @@
         {
           "test_file": "tests/testthat/test-figures.R",
           "test_name": "categorical NA values use the distinct NA colour",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "redundant shapes and line types are distinct and stable",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "accessibility checks report every simulation and record findings",
           "result": "pass",
           "run_at": "2026-10-02T16:53:19Z"
         },
@@ -1264,7 +1030,7 @@
           "run_at": "2026-10-02T16:53:17Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:06Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'MIT + file LICENSE' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -1293,67 +1059,7 @@
       "fixtures": [
         {
           "test_file": "tests/testthat/test-figures.R",
-          "test_name": "the pinned RColorBrewer table is bundled without importing RColorBrewer",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "default figure policies validate and normalize",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "invalid figure policies raise typed errors with JSON pointers",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "the figure template is static reviewed code with explicit namespaces",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "categorical palettes are verified, stable and never recycled",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "ordered categories use discretized viridis in explicit order",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "continuous and diverging scales keep explicit limits, midpoint and NA colour",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "categorical NA values use the distinct NA colour",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "redundant shapes and line types are distinct and stable",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
           "test_name": "accessibility checks report every simulation and record findings",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "patchwork composition keeps panel order, tags and guide policy",
           "result": "pass",
           "run_at": "2026-10-02T16:53:19Z"
         },
@@ -1370,7 +1076,7 @@
           "run_at": "2026-10-02T16:53:17Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:06Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'Part of R (GPL-2 | GPL-3)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -1384,13 +1090,11 @@
       "adapter_version": "0.3.0",
       "status": "approved",
       "required_callables": [
-        "read_json",
         "write_json"
       ],
       "required_methods": [],
       "required_objects": [],
       "required_topics": [
-        "read_json",
         "write_json"
       ],
       "required_documents": [
@@ -1405,7 +1109,7 @@
           "run_at": "2026-10-02T16:53:17Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:07Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'MIT + file LICENSE' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -1435,72 +1139,6 @@
       "fixtures": [
         {
           "test_file": "tests/testthat/test-figures.R",
-          "test_name": "the pinned RColorBrewer table is bundled without importing RColorBrewer",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "default figure policies validate and normalize",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "invalid figure policies raise typed errors with JSON pointers",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "the figure template is static reviewed code with explicit namespaces",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "categorical palettes are verified, stable and never recycled",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "ordered categories use discretized viridis in explicit order",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "continuous and diverging scales keep explicit limits, midpoint and NA colour",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "categorical NA values use the distinct NA colour",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "redundant shapes and line types are distinct and stable",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "accessibility checks report every simulation and record findings",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "patchwork composition keeps panel order, tags and guide policy",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
           "test_name": "figures are saved at final size with a JSON sidecar",
           "result": "pass",
           "run_at": "2026-10-02T16:53:19Z"
@@ -1512,7 +1150,7 @@
           "run_at": "2026-10-02T16:53:17Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:06Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'MIT + file LICENSE' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -1526,13 +1164,11 @@
       "adapter_version": "0.3.0",
       "status": "approved",
       "required_callables": [
-        "read_json",
         "write_json"
       ],
       "required_methods": [],
       "required_objects": [],
       "required_topics": [
-        "read_json",
         "write_json"
       ],
       "required_documents": [
@@ -1553,7 +1189,7 @@
           "run_at": "2026-10-02T16:53:17Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:07Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'MIT + file LICENSE' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -1579,19 +1215,13 @@
       ],
       "fixtures": [
         {
-          "test_file": "tests/testthat/test-standard-workflow.R",
-          "test_name": "the standard bundle is pinned, integrity-checked and free of user text",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
-        },
-        {
           "test_file": "tests/testthat/test-templates.R",
           "test_name": "synthetic template renders without importing study data",
           "result": "pass",
           "run_at": "2026-10-02T16:53:28Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:05Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'GPL' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -1621,15 +1251,9 @@
           "test_name": "synthetic template renders without importing study data",
           "result": "pass",
           "run_at": "2026-10-02T16:53:28Z"
-        },
-        {
-          "test_file": "tests/testthat/test-standard-workflow.R",
-          "test_name": "the synthetic demo runs in a generated project and labels its outputs",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:07Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'GPL' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -1643,18 +1267,18 @@
       "adapter_version": "1.0.0",
       "status": "approved",
       "required_callables": [
-        "is",
         "validObject",
         "isClass",
-        "extends"
+        "extends",
+        "is"
       ],
       "required_methods": [],
       "required_objects": [],
       "required_topics": [
-        "is",
         "validObject",
         "isClass",
-        "extends"
+        "extends",
+        "is"
       ],
       "required_documents": [],
       "fixtures": [
@@ -1711,21 +1335,9 @@
           "test_name": "a mixed-model S4 fit maps to broom output matching its fixed effects",
           "result": "pass",
           "run_at": "2026-10-02T16:53:39Z"
-        },
-        {
-          "test_file": "tests/testthat/test-interop.R",
-          "test_name": "the bioc/seurat capability registry is valid and truthful about testing",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
-        },
-        {
-          "test_file": "tests/testthat/test-interop.R",
-          "test_name": "invalid capability registries are rejected",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:05Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'Part of R (GPL-2 | GPL-3)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -1740,8 +1352,8 @@
       "status": "approved",
       "required_callables": [
         "lme",
-        "fixef",
-        "getVarCov"
+        "getVarCov",
+        "fixef"
       ],
       "required_methods": [
         "fixef.lme",
@@ -1752,8 +1364,8 @@
       "required_objects": [],
       "required_topics": [
         "lme",
-        "fixef",
-        "getVarCov"
+        "getVarCov",
+        "fixef"
       ],
       "required_documents": [
         "inst/CITATION"
@@ -1766,7 +1378,7 @@
           "run_at": "2026-10-02T16:53:17Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:06Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'GPL (>= 2)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -1787,8 +1399,7 @@
       "required_methods": [
         "fixef.lme",
         "getVarCov.lme",
-        "lme.formula",
-        "logLik.lme"
+        "lme.formula"
       ],
       "required_objects": [],
       "required_topics": [
@@ -1807,7 +1418,7 @@
           "run_at": "2026-10-02T16:53:17Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:06Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'GPL (>= 2)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -1837,66 +1448,6 @@
       "fixtures": [
         {
           "test_file": "tests/testthat/test-figures.R",
-          "test_name": "the pinned RColorBrewer table is bundled without importing RColorBrewer",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "default figure policies validate and normalize",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "invalid figure policies raise typed errors with JSON pointers",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "the figure template is static reviewed code with explicit namespaces",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "categorical palettes are verified, stable and never recycled",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "ordered categories use discretized viridis in explicit order",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "continuous and diverging scales keep explicit limits, midpoint and NA colour",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "categorical NA values use the distinct NA colour",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "redundant shapes and line types are distinct and stable",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "accessibility checks report every simulation and record findings",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
           "test_name": "patchwork composition keeps panel order, tags and guide policy",
           "result": "pass",
           "run_at": "2026-10-02T16:53:19Z"
@@ -1914,7 +1465,7 @@
           "run_at": "2026-10-02T16:53:17Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:06Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'MIT + file LICENSE' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -1993,19 +1544,13 @@
       ],
       "fixtures": [
         {
-          "test_file": "tests/testthat/test-standard-workflow.R",
-          "test_name": "the standard bundle is pinned, integrity-checked and free of user text",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
-        },
-        {
           "test_file": "tests/testthat/test-templates.R",
           "test_name": "synthetic template renders without importing study data",
           "result": "pass",
           "run_at": "2026-10-02T16:53:28Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:05Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'GPL-3' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -2039,95 +1584,10 @@
           "test_name": "synthetic template renders without importing study data",
           "result": "pass",
           "run_at": "2026-10-02T16:53:28Z"
-        },
-        {
-          "test_file": "tests/testthat/test-standard-workflow.R",
-          "test_name": "the synthetic demo runs in a generated project and labels its outputs",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:07Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'GPL-3' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
-    },
-    {
-      "approval_id": "stats:4.6.1:check_mapped",
-      "package": "stats",
-      "version": "4.6.1",
-      "source_hash": "3735c4ce9c6824a794d61ba1c97d4a498a8657908970176e8e13c64b3df0ee7e",
-      "role": "check_mapped",
-      "profile": "standard_reflowR",
-      "adapter_id": "standard.check_mapped",
-      "adapter_version": "0.3.0",
-      "status": "approved",
-      "required_callables": [
-        "setNames",
-        "complete.cases",
-        "quantile",
-        "sd",
-        "as.formula",
-        "model.matrix",
-        "lm",
-        "na.fail",
-        "glm",
-        "binomial",
-        "coef",
-        "residuals",
-        "cooks.distance",
-        "fitted",
-        "runif",
-        "rnorm",
-        "plogis",
-        "rexp",
-        "logLik",
-        "optimize"
-      ],
-      "required_methods": [
-        "coef.default",
-        "cooks.distance.glm",
-        "cooks.distance.lm",
-        "fitted.default",
-        "model.matrix.default",
-        "model.matrix.lm",
-        "na.fail.default",
-        "quantile.default",
-        "residuals.glm",
-        "residuals.lm"
-      ],
-      "required_objects": [],
-      "required_topics": [
-        "setNames",
-        "complete.cases",
-        "quantile",
-        "sd",
-        "as.formula",
-        "model.matrix",
-        "lm",
-        "na.fail",
-        "glm",
-        "binomial",
-        "coef",
-        "residuals",
-        "cooks.distance",
-        "fitted",
-        "runif",
-        "rnorm",
-        "plogis",
-        "rexp",
-        "logLik",
-        "optimize"
-      ],
-      "required_documents": [],
-      "fixtures": [
-        {
-          "test_file": "tests/testthat/test-standard-workflow.R",
-          "test_name": "stage checks agree with check_analysis_data on shared fixtures",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
-        }
-      ],
-      "decided_at": "2026-10-02T16:54:05Z",
-      "rights_basis": "Upstream license 'Part of R (GPL-2 | GPL-3)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
       "approval_id": "stats:4.6.1:demo_synthetic",
@@ -2140,61 +1600,45 @@
       "adapter_version": "0.3.0",
       "status": "approved",
       "required_callables": [
+        "runif",
+        "rnorm",
+        "plogis",
+        "rexp",
         "setNames",
         "complete.cases",
-        "quantile",
-        "sd",
-        "as.formula",
         "model.matrix",
         "lm",
         "na.fail",
         "glm",
         "binomial",
         "coef",
-        "residuals",
-        "cooks.distance",
-        "fitted",
-        "runif",
-        "rnorm",
-        "plogis",
-        "rexp",
         "logLik",
-        "optimize"
+        "optimize",
+        "as.formula"
       ],
       "required_methods": [
         "coef.default",
-        "cooks.distance.glm",
-        "cooks.distance.lm",
-        "fitted.default",
         "model.matrix.default",
         "model.matrix.lm",
-        "na.fail.default",
-        "quantile.default",
-        "residuals.glm",
-        "residuals.lm"
+        "na.fail.default"
       ],
       "required_objects": [],
       "required_topics": [
+        "runif",
+        "rnorm",
+        "plogis",
+        "rexp",
         "setNames",
         "complete.cases",
-        "quantile",
-        "sd",
-        "as.formula",
         "model.matrix",
         "lm",
         "na.fail",
         "glm",
         "binomial",
         "coef",
-        "residuals",
-        "cooks.distance",
-        "fitted",
-        "runif",
-        "rnorm",
-        "plogis",
-        "rexp",
         "logLik",
-        "optimize"
+        "optimize",
+        "as.formula"
       ],
       "required_documents": [],
       "fixtures": [
@@ -2205,7 +1649,7 @@
           "run_at": "2026-10-02T16:53:17Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:06Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'Part of R (GPL-2 | GPL-3)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -2220,60 +1664,17 @@
       "status": "approved",
       "required_callables": [
         "setNames",
-        "complete.cases",
         "quantile",
-        "sd",
-        "as.formula",
-        "model.matrix",
-        "lm",
-        "na.fail",
-        "glm",
-        "binomial",
-        "coef",
-        "residuals",
-        "cooks.distance",
-        "fitted",
-        "runif",
-        "rnorm",
-        "plogis",
-        "rexp",
-        "logLik",
-        "optimize"
+        "sd"
       ],
       "required_methods": [
-        "coef.default",
-        "cooks.distance.glm",
-        "cooks.distance.lm",
-        "fitted.default",
-        "model.matrix.default",
-        "model.matrix.lm",
-        "na.fail.default",
-        "quantile.default",
-        "residuals.glm",
-        "residuals.lm"
+        "quantile.default"
       ],
       "required_objects": [],
       "required_topics": [
         "setNames",
-        "complete.cases",
         "quantile",
-        "sd",
-        "as.formula",
-        "model.matrix",
-        "lm",
-        "na.fail",
-        "glm",
-        "binomial",
-        "coef",
-        "residuals",
-        "cooks.distance",
-        "fitted",
-        "runif",
-        "rnorm",
-        "plogis",
-        "rexp",
-        "logLik",
-        "optimize"
+        "sd"
       ],
       "required_documents": [],
       "fixtures": [
@@ -2284,7 +1685,7 @@
           "run_at": "2026-10-02T16:53:17Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:06Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'Part of R (GPL-2 | GPL-3)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -2299,60 +1700,17 @@
       "status": "approved",
       "required_callables": [
         "setNames",
-        "complete.cases",
         "quantile",
-        "sd",
-        "as.formula",
-        "model.matrix",
-        "lm",
-        "na.fail",
-        "glm",
-        "binomial",
-        "coef",
-        "residuals",
-        "cooks.distance",
-        "fitted",
-        "runif",
-        "rnorm",
-        "plogis",
-        "rexp",
-        "logLik",
-        "optimize"
+        "sd"
       ],
       "required_methods": [
-        "coef.default",
-        "cooks.distance.glm",
-        "cooks.distance.lm",
-        "fitted.default",
-        "model.matrix.default",
-        "model.matrix.lm",
-        "na.fail.default",
-        "quantile.default",
-        "residuals.glm",
-        "residuals.lm"
+        "quantile.default"
       ],
       "required_objects": [],
       "required_topics": [
         "setNames",
-        "complete.cases",
         "quantile",
-        "sd",
-        "as.formula",
-        "model.matrix",
-        "lm",
-        "na.fail",
-        "glm",
-        "binomial",
-        "coef",
-        "residuals",
-        "cooks.distance",
-        "fitted",
-        "runif",
-        "rnorm",
-        "plogis",
-        "rexp",
-        "logLik",
-        "optimize"
+        "sd"
       ],
       "required_documents": [],
       "fixtures": [
@@ -2363,7 +1721,7 @@
           "run_at": "2026-10-02T16:53:17Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:05Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'Part of R (GPL-2 | GPL-3)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -2377,130 +1735,15 @@
       "adapter_version": "0.3.0",
       "status": "approved",
       "required_callables": [
-        "setNames",
-        "complete.cases",
-        "quantile",
-        "sd",
-        "as.formula",
-        "model.matrix",
-        "lm",
-        "na.fail",
-        "glm",
-        "binomial",
-        "coef",
-        "residuals",
-        "cooks.distance",
-        "fitted",
-        "runif",
-        "rnorm",
-        "plogis",
-        "rexp",
-        "logLik",
-        "optimize"
+        "setNames"
       ],
-      "required_methods": [
-        "coef.default",
-        "cooks.distance.glm",
-        "cooks.distance.lm",
-        "fitted.default",
-        "model.matrix.default",
-        "model.matrix.lm",
-        "na.fail.default",
-        "quantile.default",
-        "residuals.glm",
-        "residuals.lm"
-      ],
+      "required_methods": [],
       "required_objects": [],
       "required_topics": [
-        "setNames",
-        "complete.cases",
-        "quantile",
-        "sd",
-        "as.formula",
-        "model.matrix",
-        "lm",
-        "na.fail",
-        "glm",
-        "binomial",
-        "coef",
-        "residuals",
-        "cooks.distance",
-        "fitted",
-        "runif",
-        "rnorm",
-        "plogis",
-        "rexp",
-        "logLik",
-        "optimize"
+        "setNames"
       ],
       "required_documents": [],
       "fixtures": [
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "the pinned RColorBrewer table is bundled without importing RColorBrewer",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "default figure policies validate and normalize",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "invalid figure policies raise typed errors with JSON pointers",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "the figure template is static reviewed code with explicit namespaces",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "categorical palettes are verified, stable and never recycled",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "ordered categories use discretized viridis in explicit order",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "continuous and diverging scales keep explicit limits, midpoint and NA colour",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "categorical NA values use the distinct NA colour",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "redundant shapes and line types are distinct and stable",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "accessibility checks report every simulation and record findings",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "patchwork composition keeps panel order, tags and guide policy",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
         {
           "test_file": "tests/testthat/test-figures.R",
           "test_name": "figures are saved at final size with a JSON sidecar",
@@ -2514,7 +1757,7 @@
           "run_at": "2026-10-02T16:53:17Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:06Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'Part of R (GPL-2 | GPL-3)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -2528,61 +1771,19 @@
       "adapter_version": "0.3.0",
       "status": "approved",
       "required_callables": [
-        "setNames",
-        "complete.cases",
-        "quantile",
-        "sd",
-        "as.formula",
-        "model.matrix",
-        "lm",
         "na.fail",
-        "glm",
-        "binomial",
         "coef",
-        "residuals",
-        "cooks.distance",
-        "fitted",
-        "runif",
-        "rnorm",
-        "plogis",
-        "rexp",
-        "logLik",
-        "optimize"
+        "as.formula"
       ],
       "required_methods": [
         "coef.default",
-        "cooks.distance.glm",
-        "cooks.distance.lm",
-        "fitted.default",
-        "model.matrix.default",
-        "model.matrix.lm",
-        "na.fail.default",
-        "quantile.default",
-        "residuals.glm",
-        "residuals.lm"
+        "na.fail.default"
       ],
       "required_objects": [],
       "required_topics": [
-        "setNames",
-        "complete.cases",
-        "quantile",
-        "sd",
-        "as.formula",
-        "model.matrix",
-        "lm",
         "na.fail",
-        "glm",
-        "binomial",
         "coef",
-        "residuals",
-        "cooks.distance",
-        "fitted",
-        "runif",
-        "rnorm",
-        "plogis",
-        "rexp",
-        "logLik",
-        "optimize"
+        "as.formula"
       ],
       "required_documents": [],
       "fixtures": [
@@ -2593,7 +1794,7 @@
           "run_at": "2026-10-02T16:53:17Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:06Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'Part of R (GPL-2 | GPL-3)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -2607,61 +1808,29 @@
       "adapter_version": "0.3.0",
       "status": "approved",
       "required_callables": [
-        "setNames",
-        "complete.cases",
-        "quantile",
-        "sd",
-        "as.formula",
         "model.matrix",
-        "lm",
         "na.fail",
         "glm",
         "binomial",
         "coef",
-        "residuals",
-        "cooks.distance",
         "fitted",
-        "runif",
-        "rnorm",
-        "plogis",
-        "rexp",
-        "logLik",
-        "optimize"
+        "as.formula"
       ],
       "required_methods": [
         "coef.default",
-        "cooks.distance.glm",
-        "cooks.distance.lm",
         "fitted.default",
         "model.matrix.default",
-        "model.matrix.lm",
-        "na.fail.default",
-        "quantile.default",
-        "residuals.glm",
-        "residuals.lm"
+        "na.fail.default"
       ],
       "required_objects": [],
       "required_topics": [
-        "setNames",
-        "complete.cases",
-        "quantile",
-        "sd",
-        "as.formula",
         "model.matrix",
-        "lm",
         "na.fail",
         "glm",
         "binomial",
         "coef",
-        "residuals",
-        "cooks.distance",
         "fitted",
-        "runif",
-        "rnorm",
-        "plogis",
-        "rexp",
-        "logLik",
-        "optimize"
+        "as.formula"
       ],
       "required_documents": [],
       "fixtures": [
@@ -2678,7 +1847,7 @@
           "run_at": "2026-10-02T16:53:17Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:06Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'Part of R (GPL-2 | GPL-3)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -2692,61 +1861,31 @@
       "adapter_version": "0.3.0",
       "status": "approved",
       "required_callables": [
-        "setNames",
-        "complete.cases",
-        "quantile",
-        "sd",
-        "as.formula",
         "model.matrix",
         "lm",
         "na.fail",
-        "glm",
-        "binomial",
         "coef",
         "residuals",
         "cooks.distance",
-        "fitted",
-        "runif",
-        "rnorm",
-        "plogis",
-        "rexp",
-        "logLik",
-        "optimize"
+        "as.formula"
       ],
       "required_methods": [
         "coef.default",
-        "cooks.distance.glm",
         "cooks.distance.lm",
-        "fitted.default",
         "model.matrix.default",
         "model.matrix.lm",
         "na.fail.default",
-        "quantile.default",
-        "residuals.glm",
         "residuals.lm"
       ],
       "required_objects": [],
       "required_topics": [
-        "setNames",
-        "complete.cases",
-        "quantile",
-        "sd",
-        "as.formula",
         "model.matrix",
         "lm",
         "na.fail",
-        "glm",
-        "binomial",
         "coef",
         "residuals",
         "cooks.distance",
-        "fitted",
-        "runif",
-        "rnorm",
-        "plogis",
-        "rexp",
-        "logLik",
-        "optimize"
+        "as.formula"
       ],
       "required_documents": [],
       "fixtures": [
@@ -2763,7 +1902,7 @@
           "run_at": "2026-10-02T16:53:17Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:06Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'Part of R (GPL-2 | GPL-3)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -2777,61 +1916,19 @@
       "adapter_version": "0.3.0",
       "status": "approved",
       "required_callables": [
-        "setNames",
-        "complete.cases",
-        "quantile",
-        "sd",
-        "as.formula",
         "model.matrix",
-        "lm",
         "na.fail",
-        "glm",
-        "binomial",
-        "coef",
-        "residuals",
-        "cooks.distance",
-        "fitted",
-        "runif",
-        "rnorm",
-        "plogis",
-        "rexp",
-        "logLik",
-        "optimize"
+        "as.formula"
       ],
       "required_methods": [
-        "coef.default",
-        "cooks.distance.glm",
-        "cooks.distance.lm",
-        "fitted.default",
         "model.matrix.default",
-        "model.matrix.lm",
-        "na.fail.default",
-        "quantile.default",
-        "residuals.glm",
-        "residuals.lm"
+        "na.fail.default"
       ],
       "required_objects": [],
       "required_topics": [
-        "setNames",
-        "complete.cases",
-        "quantile",
-        "sd",
-        "as.formula",
         "model.matrix",
-        "lm",
         "na.fail",
-        "glm",
-        "binomial",
-        "coef",
-        "residuals",
-        "cooks.distance",
-        "fitted",
-        "runif",
-        "rnorm",
-        "plogis",
-        "rexp",
-        "logLik",
-        "optimize"
+        "as.formula"
       ],
       "required_documents": [],
       "fixtures": [
@@ -2842,7 +1939,7 @@
           "run_at": "2026-10-02T16:53:17Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:06Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'Part of R (GPL-2 | GPL-3)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -2857,60 +1954,13 @@
       "status": "approved",
       "required_callables": [
         "setNames",
-        "complete.cases",
-        "quantile",
-        "sd",
-        "as.formula",
-        "model.matrix",
-        "lm",
-        "na.fail",
-        "glm",
-        "binomial",
-        "coef",
-        "residuals",
-        "cooks.distance",
-        "fitted",
-        "runif",
-        "rnorm",
-        "plogis",
-        "rexp",
-        "logLik",
-        "optimize"
+        "complete.cases"
       ],
-      "required_methods": [
-        "coef.default",
-        "cooks.distance.glm",
-        "cooks.distance.lm",
-        "fitted.default",
-        "model.matrix.default",
-        "model.matrix.lm",
-        "na.fail.default",
-        "quantile.default",
-        "residuals.glm",
-        "residuals.lm"
-      ],
+      "required_methods": [],
       "required_objects": [],
       "required_topics": [
         "setNames",
-        "complete.cases",
-        "quantile",
-        "sd",
-        "as.formula",
-        "model.matrix",
-        "lm",
-        "na.fail",
-        "glm",
-        "binomial",
-        "coef",
-        "residuals",
-        "cooks.distance",
-        "fitted",
-        "runif",
-        "rnorm",
-        "plogis",
-        "rexp",
-        "logLik",
-        "optimize"
+        "complete.cases"
       ],
       "required_documents": [],
       "fixtures": [
@@ -2921,7 +1971,7 @@
           "run_at": "2026-10-02T16:53:17Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:05Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'Part of R (GPL-2 | GPL-3)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -2935,20 +1985,12 @@
       "adapter_version": "0.3.0",
       "status": "approved",
       "required_callables": [
-        "coxph",
-        "cox.zph",
-        "survfit",
-        "Surv"
+        "coxph"
       ],
-      "required_methods": [
-        "survfit.formula"
-      ],
+      "required_methods": [],
       "required_objects": [],
       "required_topics": [
-        "coxph",
-        "cox.zph",
-        "survfit",
-        "Surv"
+        "coxph"
       ],
       "required_documents": [
         "inst/CITATION"
@@ -2961,7 +2003,7 @@
           "run_at": "2026-10-02T16:53:17Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:06Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'LGPL (>= 2)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -2975,8 +2017,6 @@
       "adapter_version": "0.3.0",
       "status": "approved",
       "required_callables": [
-        "coxph",
-        "cox.zph",
         "survfit",
         "Surv"
       ],
@@ -2985,8 +2025,6 @@
       ],
       "required_objects": [],
       "required_topics": [
-        "coxph",
-        "cox.zph",
         "survfit",
         "Surv"
       ],
@@ -2995,85 +2033,13 @@
       ],
       "fixtures": [
         {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "the pinned RColorBrewer table is bundled without importing RColorBrewer",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "default figure policies validate and normalize",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "invalid figure policies raise typed errors with JSON pointers",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "the figure template is static reviewed code with explicit namespaces",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "categorical palettes are verified, stable and never recycled",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "ordered categories use discretized viridis in explicit order",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "continuous and diverging scales keep explicit limits, midpoint and NA colour",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "categorical NA values use the distinct NA colour",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "redundant shapes and line types are distinct and stable",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "accessibility checks report every simulation and record findings",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "patchwork composition keeps panel order, tags and guide policy",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "figures are saved at final size with a JSON sidecar",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "the synthetic demo runs in a generated project and labels its outputs",
           "result": "pass",
           "run_at": "2026-10-02T16:53:17Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:06Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'LGPL (>= 2)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -3089,17 +2055,13 @@
       "required_callables": [
         "coxph",
         "cox.zph",
-        "survfit",
         "Surv"
       ],
-      "required_methods": [
-        "survfit.formula"
-      ],
+      "required_methods": [],
       "required_objects": [],
       "required_topics": [
         "coxph",
         "cox.zph",
-        "survfit",
         "Surv"
       ],
       "required_documents": [
@@ -3113,7 +2075,7 @@
           "run_at": "2026-10-02T16:53:17Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:06Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'LGPL (>= 2)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -3145,18 +2107,12 @@
       "fixtures": [
         {
           "test_file": "tests/testthat/test-environment.R",
-          "test_name": "_targets.R is a pinned static file with only reviewed calls",
-          "result": "pass",
-          "run_at": "2026-10-02T16:54:05Z"
-        },
-        {
-          "test_file": "tests/testthat/test-environment.R",
           "test_name": "a default tar_make validates, runs the demo and blocks the study target",
           "result": "pass",
           "run_at": "2026-10-02T16:54:05Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:07Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'MIT + file LICENSE' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -3200,22 +2156,12 @@
       "adapter_version": "0.3.0",
       "status": "approved",
       "required_callables": [
-        "read.csv",
-        "packageDescription",
-        "combn",
-        "head",
-        "packageVersion",
-        "write.csv"
+        "packageVersion"
       ],
       "required_methods": [],
       "required_objects": [],
       "required_topics": [
-        "read.csv",
-        "packageDescription",
-        "combn",
-        "head",
-        "packageVersion",
-        "write.csv"
+        "packageVersion"
       ],
       "required_documents": [],
       "fixtures": [
@@ -3226,7 +2172,7 @@
           "run_at": "2026-10-02T16:53:17Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:05Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'Part of R (GPL-2 | GPL-3)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -3240,21 +2186,11 @@
       "adapter_version": "0.3.0",
       "status": "approved",
       "required_callables": [
-        "read.csv",
-        "packageDescription",
-        "combn",
-        "head",
-        "packageVersion",
         "write.csv"
       ],
       "required_methods": [],
       "required_objects": [],
       "required_topics": [
-        "read.csv",
-        "packageDescription",
-        "combn",
-        "head",
-        "packageVersion",
         "write.csv"
       ],
       "required_documents": [],
@@ -3266,7 +2202,7 @@
           "run_at": "2026-10-02T16:53:17Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:06Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'Part of R (GPL-2 | GPL-3)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -3280,46 +2216,20 @@
       "adapter_version": "0.3.0",
       "status": "approved",
       "required_callables": [
-        "read.csv",
         "packageDescription",
-        "combn",
-        "head",
-        "packageVersion",
-        "write.csv"
+        "combn"
       ],
       "required_methods": [],
       "required_objects": [],
       "required_topics": [
-        "read.csv",
         "packageDescription",
-        "combn",
-        "head",
-        "packageVersion",
-        "write.csv"
+        "combn"
       ],
       "required_documents": [],
       "fixtures": [
         {
           "test_file": "tests/testthat/test-figures.R",
           "test_name": "the pinned RColorBrewer table is bundled without importing RColorBrewer",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "default figure policies validate and normalize",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "invalid figure policies raise typed errors with JSON pointers",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "the figure template is static reviewed code with explicit namespaces",
           "result": "pass",
           "run_at": "2026-10-02T16:53:19Z"
         },
@@ -3349,12 +2259,6 @@
         },
         {
           "test_file": "tests/testthat/test-figures.R",
-          "test_name": "redundant shapes and line types are distinct and stable",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
           "test_name": "accessibility checks report every simulation and record findings",
           "result": "pass",
           "run_at": "2026-10-02T16:53:19Z"
@@ -3378,7 +2282,7 @@
           "run_at": "2026-10-02T16:53:17Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:06Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'Part of R (GPL-2 | GPL-3)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -3392,22 +2296,12 @@
       "adapter_version": "0.3.0",
       "status": "approved",
       "required_callables": [
-        "read.csv",
-        "packageDescription",
-        "combn",
-        "head",
-        "packageVersion",
-        "write.csv"
+        "read.csv"
       ],
       "required_methods": [],
       "required_objects": [],
       "required_topics": [
-        "read.csv",
-        "packageDescription",
-        "combn",
-        "head",
-        "packageVersion",
-        "write.csv"
+        "read.csv"
       ],
       "required_documents": [],
       "fixtures": [
@@ -3418,7 +2312,7 @@
           "run_at": "2026-10-02T16:53:17Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:05Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'Part of R (GPL-2 | GPL-3)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -3433,21 +2327,13 @@
       "status": "approved",
       "required_callables": [
         "read.csv",
-        "packageDescription",
-        "combn",
-        "head",
-        "packageVersion",
-        "write.csv"
+        "packageVersion"
       ],
       "required_methods": [],
       "required_objects": [],
       "required_topics": [
         "read.csv",
-        "packageDescription",
-        "combn",
-        "head",
-        "packageVersion",
-        "write.csv"
+        "packageVersion"
       ],
       "required_documents": [],
       "fixtures": [
@@ -3464,7 +2350,7 @@
           "run_at": "2026-10-02T16:53:17Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:07Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'Part of R (GPL-2 | GPL-3)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -3492,36 +2378,6 @@
       "fixtures": [
         {
           "test_file": "tests/testthat/test-figures.R",
-          "test_name": "the pinned RColorBrewer table is bundled without importing RColorBrewer",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "default figure policies validate and normalize",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "invalid figure policies raise typed errors with JSON pointers",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "the figure template is static reviewed code with explicit namespaces",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "categorical palettes are verified, stable and never recycled",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
           "test_name": "ordered categories use discretized viridis in explicit order",
           "result": "pass",
           "run_at": "2026-10-02T16:53:19Z"
@@ -3533,43 +2389,13 @@
           "run_at": "2026-10-02T16:53:19Z"
         },
         {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "categorical NA values use the distinct NA colour",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "redundant shapes and line types are distinct and stable",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "accessibility checks report every simulation and record findings",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "patchwork composition keeps panel order, tags and guide policy",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "figures are saved at final size with a JSON sidecar",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "the synthetic demo runs in a generated project and labels its outputs",
           "result": "pass",
           "run_at": "2026-10-02T16:53:17Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:06Z",
+      "decided_at": "2026-10-02T18:54:11Z",
       "rights_basis": "Upstream license 'MIT + file LICENSE' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {

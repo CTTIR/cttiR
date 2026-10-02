@@ -94,3 +94,47 @@ test_that("nested source citations add exactly one directory prefix", {
   expect_identical(catalog_evidence_url(p, "R/api.R"), expected)
   expect_identical(catalog_evidence_url(p, "packages/nested/R/api.R"), expected)
 })
+
+test_that("the bundled catalog verifies and serializes identically in a C locale", {
+  skip_if_not_installed("callr")
+  parent <- new_parent()
+  source <- fixture_source(file.path(parent, "source"), "keep <- function(x = 1) x", "keep")
+  utf8 <- function(...) {
+    x <- rawToChar(as.raw(c(...)))
+    Encoding(x) <- "UTF-8"
+    x
+  }
+  title <- paste0("Tools by M", utf8(0xc3, 0xbc), "ller")
+  description <- c("Package: cttirFixtureA", "Version: 1.0.0", paste("Title:", title), "License: MIT")
+  writeBin(charToRaw(enc2utf8(paste0(paste(description, collapse = "\n"), "\n"))), file.path(source, "DESCRIPTION"))
+  local <- extract_source(source, "local-source:fixture", "local")
+  root <- find.package("cttiR")
+  result <- callr::r(function(root, store, source, parent) {
+    if (!grepl("^(C|POSIX)$", Sys.getlocale("LC_CTYPE")) || isTRUE(l10n_info()[["UTF-8"]])) return(NULL)
+    if (file.exists(file.path(root, "R", "conditions.R"))) {
+      pkgload::load_all(root, quiet = TRUE, export_all = TRUE, helpers = FALSE)
+    } else {
+      library(cttiR, lib.loc = dirname(root))
+    }
+    ns <- asNamespace("cttiR")
+    options(cttiR.catalog_dir = store)
+    plan <- cttiR::project("C locale", "methods", "Goal", parent, dry_run = TRUE)
+    extracted <- ns$extract_source(source, "local-source:fixture", "local")
+    list(id = ns$read_catalog(ns$resource_file("extdata", "api-catalog.json.gz"))$content_id,
+      search = nrow(cttiR::search("reflowR::reflow_init")), packages = nrow(cttiR::packages()),
+      resources = nrow(cttiR::resources("Seurat", limit = 5L)), plan = class(plan)[[1]],
+      answer = class(cttiR::ask("reflowR::reflow_init"))[[1]],
+      title = charToRaw(extracted$title), hash = ns$content_hash(ns$json_text(extracted)))
+  }, args = list(root = root, store = file.path(parent, "store"), source = source, parent = parent),
+  env = c(callr::rcmd_safe_env(), LC_ALL = "C", LANG = "C"))
+  skip_if(is.null(result), "The C locale is unavailable on this platform.")
+  expect_identical(result$id, read_catalog(resource_file("extdata", "api-catalog.json.gz"))$content_id)
+  expect_equal(result$search, 1L)
+  expect_gte(result$packages, 28L)
+  expect_gte(result$resources, 1L)
+  expect_identical(result$plan, "cttir_project")
+  expect_identical(result$answer, "cttir_answer")
+  expect_identical(result$title, charToRaw(title))
+  expect_identical(result$hash, content_hash(json_text(local)))
+  expect_false(file.exists(file.path(parent, "c_locale")))
+})

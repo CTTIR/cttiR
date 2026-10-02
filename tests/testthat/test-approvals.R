@@ -355,3 +355,95 @@ test_that("generated code is validated statically against the approved revision"
   expect_false(file.exists(sentinel))
   expect_false(file.exists(f$sentinel))
 })
+
+kb_context <- function(path = NULL) audit_context(path, "knowledge", FALSE, FALSE)
+
+test_that("KB-006 names an unavailable pinned snapshot instead of substituting silently", {
+  f <- local_update_fixture()
+  update()
+  p <- project("Pinned approvals", "methods", "Goal", f$parent)
+  pin <- read_project(p$path)$lock$catalog_id
+  expect_identical(audit_kb_approvals(kb_context(p$path))$evidence$pinned_catalog, "used")
+  expect_identical(audit_kb_approvals(kb_context())$evidence$pinned_catalog, "not_applicable")
+  writeLines("keep <- function(x = 5) x", file.path(f$source, "R", "api.R"))
+  update()
+  unlink(file.path(f$store, "snapshots", pin), recursive = TRUE)
+  result <- audit_kb_approvals(kb_context(p$path))
+  expect_identical(result$status, "warning")
+  expect_match(result$message, paste("pinned catalog snapshot", pin, "is unavailable"), fixed = TRUE)
+  expect_match(result$message, paste("computed against the active catalog", resolve_catalog()$content_id), fixed = TRUE)
+  expect_identical(result$evidence$pinned_catalog$pin, pin)
+  expect_identical(result$evidence$catalog_id, resolve_catalog()$content_id)
+})
+
+test_that("KB-006 reports stored and indexed documentation instead of claiming complete coverage", {
+  withr::local_options(cttiR.catalog_dir = file.path(new_parent(), "store"))
+  result <- audit_kb_approvals(kb_context())
+  expect_identical(result$status, "pass")
+  expect_false(grepl("complete coverage", result$message, fixed = TRUE))
+  docs <- result$evidence$documentation
+  expect_match(result$message, paste(docs$reference_topics_stored, "of", docs$reference_topics_indexed, "reference topics"),
+    fixed = TRUE)
+  expect_match(result$message, paste(docs$vignette_files_stored, "of", docs$vignette_files_indexed, "vignette files"),
+    fixed = TRUE)
+  expect_gt(docs$vignette_files_indexed, docs$vignette_files_stored)
+  expect_gt(docs$reference_topics_indexed, docs$reference_topics_stored)
+  expect_identical(length(docs$packages), result$evidence$approved_packages)
+  ggplot2 <- docs$packages$ggplot2
+  expect_gt(ggplot2$not_stored_reasons$not_required_for_approved_role, 0L)
+  record <- Filter(function(p) p$name == "ggplot2", resolve_catalog()$packages)[[1]]
+  counts <- approval_coverage(record, record$approvals[[1]])$counts
+  expect_identical(counts$vignette_files_indexed, ggplot2$vignette_files_indexed)
+  expect_identical(counts$reference_topics_stored, ggplot2$reference_topics_stored)
+})
+
+test_that("KB-006 fails when a standard workflow capability has no valid approval", {
+  withr::local_options(cttiR.catalog_dir = file.path(new_parent(), "store"))
+  catalog <- resolve_catalog()
+  baseline <- audit_kb_approvals(kb_context())
+  expect_identical(baseline$evidence$standard_without_approval, list())
+  expect_gte(baseline$evidence$standard_capabilities, 15L)
+  strip <- function(catalog, package, adapter = NULL) {
+    index <- which(vapply(catalog$packages, function(p) p$name == package, logical(1)))
+    keep <- function(a) !is.null(adapter) && !identical(a$adapter_id, adapter)
+    catalog$packages[[index]]$approvals <- Filter(keep, catalog$packages[[index]]$approvals)
+    catalog
+  }
+  local_mocked_bindings(resolve_catalog = function(path = NULL) strip(catalog, "patchwork"))
+  result <- audit_kb_approvals(kb_context())
+  expect_identical(result$status, "fail")
+  expect_match(result$message, "std.figures.accessible (patchwork)", fixed = TRUE)
+  expect_match(result$message, "approval-pending", fixed = TRUE)
+  local_mocked_bindings(resolve_catalog = function(path = NULL) strip(catalog, "survival", "standard.figures_accessible"))
+  survival <- audit_kb_approvals(kb_context())
+  expect_identical(survival$status, "fail")
+  expect_identical(unlist(survival$evidence$standard_without_approval), "std.figures.accessible:time_to_event (survival)")
+})
+
+test_that("bundled decisions are role-specific and cite fixtures that exercise them", {
+  decisions <- validate_approvals(read_document(resource_file("extdata", "approvals.json")))
+  catalog <- read_catalog(resource_file("extdata", "api-catalog.json.gz"))
+  records <- stats::setNames(catalog$packages, vapply(catalog$packages, function(p) p$name, character(1)))
+  for (d in decisions) expect_identical(approval_coverage(records[[d$package]], d)$state, "complete", info = d$approval_id)
+  ids <- vapply(decisions, function(d) d$approval_id, character(1))
+  by_id <- stats::setNames(decisions, ids)
+  callables <- function(id) unlist(by_id[[id]]$required_callables)
+  stats_scopes <- unique(lapply(decisions[startsWith(ids, "stats:")], function(d) sort(unlist(d$required_callables))))
+  expect_gte(length(stats_scopes), 8L)
+  expect_true("lm" %in% callables("stats:4.6.1:model_lm"))
+  expect_false(any(c("glm", "rexp", "quantile") %in% callables("stats:4.6.1:model_lm")))
+  expect_true(all(c("rexp", "optimize") %in% callables("stats:4.6.1:demo_synthetic")))
+  figures <- by_id[["survival:3.8-9:figures_accessible"]]
+  expect_setequal(unlist(figures$required_callables), c("survfit", "Surv"))
+  expect_identical(vapply(figures$fixtures, function(x) x$test_name, character(1)),
+    "the synthetic demo runs in a generated project and labels its outputs")
+  expect_false("survfit" %in% callables("survival:3.8-9:model_coxph"))
+  cited <- unique(unlist(lapply(decisions, function(d) lapply(d$fixtures, function(x) paste(basename(x$test_file), x$test_name, sep = "::")))))
+  known <- character()
+  for (file in unique(sub("::.*$", "", cited))) {
+    for (e in parse(test_path(file), keep.source = FALSE)) {
+      if (is.call(e) && identical(e[[1]], as.name("test_that"))) known <- c(known, paste(file, e[[2]], sep = "::"))
+    }
+  }
+  expect_identical(setdiff(cited, known), character())
+})

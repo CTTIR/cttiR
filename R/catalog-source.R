@@ -73,10 +73,13 @@ extract_source <- function(path, repository, revision, family = "local", documen
       abort_cttir("Unsupported distribution DESCRIPTION substitution.", "cttir_source_unavailable")
     }
   }
-  input <- textConnection(description)
+  # Pass the UTF-8 bytes through and mark them, so fields never depend on the
+  # session locale (translating to a C locale would lose characters).
+  input <- textConnection(description, encoding = "bytes")
   desc <- tryCatch(read.dcf(input), error = function(e) {
     abort_cttir("Invalid source DESCRIPTION.", "cttir_source_unavailable")
   }, finally = close(input))
+  Encoding(desc) <- ifelse(!is.na(desc) & validUTF8(desc), "UTF-8", "unknown")
   value <- function(field) if (field %in% colnames(desc)) unname(desc[1, field]) else ""
   package <- value("Package")
   if (!grepl("^[A-Za-z][A-Za-z0-9.]*$", package)) abort_cttir("Invalid source package name.", "cttir_source_unavailable")
@@ -241,7 +244,11 @@ read_catalog <- function(file) {
   on.exit(close(con), add = TRUE)
   text <- readBin(con, "raw", n = 25000001L)
   if (length(text) > 25000000L) abort_cttir("Catalog exceeds the read limit.", "cttir_catalog_corrupt")
-  catalog <- tryCatch(jsonlite::fromJSON(rawToChar(text), simplifyVector = FALSE), error = function(e) {
+  # Catalogs are UTF-8 bytes; an unmarked string would be translated from the
+  # session locale (e.g. C) and no longer reproduce its content ID.
+  text <- rawToChar(text)
+  Encoding(text) <- "UTF-8"
+  catalog <- tryCatch(jsonlite::fromJSON(text, simplifyVector = FALSE), error = function(e) {
     abort_cttir("Catalog cannot be decoded.", "cttir_catalog_corrupt")
   })
   id <- catalog$content_id

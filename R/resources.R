@@ -9,7 +9,10 @@
 #' @param path Optional exact project root whose resource snapshot must match.
 #' @param limit Positive integer row limit, at most 10000.
 #' @return A data frame with source, observed version, verification and maturity
-#'   fields. Filters combine with AND. Exact package names rank first.
+#'   fields, plus each observation's recorded `freshness` and `fetch_status` in
+#'   the selected snapshot (for example `source_unavailable` and
+#'   `unavailable_observation` after an optional index outage). Filters combine
+#'   with AND. Exact package names rank first.
 #' @export
 #' @examples
 #' resources("cytometry", limit = 3L)
@@ -40,7 +43,12 @@ resources <- function(query = NULL, domain = NULL, repository = NULL,
     where <- paste(where, "AND instr(lower(name || ' ' || purpose || ' ' || category), lower(?)) > 0")
     params <- append(params, list(query))
   }
-  sql <- paste0("SELECT *, 'not_rechecked' AS freshness FROM resource_search WHERE ", where)
+  # The bundled resource_search view predates the per-observation status columns;
+  # the same join also returns them, so stale rows stay visible after an outage.
+  rows <- paste("SELECT p.*, o.repository, o.subrepository, o.bioconductor_release, o.observed_version, o.license,",
+    "o.r_dependency, o.observed_at, o.source_url, o.freshness, o.fetch_status",
+    "FROM packages p JOIN observations o USING(package_id)")
+  sql <- paste0("SELECT * FROM (", rows, ") WHERE ", where)
   if (!is.null(query)) {
     sql <- paste(sql, "ORDER BY CASE WHEN lower(name) = lower(?) THEN 0 ELSE 1 END, name, repository LIMIT ?")
     params <- append(params, list(query))

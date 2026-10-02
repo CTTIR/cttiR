@@ -112,10 +112,36 @@ test_that("an unavailable required index fails both catalogs while an optional o
   stale <- active_db_query("SELECT fetch_status, freshness, observed_version FROM observations WHERE observation_id = 'cran:r:Seurat'")
   expect_equal(stale$fetch_status, "unavailable_observation")
   expect_equal(stale$freshness, "source_unavailable")
+  shown <- resources("Seurat", repository = "CRAN", limit = 1)
+  expect_equal(shown$freshness, "source_unavailable")
+  expect_equal(shown$fetch_status, "unavailable_observation")
   expect_equal(resources("Seurat", limit = 1)$lifecycle_status, "listed_in_selected_repository")
   bioc <- active_db_query("SELECT fetch_status FROM observations WHERE observation_id = 'bioc-3.23:r:SummarizedExperiment'")
   expect_equal(bioc$fetch_status, "listed_in_selected_index")
   expect_equal(update(mode = "remote", catalogs = "resources")$status, "partial")
+})
+
+test_that("resources() reports the observed freshness of each row, including stale ones", {
+  f <- resource_only_fixture()
+  bundled <- resources(limit = 10000)
+  expect_true(all(c("freshness", "fetch_status") %in% names(bundled)))
+  expect_false(any(bundled$freshness == "not_rechecked"))
+  expect_true(all(bundled$freshness == "snapshot_only_recheck_on_update"))
+  local_repository_mock()
+  update(mode = "remote", catalogs = "resources")
+  bioc_rows <- function() {
+    x <- resources(repository = "Bioconductor", limit = 10000)
+    x[is.na(x$subrepository) | x$subrepository == "bioc", , drop = FALSE]
+  }
+  expect_true(all(bioc_rows()$freshness == "remote_index_checked"))
+  local_repository_mock(fail = bioc_index_url())
+  withr::local_options(cttiR.resource_refresh = list(optional = "bioconductor"))
+  expect_equal(update(mode = "remote", catalogs = "resources")$status, "partial")
+  stale <- bioc_rows()
+  expect_gte(nrow(stale), 90L)
+  expect_true(all(stale$freshness == "source_unavailable"))
+  expect_true(all(stale$fetch_status == "unavailable_observation"))
+  expect_equal(unique(resources("Seurat", repository = "CRAN", limit = 1)$freshness), "remote_index_checked")
 })
 
 test_that("conflicting dual-repository listings are stored separately with a warning", {
@@ -264,4 +290,49 @@ test_that("Bioconductor release policy stages new releases without touching pins
   writeLines('{"schema_version": 1, "release": "release"}', file.path(f$store, "bioc-policy.json"))
   expect_error(bioc_release_policy(), class = "cttir_catalog_corrupt")
   expect_error(update(mode = "remote", dry_run = TRUE), class = "cttir_catalog_corrupt")
+})
+
+test_that("rollback restores the Bioconductor release policy together with both catalogs", {
+  f <- resource_only_fixture()
+  mock <- local_repository_mock(c(repository_files(), repository_files(release = "3.22")))
+  policy_file <- file.path(f$store, "bioc-policy.json")
+  first <- update(mode = "remote", catalogs = "resources")
+  expect_null(current_catalog_manifest()$bioc_release)
+  staged <- update(mode = "remote", catalogs = "resources", bioc_version = "3.22")
+  expect_true(staged$bioc_release$recorded)
+  expect_identical(current_catalog_manifest()$bioc_release, "3.22")
+  expect_equal(bioc_release_policy()$release, "3.22")
+  releases <- function() {
+    active_db_query("SELECT DISTINCT bioconductor_release AS r FROM observations WHERE bioconductor_release IS NOT NULL")$r
+  }
+  expect_setequal(releases(), c("3.22", "3.23"))
+  restored <- rollback_knowledge(first$new_id, dry_run = FALSE)
+  expect_true(restored$activation)
+  expect_true(is.na(restored$bioc_release$release))
+  expect_false(file.exists(policy_file))
+  expect_equal(bioc_release_policy()$release, "3.23")
+  expect_equal(bioc_release_policy()$source, "derived_from_running_r")
+  expect_false("3.22" %in% releases())
+  forward <- rollback_knowledge(staged$new_id, dry_run = FALSE)
+  expect_identical(forward$bioc_release$release, "3.22")
+  expect_equal(bioc_release_policy()$release, "3.22")
+  expect_equal(read_document(policy_file)$release, "3.22")
+  # The manifest stays authoritative when the policy mirror is lost.
+  unlink(policy_file)
+  mock$calls <- character()
+  expect_equal(update(mode = "remote", catalogs = "resources")$status, "unchanged")
+  expect_true(bioc_index_url("3.22") %in% mock$calls)
+  expect_equal(read_document(policy_file)$release, "3.22")
+  # A writer stopped between the pointer swap and the mirror is repaired on recovery.
+  skip_if_not_installed("callr")
+  unlink(policy_file)
+  previous <- validate_manifest(read_document(file.path(f$store, "manifests", paste0(first$new_id, ".json"))))
+  dir.create(file.path(f$store, "write-lock"))
+  write_bytes(json_text(list(pid = callr::r(function() Sys.getpid()), host = Sys.info()[["nodename"]])),
+    file.path(f$store, "write-lock", "owner.json"))
+  write_bytes(json_text(list(schema_version = 1L, previous = previous, candidate = current_catalog_manifest())),
+    file.path(f$store, "write-lock", "activation.json"))
+  expect_equal(rollback_knowledge(staged$new_id, dry_run = FALSE)$status, "unchanged")
+  expect_equal(read_document(policy_file)$release, "3.22")
+  expect_length(list.dirs(file.path(f$store, "recovered-locks"), recursive = FALSE), 1L)
 })

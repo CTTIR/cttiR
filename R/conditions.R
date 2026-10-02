@@ -37,10 +37,31 @@ resource_file <- function(...) {
 }
 
 json_text <- function(x, pretty = FALSE) {
+  # jsonlite converts unmarked strings from the session encoding. In an ASCII
+  # (C/POSIX) session any non-ASCII bytes can only be UTF-8 from package sources,
+  # so they are marked as such and content IDs match a UTF-8 session byte for byte.
+  info <- l10n_info()
+  if (!isTRUE(info[["UTF-8"]]) && !isTRUE(info[["Latin-1"]])) x <- mark_utf8(x)
   as.character(jsonlite::toJSON(x,
       auto_unbox = TRUE, null = "null",
       na = "null", pretty = pretty, digits = NA
     ))
+}
+
+mark_utf8 <- function(x) {
+  mark <- function(v) {
+    unmarked <- !is.na(v) & Encoding(v) == "unknown" & validUTF8(v)
+    if (any(unmarked)) {
+      fixed <- v[unmarked]
+      Encoding(fixed) <- "UTF-8"
+      v[unmarked] <- fixed
+    }
+    v
+  }
+  if (is.character(x)) x <- mark(x)
+  if (is.list(x) && length(x)) x[] <- lapply(x, mark_utf8)
+  if (!is.null(names(x))) names(x) <- mark(names(x))
+  x
 }
 
 content_hash <- function(x) digest::digest(x, algo = "sha256", serialize = FALSE)

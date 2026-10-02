@@ -74,14 +74,18 @@ document_inventory <- function(path, rights = NULL) {
 
 # Keep stored text only for the listed paths (for example the topics an approval
 # requires); other stored documents keep their inventory, hash and rights record
-# as `indexed_not_bundled` and can be stored again by a local update.
-compact_document_corpus <- function(corpus, keep) {
+# as `indexed_not_bundled`, with the reason, and can be stored again by a local update.
+compact_document_corpus <- function(corpus, keep, reason = "not_required_for_approved_role") {
   if (is.null(corpus)) return(corpus)
+  scalar_text(reason, "omission reason")
   corpus$documents <- lapply(corpus$documents, function(doc) {
     if (identical(doc$storage, "source_text") && !doc$path %in% keep) {
       doc$storage <- "indexed_not_bundled"
       doc$content <- NULL
       doc$content_sha256 <- NULL
+      doc$reason <- reason
+      doc$rights_note <- paste("Text omitted from the bundled corpus to bound its size, not for rights reasons;",
+        "the recorded rights basis still applies and a local update() with documentation_rights stores it again.")
     }
     doc
   })
@@ -90,6 +94,19 @@ compact_document_corpus <- function(corpus, keep) {
   corpus$coverage$metadata_only <- sum(!stored)
   corpus$coverage$indexed_not_bundled <- sum(vapply(corpus$documents, function(x) identical(x$storage, "indexed_not_bundled"), logical(1)))
   corpus
+}
+
+# Why a document's text is not stored (NA when it is). Bundled corpora compacted
+# before reasons were recorded dropped only text that no approved role required.
+document_storage_reason <- function(doc) {
+  if (!is.null(doc$reason)) return(doc$reason)
+  switch(as.character(doc$storage),
+    source_text = NA_character_,
+    indexed_not_bundled = "not_required_for_approved_role",
+    rights_not_confirmed = "rights_not_confirmed",
+    oversize_metadata_only = "oversize_document",
+    asset_metadata_only = "binary_or_rendered_asset",
+    "unknown")
 }
 
 validate_document_corpus <- function(corpus) {
@@ -102,6 +119,10 @@ validate_document_corpus <- function(corpus) {
     paths <- c(paths, doc$path)
     if (!is.character(doc$source_sha256) || length(doc$source_sha256) != 1L ||
         !grepl("^[0-9a-f]{64}$", doc$source_sha256)) fail()
+    reason <- doc$reason
+    if (!is.null(reason) && (!identical(doc$storage, "indexed_not_bundled") || !is.character(reason) || length(reason) != 1L)) {
+      fail()
+    }
     if (identical(doc$storage, "source_text")) {
       if (!is.character(doc$content) || length(doc$content) != 1L || is.na(doc$content) ||
           !identical(content_hash(doc$content), doc$content_sha256) || is.null(doc$rights_basis)) fail()
