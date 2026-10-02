@@ -130,6 +130,7 @@ extract_source <- function(path, repository, revision, family = "local", documen
     aliases <- sub("\\}$", "", sub("^\\\\alias\\{", "", hits))
     for (alias in aliases) topics[[alias]] <- list(path = rel, sha256 = hashes[[rel]])
   }
+  s3_methods <- static_s3_methods(ns, funcs, topics)
   corpus <- document_inventory(path, documentation_rights)
   for (doc in corpus$documents) hashes[[doc$path]] <- doc$source_sha256
   revision_hash <- content_hash(json_text(hashes[sort(names(hashes), method = "radix")]))
@@ -149,11 +150,12 @@ extract_source <- function(path, repository, revision, family = "local", documen
     name = package, version = value("Version"), title = value("Title"),
     description = value("Description"), license = value("License"), repository = repository,
     family = family, revision = revision, source_hash = revision_hash,
-    exports = entries, methods = methods, source_files = hashes, documentation_corpus = corpus,
+    exports = entries, methods = methods, s3_methods = s3_methods, source_files = hashes, documentation_corpus = corpus,
     coverage = list(
       exports = length(entries), documented = sum(vapply(entries, function(x) !is.null(x$documentation), logical(1))),
       resolved = sum(vapply(entries, function(x) x$verification == "static_api_verified", logical(1))),
-      approved = 0L
+      approved = 0L, s3_declared = length(s3_methods),
+      s3_resolved = sum(vapply(s3_methods, function(x) x$verification == "static_method_verified", logical(1)))
     ),
     freshness = "not_rechecked", extraction = "static_no_execution", static_assignment_version = 2L
   )

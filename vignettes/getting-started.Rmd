@@ -273,6 +273,14 @@ options(cttiR.sources = list(list(
 cttiR::update(sources = "reviewed-r-source", dry_run = TRUE)
 ```
 
+Newly indexed sources also retain S3 generic/class registrations and the exact
+statically resolved implementation signature, including non-exported methods.
+Search labels these as method declarations, never as public exports or installed
+dispatch proof. Duplicate registrations and unknown implementations remain
+unresolved. `packages()` reports S3 counts; historical snapshots without this
+index report missing counts rather than zero methods. Update differences report
+removed registrations and changed implementation evidence separately.
+
 This indexes the package subtree, not all distribution manuals or NEWS. A local
 registration is not proof of canonical origin, installed numerical equivalence,
 complete documentation coverage or workflow approval. Development versions and

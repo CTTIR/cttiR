@@ -17,7 +17,9 @@ search(query, packages = NULL, path = NULL, limit = 20L)
 }
 \value{
 A data frame containing stable IDs, revision, snippet, score and source
-evidence. Static API verification does not imply tested workflow approval.
+evidence. S3 declarations are labelled separately, including private
+implementations; static evidence does not establish installed dispatch or
+tested workflow approval.
 }
 \description{
 Search revision-scoped APIs and stored documentation

@@ -1,3 +1,11 @@
+# cttiR 0.0.17
+
+* Record static S3 registrations and implementation signatures separately from
+  exported generic signatures. Duplicate or unresolved registrations remain
+  unverified; method records do not establish installed dispatch or approval.
+* Show method coverage and searchable declarations, and report removed or
+  changed method evidence during catalog updates. Historical pins remain intact.
+
 # cttiR 0.0.16
 
 * Index explicitly registered local R distribution package sources without

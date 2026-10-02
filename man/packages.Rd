@@ -11,7 +11,8 @@ packages(path = NULL)
 }
 \value{
 A data frame of package identity, revision, extraction coverage and
-verification limits. No namespaces are loaded to inspect installed versions.
+verification limits. S3 counts are missing for historical snapshots without
+a method index. No namespaces are loaded to inspect installed versions.
 }
 \description{
 Inspect cataloged package revisions

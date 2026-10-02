@@ -76,6 +76,21 @@ api_diff <- function(before, after) {
       next
     }
     out[nrow(out) + 1L, ] <- list(name, "revision_changed", "", TRUE)
+    for (declaration in union(unlist(a$methods), unlist(b$methods))) {
+      if (!declaration %in% unlist(a$methods)) {
+        out[nrow(out) + 1L, ] <- list(name, "method_declaration_added", declaration, FALSE)
+      } else if (!declaration %in% unlist(b$methods)) {
+        out[nrow(out) + 1L, ] <- list(name, "method_declaration_removed", declaration, TRUE)
+      }
+    }
+    if (!is.null(a$s3_methods) && !is.null(b$s3_methods)) {
+      for (method in a$s3_methods) {
+        matches <- Filter(function(x) identical(x$declaration, method$declaration), b$s3_methods)
+        if (length(matches) == 1L && !identical(method, matches[[1]])) {
+          out[nrow(out) + 1L, ] <- list(name, "method_evidence_changed", method$declaration, TRUE)
+        }
+      }
+    }
     a_exports <- stats::setNames(a$exports, vapply(a$exports, function(x) x$name, character(1)))
     b_exports <- stats::setNames(b$exports, vapply(b$exports, function(x) x$name, character(1)))
     for (symbol in union(names(a_exports), names(b_exports))) {

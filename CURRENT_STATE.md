@@ -1,6 +1,29 @@
 # cttiR development state
 
-Updated: 2026-10-02. Version: 0.0.16. License: MIT.
+Updated: 2026-10-02. Version: 0.0.17. License: MIT.
+
+## Milestone 17: separate S3 method evidence
+
+New source extraction records each S3 generic/class registration, named/default
+implementation, exact static signature and source locator separately from public
+exports. Duplicate dispatch registrations and unresolved implementations remain
+unknown. Search labels method declarations without turning them into public
+exports; generic/export records remain separate. Historical catalogs lacking a
+method index show missing coverage, not zero. API differences report registration
+addition/removal and changed implementation evidence. S4/S7 semantics remain open.
+
+Real candidate counts: stats 448 S3 declarations/437 resolved, nlme 442/404,
+survival 199/184. Six selected installed registrations match canonical signatures
+and bodies. This is selected local evidence, not general dispatch or scientific
+approval. Installed nlme update/search, prior-project pin isolation and rollback
+pass; lme.formula is exported and also has a distinct method-declaration record.
+
+Local validation: 598 assertions, --as-cran zero errors/warnings and only New
+submission, coverage 85.74%, clean lint, installed foundation/method checks and
+pkgdown (CI=true) pass. Exact archive and evidence: milestone17-* under ignored
+artifacts/implementation. Full workflow readiness is still incomplete.
+
+Milestone 16 (ebe975c) passed all five hosted jobs in run 36996455746.
 
 ## Milestone 16: local R distribution source indexing
 

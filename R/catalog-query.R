@@ -33,7 +33,8 @@ resolve_catalog <- function(path = NULL) {
 #' Inspect cataloged package revisions
 #' @param path Optional exact project root selecting its pinned API catalog.
 #' @return A data frame of package identity, revision, extraction coverage and
-#'   verification limits. No namespaces are loaded to inspect installed versions.
+#'   verification limits. S3 counts are missing for historical snapshots without
+#'   a method index. No namespaces are loaded to inspect installed versions.
 #' @export
 packages <- function(path = NULL) {
   catalog <- resolve_catalog(path)
@@ -47,6 +48,8 @@ packages <- function(path = NULL) {
       pinned_version = if (is.null(path)) NA_character_ else p$version,
       exports = p$coverage$exports, resolved = p$coverage$resolved,
       documented = p$coverage$documented, approved = p$coverage$approved,
+      s3_declared = if (is.null(p$s3_methods)) NA_integer_ else length(p$s3_methods),
+      s3_resolved = if (is.null(p$s3_methods)) NA_integer_ else sum(vapply(p$s3_methods, function(x) x$verification == "static_method_verified", logical(1))),
       documents_discovered = if (is.null(p$documentation_corpus)) NA_integer_ else p$documentation_corpus$coverage$discovered,
       documents_stored = if (is.null(p$documentation_corpus)) NA_integer_ else p$documentation_corpus$coverage$stored,
       freshness = p$freshness, stringsAsFactors = FALSE
@@ -71,7 +74,9 @@ catalog_evidence_url <- function(package, path) {
 #' @param path Optional exact project root selecting its pinned API catalog.
 #' @param limit Positive integer result limit, at most 10000.
 #' @return A data frame containing stable IDs, revision, snippet, score and source
-#'   evidence. Static API verification does not imply tested workflow approval.
+#'   evidence. S3 declarations are labelled separately, including private
+#'   implementations; static evidence does not establish installed dispatch or
+#'   tested workflow approval.
 #' @export
 search <- function(query, packages = NULL, path = NULL, limit = 20L) {
   scalar_text(query, "query")
@@ -96,6 +101,10 @@ search <- function(query, packages = NULL, path = NULL, limit = 20L) {
       out[nrow(out) + 1L, ] <- list(hit$id, p$name, p$revision, "document", "",
         hit$snippet, 5, source,
         "documentation_indexed", FALSE)
+    }
+    for (hit in method_hits(p, query)) {
+      out[nrow(out) + 1L, ] <- list(hit$id, p$name, p$revision, "s3_method_declaration", hit$symbol,
+        hit$snippet, 8, catalog_evidence_url(p, hit$source_path), hit$verification, FALSE)
     }
     for (entry in p$exports) {
       symbol <- paste0(p$name, "::", entry$name)
