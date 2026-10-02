@@ -97,3 +97,10 @@ test_that("schema versions other than the supported one get a precise typed erro
   expect_identical(tree_hashes(p$path), before)
   expect_identical(migrate_spec(p$spec)$steps, list())
 })
+
+test_that("schema validation leaves the caller's random state unchanged", {
+  set.seed(42)
+  before <- get(".Random.seed", envir = globalenv())
+  validate_config(list(schema_version = 1L))
+  expect_identical(get(".Random.seed", envir = globalenv()), before)
+})

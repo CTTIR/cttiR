@@ -17,8 +17,8 @@ audit_standard_project <- function(context) {
 # vocabulary of R/code-validation.R. Constructs that also occur in the reviewed
 # code the package generates for the same file are not reported again.
 
-# Process and network connection constructors; forbidden_calls does not list
-# them, but project code must not open them either.
+# Process and network connection constructors (also in forbidden_calls), reported
+# under their own reason.
 audit_connection_calls <- c("pipe", "url", "socketConnection", "socketAccept", "serverSocket", "make.socket")
 
 # Knitr engines that run a shell. Other non-R engines cannot be checked statically.
@@ -201,7 +201,7 @@ audit_no_findings <- function() {
 audit_code_findings <- function(exprs, path, context) {
   out <- new.env(parent = emptyenv())
   out$rows <- list()
-  unsafe <- c(forbidden_calls, audit_connection_calls)
+  unsafe <- forbidden_calls
   loaders <- c("requireNamespace", "loadNamespace")
   locals <- audit_code_bindings(exprs)$locals
   resolved <- c(context$defined, locals, context$base, syntax_calls, "function", ":=")

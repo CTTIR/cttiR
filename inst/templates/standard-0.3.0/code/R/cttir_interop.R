@@ -22,6 +22,9 @@ ci_prefix <- function(prefix, x) if (length(x)) paste0(prefix, x) else character
 # Requires an installed package. With `version` (for example the pin from the
 # config/workflow.yml dependencies) the installed version must equal it exactly;
 # package_version() compares numerically, so "1.1-3" equals "1.1.3".
+# First n elements, for short messages (base indexing; no extra package API).
+ci_first <- function(x, n) x[seq_len(min(n, length(x)))]
+
 ci_need <- function(pkg, version = NULL) {
   if (!requireNamespace(pkg, quietly = TRUE)) {
     ci_stop("Package '", pkg, "' is required for this step but is not installed. Install it deliberately; nothing is installed automatically.")
@@ -437,8 +440,8 @@ ci_report_objects <- function(src, tgt) {
         if (!is.null(r$assay)) paste0(" (computed on ", src$vocabulary$experiment, " '", r$assay, "')") else "",
         if (moved) paste0("; moved to ", location, if (is.na(t$where)) "" else ", not the main experiment") else "",
         if (!identical(t$name, r$name)) paste0("; renamed -> '", t$name, "'") else "",
-        if (!identical(colnames(s_m), colnames(t_m))) paste0("; components ", paste(utils::head(colnames(s_m), 2L), collapse = ","),
-          " -> ", paste(utils::head(colnames(t_m), 2L), collapse = ",")) else ""))
+        if (!identical(colnames(s_m), colnames(t_m))) paste0("; components ", paste(ci_first(colnames(s_m), 2L), collapse = ","),
+          " -> ", paste(ci_first(colnames(t_m), 2L), collapse = ",")) else ""))
   }
   for (k in setdiff(seq_along(tgt$reduced), used)) {
     rows[[length(rows) + 1L]] <- ci_row(ci_reduction_field(tgt$reduced[[k]]), "transformed", "added in target; no source counterpart")
@@ -640,7 +643,7 @@ ci_select <- function(sel, keys, n, what) {
     if (is.null(keys)) ci_stop("The object has no ", what, " names; select ", what, " by position.")
     if (anyNA(sel) || anyDuplicated(sel)) ci_stop(what, " must be unique and not missing.")
     idx <- match(sel, keys)
-    if (anyNA(idx)) ci_stop("Unknown ", what, " keys (key mismatch): ", paste(utils::head(sel[is.na(idx)], 5L), collapse = ", "), ".")
+    if (anyNA(idx)) ci_stop("Unknown ", what, " keys (key mismatch): ", paste(ci_first(sel[is.na(idx)], 5L), collapse = ", "), ".")
   } else if (is.logical(sel)) {
     if (length(sel) != n || anyNA(sel)) ci_stop("A logical ", what, " selection must have one non-missing value per entry.")
     idx <- which(sel)
@@ -838,7 +841,7 @@ ci_pseudobulk <- function(obj_or_sce, donor, group, allow_single_cell_samples = 
   n_cells <- as.integer(tabulate(j, nbins = length(ids)))
   single <- ids[n_cells < 2L]
   if (length(single) && !allow_single_cell_samples) {
-    ci_stop(length(single), " pseudobulk sample(s) contain a single cell (", paste(utils::head(single, 5L), collapse = ", "),
+    ci_stop(length(single), " pseudobulk sample(s) contain a single cell (", paste(ci_first(single, 5L), collapse = ", "),
       if (length(single) > 5L) ", ..." else "", "). A one-cell sum is not a donor-level profile: check the donor column, ",
       "or set allow_single_cell_samples = TRUE after review.")
   }

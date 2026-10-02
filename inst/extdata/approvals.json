@@ -281,6 +281,12 @@
       "fixtures": [
         {
           "test_file": "tests/testthat/test-interop.R",
+          "test_name": "Seurat v5 Assay5 layers are inventoried with counts and data semantics",
+          "result": "pass",
+          "run_at": "2026-10-02T16:53:39Z"
+        },
+        {
+          "test_file": "tests/testthat/test-interop.R",
           "test_name": "SingleCellExperiment to Seurat conversion reports altExps, reductions and losses",
           "result": "pass",
           "run_at": "2026-10-02T16:53:39Z"
@@ -290,15 +296,9 @@
           "test_name": "observed Seurat 5.5.1 conversion behavior stays recorded in the registry",
           "result": "pass",
           "run_at": "2026-10-02T16:53:39Z"
-        },
-        {
-          "test_file": "tests/testthat/test-interop.R",
-          "test_name": "Seurat v5 Assay5 layers are inventoried with counts and data semantics",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T19:51:24Z",
       "rights_basis": "Upstream license 'MIT + file LICENSE' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -343,18 +343,6 @@
       "fixtures": [
         {
           "test_file": "tests/testthat/test-interop.R",
-          "test_name": "SingleCellExperiment to Seurat conversion reports altExps, reductions and losses",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
-        },
-        {
-          "test_file": "tests/testthat/test-interop.R",
-          "test_name": "observed Seurat 5.5.1 conversion behavior stays recorded in the registry",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
-        },
-        {
-          "test_file": "tests/testthat/test-interop.R",
           "test_name": "Seurat v5 Assay5 layers are inventoried with counts and data semantics",
           "result": "pass",
           "run_at": "2026-10-02T16:53:39Z"
@@ -364,9 +352,21 @@
           "test_name": "donor-level pseudobulk sums raw counts and refuses too few donors",
           "result": "pass",
           "run_at": "2026-10-02T16:53:39Z"
+        },
+        {
+          "test_file": "tests/testthat/test-interop.R",
+          "test_name": "SingleCellExperiment to Seurat conversion reports altExps, reductions and losses",
+          "result": "pass",
+          "run_at": "2026-10-02T16:53:39Z"
+        },
+        {
+          "test_file": "tests/testthat/test-interop.R",
+          "test_name": "observed Seurat 5.5.1 conversion behavior stays recorded in the registry",
+          "result": "pass",
+          "run_at": "2026-10-02T16:53:39Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T19:51:24Z",
       "rights_basis": "Upstream license 'MIT + file LICENSE' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -380,19 +380,19 @@
       "adapter_version": "1.0.0",
       "status": "approved",
       "required_callables": [
-        "altExpNames",
-        "altExp",
         "reducedDimNames",
         "reducedDim",
+        "altExpNames",
+        "altExp",
         "mainExpName"
       ],
       "required_methods": [],
       "required_objects": [],
       "required_topics": [
-        "altExpNames",
-        "altExp",
         "reducedDimNames",
         "reducedDim",
+        "altExpNames",
+        "altExp",
         "mainExpName"
       ],
       "required_documents": [
@@ -443,7 +443,7 @@
           "run_at": "2026-10-02T16:53:39Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T19:51:24Z",
       "rights_basis": "Upstream license 'GPL-3' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -479,6 +479,12 @@
       "fixtures": [
         {
           "test_file": "tests/testthat/test-interop.R",
+          "test_name": "Seurat v5 Assay5 layers are inventoried with counts and data semantics",
+          "result": "pass",
+          "run_at": "2026-10-02T16:53:39Z"
+        },
+        {
+          "test_file": "tests/testthat/test-interop.R",
           "test_name": "SingleCellExperiment to Seurat conversion reports altExps, reductions and losses",
           "result": "pass",
           "run_at": "2026-10-02T16:53:39Z"
@@ -488,15 +494,9 @@
           "test_name": "observed Seurat 5.5.1 conversion behavior stays recorded in the registry",
           "result": "pass",
           "run_at": "2026-10-02T16:53:39Z"
-        },
-        {
-          "test_file": "tests/testthat/test-interop.R",
-          "test_name": "Seurat v5 Assay5 layers are inventoried with counts and data semantics",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T19:51:24Z",
       "rights_basis": "Upstream license 'GPL-3' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -966,11 +966,11 @@
         "geom_line",
         "stat_summary",
         "geom_point",
-        "scale_colour_manual",
-        "scale_shape_manual",
         "waiver",
         "scale_colour_viridis_c",
         "scale_colour_gradientn",
+        "scale_colour_manual",
+        "scale_shape_manual",
         "ggsave"
       ],
       "required_methods": [],
@@ -986,11 +986,11 @@
         "geom_line",
         "stat_summary",
         "geom_point",
-        "scale_colour_manual",
-        "scale_shape_manual",
         "waiver",
         "scale_colour_viridis_c",
         "scale_colour_gradientn",
+        "scale_colour_manual",
+        "scale_shape_manual",
         "ggsave"
       ],
       "required_documents": [
@@ -1013,12 +1013,6 @@
         },
         {
           "test_file": "tests/testthat/test-figures.R",
-          "test_name": "patchwork composition keeps panel order, tags and guide policy",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
           "test_name": "figures are saved at final size with a JSON sidecar",
           "result": "pass",
           "run_at": "2026-10-02T16:53:19Z"
@@ -1028,9 +1022,15 @@
           "test_name": "the synthetic demo runs in a generated project and labels its outputs",
           "result": "pass",
           "run_at": "2026-10-02T16:53:17Z"
+        },
+        {
+          "test_file": "tests/testthat/test-figures.R",
+          "test_name": "patchwork composition keeps panel order, tags and guide policy",
+          "result": "pass",
+          "run_at": "2026-10-02T16:53:19Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T19:51:24Z",
       "rights_basis": "Upstream license 'MIT + file LICENSE' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -1448,12 +1448,6 @@
       "fixtures": [
         {
           "test_file": "tests/testthat/test-figures.R",
-          "test_name": "patchwork composition keeps panel order, tags and guide policy",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
           "test_name": "figures are saved at final size with a JSON sidecar",
           "result": "pass",
           "run_at": "2026-10-02T16:53:19Z"
@@ -1463,9 +1457,15 @@
           "test_name": "the synthetic demo runs in a generated project and labels its outputs",
           "result": "pass",
           "run_at": "2026-10-02T16:53:17Z"
+        },
+        {
+          "test_file": "tests/testthat/test-figures.R",
+          "test_name": "patchwork composition keeps panel order, tags and guide policy",
+          "result": "pass",
+          "run_at": "2026-10-02T16:53:19Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T19:51:24Z",
       "rights_basis": "Upstream license 'MIT + file LICENSE' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -1755,9 +1755,15 @@
           "test_name": "the synthetic demo runs in a generated project and labels its outputs",
           "result": "pass",
           "run_at": "2026-10-02T16:53:17Z"
+        },
+        {
+          "test_file": "tests/testthat/test-figures.R",
+          "test_name": "patchwork composition keeps panel order, tags and guide policy",
+          "result": "pass",
+          "run_at": "2026-10-02T16:53:19Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T19:51:24Z",
       "rights_basis": "Upstream license 'Part of R (GPL-2 | GPL-3)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -2241,12 +2247,6 @@
         },
         {
           "test_file": "tests/testthat/test-figures.R",
-          "test_name": "ordered categories use discretized viridis in explicit order",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
           "test_name": "continuous and diverging scales keep explicit limits, midpoint and NA colour",
           "result": "pass",
           "run_at": "2026-10-02T16:53:19Z"
@@ -2265,12 +2265,6 @@
         },
         {
           "test_file": "tests/testthat/test-figures.R",
-          "test_name": "patchwork composition keeps panel order, tags and guide policy",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
           "test_name": "figures are saved at final size with a JSON sidecar",
           "result": "pass",
           "run_at": "2026-10-02T16:53:19Z"
@@ -2280,9 +2274,21 @@
           "test_name": "the synthetic demo runs in a generated project and labels its outputs",
           "result": "pass",
           "run_at": "2026-10-02T16:53:17Z"
+        },
+        {
+          "test_file": "tests/testthat/test-figures.R",
+          "test_name": "patchwork composition keeps panel order, tags and guide policy",
+          "result": "pass",
+          "run_at": "2026-10-02T16:53:19Z"
+        },
+        {
+          "test_file": "tests/testthat/test-figures.R",
+          "test_name": "ordered categories use discretized viridis in explicit order",
+          "result": "pass",
+          "run_at": "2026-10-02T16:53:19Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T19:51:24Z",
       "rights_basis": "Upstream license 'Part of R (GPL-2 | GPL-3)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -2378,12 +2384,6 @@
       "fixtures": [
         {
           "test_file": "tests/testthat/test-figures.R",
-          "test_name": "ordered categories use discretized viridis in explicit order",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
           "test_name": "continuous and diverging scales keep explicit limits, midpoint and NA colour",
           "result": "pass",
           "run_at": "2026-10-02T16:53:19Z"
@@ -2393,9 +2393,15 @@
           "test_name": "the synthetic demo runs in a generated project and labels its outputs",
           "result": "pass",
           "run_at": "2026-10-02T16:53:17Z"
+        },
+        {
+          "test_file": "tests/testthat/test-figures.R",
+          "test_name": "ordered categories use discretized viridis in explicit order",
+          "result": "pass",
+          "run_at": "2026-10-02T16:53:19Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T19:51:24Z",
       "rights_basis": "Upstream license 'MIT + file LICENSE' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {

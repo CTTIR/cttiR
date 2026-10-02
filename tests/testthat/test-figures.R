@@ -70,7 +70,7 @@ test_that("default figure policies validate and normalize", {
   expect_identical(policy$categorical_palette, "Dark2")
   expect_identical(policy$diverging_palette, "BrBG")
   expect_identical(policy$checks, c("protanopia", "deuteranopia", "tritanopia", "grayscale"))
-  expect_identical(policy$na_colour, "#808080")
+  expect_identical(policy$na_colour, "#2B2B2B")
   expect_identical(policy$pinned_provider_version, "RColorBrewer 1.1-3")
   expect_identical(policy$palette_metadata$categorical$maxcolors, 8L)
   expect_identical(policy$palette_metadata$categorical$category, "qual")

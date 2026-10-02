@@ -16,6 +16,23 @@ normalize_schema_value <- function(x, schema) {
   x
 }
 
+# jsonvalidate's V8 engine initialises R's random number generator, which would
+# create or advance .Random.seed in the user's workspace. Validation restores the
+# caller's random state so it has no side effects.
+json_schema_validate <- function(...) {
+  workspace <- globalenv()
+  had <- exists(".Random.seed", envir = workspace, inherits = FALSE)
+  saved <- if (had) get(".Random.seed", envir = workspace, inherits = FALSE) else NULL
+  on.exit({
+    if (had) {
+      assign(".Random.seed", saved, envir = workspace)
+    } else if (exists(".Random.seed", envir = workspace, inherits = FALSE)) {
+      rm(".Random.seed", envir = workspace)
+    }
+  })
+  jsonvalidate::json_validate(...)
+}
+
 validate_document <- function(x, kind) {
   check_tree(x)
   schema_path <- resource_file("schema", paste0(kind, ".schema.json"))
@@ -25,7 +42,7 @@ validate_document <- function(x, kind) {
   if (nchar(encoded, type = "bytes") > 1048576L) {
     abort_cttir("Configuration exceeds 1 MiB.")
   }
-  valid <- jsonvalidate::json_validate(encoded, schema_path, engine = "ajv", verbose = TRUE)
+  valid <- json_schema_validate(encoded, schema_path, engine = "ajv", verbose = TRUE)
   if (!isTRUE(valid)) {
     abort_cttir(paste("Invalid", kind, "document; check field names, types and allowed values."),
       "cttir_schema_error", "schema_validation",
@@ -49,6 +66,7 @@ validate_config <- function(config) {
   if (is.character(config)) config <- read_document(config)
   check_schema_version(config, "configuration")
   config <- validate_document(config, "config")
+  check_empty_strings(config)
   for (key in c("publications", "data_sources", "packages")) {
     field <- if (key == "packages") "name" else "id"
     ids <- vapply(config[[key]], function(x) {

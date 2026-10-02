@@ -11,6 +11,8 @@ environment_requirements <- function(dependencies) {
   rows <- list()
   for (dep in dependencies) {
     if (!is.character(dep$package) || length(dep$package) != 1L || dep$package %in% base_r_packages) next
+    # Optional pins (e.g. modality interop packages) are recorded but not required.
+    if (identical(dep$required, FALSE)) next
     rows[[dep$package]] <- list(package = dep$package, pinned = dep$version)
   }
   rows[sort(names(rows), method = "radix")]

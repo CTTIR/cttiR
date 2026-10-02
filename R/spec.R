@@ -189,7 +189,7 @@ default_spec <- function(name, type, goal, slug, provenance = NULL) {
       continuous_palette = "viridis", categorical_provider = "RColorBrewer",
       categorical_palette = "Dark2", diverging_palette = "BrBG", colourblind_friendly_only = TRUE,
       redundant_encoding_required = TRUE, panel_composer = "patchwork",
-      checks = as.list(c("protanopia", "deuteranopia", "tritanopia", "grayscale")), na_colour = "#808080"
+      checks = as.list(c("protanopia", "deuteranopia", "tritanopia", "grayscale")), na_colour = "#2B2B2B"
     ),
     ecosystem = list(seurat_for_relevant_gaps = TRUE, require_role_approval = TRUE, modality = "unknown")
   )

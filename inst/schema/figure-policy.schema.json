@@ -62,7 +62,7 @@
     },
     "na_colour": {
       "type": "string",
-      "default": "#808080"
+      "default": "#2B2B2B"
     }
   }
 }

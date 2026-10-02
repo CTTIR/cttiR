@@ -52,7 +52,7 @@ figure_policy_defaults <- function() {
     continuous_palette = "viridis", categorical_provider = "RColorBrewer",
     categorical_palette = "Dark2", diverging_palette = "BrBG", colourblind_friendly_only = TRUE,
     redundant_encoding_required = TRUE, panel_composer = "patchwork",
-    checks = c("protanopia", "deuteranopia", "tritanopia", "grayscale"), na_colour = "#808080"
+    checks = c("protanopia", "deuteranopia", "tritanopia", "grayscale"), na_colour = "#2B2B2B"
   )
 }
 

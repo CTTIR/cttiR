@@ -27,8 +27,10 @@ audit_repairs <- function() {
       },
       apply = function(context) {
         records <- recover_transactions(audit_root(context))
-        list(message = paste(length(records), "interrupted transactions were rolled back to their verified preimages."),
-          journal = vapply(records, function(x) x$journal, character(1)))
+        released <- vapply(records, function(x) identical(x$status, "released_stale_lock"), logical(1))
+        parts <- c(if (any(!released)) paste(sum(!released), "interrupted transactions were rolled back to their verified preimages."),
+          if (any(released)) "A stale writer lock without a journal was released; no project file had been changed.")
+        list(message = paste(parts, collapse = " "), journal = vapply(records, function(x) x$journal, character(1)))
       }
     ),
     restore_missing_managed = list(

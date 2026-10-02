@@ -737,8 +737,10 @@ audit_prj_pins <- function(context) {
       resolve_catalog(p$path)
     }
     resources(path = p$path, limit = 1L)
-    environment <- audit_or(p$lock$environment_status, "unknown")
-    if (audit_readiness_at_least(context, "environment_ready") && !environment %in% c("ready", "materialized")) {
+    # The environment state is derived on this machine (renv.lock and project
+    # library), as readiness derives it; locks no longer record it.
+    environment <- environment_status(p$lock$dependencies, p$path, p$spec$workflow$environment)$state
+    if (audit_readiness_at_least(context, "environment_ready") && !identical(environment, "environment_ready")) {
       status <- "fail"
       notes <- c(notes, "The declared readiness requires a materialized dependency environment.")
     }
@@ -895,8 +897,11 @@ audit_prj_journals <- function(context) {
   plan <- transaction_recovery_plan(root)
   if (!length(plan$journals)) return(audit_result("pass", "No interrupted transaction journals."))
   paths <- unique(unlist(lapply(plan$journals, function(x) vapply(x$rows, function(r) r$path, character(1)))))
-  message <- paste0(length(plan$journals),
-    " interrupted transactions can be rolled back from verified backups with audit(repair = TRUE).")
+  stale <- vapply(plan$journals, function(x) identical(x$kind, "stale_writer_lock"), logical(1))
+  parts <- c(
+    if (any(!stale)) paste0(sum(!stale), " interrupted transactions can be rolled back from verified backups with audit(repair = TRUE)."),
+    if (any(stale)) "A stale writer lock without a journal can be released with audit(repair = TRUE); no file was changed.")
+  message <- paste(parts, collapse = " ")
   journals <- basename(vapply(plan$journals, function(x) x$dir, character(1)))
   audit_result("warning", message, list(journals = journals, paths = paths))
 }

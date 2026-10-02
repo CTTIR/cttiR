@@ -310,7 +310,7 @@ runtime_probe <- function(endpoint, model) {
   content <- response$message$content
   valid <- isTRUE(response$done) && identical(response$model, model) && is.character(content) &&
     length(content) == 1L && is.null(response$message$tool_calls) &&
-    isTRUE(jsonvalidate::json_validate(content, json_text(schema), engine = "ajv"))
+    isTRUE(json_schema_validate(content, json_text(schema), engine = "ajv"))
   if (!valid) abort_cttir("The model did not pass the structured-output probe.", "cttir_runtime_unavailable", "probe_failed")
   list(
     state = "pass", elapsed_seconds = unname(proc.time()[["elapsed"]] - started),

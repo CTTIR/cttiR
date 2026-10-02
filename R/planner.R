@@ -207,7 +207,7 @@ planner_validate <- function(content, schema = planner_schema(registry), registr
     return(reject("invalid_json: the reply was not one complete JSON object"))
   }
   if (anyDuplicated(names(parsed))) return(reject("duplicate_keys: each key may appear once"))
-  valid <- jsonvalidate::json_validate(content, json_text(schema), engine = "ajv", verbose = TRUE)
+  valid <- json_schema_validate(content, json_text(schema), engine = "ajv", verbose = TRUE)
   errors <- character()
   if (!isTRUE(valid)) {
     details <- attr(valid, "errors")

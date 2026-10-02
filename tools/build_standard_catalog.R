@@ -489,23 +489,39 @@ if (identical(args, "build")) {
         m <- Filter(function(x) identical(x$implementation, n), entry$s3_methods)
         if (length(m)) exports[[sub("^.*::", "", m[[1]]$generic)]]$documentation$path
       }))))
+    all_paths <- vapply(entry$documentation_corpus$documents, function(d) d$path, character(1))
     package_docs <- grep("^(DESCRIPTION([.]in)?|NAMESPACE|README([.].*)?|NEWS([.].*)?|CHANGELOG([.].*)?|LICENSE([.].*)?|LICENCE([.].*)?|inst/CITATION|inst/NEWS[.]Rd)$",
-      vapply(entry$documentation_corpus$documents, function(d) d$path, character(1)), value = TRUE)
-    entry$documentation_corpus <- ns$compact_document_corpus(entry$documentation_corpus, c(paths, package_docs))
+      all_paths, value = TRUE)
+    # Vignette sources of approved revisions are stored (spec 30); an inst/doc
+    # copy is kept only when vignettes/ has no source of the same name.
+    vignette <- ns$vignette_source_name(all_paths)
+    in_vignettes <- !is.na(vignette) & startsWith(all_paths, "vignettes/")
+    vignette_docs <- if (length(mine)) {
+      all_paths[!is.na(vignette) & (in_vignettes | !vignette %in% vignette[in_vignettes])]
+    } else {
+      character()
+    }
+    entry$documentation_corpus <- ns$compact_document_corpus(entry$documentation_corpus, c(paths, package_docs, vignette_docs))
     entries[[name]] <- entry
   }
 
   decisions_all <- ns$approval_decisions()
   old_file <- file.path("inst", "extdata", "api-catalog.json.gz")
   before <- ns$read_catalog(old_file)
-  packages <- lapply(before$packages, function(p) ns$attach_approvals(p, decisions_all))
+  # A rebuild replaces the standard family recorded by an earlier build; every
+  # other package record is carried over unchanged apart from its approvals.
+  previous_standard <- unlist(lapply(Filter(function(x) identical(x$family, "standard"), before$inventory),
+    function(x) vapply(x$sources, function(s) s$package, character(1))))
+  kept <- Filter(function(p) !p$name %in% previous_standard, before$packages)
+  packages <- lapply(kept, function(p) ns$attach_approvals(p, decisions_all))
   names(packages) <- vapply(packages, function(p) p$name, character(1))
   for (name in names(entries)) {
     if (!is.null(packages[[name]])) stop("Standard package collides with a cataloged package: ", name)
     packages[[name]] <- ns$attach_approvals(entries[[name]], decisions_all)
   }
   sources <- lapply(entries, function(e) list(package = e$name, version = e$version, revision = e$revision, repository = e$repository))
-  inventory <- c(before$inventory, list(list(family = "standard", built_at = cache$built_at, sources = sources)))
+  inventory <- c(Filter(function(x) !identical(x$family, "standard"), before$inventory),
+    list(list(family = "standard", built_at = cache$built_at, sources = sources)))
   history <- file.path("inst", "extdata", "history", paste0(before$content_id, ".json.gz"))
   if (!file.exists(history)) stopifnot(file.copy(old_file, history))
   candidate <- tempfile(fileext = ".json.gz")

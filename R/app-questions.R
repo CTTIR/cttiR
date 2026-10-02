@@ -74,7 +74,7 @@ app_question_order <- function(questions) {
 
 app_questions_check <- function(doc) {
   fail <- function(message) abort_cttir(message, "cttir_schema_error", "invalid_question_registry")
-  valid <- jsonvalidate::json_validate(json_text(doc), resource_file("schema", "questions.schema.json"),
+  valid <- json_schema_validate(json_text(doc), resource_file("schema", "questions.schema.json"),
     engine = "ajv", verbose = TRUE)
   if (!isTRUE(valid)) fail("The questionnaire registry does not match its schema.")
   sections <- vapply(doc$sections, function(s) s$id, character(1))
