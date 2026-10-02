@@ -1,0 +1,495 @@
+{
+  "schema_version": 1,
+  "family": "bioc_seurat",
+  "capabilities": [
+    {
+      "id": "bioc.container.summarized_experiment",
+      "family": "bioconductor",
+      "stage": "container",
+      "title": "SummarizedExperiment container for coordinated assays and feature/sample metadata",
+      "packages": ["SummarizedExperiment", "S4Vectors"],
+      "adapter": {"id": "interop.bioc_s4", "version": "1.0.0"},
+      "applies": {"modality": ["bulk_rna", "proteomics", "cytometry"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "keywords": {
+        "en": ["SummarizedExperiment", "assay matrix", "count matrix", "RNA-seq", "bulk RNA-seq", "feature metadata", "sample metadata"],
+        "de": ["SummarizedExperiment", "Assay-Matrix", "Zaehlmatrix", "RNA-Seq", "Bulk-RNA-Seq", "Merkmalsmetadaten", "Probenmetadaten"]
+      },
+      "infrastructure": true,
+      "specialist": false,
+      "requirements": [
+        "Use public accessors (assay, rowData, colData, metadata); never edit slots directly.",
+        "Do not call as.data.frame() or as.matrix() on a whole assay; use bounded slices, block processing or summaries.",
+        "Track whether each assay holds counts or transformed abundance; count models need raw counts.",
+        "Record design, contrast and biological replicate metadata in colData before modelling.",
+        "Validate class validity with methods::validObject() before and after manipulation."
+      ],
+      "status": "adapter_tested"
+    },
+    {
+      "id": "bioc.container.single_cell_experiment",
+      "family": "bioconductor",
+      "stage": "container",
+      "title": "SingleCellExperiment container with reduced dimensions and alternative experiments",
+      "packages": ["SingleCellExperiment", "SummarizedExperiment", "S4Vectors"],
+      "adapter": {"id": "interop.bioc_s4", "version": "1.0.0"},
+      "applies": {"modality": ["single_cell", "cytometry"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "keywords": {
+        "en": ["SingleCellExperiment", "single-cell", "scRNA-seq", "reducedDims", "altExps", "cell metadata"],
+        "de": ["SingleCellExperiment", "Einzelzell", "Einzelzell-RNA-Seq", "Dimensionsreduktion", "Zellmetadaten"]
+      },
+      "infrastructure": true,
+      "specialist": false,
+      "requirements": [
+        "Cells are not biological replicates; donor/sample-level inference only.",
+        "Keep donor, sample, batch and condition columns in colData for every cell.",
+        "Preserve sparse or delayed assay backing; no unbounded dense realization.",
+        "Report reducedDims and altExps explicitly when converting; conversions are checked field by field."
+      ],
+      "status": "adapter_tested"
+    },
+    {
+      "id": "bioc.container.spatial_experiment",
+      "family": "bioconductor",
+      "stage": "container",
+      "title": "SpatialExperiment container for spatial coordinates and image metadata",
+      "packages": ["SpatialExperiment"],
+      "adapter": null,
+      "applies": {"modality": ["spatial"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "keywords": {
+        "en": ["SpatialExperiment", "spatial transcriptomics", "Visium", "spot coordinates", "tissue image"],
+        "de": ["SpatialExperiment", "raeumliche Transkriptomik", "Visium", "Spotkoordinaten", "Gewebebild"]
+      },
+      "infrastructure": true,
+      "specialist": false,
+      "requirements": [
+        "Keep spatial coordinates, image resolution/scale factors and sample identity together.",
+        "Do not stretch or resample images to fit plots; preserve physical aspect ratio.",
+        "Not adapter-tested in this release: catalog advice only."
+      ],
+      "status": "candidate"
+    },
+    {
+      "id": "bioc.container.multi_assay_experiment",
+      "family": "bioconductor",
+      "stage": "container",
+      "title": "MultiAssayExperiment for explicit cross-assay sample mappings",
+      "packages": ["MultiAssayExperiment"],
+      "adapter": null,
+      "applies": {"modality": ["multiomics"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "keywords": {
+        "en": ["MultiAssayExperiment", "multi-omics", "multiomics", "sample map", "integrated assays"],
+        "de": ["MultiAssayExperiment", "Multi-Omics", "Multiomics", "Probenzuordnung", "integrierte Assays"]
+      },
+      "infrastructure": true,
+      "specialist": false,
+      "requirements": [
+        "Align samples and features explicitly through the sample map; never by row position.",
+        "Prevent information leakage across views when modelling.",
+        "Not installed or adapter-tested in this release: catalog advice only."
+      ],
+      "status": "candidate"
+    },
+    {
+      "id": "bioc.container.qfeatures",
+      "family": "bioconductor",
+      "stage": "container",
+      "title": "QFeatures for linked quantitative proteomics assay levels",
+      "packages": ["QFeatures"],
+      "adapter": null,
+      "applies": {"modality": ["proteomics"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "keywords": {
+        "en": ["QFeatures", "proteomics", "peptide", "protein quantification", "mass spectrometry"],
+        "de": ["QFeatures", "Proteomik", "Peptid", "Proteinquantifizierung", "Massenspektrometrie"]
+      },
+      "infrastructure": true,
+      "specialist": false,
+      "requirements": [
+        "Preserve assay levels and peptide-to-protein mapping.",
+        "State missingness/dropout assumptions before imputation or aggregation.",
+        "Not installed or adapter-tested in this release: catalog advice only."
+      ],
+      "status": "candidate"
+    },
+    {
+      "id": "bioc.container.tree_summarized_experiment",
+      "family": "bioconductor",
+      "stage": "container",
+      "title": "TreeSummarizedExperiment for hierarchical features such as taxonomies",
+      "packages": ["TreeSummarizedExperiment"],
+      "adapter": null,
+      "applies": {"modality": ["microbiome"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "keywords": {
+        "en": ["TreeSummarizedExperiment", "microbiome", "taxonomy", "phylogenetic tree", "16S"],
+        "de": ["TreeSummarizedExperiment", "Mikrobiom", "Taxonomie", "phylogenetischer Baum", "16S"]
+      },
+      "infrastructure": true,
+      "specialist": false,
+      "requirements": [
+        "Preserve composition, tree and taxonomy together with the actual sampling unit.",
+        "Not installed or adapter-tested in this release: catalog advice only."
+      ],
+      "status": "candidate"
+    },
+    {
+      "id": "bioc.se.tidy_view",
+      "family": "bioconductor",
+      "stage": "bridge",
+      "title": "Bounded long view of an explicit SummarizedExperiment assay slice",
+      "packages": ["SummarizedExperiment", "S4Vectors"],
+      "adapter": {"id": "interop.se_tidy_view", "version": "1.0.0"},
+      "applies": {"modality": ["bulk_rna", "single_cell", "proteomics", "cytometry"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "keywords": {
+        "en": ["tidy view", "long format", "assay slice", "tidy SummarizedExperiment", "preview assay values"],
+        "de": ["Tidy-Ansicht", "Langformat", "Assay-Ausschnitt", "Assaywerte anzeigen"]
+      },
+      "infrastructure": true,
+      "specialist": false,
+      "requirements": [
+        "Select features and samples explicitly; requests above max_cells values are refused.",
+        "Only the selected slice is realized; the stored sparse or delayed assay keeps its class.",
+        "Rows keep feature/sample keys and the object's original order; omitted metadata is listed in the view attributes.",
+        "The view is a lossy data.frame; use ci_conversion_report() to see which fields were lost."
+      ],
+      "status": "adapter_tested"
+    },
+    {
+      "id": "bioc.tidy_bridge.tidy_summarized_experiment",
+      "family": "bioconductor",
+      "stage": "bridge",
+      "title": "tidySummarizedExperiment dplyr-style interface",
+      "packages": ["tidySummarizedExperiment"],
+      "adapter": null,
+      "applies": {"modality": ["bulk_rna", "proteomics"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "keywords": {
+        "en": ["tidySummarizedExperiment", "dplyr SummarizedExperiment", "tidyverse Bioconductor"],
+        "de": ["tidySummarizedExperiment", "dplyr SummarizedExperiment", "Tidyverse Bioconductor"]
+      },
+      "infrastructure": true,
+      "specialist": false,
+      "requirements": [
+        "Version-specific methods must be tested to preserve S4 semantics before use; dplyr compatibility alone is not proof.",
+        "Not installed or adapter-tested in this release: catalog advice only."
+      ],
+      "status": "candidate"
+    },
+    {
+      "id": "bioc.tidy_bridge.tidy_single_cell_experiment",
+      "family": "bioconductor",
+      "stage": "bridge",
+      "title": "tidySingleCellExperiment dplyr-style interface",
+      "packages": ["tidySingleCellExperiment"],
+      "adapter": null,
+      "applies": {"modality": ["single_cell"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "keywords": {
+        "en": ["tidySingleCellExperiment", "dplyr single-cell", "tidyverse single cell"],
+        "de": ["tidySingleCellExperiment", "dplyr Einzelzell", "Tidyverse Einzelzell"]
+      },
+      "infrastructure": true,
+      "specialist": false,
+      "requirements": [
+        "Version-specific methods must be tested to preserve reducedDims, altExps and sparse backing before use.",
+        "Cells are not biological replicates; donor/sample-level inference only.",
+        "Not installed or adapter-tested in this release: catalog advice only."
+      ],
+      "status": "candidate"
+    },
+    {
+      "id": "bioc.single_cell.donor_pseudobulk",
+      "family": "bioconductor",
+      "stage": "aggregation",
+      "title": "Donor-level pseudobulk aggregation of raw single-cell counts",
+      "packages": ["Matrix"],
+      "adapter": {"id": "interop.seurat_v5", "version": "1.0.0"},
+      "applies": {"modality": ["single_cell"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "keywords": {
+        "en": ["pseudobulk", "pseudo-bulk", "donor-level", "differential expression single-cell", "aggregate counts"],
+        "de": ["Pseudobulk", "Spenderebene", "differentielle Expression Einzelzell", "Zaehlungen aggregieren"]
+      },
+      "infrastructure": false,
+      "specialist": true,
+      "requirements": [
+        "Cells are not biological replicates; donor/sample-level inference only.",
+        "Input is a SingleCellExperiment counts assay or a Seurat default-assay counts layer with nonnegative integer counts.",
+        "At least 2 donors per group; missing donor or group labels are refused, not dropped silently.",
+        "Split Seurat layers must be joined explicitly before aggregation."
+      ],
+      "status": "adapter_tested"
+    },
+    {
+      "id": "seurat.single_cell.exploration",
+      "family": "seurat",
+      "stage": "analysis",
+      "title": "Seurat v5 single-cell exploration with Assay5 layer checks",
+      "packages": ["Seurat", "SeuratObject"],
+      "adapter": {"id": "interop.seurat_v5", "version": "1.0.0"},
+      "applies": {"modality": ["single_cell"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "keywords": {
+        "en": ["Seurat", "single-cell", "scRNA-seq", "cell clustering", "UMAP", "marker genes", "Assay5 layers"],
+        "de": ["Seurat", "Einzelzell", "Einzelzell-RNA-Seq", "Zellclustering", "UMAP", "Markergene"]
+      },
+      "infrastructure": false,
+      "specialist": true,
+      "requirements": [
+        "Cells are not biological replicates; donor/sample-level inference only.",
+        "Inventory Assay5 layers with ci_seurat_layers(); counts must be raw counts and data must differ from counts after normalization.",
+        "Clustering and embeddings are exploratory; record thresholds, random seeds and QC exclusions.",
+        "Integration must not erase the biological contrast of interest; differential analysis uses unintegrated counts.",
+        "No automatic dataset or reference download."
+      ],
+      "status": "adapter_tested"
+    },
+    {
+      "id": "seurat.interop.sce_conversion",
+      "family": "seurat",
+      "stage": "interchange",
+      "title": "SingleCellExperiment and Seurat conversion with field-level loss report",
+      "packages": ["Seurat", "SeuratObject", "SingleCellExperiment"],
+      "adapter": {"id": "interop.seurat_v5", "version": "1.0.0"},
+      "applies": {"modality": ["single_cell"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "keywords": {
+        "en": ["as.Seurat", "as.SingleCellExperiment", "convert Seurat", "Seurat to SingleCellExperiment", "object conversion"],
+        "de": ["Seurat konvertieren", "Seurat nach SingleCellExperiment", "Objektkonvertierung"]
+      },
+      "infrastructure": true,
+      "specialist": false,
+      "requirements": [
+        "A successful coercion is not a lossless conversion; review the preserved/transformed/lost report.",
+        "Observed with Seurat 5.5.1: as.Seurat() renames features with underscores, drops metadata, creates v3 Assay objects and may change the default assay.",
+        "Observed with Seurat 5.5.1: as.SingleCellExperiment() drops feature-level metadata (rowData).",
+        "Values are compared block-wise after key alignment; no dense realization of whole assays."
+      ],
+      "status": "adapter_tested"
+    },
+    {
+      "id": "seurat.spatial.exploration",
+      "family": "seurat",
+      "stage": "analysis",
+      "title": "Seurat spatial assay exploration",
+      "packages": ["Seurat", "SeuratObject"],
+      "adapter": null,
+      "applies": {"modality": ["spatial"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "keywords": {
+        "en": ["Seurat spatial", "Visium Seurat", "spatial feature plot", "spatial clustering"],
+        "de": ["Seurat raeumlich", "Visium Seurat", "raeumliche Merkmalsdarstellung"]
+      },
+      "infrastructure": false,
+      "specialist": true,
+      "requirements": [
+        "Seurat is not a substitute for pixel-level segmentation or every spatial statistical model.",
+        "Keep coordinates, images, resolution and sample identity; verify image/coordinate accessors for the pinned version.",
+        "Not adapter-tested in this release: catalog advice only."
+      ],
+      "status": "candidate"
+    },
+    {
+      "id": "seurat.multimodal.exploration",
+      "family": "seurat",
+      "stage": "analysis",
+      "title": "Seurat multimodal (RNA plus protein) exploration",
+      "packages": ["Seurat", "SeuratObject"],
+      "adapter": null,
+      "applies": {"modality": ["single_cell", "multiomics"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "keywords": {
+        "en": ["CITE-seq", "multimodal single-cell", "weighted nearest neighbour", "ADT", "RNA and protein"],
+        "de": ["CITE-Seq", "multimodale Einzelzell", "gewichtete naechste Nachbarn", "RNA und Protein"]
+      },
+      "infrastructure": false,
+      "specialist": true,
+      "requirements": [
+        "RNA, protein, chromatin and image intensities have different assumptions; normalize each assay appropriately.",
+        "Cells are not biological replicates; donor/sample-level inference only.",
+        "Not adapter-tested in this release: catalog advice only."
+      ],
+      "status": "candidate"
+    },
+    {
+      "id": "seurat.normalization.sctransform",
+      "family": "seurat",
+      "stage": "normalization",
+      "title": "sctransform variance-stabilizing normalization of UMI counts",
+      "packages": ["sctransform", "Seurat"],
+      "adapter": null,
+      "applies": {"modality": ["single_cell"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "keywords": {
+        "en": ["sctransform", "SCTransform", "UMI normalization", "variance stabilization", "regularized negative binomial"],
+        "de": ["sctransform", "SCTransform", "UMI-Normalisierung", "Varianzstabilisierung"]
+      },
+      "infrastructure": false,
+      "specialist": true,
+      "requirements": [
+        "UMI counts only: never apply to raw protein intensities, read counts without UMIs or already normalized values.",
+        "Refuse when ci_seurat_layers() reports non-integer or negative counts.",
+        "Installed but not adapter-tested in this release: catalog advice only."
+      ],
+      "status": "candidate"
+    },
+    {
+      "id": "seurat.chromatin.signac",
+      "family": "seurat",
+      "stage": "analysis",
+      "title": "Signac chromatin accessibility and multimodal analysis",
+      "packages": ["Signac", "Seurat", "SeuratObject"],
+      "adapter": null,
+      "applies": {"modality": ["single_cell", "multiomics"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "keywords": {
+        "en": ["Signac", "scATAC-seq", "chromatin accessibility", "fragments", "peaks", "multiome"],
+        "de": ["Signac", "scATAC-Seq", "Chromatin-Zugaenglichkeit", "Fragmente", "Peaks", "Multiom"]
+      },
+      "infrastructure": false,
+      "specialist": true,
+      "requirements": [
+        "Fragment files, genome build, gene annotation, peak set and assay semantics are required.",
+        "Keep fragment files externally referenced; never copy or download them automatically.",
+        "Not installed or adapter-tested in this release: catalog advice only."
+      ],
+      "status": "candidate"
+    },
+    {
+      "id": "seurat.annotation.azimuth",
+      "family": "seurat",
+      "stage": "annotation",
+      "title": "Azimuth reference-based cell annotation",
+      "packages": ["Azimuth", "Seurat"],
+      "adapter": null,
+      "applies": {"modality": ["single_cell"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "keywords": {
+        "en": ["Azimuth", "reference mapping", "cell type annotation", "label transfer"],
+        "de": ["Azimuth", "Referenz-Mapping", "Zelltyp-Annotation", "Label-Transfer"]
+      },
+      "infrastructure": false,
+      "specialist": true,
+      "requirements": [
+        "Species, tissue, assay and reference version must match; record reference provenance.",
+        "Retain prediction scores, uncertainty and unknown labels; do not force every cell into a label.",
+        "No automatic reference download; references are provided explicitly.",
+        "Not installed or adapter-tested in this release: catalog advice only."
+      ],
+      "status": "candidate"
+    },
+    {
+      "id": "seurat.wrappers.external_methods",
+      "family": "seurat",
+      "stage": "analysis",
+      "title": "SeuratWrappers interfaces to external methods",
+      "packages": ["SeuratWrappers", "Seurat"],
+      "adapter": null,
+      "applies": {"modality": ["single_cell"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "keywords": {
+        "en": ["SeuratWrappers", "external method wrapper", "RunFastMNN", "RunHarmony wrapper"],
+        "de": ["SeuratWrappers", "externe Methoden", "Wrapper"]
+      },
+      "infrastructure": false,
+      "specialist": true,
+      "requirements": [
+        "Wrapper presence does not approve every wrapped dependency; review each wrapped method and its package individually.",
+        "Not installed or adapter-tested in this release: catalog advice only."
+      ],
+      "status": "candidate"
+    },
+    {
+      "id": "seurat.interchange.seuratdisk",
+      "family": "seurat",
+      "stage": "interchange",
+      "title": "SeuratDisk h5Seurat/h5ad file interchange",
+      "packages": ["SeuratDisk"],
+      "adapter": null,
+      "applies": {"modality": ["single_cell"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "keywords": {
+        "en": ["SeuratDisk", "h5Seurat", "h5ad", "AnnData conversion", "file interchange"],
+        "de": ["SeuratDisk", "h5Seurat", "h5ad", "AnnData-Konvertierung", "Dateiaustausch"]
+      },
+      "infrastructure": true,
+      "specialist": false,
+      "requirements": [
+        "Community-maintained companion, not Satija Lab owned; verify exact version compatibility with SeuratObject.",
+        "Demonstrated round-trip coverage with a field-level loss report is required before use.",
+        "Not installed or adapter-tested in this release: catalog advice only."
+      ],
+      "status": "candidate"
+    },
+    {
+      "id": "seurat.acceleration.bpcells",
+      "family": "seurat",
+      "stage": "acceleration",
+      "title": "BPCells disk-backed matrices for large cell datasets",
+      "packages": ["BPCells"],
+      "adapter": null,
+      "applies": {"modality": ["single_cell"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "keywords": {
+        "en": ["BPCells", "disk-backed matrix", "on-disk counts", "large single-cell dataset", "out-of-memory"],
+        "de": ["BPCells", "festplattenbasierte Matrix", "grosser Einzelzell-Datensatz", "speicherschonend"]
+      },
+      "infrastructure": true,
+      "specialist": false,
+      "requirements": [
+        "Externally maintained companion; record memory budget, backing-file location and deployment checks.",
+        "Never realize disk-backed matrices densely; keep backing files outside the project tree when large.",
+        "Not installed or adapter-tested in this release: catalog advice only."
+      ],
+      "status": "candidate"
+    },
+    {
+      "id": "seurat.markers.presto",
+      "family": "seurat",
+      "stage": "analysis",
+      "title": "presto fast exploratory marker statistics",
+      "packages": ["presto"],
+      "adapter": null,
+      "applies": {"modality": ["single_cell"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "keywords": {
+        "en": ["presto", "fast Wilcoxon", "marker genes", "AUC markers"],
+        "de": ["presto", "schneller Wilcoxon-Test", "Markergene"]
+      },
+      "infrastructure": false,
+      "specialist": true,
+      "requirements": [
+        "Exploratory only: cell-level tests do not replace donor-level inference.",
+        "Externally maintained companion; verify the pinned version.",
+        "Not installed or adapter-tested in this release: catalog advice only."
+      ],
+      "status": "candidate"
+    },
+    {
+      "id": "seurat.count_models.glmgampoi",
+      "family": "seurat",
+      "stage": "analysis",
+      "title": "glmGamPoi gamma-Poisson count models and acceleration",
+      "packages": ["glmGamPoi"],
+      "adapter": null,
+      "applies": {"modality": ["single_cell", "bulk_rna"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "keywords": {
+        "en": ["glmGamPoi", "gamma-Poisson", "negative binomial GLM", "pseudobulk model"],
+        "de": ["glmGamPoi", "Gamma-Poisson", "negativ-binomiales GLM", "Pseudobulk-Modell"]
+      },
+      "infrastructure": false,
+      "specialist": true,
+      "requirements": [
+        "Externally maintained Bioconductor companion; count data and an explicit design matrix are required.",
+        "Fit on raw counts with biological replicates (for example donor pseudobulk), not on normalized values or cells as replicates.",
+        "Not installed or adapter-tested in this release: catalog advice only."
+      ],
+      "status": "candidate"
+    },
+    {
+      "id": "seurat.data.seuratdata",
+      "family": "seurat",
+      "stage": "data_distribution",
+      "title": "SeuratData example and reference dataset distribution",
+      "packages": ["SeuratData"],
+      "adapter": null,
+      "applies": {"modality": ["single_cell"], "aim": [], "outcome_family": [], "unit_structure": []},
+      "keywords": {
+        "en": ["SeuratData", "example dataset", "reference dataset", "pbmc3k"],
+        "de": ["SeuratData", "Beispieldatensatz", "Referenzdatensatz"]
+      },
+      "infrastructure": true,
+      "specialist": false,
+      "requirements": [
+        "No automatic dataset download; inspect license and download size and obtain explicit consent first.",
+        "Never used by tests or generated project code.",
+        "Not installed or adapter-tested in this release: catalog advice only."
+      ],
+      "status": "candidate"
+    }
+  ]
+}
