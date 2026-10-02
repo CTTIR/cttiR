@@ -3,7 +3,7 @@
 CTTIR Project Builder creates research project scaffolds from three inputs:
 a name, research type and goal.
 
-This is development milestone `0.0.13`. It provides an offline
+This is development milestone `0.0.14`. It provides an offline
 builder, schema validation and a searchable resource snapshot. It does not yet
 provide the complete research workflow described in the development plan.
 
@@ -115,8 +115,8 @@ To build and test locally with the declared dependencies installed:
 
 ```sh
 R CMD build .
-R CMD check --no-manual cttiR_0.0.13.tar.gz
-R CMD INSTALL cttiR_0.0.13.tar.gz
+R CMD check --no-manual cttiR_0.0.14.tar.gz
+R CMD INSTALL cttiR_0.0.14.tar.gz
 ```
 
 MIT licensed. Milestone 0.0.5 passed hosted checks on Linux release/oldrel/devel,

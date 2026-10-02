@@ -10,21 +10,50 @@ static_functions <- function(text, source_path) {
   expressions <- tryCatch(parse(text = text, keep.source = FALSE), error = function(e) {
     abort_cttir("An R source file could not be parsed statically.", "cttir_source_unavailable", "source_parse")
   })
-  result <- list()
-  for (expr in expressions) {
-    if (!is.call(expr) || !is.symbol(expr[[1]]) || !as.character(expr[[1]]) %in% c("<-", "=") || length(expr) != 3L ||
-        !is.symbol(expr[[2]]) || !is.call(expr[[3]]) || !identical(expr[[3]][[1]], as.name("function"))) {
-      next
+  result <- new.env(parent = emptyenv())
+  result$values <- list()
+  record <- function(name, value) {
+    if (name %in% names(result$values)) {
+      value$signature <- "unresolved: multiple assignments"
+      value$arguments <- list()
     }
-    name <- as.character(expr[[2]])
-    args <- expr[[3]][[2]]
-    # Construct an unevaluated function expression; deparse does not run defaults.
-    signature <- paste(deparse(as.call(list(as.name("function"), args, NULL)), width.cutoff = 500L), collapse = " ")
-    signature <- sub(" NULL$", "", signature)
-    if (name %in% names(result)) signature <- "unresolved: multiple assignments"
-    result[[name]] <- list(signature = signature, arguments = as.list(names(args)), source_path = source_path)
+    result$values[[name]] <- value
   }
-  result
+  inspect <- function(expr, direct = FALSE, depth = 0L) {
+    if (depth > 64L) abort_cttir("Static assignment nesting exceeds the bound.", "cttir_source_unavailable")
+    if (!is.call(expr) || !is.symbol(expr[[1]])) return(invisible(NULL))
+    head <- as.character(expr[[1]])
+    # Function bodies have their own scope and are never traversed or evaluated.
+    if (head == "function") return(invisible(NULL))
+    if (head %in% c("<-", "=", "<<-") && length(expr) == 3L) {
+      lhs <- expr[[2]]
+      names <- if (is.symbol(lhs)) as.character(lhs) else all.names(lhs, functions = FALSE, unique = TRUE)
+      literal <- direct && head != "<<-" && is.symbol(lhs) && is.call(expr[[3]]) &&
+        identical(expr[[3]][[1]], as.name("function"))
+      for (name in names) {
+        args <- if (literal) expr[[3]][[2]] else NULL
+        signature <- if (literal) {
+          sub(" NULL$", "", paste(deparse(as.call(list(as.name("function"), args, NULL)), width.cutoff = 500L), collapse = " "))
+        } else {
+          "unresolved: nonliteral or conditional assignment"
+        }
+        record(name, list(signature = signature, arguments = as.list(names(args)), source_path = source_path))
+      }
+      inspect(expr[[3]], depth = depth + 1L)
+      return(invisible(NULL))
+    }
+    if (head == "assign" && length(expr) >= 3L && is.character(expr[[2]]) && length(expr[[2]]) == 1L) {
+      record(expr[[2]], list(signature = "unresolved: dynamic assignment", arguments = list(), source_path = source_path))
+    }
+    parts <- as.list(expr)[-1]
+    for (i in seq_along(parts)) {
+      if (identical(unname(parts[i]), unname(alist(x = )))) next
+      if (is.call(parts[[i]])) inspect(parts[[i]], depth = depth + 1L)
+    }
+    invisible(NULL)
+  }
+  for (expr in expressions) inspect(expr, direct = TRUE)
+  result$values
 }
 
 extract_source <- function(path, repository, revision, family = "local", documentation_rights = NULL) {
@@ -55,7 +84,10 @@ extract_source <- function(path, repository, revision, family = "local", documen
     found <- static_functions(text, rel)
     # Multiple assignments are deliberately unresolved, rather than evaluated.
     for (name in names(found)) {
-      if (name %in% names(funcs)) found[[name]]$signature <- "unresolved: multiple assignments"
+      if (name %in% names(funcs)) {
+        found[[name]]$signature <- "unresolved: multiple assignments"
+        found[[name]]$arguments <- list()
+      }
       funcs[[name]] <- found[[name]]
     }
   }
@@ -93,7 +125,7 @@ extract_source <- function(path, repository, revision, family = "local", documen
     fn <- funcs[[name]]
     topic <- topics[[name]]
     list(
-      name = name, kind = if (is.null(fn)) "unresolved_export" else "function",
+      name = name, kind = if (is.null(fn) || startsWith(fn$signature, "unresolved")) "unresolved_export" else "function",
       signature = if (is.null(fn)) "unresolved" else fn$signature,
       arguments = if (is.null(fn)) list() else fn$arguments,
       verification = if (is.null(fn) || startsWith(fn$signature, "unresolved")) "unknown" else "static_api_verified",
@@ -111,7 +143,7 @@ extract_source <- function(path, repository, revision, family = "local", documen
       resolved = sum(vapply(entries, function(x) x$verification == "static_api_verified", logical(1))),
       approved = 0L
     ),
-    freshness = "not_rechecked", extraction = "static_no_execution"
+    freshness = "not_rechecked", extraction = "static_no_execution", static_assignment_version = 2L
   )
 }
 

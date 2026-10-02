@@ -44,3 +44,50 @@ test_that("multiple definitions in one source file cannot claim a verified signa
   f <- static_functions("f <- function(x) x; f <- function(y) y", "R/api.R")
   expect_match(f$f$signature, "unresolved", fixed = TRUE)
 })
+
+test_that("reassignment and conditional writes cannot retain verified callables", {
+  cases <- c(
+    "f <- function(x) x; f <- 1",
+    "f <- 1; f <- function(x) x",
+    "f <- function(x) x; if (TRUE) f <- function(y) y",
+    "f <- function(x) x; formals(f) <- alist(y = )",
+    "f <- function(x) x; assign('f', 1)",
+    "if (FALSE) f <- function(x) x"
+  )
+  for (code in cases) {
+    f <- static_functions(code, "R/api.R")
+    expect_match(f$f$signature, "unresolved", fixed = TRUE)
+    expect_length(f$f$arguments, 0L)
+  }
+  f <- static_functions("f <- function(x) { f <- 1; x }", "R/api.R")
+  expect_equal(f$f$signature, "function(x)")
+  parent <- new_parent()
+  source <- fixture_source(file.path(parent, "source"), "f <- function(x) x", "f")
+  writeLines("f <- NULL", file.path(source, "R/overwrite.R"))
+  entry <- extract_source(source, "fixture", "v1")
+  expect_equal(entry$exports[[1]]$verification, "unknown")
+  expect_equal(entry$exports[[1]]$kind, "unresolved_export")
+  expect_length(entry$exports[[1]]$arguments, 0L)
+  expect_equal(entry$coverage$resolved, 0L)
+})
+
+test_that("reindexed bundled evidence retains the previous immutable snapshot", {
+  current <- resolve_catalog()
+  previous <- catalog_snapshot("8e5a591daa5b55552bc7ca52a659fe422ec369aeab19f87adf9de60f94971788")
+  expect_false(identical(current$content_id, previous$content_id))
+  expect_true(all(vapply(current$packages, function(x) identical(x$static_assignment_version, 2L), logical(1))))
+  expect_true(all(vapply(previous$packages, function(x) is.null(x$static_assignment_version), logical(1))))
+  hit <- search("delphyr::accept_panel_invitation")
+  expect_match(hit$evidence, "/packages/delphyr/R/invitations.R", fixed = TRUE)
+  expect_equal(sum(vapply(current$packages, function(x) x$coverage$approved, numeric(1))), 0)
+})
+
+test_that("nested source citations add exactly one directory prefix", {
+  p <- list(repository = "https://github.com/example/project", revision = "exact-revision", source_subdir = "packages/nested")
+  expected <- "https://github.com/example/project/blob/exact-revision/packages/nested/R/api.R"
+  expect_identical(catalog_evidence_url(p, "R/api.R"), expected)
+  expect_identical(catalog_evidence_url(p, "packages/nested/R/api.R"), expected)
+  p$source_subdir <- "packages/nested/"
+  expect_identical(catalog_evidence_url(p, "R/api.R"), expected)
+  expect_identical(catalog_evidence_url(p, "packages/nested/R/api.R"), expected)
+})

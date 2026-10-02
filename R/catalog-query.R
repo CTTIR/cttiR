@@ -58,6 +58,13 @@ packages <- function(path = NULL) {
   do.call(rbind, rows)
 }
 
+catalog_evidence_url <- function(package, path) {
+  if (!startsWith(package$repository, "https://github.com/")) return(paste0(package$repository, "#", path))
+  prefix <- if (is.null(package$source_subdir)) "" else sub("/+$", "", package$source_subdir)
+  if (nzchar(prefix) && !startsWith(path, paste0(prefix, "/"))) path <- paste0(prefix, "/", path)
+  paste0(package$repository, "/blob/", package$revision, "/", path)
+}
+
 #' Search revision-scoped APIs and stored documentation
 #' @param query Nonempty literal search text, optionally `package::export`.
 #' @param packages Optional character vector of exact package names.
@@ -85,11 +92,7 @@ search <- function(query, packages = NULL, path = NULL, limit = 20L) {
   for (p in catalog$packages) {
     if (!is.null(packages) && !p$name %in% packages) next
     for (hit in if (grepl("::", query, fixed = TRUE)) list() else document_hits(p, query)) {
-      source <- if (startsWith(p$repository, "https://github.com/")) {
-        paste0(p$repository, "/blob/", p$revision, "/", p$source_subdir, hit$path)
-      } else {
-        paste0(p$repository, "#", hit$path)
-      }
+      source <- catalog_evidence_url(p, hit$path)
       out[nrow(out) + 1L, ] <- list(hit$id, p$name, p$revision, "document", "",
         hit$snippet, 5, source,
         "documentation_indexed", FALSE)
@@ -99,11 +102,7 @@ search <- function(query, packages = NULL, path = NULL, limit = 20L) {
       haystack <- tolower(paste(symbol, p$title, p$description))
       exact <- q %in% tolower(c(symbol, entry$name))
       if (!exact && !grepl(q, haystack, fixed = TRUE)) next
-      evidence <- if (startsWith(p$repository, "https://github.com/")) {
-        paste0(p$repository, "/blob/", p$revision, "/", p$source_subdir, entry$source_path)
-      } else {
-        paste0(p$repository, "#", entry$source_path)
-      }
+      evidence <- catalog_evidence_url(p, entry$source_path)
       out[nrow(out) + 1L, ] <- list(
         content_hash(paste(p$source_hash, symbol)), p$name, p$revision,
         entry$kind, symbol, paste(symbol, entry$signature), if (exact) 100 else 10,

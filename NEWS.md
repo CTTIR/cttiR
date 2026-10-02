@@ -1,3 +1,12 @@
+# cttiR 0.0.14
+
+* Resolve nested-package evidence citations with exactly one source prefix.
+
+* Refuse verified static callable signatures for reassigned, conditional or
+  modified function bindings; never inspect or execute function bodies.
+* Reindex the bundled catalog against hash-verified frozen sources while retaining
+  the previous catalog for existing project pins.
+
 # cttiR 0.0.13
 
 * Index licensed Sweave, TeX and bibliography source documents as literal text.

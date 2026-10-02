@@ -1,6 +1,24 @@
 # cttiR development state
 
-Updated: 2026-10-02. Version: 0.0.13. License: MIT.
+Updated: 2026-10-02. Version: 0.0.14. License: MIT.
+
+## Milestone 14: conservative static assignments and historical citations
+
+Static extraction now refuses callable verification for repeated, conditional,
+dynamic literal-name or modified bindings, within and across source files.
+Function bodies remain unvisited and no source is evaluated. This is bounded
+static evidence, not proof about arbitrary dynamic R execution or dispatch.
+The bundled catalog was reindexed only after every original source-file hash
+matched its frozen source. All 1340 exports remain present, 1323 resolved, with
+zero workflow approvals. The prior catalog is retained for historical pins.
+Nested-package citations handle both relative and legacy prefixed paths once.
+An installed 0.0.13 project remains byte-identical under 0.0.14 sync/query, with
+correct historical nested citations. Evidence: milestone14-* under ignored
+artifacts/implementation. Local validation: 516 assertions, --as-cran zero
+errors/warnings and only New submission; coverage 84.51%, lint, installed
+examples and pkgdown pass. Full product acceptance remains incomplete.
+
+Milestone 13 (1a12584) passed all five hosted jobs in run 36986049531.
 
 ## Milestone 13: literal Sweave and TeX corpus coverage
 
