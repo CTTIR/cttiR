@@ -35,7 +35,10 @@ A \code{cttir_project} containing path, spec, plan, readiness, manifest and
 warnings. An identical repeat is read-only and preserves user edits.
 \code{readiness$level} becomes \code{environment_ready} only when \code{renv.lock} and the
 project library match the pinned dependencies; \code{readiness$environment} and
-\code{readiness$git} report the evidence and any recovery command.
+\code{readiness$git} report the evidence and any recovery command. The
+environment state is derived on each machine from \code{renv.lock}, the project
+library and \code{.cttir/environment.json}; \code{cttir-lock.json} pins versions but
+never records an installed environment.
 \code{readiness$analysis} reports candidate routing, missing fields and capability
 gaps. It never opens data or executes a model, even with \code{analysis$approved}.
 }

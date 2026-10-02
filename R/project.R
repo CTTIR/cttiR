@@ -6,11 +6,15 @@ project_route <- function(spec) {
 project_bundle <- function(spec, prior_lock = NULL) {
   route <- project_route(spec)
   files <- render_project(spec, route)
+  # The lock pins inputs; it cannot claim an installed environment (file 04).
+  # Environment readiness is derived on each machine from renv.lock and the
+  # project library (environment_status()); locks written by earlier versions
+  # keep their historical `environment_status` field unchanged.
   lock <- list(
     schema_version = 1L, spec_sha256 = content_hash(json_text(spec)),
     template_version = spec$provenance$template_version, catalog_id = spec$provenance$catalog_id, model = NULL,
     resource_snapshot = if (is.null(prior_lock)) resource_snapshot()$id else prior_lock$resource_snapshot,
-    dependencies = list(), environment_status = "pending"
+    dependencies = list()
   )
   if (!is.null(prior_lock)) {
     lock <- prior_lock
@@ -218,7 +222,10 @@ project_manifest <- function(files, template_version = "0.1.0") {
 #'   warnings. An identical repeat is read-only and preserves user edits.
 #'   `readiness$level` becomes `environment_ready` only when `renv.lock` and the
 #'   project library match the pinned dependencies; `readiness$environment` and
-#'   `readiness$git` report the evidence and any recovery command.
+#'   `readiness$git` report the evidence and any recovery command. The
+#'   environment state is derived on each machine from `renv.lock`, the project
+#'   library and `.cttir/environment.json`; `cttir-lock.json` pins versions but
+#'   never records an installed environment.
 #'   `readiness$analysis` reports candidate routing, missing fields and capability
 #'   gaps. It never opens data or executes a model, even with `analysis$approved`.
 #' @details Optional `analysis$mapping` records `data_source_id`, `outcome`,
