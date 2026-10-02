@@ -83,7 +83,7 @@ restores an earlier one. Project pins never change implicitly.
 
 See the vignettes for the getting-started walkthrough, the standard workflow,
 knowledge and approvals, and audit/runtime/privacy. The development record is
-in [CURRENT_STATE.md](CURRENT_STATE.md).
+in [CURRENT_STATE.md](https://github.com/CTTIR/cttiR/blob/main/CURRENT_STATE.md).
 
 ## Limits
 
