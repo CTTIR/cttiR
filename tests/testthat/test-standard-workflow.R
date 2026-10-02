@@ -100,7 +100,8 @@ test_that("descriptive tables never test and DescrTab2 absence uses the document
 })
 
 test_that("reviewed engines match independent references on synthetic data", {
-  for (package in c("dplyr", "nlme", "survival", "broom", "broom.mixed", "jsonlite", "DescrTab2")) skip_if_not_installed(package)
+  # DescrTab2 is optional here: without it the documented base fallback is used.
+  for (package in c("dplyr", "nlme", "survival", "broom", "broom.mixed")) skip_if_not_installed(package)
   env <- stage_library()
   receipt <- env$cw_run_demo(root = tempfile(), write = FALSE, figures_policy = default_spec("x", "methods", "x", "x")$figures)
   expect_equal(receipt$status, "passed")
@@ -139,8 +140,8 @@ test_that("the study-data runner refuses incomplete configuration with a precise
 })
 
 test_that("the synthetic demo runs in a generated project and labels its outputs", {
-  for (package in c("dplyr", "nlme", "survival", "broom", "broom.mixed", "jsonlite", "DescrTab2", "ggplot2",
-    "patchwork", "viridisLite", "RColorBrewer", "colorspace", "yaml")) skip_if_not_installed(package)
+  for (package in c("dplyr", "nlme", "survival", "broom", "broom.mixed", "ggplot2",
+    "patchwork", "viridisLite", "RColorBrewer", "colorspace")) skip_if_not_installed(package)
   p <- project("Demo", "primary_research", "Describe outcomes", new_parent())
   skip_if_not(file.exists(file.path(p$path, "code/R/cttir_figures.R")))
   result <- processx::run(file.path(R.home("bin"), "Rscript"), c("--vanilla", "code/run_demo.R"),
