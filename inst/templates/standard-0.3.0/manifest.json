@@ -26,6 +26,7 @@
     "R/generate_setup.R": "6b7d87ce414e49a6d241e3f8ff0c08678c3e28c97c78ec337a496a3bbeaf942d"
   },
   "files": {
+    "_targets.R": "de9971620e8cbe719d4ab6c6ef6a8d7f895f7f57437056f5a1e2e035c23c14b7",
     "analysis/01_read_data.Rmd": "93e724730ab6e098a826ce953a10f6aaeef0447f6015e1e245e17649ec75ed0a",
     "analysis/02_eda.Rmd": "b0e7ed62bb22d5f0bcc3140395c7b6141eb945de153130975ff511b10e4764f7",
     "analysis/03_report.Rmd": "760e30e097163b3d86780780e4e7705b051a9ccc5244a5e97a3a0f1b21054435",
@@ -39,7 +40,11 @@
     "demo/README.md": "234a4e36d535ac3445bd3769a8d644abdbcac98bd8c263deae249483db889735",
     "licenses/reflowR-MIT.txt": "29b77db3f6c608670bc28cfc77ebba736f75c6abb9d8a32aec917051f4d52cdd"
   },
-  "conditional": {},
+  "conditional": {
+    "_targets.R": {
+      "pipeline": "targets"
+    }
+  },
   "limitations": ["Study-data runs require explicit mappings, reviewed settings, analysis approval, a local binding and approved pinned package revisions.", "Synthetic demonstration results are adapter checks, not scientific results.", "Prediction, causal, count and specialist analyses have no reviewed adapter in this bundle."],
   "hash_normalization": "UTF-8 text with LF line endings and final newline"
 }
