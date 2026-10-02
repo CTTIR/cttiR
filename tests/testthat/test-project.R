@@ -165,3 +165,37 @@ test_that("a repeat project() stays read-only after sync updated or kept user-ow
   expect_true(all(again()$plan$action == "skip"))
   expect_identical(tree_state(p$path), state)
 })
+
+test_that("analysis plans list the unknowns of each research type without inventing content", {
+  parent <- new_parent()
+  goal <- "Compare blood pressure between two groups"
+  plans <- list()
+  for (type in c("primary_research", "secondary_research", "methods", "review", "software", "mixed", "other")) {
+    p <- project(paste("Plan", type), type, goal, parent, dry_run = TRUE)
+    plans[[type]] <- project_bundle(p$spec)$files[["protocol/analysis-plan.md"]]
+  }
+  expect_length(unique(plans), 7L)
+  for (text in plans) {
+    expect_false(grepl("blood pressure", text, fixed = TRUE))
+    expect_match(text, "Every item below is unknown")
+    expect_match(text, "- TODO: ")
+  }
+  expect_match(plans$primary_research, "Estimand")
+  expect_match(plans$primary_research, "Primary outcome and its timepoint")
+  expect_match(plans$secondary_research, "Search strategy for each source")
+  expect_match(plans$secondary_research, "No literature search has been run")
+  expect_match(plans$review, "the review type is unknown")
+  expect_match(plans$methods, "Simulation design")
+  expect_match(plans$methods, "Benchmark datasets")
+  expect_match(plans$software, "Test plan")
+  expect_match(plans$software, "Licensing decision")
+  expect_match(plans$mixed, "Shared across publications")
+  expect_match(plans$other, "Question or objective")
+  expect_false(grepl("Estimand", plans$software, fixed = TRUE))
+  review_pub <- list(id = "pub02", title = "Review", slug = "pub02_review", type = "systematic_review",
+    research_class = "secondary_research", analysis_role = "unknown", data_origin = "literature")
+  mixed <- project("Plan mixed two", "mixed", goal, parent, options = list(publications = list(review_pub)), dry_run = TRUE)
+  text <- project_bundle(mixed$spec)$files[["protocol/analysis-plan.md"]]
+  expect_match(text, "## Search and selection (secondary research publications)", fixed = TRUE)
+  expect_match(text, "No literature search has been run")
+})

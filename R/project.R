@@ -92,7 +92,7 @@ render_project <- function(spec, route = project_route(spec)) {
     "metadata/data-registry.yml" = yaml::as.yaml(list(datasets = spec$data_sources)),
     "metadata/data-dictionary.csv" = "dataset_id,variable,type,unit,allowed_values,missing_codes,description\n",
     "config/analysis.yml" = yaml::as.yaml(spec$analysis),
-    "protocol/analysis-plan.md" = paste0(
+    "protocol/analysis-plan.md" = if (identical(version, current_template_version)) analysis_plan_text(spec) else paste0(
       "# Analysis plan\n\n",
       "Record the question, design, sampling unit and provenance.\n",
       "Specify outcomes, variable roles, missingness handling and dependence structure.\n",
@@ -185,6 +185,131 @@ validate_script_0.3.0 <- paste0(
   "  message('YAML structure parsed; install cttiR for full schema validation. Data remain unverified.')\n",
   "}\n"
 )
+
+# Research-type specific unknowns for protocol/analysis-plan.md (file 11). The
+# items are prompts only: each stays a TODO until the researcher records it,
+# and no user text is interpolated.
+analysis_plan_sections <- list(
+  primary_research = list(
+    "Question and design" = c(
+      "Objectives and hypotheses",
+      "Confirmatory or exploratory status of each question",
+      "Study design",
+      "Population, setting and eligibility criteria",
+      "Data origin (new collection or existing dataset) and analysis role"),
+    "Variables and estimands" = c(
+      "Exposure or intervention, and comparator",
+      "Primary outcome and its timepoint",
+      "Secondary outcomes",
+      "Estimand: population, variable, handling of intercurrent events and summary measure",
+      "Covariates and confounders, with the reason for each adjustment"),
+    "Data structure" = c(
+      "Unit of analysis",
+      "Repeated measures, clustering or other dependence"),
+    "Analysis" = c(
+      "Statistical model and its assumptions",
+      "Missing-data handling",
+      "Multiplicity",
+      "Sensitivity analyses",
+      "Sample size or precision rationale"),
+    "Ethics and reporting" = c(
+      "Ethics approval and consent status",
+      "Reporting guideline, if any",
+      "Preregistration or protocol registration (this file does not claim one)")),
+  secondary_research = list(
+    "Review question" = c(
+      "Review question and its elements (population, intervention or exposure, comparator, outcomes)",
+      "Review type: systematic review, scoping review, meta-analysis or other",
+      "Protocol registration (this file does not claim one)"),
+    "Search and selection" = c(
+      "Eligibility criteria",
+      "Information sources and search dates",
+      "Search strategy for each source",
+      "Screening process: number of reviewers and how disagreements are resolved"),
+    "Extraction and appraisal" = c(
+      "Data extraction items and process",
+      "Risk-of-bias or quality appraisal tool"),
+    "Synthesis" = c(
+      "Effect measures",
+      "Synthesis method (narrative or meta-analytic) and model",
+      "Heterogeneity and sensitivity assessment",
+      "Certainty-of-evidence assessment",
+      "Reporting guideline, if any")),
+  methods = list(
+    "Problem and method" = c(
+      "Methodological problem and the claim to be tested",
+      "Proposed method and its assumptions",
+      "Comparator methods"),
+    "Validation" = c(
+      "Validation strategy: simulation study, benchmark data or both",
+      "Simulation design: data-generating mechanisms, scenarios and number of repetitions",
+      "Benchmark datasets and their provenance",
+      "Performance measures",
+      "Monte Carlo uncertainty of the reported performance"),
+    "Implementation" = c(
+      "Software implementation and its test plan",
+      "Reproducibility: random seeds and computing environment",
+      "Licensing decision for code and outputs")),
+  software = list(
+    "Scope" = c(
+      "Purpose and intended users",
+      "Interface (API) design",
+      "Supported inputs, outputs and platforms"),
+    "Quality" = c(
+      "Test plan: unit, integration and validation against reference results",
+      "Benchmarks",
+      "Dependencies and their versions"),
+    "Release" = c(
+      "Licensing decision",
+      "Documentation and release plan")),
+  other = list(
+    "Plan" = c(
+      "Question or objective",
+      "Design or approach",
+      "Inputs and data sources",
+      "Planned outputs",
+      "Validation or quality checks",
+      "Whether ethics or other approvals apply"))
+)
+
+analysis_plan_text <- function(spec) {
+  type <- spec$project$type
+  labels <- c(primary_research = "primary research", secondary_research = "secondary research (evidence synthesis)",
+    methods = "methods", review = "review (evidence synthesis; the review type is unknown)", software = "software",
+    mixed = "mixed (publications of several classes)", other = "other")
+  todo <- function(sections, suffix = "") {
+    unlist(lapply(names(sections), function(title) {
+      c(paste0("## ", title, suffix), "", paste0("- TODO: ", sections[[title]]), "")
+    }))
+  }
+  body <- if (identical(type, "mixed")) {
+    classes <- unique(vapply(spec$publications, function(p) p$research_class, character(1)))
+    classes <- intersect(c("primary_research", "secondary_research", "methods", "software"), classes)
+    if (!length(classes)) classes <- "other"
+    c("## Shared across publications", "",
+      "- TODO: Which publication answers which question",
+      "- TODO: Shared data sources, preprocessing and quality checks (root `analysis/`)", "",
+      "Publication-specific plans belong in `publications/<slug>/analysis/`.", "",
+      unlist(lapply(classes, function(class) {
+        todo(analysis_plan_sections[[class]], paste0(" (", gsub("_", " ", class), " publications)"))
+      })))
+  } else {
+    key <- if (identical(type, "review")) "secondary_research" else if (type %in% names(analysis_plan_sections)) type else "other"
+    todo(analysis_plan_sections[[key]])
+  }
+  synthesis <- type %in% c("secondary_research", "review") ||
+    (identical(type, "mixed") && any(vapply(spec$publications, function(p) identical(p$research_class, "secondary_research"), logical(1))))
+  paste0(paste(c(
+    "# Analysis plan", "",
+    paste0("Research type: ", labels[[type]], "."), "",
+    "Every item below is unknown until you record it. Replace `TODO` with the reviewed decision,",
+    "or with `not applicable` and the reason. Nothing here was inferred from the project goal,",
+    "and creating this file approves no analysis.", "",
+    body,
+    if (synthesis) c("No literature search has been run, and no studies or citations are recorded.", ""),
+    "Record reviewed choices in `cttir-project.yml` with `cttiR::sync()`; analysis mappings and",
+    "approval go to `config/analysis.yml` the same way."), collapse = "\n"), "\n")
+}
 
 # User ownership is sticky, and a user-owned file keeps its accepted baseline
 # while it differs from it, so its edits stay recognisable. sync() moves an
