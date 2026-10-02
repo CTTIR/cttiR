@@ -40,8 +40,10 @@ project library match the pinned dependencies; \code{readiness$environment} and
 gaps. It never opens data or executes a model, even with \code{analysis$approved}.
 }
 \description{
-The foundation build uses deterministic templates, without network calls,
-model inference, package installation or execution of study code. The planned
+The foundation build uses deterministic templates, without package
+installation or execution of study code. It makes no network calls and no
+model inference unless the local planner policy enables one loopback
+exchange with an owned local model (see Details). The planned
 standard workflow is explicitly pending reflowR integration. Advanced workflow
 options that are not implemented raise a typed error instead of being ignored.
 }
@@ -64,6 +66,16 @@ Missing-data choices are \code{unknown}, \code{fail} and \code{complete_case}; t
 intent and never remove observations during planning. Predictive and causal
 designs are marked as requiring additional supported adapters. Scientific
 and revision-specific workflow approval remain separate prerequisites.
+
+Unset aim, outcome family, unit structure and modality are filled from goal
+keywords by default. Only when \code{options(cttiR.planner = "local_llm")} is
+set and the owned runtime prepared by \code{\link[=setup]{setup()}} and its recorded model
+digest verify, one bounded read-only exchange with that local model (at
+most one repair) proposes the same unset fields, also in dry runs. It never
+starts, pulls or installs anything; explicit values always win; failures
+fall back to the keyword rules, and replies showing signs of embedded
+instructions leave the fields unknown. The reason is recorded in
+\code{spec$decisions}.
 }
 \examples{
 p <- project("Example", "methods", "Plan a reproducible comparison",

@@ -161,12 +161,16 @@ setup <- function(model = "auto", install_ollama = TRUE, offline = FALSE, dry_ru
   manifest <- read_document(resource_file("runtime", "manifest.json"))
   automatic <- model == "auto"
   if (automatic) model <- manifest$model
+  # Planner qualification comes from the recorded benchmark; overrides that
+  # were never benchmarked are labelled unvalidated.
+  tested <- Filter(function(x) identical(x$tag, model), manifest$tested_models)
+  validation <- if (automatic) manifest$model_validation else if (length(tested)) tested[[1]]$qualification else "unvalidated_user_override"
   root <- runtime_directory()
   endpoint <- runtime_endpoint()
   result <- structure(list(
     state = "planned", steps = list(),
     runtime = list(version = manifest$runtime_version, endpoint = endpoint),
-    model = list(name = model, validation = manifest$model_validation),
+    model = list(name = model, validation = validation),
     actions = c("verify runtime", "start owned local daemon if absent", "verify or acquire local model"),
     blockers = character()
   ), class = "cttir_setup")
@@ -259,7 +263,8 @@ setup <- function(model = "auto", install_ollama = TRUE, offline = FALSE, dry_ru
         list(id = "local_runtime", state = "verified"), list(id = "local_model", state = "verified"),
         list(id = "structured_inference", state = "verified", evidence = probe)
       )
-      result$blockers <- "workflow_model_benchmark_pending"
+      result$blockers <- switch(validation, qualified_for_planning = character(),
+        candidate_pending_benchmark = "workflow_model_benchmark_pending", "workflow_model_not_qualified")
       result
     },
     error = function(e) {
