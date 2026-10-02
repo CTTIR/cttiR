@@ -11,7 +11,7 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 Depends: R (>= 4.1.0)
 Imports: DBI, RSQLite, digest, fs, httr2, jsonlite, jsonvalidate, processx, ps, uuid, yaml
-Suggests: callr (>= 3.7.0), knitr, rmarkdown, shiny (>= 1.7.0), testthat (>= 3.2.0), withr
+Suggests: callr (>= 3.7.0), colorspace, ggplot2, knitr, patchwork, png, RColorBrewer, rmarkdown, shiny (>= 1.7.0), testthat (>= 3.2.0), viridisLite, withr
 Config/testthat/edition: 3
 Roxygen: list(markdown = TRUE)
 URL: https://github.com/CTTIR/cttiR
