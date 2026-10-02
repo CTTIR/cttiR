@@ -1,3 +1,9 @@
+# cttiR 0.0.18
+
+* Record typed model choices separately from variable mappings: intercept/link,
+  survival ties, and mixed-model structure and estimation. Report missing,
+  unreviewed or inapplicable settings without fitting or approving models.
+
 # cttiR 0.0.17
 
 * Record static S3 registrations and implementation signatures separately from

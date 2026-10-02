@@ -142,6 +142,31 @@ gaps. An explicitly empty predictor list records an intercept-only intention.
 rows. Even a fully recorded configuration and `approved = TRUE` cannot bypass
 pending adapter/revision approval, dataset checks or model diagnostics.
 
+Model choices are recorded separately from data mappings. There are no inferred
+intercept, link, tie-handling or random-effects choices. `reviewed = TRUE` records
+the user's review of those settings; it does not approve a package revision or
+scientific interpretation. Supported candidate settings include a fixed intercept
+for linear/binomial/mixed models, a logit link for binary models, explicit Cox
+tie handling, and a random intercept with independent homoscedastic residuals
+and ML or REML estimation for mixed models. Cox settings do not include an
+estimated intercept. More complex structures remain unsupported.
+
+```{r model-settings}
+analysis_config$analysis$model <- list(intercept = TRUE, reviewed = TRUE)
+model_draft <- cttiR::project(
+  "Model settings example", "methods", "Record explicit model choices",
+  path = example_root, config = analysis_config, dry_run = TRUE
+)
+model_draft$readiness$analysis$model[c("state", "missing_fields", "executable")]
+stopifnot(model_draft$readiness$analysis$model$state == "settings_recorded",
+  !model_draft$readiness$analysis$executable)
+```
+
+The outer `configuration_recorded` state describes variable mapping and analysis
+intent; the nested `model` state reports settings separately. A mapping alone does
+not satisfy the `model_settings_incomplete` readiness blocker. Neither state
+makes a project executable while adapter, revision or data checks remain pending.
+
 Check an explicitly supplied in-memory data frame separately. This does not read
 registered data locations, modify records or fit a model. Only mapped columns
 participate in missingness; a configured complete-case policy reports how many

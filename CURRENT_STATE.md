@@ -1,6 +1,35 @@
 # cttiR development state
 
-Updated: 2026-10-02. Version: 0.0.17. License: MIT.
+Updated: 2026-10-02. Version: 0.0.18. License: MIT.
+
+## Milestone 18: explicit typed model settings
+
+Optional analysis.model fields record a fixed intercept, binary logit link,
+Cox tie method, and mixed random-intercept/residual structure with ML or REML.
+Cox settings do not claim an estimated intercept. Unsupported or inapplicable
+settings and missing review are reported separately from variable mappings.
+The nested model state and model_settings_incomplete blocker make unresolved
+choices visible; executable remains false. Valid reviewed mixed settings remove
+the stale structure-review gap without bypassing adapter/revision/data checks.
+No file is opened from a dataset registry, no model is fit, and no scientific
+or package approval follows from recording settings. Legacy specs stay readable.
+
+The ignored private candidate adapter now consumes these recorded settings,
+with fixture-only execution authorization kept separate. Eleven checks pass against installed 0.0.18, including refusal of unreviewed
+settings and both ML/REML fixed effects. The 0.0.13 historical project remains
+byte-identical under synchronization; unknown model choices stay explicit.
+
+The final archive was built under artifacts/implementation/milestone18-final.
+Its isolated check passed 623 assertions but could not find pdflatex because that
+command had a shorter PATH. Retain that failed log. The authoritative full check
+is milestone18-as-cran-verified.log from the configured root environment, with
+PDF manual generation enabled; preliminary or isolated results do not supersede
+it. The authoritative run passed 623 assertions, zero errors/warnings and only
+New submission, including PDF manual generation. Coverage for final code is
+85.86%, lint is clean, and installed foundation,
+private synthetic adapter, legacy and pkgdown (CI=true) checks pass.
+
+Milestone 17 (fb7b9bb) passed all five hosted jobs in run 36997373879.
 
 ## Milestone 17: separate S3 method evidence
 

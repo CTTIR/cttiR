@@ -639,6 +639,51 @@
               ]
             }
           }
+        },
+        "model": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "intercept": {
+              "type": "boolean"
+            },
+            "binary_link": {
+              "type": "string",
+              "enum": [
+                "logit"
+              ]
+            },
+            "survival_ties": {
+              "type": "string",
+              "enum": [
+                "efron",
+                "breslow",
+                "exact"
+              ]
+            },
+            "random_effects": {
+              "type": "string",
+              "enum": [
+                "random_intercept"
+              ]
+            },
+            "residual_structure": {
+              "type": "string",
+              "enum": [
+                "independent_homoscedastic"
+              ]
+            },
+            "estimation": {
+              "type": "string",
+              "enum": [
+                "ML",
+                "REML"
+              ]
+            },
+            "reviewed": {
+              "type": "boolean"
+            }
+          }
         }
       },
       "required": [

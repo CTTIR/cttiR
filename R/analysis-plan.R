@@ -75,16 +75,21 @@ analysis_configuration <- function(spec) {
     if (engine == "nlme::lme") {
       required("subject")
       if (identical(analysis$unit_structure, "longitudinal")) required(c("time", "time_origin", "time_unit"))
-      gaps <- c(gaps, "random_effects_and_residual_structure_review_required")
     }
   }
   if (!isTRUE(analysis$approved)) missing <- c(missing, "/analysis/approved")
+  model <- analysis_model_configuration(analysis, engine)
+  if (identical(engine, "nlme::lme") && model$state != "settings_recorded") {
+    gaps <- c(gaps, "random_effects_and_residual_structure_review_required")
+  }
   list(
     state = if (length(missing) || length(gaps)) "incomplete" else "configuration_recorded",
     candidate_engine = engine, requested_engine = analysis$engine,
     missing_fields = as.list(unique(missing)), capability_gaps = as.list(unique(gaps)),
+    model = model,
     executable = FALSE,
-    blockers = as.list(c("adapter_and_revision_approval_pending", "data_checks_not_run")),
+    blockers = as.list(c("adapter_and_revision_approval_pending", "data_checks_not_run",
+        if (model$state != "settings_recorded") "model_settings_incomplete")),
     limitations = as.list(c("Candidate routing is not methodological or workflow approval.",
         "No dataset is opened and no formula, expression or model is evaluated.",
         "Column types, levels, missingness, model assumptions and diagnostics require runtime checks."))
