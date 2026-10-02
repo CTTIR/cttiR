@@ -15,5 +15,9 @@ configure(path = ".", launch.browser = interactive())
 A local Shiny application using \code{\link[=sync]{sync()}} for preview and application.
 }
 \description{
-Configure an existing project with an explicit preview
+Opens the local application on the Configure view of an existing project.
+Changes are collected from the optional questionnaire and advanced JSON,
+previewed with \code{\link[=sync]{sync()}} (field-level requested changes and the file plan)
+and applied only on explicit request. Edited managed files are reported as
+conflicts and nothing is written while conflicts remain.
 }

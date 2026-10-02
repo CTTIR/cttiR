@@ -1,7 +1,10 @@
+# Draft envelope, schema version 1. `answers` (questionnaire answers keyed by
+# question ID) is optional so drafts exported before the questionnaire existed
+# still restore unchanged.
 app_draft_validate <- function(value) {
   check_tree(value)
   fields <- c("schema_version", "operation", "mode", "project", "project_id", "config")
-  if (!is.list(value) || !setequal(names(value), fields) ||
+  if (!is.list(value) || !(setequal(names(value), fields) || setequal(names(value), c(fields, "answers"))) ||
       !identical(value$schema_version, 1L) ||
       !is.character(value$operation) || length(value$operation) != 1L ||
       !value$operation %in% c("create", "configure") ||
@@ -11,6 +14,10 @@ app_draft_validate <- function(value) {
   }
   if (!is.list(value$config)) abort_cttir("Draft configuration must be a JSON object.", "cttir_schema_error")
   value$config <- validate_config(value$config)
+  if ("answers" %in% names(value)) {
+    answers <- app_answers_validate(value$answers, app_questions()$questions)
+    value["answers"] <- list(answers)
+  }
   if (value$operation == "create") {
     project <- value$project
     if (!is.null(value$project_id) || !is.list(project) ||

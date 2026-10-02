@@ -1,29 +1,45 @@
-test_that("application construction never creates a project", {
+test_that("application construction never creates a project and stays on loopback", {
   skip_if_not_installed("shiny")
   parent <- new_parent()
   withr::local_dir(parent)
-  expect_s3_class(setup_app(launch.browser = FALSE), "shiny.appobj")
+  app <- setup_app(launch.browser = FALSE)
+  expect_s3_class(app, "shiny.appobj")
+  expect_equal(app$options$host, "127.0.0.1")
+  expect_s3_class(setup_app("detailed", launch.browser = FALSE), "shiny.appobj")
   expect_length(list.files(parent, all.files = TRUE, no.. = TRUE), 0L)
+  expect_error(setup_app(launch.browser = NA), class = "cttir_input_error")
   expect_error(app_config("{invalid}"), class = "cttir_input_error")
   expect_error(app_config('{"unknown":true}'), class = "cttir_schema_error")
+  html <- as.character(app_ui())
+  for (id in c("home", "create", "open", "ask", "knowledge", "resources", "audit", "runtime")) {
+    expect_match(html, sprintf('data-value="%s"', id), fixed = TRUE)
+  }
+  expect_match(html, 'data-i18n="nav.create"', fixed = TRUE)
+  expect_match(html, "create-name", fixed = TRUE)
+  expect_match(html, "Skip to content", fixed = TRUE)
 })
 
 test_that("Fast and Detailed share a draft and require a current preview", {
   skip_if_not_installed("shiny")
   parent <- new_parent()
-  shiny::testServer(builder_server, args = list(worker = app_test_worker), {
+  shiny::testServer(app_builder_server, args = app_test_args(), {
     session$setInputs(name = "UI project", type = "methods", goal = "Goal", parent = parent, config = "{}", mode = "fast")
     session$setInputs(apply = 1)
-    expect_match(state$status, "no accepted preview", fixed = TRUE)
+    expect_equal(state$status$key, "status.stale_preview")
     expect_false(dir.exists(file.path(parent, "ui_project")))
     session$setInputs(preview = 1)
     session$flushReact()
     expect_s3_class(state$preview, "cttir_project")
     initial <- draft()
+    revision <- state$revision
     session$setInputs(mode = "detailed")
     expect_equal(draft(), initial)
+    expect_equal(state$revision, revision)
+    expect_false(is.null(state$accepted))
     session$setInputs(goal = "Changed goal", apply = 2)
-    expect_match(state$status, "draft changed", fixed = TRUE)
+    expect_equal(state$status$key, "status.stale_preview")
+    expect_match(app_status_message(state$status), "draft changed", fixed = TRUE)
+    expect_gt(state$revision, revision)
     expect_false(dir.exists(file.path(parent, "ui_project")))
     session$setInputs(preview = 2)
     session$flushReact()
@@ -32,6 +48,68 @@ test_that("Fast and Detailed share a draft and require a current preview", {
     expect_true(dir.exists(file.path(parent, "ui_project")))
     expect_equal(read_project(file.path(parent, "ui_project"))$spec$project$goal, "Changed goal")
     expect_null(state$accepted)
+    expect_equal(state$status$key, "status.created")
+    expect_false(dirty())
+  })
+})
+
+test_that("Fast review shows the resolved profile, routing reason and selected tools", {
+  skip_if_not_installed("shiny")
+  parent <- new_parent()
+  shiny::testServer(app_builder_server, args = app_test_args(), {
+    session$setInputs(name = "Review fixture", type = "primary_research", parent = parent, config = "{}", mode = "fast",
+      goal = "Explain blood pressure with a linear model in independent patients with a continuous outcome")
+    session$setInputs(preview = 1)
+    session$flushReact()
+    html <- as.character(output$review$html)
+    expect_match(html, "Standard R with reflowR", fixed = TRUE)
+    expect_match(html, "No CTTIR specialist capability matches", fixed = TRUE)
+    expect_match(html, "DescrTab2", fixed = TRUE)
+    expect_match(html, "Model engine", fixed = TRUE)
+    expect_match(html, "Pending items", fixed = TRUE)
+    expect_false(grepl("Detailed questions", html, fixed = TRUE))
+    expect_equal(state$preview$readiness$workflow$profile, "standard_reflowR")
+    expect_false(dir.exists(file.path(parent, "review_fixture")))
+  })
+})
+
+test_that("an accepted UI spec yields the same file plan as the R API", {
+  skip_if_not_installed("shiny")
+  parent <- new_parent()
+  goal <- "Describe a cohort and compare outcomes"
+  shiny::testServer(app_builder_server, args = app_test_args(), {
+    session$setInputs(name = "Parity", type = "methods", goal = goal, parent = parent, config = "{}", mode = "fast", preview = 1)
+    session$flushReact()
+    fast <- state$preview
+    api <- project("Parity", "methods", goal, parent, config = list(), options = list(), dry_run = TRUE)
+    api$spec$project[c("id", "created_at")] <- fast$spec$project[c("id", "created_at")]
+    expect_identical(api$spec, fast$spec)
+    expect_identical(app_plan_hash(fast$plan), app_plan_hash(app_api_plan(api$spec)))
+
+    session$setInputs(mode = "detailed")
+    session$setInputs(q_analysis_aim = "explanatory")
+    session$setInputs(q_analysis_outcome_family = "continuous", q_analysis_unit_structure = "independent")
+    session$setInputs(q_data_sources = "Cohort A")
+    session$setInputs(q_mapping_data_source = "ds01", q_mapping_predictors = "age\nsex")
+    session$setInputs(preview = 2)
+    session$flushReact()
+    detailed <- state$preview
+    source <- list(id = "ds01", label = "Cohort A", logical_uri = NULL, format = NULL, access_class = "unknown",
+      checksum = NULL, checksum_status = "unknown", schema_ref = NULL)
+    mapping <- list(data_source_id = "ds01", predictors = list("age", "sex"))
+    options <- list(data_sources = list(source),
+      analysis = list(mapping = mapping, aim = "explanatory", outcome_family = "continuous", unit_structure = "independent"))
+    expect_identical(draft()$options, options)
+    api <- project("Parity", "methods", goal, parent, options = options, dry_run = TRUE)
+    api$spec$project[c("id", "created_at")] <- detailed$spec$project[c("id", "created_at")]
+    expect_identical(api$spec, detailed$spec)
+    expect_identical(app_plan_hash(detailed$plan), app_plan_hash(app_api_plan(api$spec)))
+    expect_equal(detailed$readiness$workflow$engine, "stats::lm")
+    session$setInputs(apply = 1)
+    session$flushReact()
+    created <- read_project(file.path(parent, "parity"))
+    expect_identical(created$spec$analysis, detailed$spec$analysis)
+    expect_identical(app_plan_hash(app_api_plan(created$spec)), app_plan_hash(state$result$plan))
   })
 })
 
@@ -40,40 +118,85 @@ test_that("Configure uses synchronization and refuses files changed after previe
   parent <- new_parent()
   p <- project("Configure fixture", "methods", "Goal", parent)
   expect_s3_class(configure(p$path, launch.browser = FALSE), "shiny.appobj")
-  shiny::testServer(builder_server, args = list(path = p$path, worker = app_test_worker), {
+  shiny::testServer(app_builder_server, args = app_test_args(path = shiny::reactive(p$path)), {
     session$setInputs(config = '{"project":{"language":"de"}}', preview = 1)
     session$flushReact()
     expect_s3_class(state$preview, "cttir_sync")
+    html <- as.character(output$review$html)
+    expect_match(html, "/project/language", fixed = TRUE)
+    expect_match(html, "Requested field changes", fixed = TRUE)
     file <- file.path(p$path, "cttir-project.yml")
     writeLines(c(readLines(file), "# local edit"), file)
     before <- tree_hashes(p$path)
     session$setInputs(apply = 1)
-    expect_match(state$status, "Project files changed", fixed = TRUE)
+    expect_equal(state$status$key, "status.stale_files")
+    expect_match(app_status_message(state$status), "Project files changed", fixed = TRUE)
     expect_equal(tree_hashes(p$path), before)
+  })
+})
+
+test_that("Configure applies questionnaire answers through sync after review", {
+  skip_if_not_installed("shiny")
+  parent <- new_parent()
+  p <- project("Configure answers", "methods", "Goal", parent)
+  shiny::testServer(app_builder_server, args = app_test_args(path = shiny::reactive(p$path)), {
+    session$setInputs(config = "{}", q_analysis_aim = "descriptive")
+    session$setInputs(preview = 1)
+    session$flushReact()
+    expect_s3_class(state$preview, "cttir_sync")
+    expect_equal(state$preview$state, "planned")
+    expect_match(as.character(output$review$html), "/analysis/aim", fixed = TRUE)
+    session$setInputs(apply = 1)
+    session$flushReact()
+    expect_equal(state$status$key, "status.applied")
+    expect_equal(read_project(p$path)$spec$analysis$aim, "descriptive")
   })
 })
 
 test_that("read-only jobs can be cancelled without duplicate workers", {
   skip_if_not_installed("shiny")
   parent <- new_parent()
-  control <- new.env(parent = emptyenv())
-  control$count <- 0L
-  control$alive <- TRUE
-  worker <- function(...) {
-    control$count <- control$count + 1L
-    list(is_alive = function() control$alive, kill = function() {
-      control$alive <- FALSE
-    })
-  }
-  shiny::testServer(builder_server, args = list(worker = worker), {
+  pending <- app_pending_worker()
+  shiny::testServer(app_builder_server, args = app_test_args(pending$worker), {
     session$setInputs(name = "Cancel fixture", type = "methods", goal = "Goal", parent = parent, config = "{}", preview = 1)
-    expect_equal(control$count, 1L)
+    expect_equal(pending$control$count, 1L)
+    expect_equal(state$status$kind, "busy")
+    expect_match(as.character(output$progress$html), "Planning", fixed = TRUE)
     session$setInputs(preview = 2)
-    expect_equal(control$count, 1L)
+    expect_equal(pending$control$count, 1L)
+    expect_equal(state$status$key, "status.duplicate")
     session$setInputs(cancel = 1)
-    expect_null(state$job)
-    expect_false(control$alive)
+    expect_null(slot$state$job)
+    expect_false(pending$control$alive)
+    expect_equal(state$status$key, "status.cancelled")
     expect_false(dir.exists(file.path(parent, "cancel_fixture")))
+  })
+})
+
+test_that("writes cannot be cancelled and the worker pool is bounded", {
+  skip_if_not_installed("shiny")
+  pending <- app_pending_worker()
+  pool <- app_job_pool(pending$worker, max_jobs = 1L)
+  shiny::testServer(function(id) {
+    shiny::moduleServer(id, function(input, output, session) {
+      first <- app_job_slot(pool, session)
+      second <- app_job_slot(pool, session)
+      done <- shiny::reactiveVal(NULL)
+      list(first = first, second = second, done = done)
+    })
+  }, {
+    slots <- session$returned
+    status <- app_start_job(slots$first, "project", list(), "job.apply", function(result) slots$done(result), mutating = TRUE)
+    expect_equal(status$kind, "busy")
+    expect_equal(app_start_job(slots$second, "audit", list(), "job.audit", function(result) NULL)$key, "status.capacity")
+    expect_equal(app_cancel_status(slots$first)$key, "status.cannot_cancel")
+    expect_equal(pending$control$killed, 0L)
+    pending$control$result <- list(ok = FALSE, code = "unexpected_error")
+    pending$control$alive <- FALSE
+    session$elapse(200)
+    expect_equal(slots$done()$code, "unexpected_error")
+    expect_equal(pool$active, 0L)
+    expect_equal(app_cancel_status(slots$first)$key, "status.nothing_running")
   })
 })
 
@@ -83,13 +206,100 @@ test_that("a catalog change invalidates an accepted UI preview", {
   pointer <- new.env(parent = emptyenv())
   pointer$value <- current_catalog_manifest()
   local_mocked_bindings(current_catalog_manifest = function() pointer$value)
-  shiny::testServer(builder_server, args = list(worker = app_test_worker), {
+  shiny::testServer(app_builder_server, args = app_test_args(), {
     session$setInputs(name = "Stale fixture", type = "methods", goal = "Goal", parent = parent, config = "{}", preview = 1)
     session$flushReact()
     pointer$value$manifest_id <- "changed"
     session$setInputs(apply = 1)
-    expect_match(state$status, "catalog changed", fixed = TRUE)
+    expect_equal(state$status$key, "status.stale_catalog")
+    expect_match(app_status_message(state$status), "catalog changed", fixed = TRUE)
     expect_false(dir.exists(file.path(parent, "stale_fixture")))
   })
   expect_error(app_worker("system", list()), class = "cttir_input_error")
+})
+
+test_that("domain errors are shown without internals and move focus to the field", {
+  skip_if_not_installed("shiny")
+  parent <- new_parent()
+  shiny::testServer(app_builder_server, args = app_test_args(), {
+    session$setInputs(name = "", type = "methods", goal = "Goal", parent = parent, config = "{}", preview = 1)
+    session$flushReact()
+    expect_equal(state$status$kind, "error")
+    expect_match(state$status$detail, "name must be one nonempty string", fixed = TRUE)
+    expect_equal(state$focus, "name")
+    session$setInputs(name = "Bad json", config = "{not json")
+    session$setInputs(preview = 2)
+    expect_equal(state$status$kind, "error")
+    expect_equal(state$focus, "config")
+    session$setInputs(config = '{"workflow":{"pipeline":"targets"}}', preview = 3)
+    session$flushReact()
+    expect_equal(state$status$kind, "error")
+    expect_match(state$status$detail, "pending", fixed = TRUE)
+  })
+  payload <- app_condition_payload(simpleError("secret internal /home/user path"))
+  expect_null(payload$message)
+  expect_equal(payload$code, "unexpected_error")
+  expect_false(grepl("secret", app_status_text(app_status_error(payload)), fixed = TRUE))
+  expect_equal(app_worker_run("system", list())$ok, FALSE)
+  local_mocked_bindings(resources = function(...) stop("internal failure details"))
+  result <- app_worker_run("resources", list())
+  expect_false(result$ok)
+  expect_null(result$message)
+})
+
+test_that("the questionnaire reveals follow-up questions and marks dependents for review", {
+  skip_if_not_installed("shiny")
+  parent <- new_parent()
+  shiny::testServer(app_builder_server, args = app_test_args(), {
+    session$setInputs(name = "Questions", type = "methods", goal = "Goal", parent = parent, config = "{}", mode = "detailed")
+    expect_false("analysis_outcome_family" %in% layout()$visible)
+    session$setInputs(q_analysis_aim = "explanatory")
+    expect_true(all(c("analysis_outcome_family", "analysis_unit_structure", "mapping_estimand") %in% layout()$visible))
+    session$setInputs(q_analysis_outcome_family = "continuous", q_analysis_unit_structure = "longitudinal")
+    expect_true(all(c("mapping_subject", "mapping_time", "model_estimation") %in% layout()$visible))
+    session$setInputs(q_model_estimation = "REML")
+    expect_equal(draft()$options$analysis$model$estimation, "REML")
+    session$setInputs(q_analysis_aim = "descriptive")
+    expect_equal(answers()$analysis_outcome_family$status, "review")
+    expect_equal(answers()$model_estimation$status, "review")
+    expect_equal(answers()$model_estimation$value, "REML")
+    expect_true("model_estimation" %in% layout()$hidden)
+    expect_null(draft()$options$analysis$outcome_family)
+    expect_null(draft()$options$analysis$model)
+    expect_equal(draft()$options$analysis$aim, "descriptive")
+    session$setInputs(q_analysis_aim = "explanatory")
+    expect_null(draft()$options$analysis$outcome_family)
+    session$setInputs(keep_analysis_outcome_family = 1)
+    expect_equal(draft()$options$analysis$outcome_family, "continuous")
+    session$setInputs(clear_model_estimation = 1)
+    expect_null(answers()$model_estimation)
+    step(3L)
+    session$flushReact()
+    html <- as.character(output$questionnaire$html)
+    expect_match(html, "Needs review", fixed = TRUE)
+    expect_match(html, "Section 3 of 7", fixed = TRUE)
+    session$setInputs(q_back = 1)
+    expect_equal(step(), 2L)
+    session$setInputs(q_skip = 1)
+    expect_equal(step(), 3L)
+    expect_equal(answers()$data_sources$status, "skipped")
+    expect_null(draft()$options$data_sources)
+    session$setInputs(goto_figures = 1)
+    expect_equal(step(), 7L)
+  })
+})
+
+test_that("unsaved drafts are reported until exported or restored", {
+  skip_if_not_installed("shiny")
+  shiny::testServer(app_builder_server, args = app_test_args(), {
+    session$setInputs(name = "", type = "methods", goal = "", parent = tempdir(), config = "{}")
+    expect_false(dirty())
+    session$setInputs(name = "Dirty", goal = "Goal")
+    expect_true(dirty())
+    expect_match(output$draft_status, "unsaved", fixed = TRUE)
+    record <- draft_record()
+    restore_draft(record)
+    expect_false(dirty())
+    expect_equal(state$status$key, "draft.restored")
+  })
 })
