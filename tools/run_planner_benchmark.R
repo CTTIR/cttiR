@@ -155,7 +155,7 @@ if (length(qualified)) {
 }
 report <- list(
   schema_version = 1L, benchmark = "m22-planner", corpus_version = corpus$corpus_version,
-  prompt_version = corpus$prompt_version,
+  prompt_version = internal("planner_prompt_version"),
   prompt_system_sha256 = internal("content_hash")(internal("planner_prompt")("x", "x", "x")$system),
   corpus_sha256 = digest::digest(file = file.path(root, "inst", "benchmarks", "planner-cases.json"), algo = "sha256"),
   schema_sha256 = digest::digest(file = file.path(root, "inst", "schema", "planner.schema.json"), algo = "sha256"),

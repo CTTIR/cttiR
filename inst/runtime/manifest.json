@@ -11,7 +11,227 @@
   "model_digest": "d7372fd828518a4d38b1eb196c673c31a85f2ed302b3d1e406c4c2d1b64a0668",
   "model_license": "Apache-2.0",
   "model_bytes": 986062089,
-  "model_validation": "candidate_pending_benchmark",
+  "model_validation": "not_qualified_for_planning",
+  "tested_models": [
+    {
+      "tag": "qwen2.5-coder:1.5b",
+      "digest": "d7372fd828518a4d38b1eb196c673c31a85f2ed302b3d1e406c4c2d1b64a0668",
+      "license": "Apache-2.0",
+      "size_bytes": 986062089,
+      "family": "qwen2",
+      "parameter_size": "1.5B",
+      "quantization": "Q4_K_M",
+      "context_length": 32768,
+      "planner_options": {
+        "temperature": 0,
+        "seed": 42,
+        "top_k": 1,
+        "num_ctx": 4096,
+        "num_predict": 384,
+        "num_thread": 16,
+        "num_gpu": 0
+      },
+      "benchmark": {
+        "corpus": "planner-cases-1",
+        "prompt_version": "planner-2",
+        "processor": "cpu",
+        "field_accuracy": {
+          "overall": 0.6878,
+          "heldout": 0.7105
+        },
+        "llm_acceptance_rate": 0.9848,
+        "capability_precision": 0.1818,
+        "capability_recall": 0.125,
+        "abstention_rate": 0.4167,
+        "injection_violations": 4,
+        "latency_p95_seconds": {
+          "cold": 5.97,
+          "warm": 2.467
+        },
+        "runner_rss_bytes": 1570549760,
+        "failed_thresholds": [
+          "overall_field_accuracy_minus_deterministic",
+          "injection_violations",
+          "abstention_rate",
+          "capability_precision",
+          "capability_recall"
+        ],
+        "planner_1_failed_thresholds": [
+          "overall_field_accuracy_minus_deterministic",
+          "injection_violations",
+          "abstention_rate",
+          "capability_precision",
+          "capability_recall"
+        ],
+        "evidence": "artifacts/implementation/m22-planner-benchmark.json"
+      },
+      "qualification": "not_qualified_for_planning"
+    },
+    {
+      "tag": "granite4.1:3b",
+      "digest": "6fd349357287c7ffc9e38189a93b48ea175d24fc566b38f09cfc564fb7f303eb",
+      "license": "Apache-2.0",
+      "size_bytes": 2099520281,
+      "family": "granite",
+      "parameter_size": "3.4B",
+      "quantization": "Q4_K_M",
+      "context_length": 131072,
+      "planner_options": {
+        "temperature": 0,
+        "seed": 42,
+        "top_k": 1,
+        "num_ctx": 4096,
+        "num_predict": 384,
+        "num_thread": 16,
+        "num_gpu": 0
+      },
+      "benchmark": {
+        "corpus": "planner-cases-1",
+        "prompt_version": "planner-2",
+        "processor": "cpu",
+        "field_accuracy": {
+          "overall": 0.8195,
+          "heldout": 0.8421
+        },
+        "llm_acceptance_rate": 0.9848,
+        "capability_precision": 0.6207,
+        "capability_recall": 0.5625,
+        "abstention_rate": 0.75,
+        "injection_violations": 3,
+        "latency_p95_seconds": {
+          "cold": 9.223,
+          "warm": 3.66
+        },
+        "runner_rss_bytes": 2878435328,
+        "failed_thresholds": [
+          "overall_field_accuracy_minus_deterministic",
+          "injection_violations",
+          "abstention_rate",
+          "capability_precision"
+        ],
+        "planner_1_failed_thresholds": [
+          "overall_field_accuracy_minus_deterministic",
+          "injection_violations",
+          "abstention_rate",
+          "capability_precision"
+        ],
+        "evidence": "artifacts/implementation/m22-planner-benchmark.json"
+      },
+      "qualification": "not_qualified_for_planning"
+    },
+    {
+      "tag": "qwen3:4b-instruct-2507-q4_K_M",
+      "digest": "0edcdef34593eac1aa2be9c7d06c432dcf81945adca5eca2f27662c18f168ba0",
+      "license": "Apache-2.0",
+      "size_bytes": 2497293803,
+      "family": "qwen3",
+      "parameter_size": "4.0B",
+      "quantization": "Q4_K_M",
+      "context_length": 262144,
+      "planner_options": {
+        "temperature": 0,
+        "seed": 42,
+        "top_k": 1,
+        "num_ctx": 4096,
+        "num_predict": 384,
+        "num_thread": 16,
+        "num_gpu": 0
+      },
+      "benchmark": {
+        "corpus": "planner-cases-1",
+        "prompt_version": "planner-2",
+        "processor": "cpu",
+        "field_accuracy": {
+          "overall": 0.9122,
+          "heldout": 0.8947
+        },
+        "llm_acceptance_rate": 0.9848,
+        "capability_precision": 0.5769,
+        "capability_recall": 0.9375,
+        "abstention_rate": 0.75,
+        "injection_violations": 2,
+        "latency_p95_seconds": {
+          "cold": 10.563,
+          "warm": 4.691
+        },
+        "runner_rss_bytes": 3693731840,
+        "failed_thresholds": [
+          "injection_violations",
+          "abstention_rate",
+          "capability_precision"
+        ],
+        "planner_1_failed_thresholds": [
+          "injection_violations",
+          "abstention_rate",
+          "capability_precision"
+        ],
+        "evidence": "artifacts/implementation/m22-planner-benchmark.json"
+      },
+      "qualification": "not_qualified_for_planning"
+    },
+    {
+      "tag": "qwen2.5:7b",
+      "digest": "845dbda0ea48ed749caafd9e6037047aa19acfcfd82e704d7ca97d631a0b697e",
+      "license": "Apache-2.0",
+      "size_bytes": 4683087332,
+      "family": "qwen2",
+      "parameter_size": "7.6B",
+      "quantization": "Q4_K_M",
+      "context_length": 32768,
+      "planner_options": {
+        "temperature": 0,
+        "seed": 42,
+        "top_k": 1,
+        "num_ctx": 4096,
+        "num_predict": 384,
+        "num_thread": 16,
+        "num_gpu": 0
+      },
+      "benchmark": {
+        "corpus": "planner-cases-1",
+        "prompt_version": "planner-2",
+        "processor": "cpu",
+        "field_accuracy": {
+          "overall": 0.922,
+          "heldout": 0.9211
+        },
+        "llm_acceptance_rate": 0.9697,
+        "capability_precision": 0.7742,
+        "capability_recall": 0.75,
+        "abstention_rate": 0.9167,
+        "injection_violations": 0,
+        "latency_p95_seconds": {
+          "cold": 16.213,
+          "warm": 6.365
+        },
+        "runner_rss_bytes": 5280960512,
+        "failed_thresholds": [
+          "capability_precision"
+        ],
+        "planner_1_failed_thresholds": [
+          "injection_violations",
+          "capability_precision"
+        ],
+        "evidence": "artifacts/implementation/m22-planner-benchmark.json"
+      },
+      "qualification": "not_qualified_for_planning"
+    }
+  ],
+  "planner_benchmark": {
+    "corpus": "planner-cases-1",
+    "prompt_versions": [
+      "planner-1",
+      "planner-2"
+    ],
+    "date": "2026-10-02",
+    "deterministic_field_accuracy": {
+      "overall": 0.7707,
+      "heldout": 0.5789
+    },
+    "selected": null,
+    "default_planner": "deterministic",
+    "reference_hardware": "Intel Xeon w9-3475X, 36 cores, 187 GiB RAM, CPU-only inference (num_gpu 0, 16 threads), Ollama 0.34.4"
+  },
   "archive_members": [
     "bin/ollama",
     "lib/ollama/CPP_HTTPLIB_LICENSE",
