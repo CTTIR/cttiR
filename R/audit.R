@@ -121,6 +121,10 @@ audit <- function(path = NULL, scope = c("installation", "knowledge", "project")
     })
     add("RES-002", "knowledge", "warning", FALSE, "Resource observations are dated; remote freshness was not checked.")
     add("KB-004", "knowledge", "not_tested", FALSE, "Static APIs are indexed; full documentation and tested workflow approvals are pending.")
+    run("KB-005", "knowledge", {
+      catalog <- resolve_catalog(path)
+      for (package in catalog$packages) validate_document_corpus(package$documentation_corpus)
+    })
   }
   if ("project" %in% scope) {
     if (is.null(path)) {

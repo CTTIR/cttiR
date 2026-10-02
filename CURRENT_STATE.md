@@ -1,6 +1,43 @@
 # cttiR development state
 
-Updated: 2026-10-01. Version: 0.0.6. License: MIT.
+Updated: 2026-10-01. Version: 0.0.7. License: MIT.
+
+## Milestone 7: revision-aligned documentation corpus
+
+Adds bounded, literal source-document inventories and content with explicit rights
+basis. Files are limited to 1 MB, package documentation to 10 MB, inventory to
+5000 entries and nesting to 12 levels; links are rejected. Missing rights retain
+hashes/inventory only. Images are explicitly metadata-only. No document code,
+macros, CITATION or vignette expressions are evaluated. Coverage describes the
+available source manifest, not all possible upstream web documentation.
+
+The bundled pinned reflowR revision contains 31 licensed text documents and two
+image metadata records. The previous bundled catalog is retained under
+inst/extdata/history, preserving accepted older project pins. A real
+0.0.6-created project remains byte-identical under the new sync and API lookup.
+The new corpus ID is 8e5a591daa5b55552bc7ca52a659fe422ec369aeab19f87adf9de60f94971788.
+
+Documentation hashes participate in source identity, including same-version
+README/NEWS/vignette changes. Updates report document additions/changes/removals;
+rollback restores content with the same immutable composite pointer. Diffs are
+computed before activation. Search returns literal excerpts of at most 1200
+characters, with source revision and document locator. Indexed documents remain
+unapproved; verified_only advice excludes them. APIs and complete workflow role
+approvals remain separate. Corpus integrity is checked on read and in audit.
+
+Fixtures cover rights restrictions, non-execution, removed vignettes, doc-only
+changes, oversized/linked inputs, failed activation, rollback and historical pins.
+Measured automated coverage is 83.73%; the focused corpus suite has 43 passing
+assertions. The source archive excludes admin and artifacts. An initial portable
+path NOTE was repaired by shortening the historical catalog directory.
+Final source check passed 368 assertions, zero errors/warnings and one New
+submission NOTE. Installed examples, lint and pkgdown passed.
+G27 is still incomplete: semantic method evidence, full supported-profile corpus,
+approval fixtures and grounded planning remain outstanding. No readiness claim.
+
+The hourly retry successfully resumed work on 2026-10-02; the former desktop
+writer-lock blockage is no longer current. Keep the timer active while unfinished.
+Do not create COMPLETE or STOP without the corresponding completed/paused state.
 
 ## Milestone 6: pinned template adaptation
 
@@ -201,7 +238,7 @@ Full v7 acceptance is not complete. Continue in this order:
 7. Expand audit profiles and full interruption/recovery fixtures, then build
    vignettes, documentation site, URL/spelling reports and the final gate matrix.
 
-Package checks on the supported hosted matrix passed for milestones 3, 4 and 5;
+Package checks on the supported hosted matrix passed for milestones 3 through 6;
 this does not qualify every runtime installer or scientific adapter. Full
 scientific validation, production readiness and CRAN readiness are not claimed.
 No CRAN or external-builder submission has been made. Creation and transaction

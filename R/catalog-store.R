@@ -75,6 +75,12 @@ catalog_snapshot <- function(id) {
   if (!is.character(id) || length(id) != 1L || !grepl("^[a-f0-9]{64}$", id)) {
     abort_cttir("Invalid catalog identifier.", "cttir_catalog_corrupt")
   }
+  historical <- system.file("extdata", "history", paste0(id, ".json.gz"), package = "cttiR")
+  if (nzchar(historical)) {
+    result <- read_catalog(historical)
+    if (!identical(result$content_id, id)) abort_cttir("Historical catalog identity mismatch.", "cttir_catalog_corrupt")
+    return(result)
+  }
   result <- read_catalog(file.path(catalog_store(), "snapshots", id, "api-catalog.json.gz"))
   if (!identical(result$content_id, id)) abort_cttir("Catalog snapshot identity mismatch.", "cttir_catalog_corrupt")
   result

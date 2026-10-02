@@ -1,3 +1,10 @@
+# cttiR 0.0.7
+
+* Store bounded, revision-aligned documentation with explicit rights and omission records.
+* Detect documentation-only edits and removals during transactional updates and rollback.
+* Search literal documentation excerpts without executing content or granting workflow approval.
+* Bundle 31 licensed reflowR documents and retain the historical catalog for existing project pins.
+
 # cttiR 0.0.6
 
 * Add a hashed, MIT-licensed adaptation of the pinned reflowR minimal layout.

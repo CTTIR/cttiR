@@ -55,6 +55,13 @@ revisions. Failed extraction preserves the previous active catalog.
 \details{
 Register trusted local source directories with
 \code{options(cttiR.sources = list(list(id = "local-example", path = source_dir)))}.
+A source record may include \code{documentation_rights}, a nonempty description
+of the reviewed rights basis for storing that source's documentation text.
+Without it only document hashes and inventory are retained. This declaration
+must cover the selected documents, including any third-party material.
+Documentation is stored literally, never rendered or evaluated. Each file
+is bounded to one megabyte and each package corpus to ten megabytes. Missing
+vignettes are reported as absent from the source, not proven unpublished.
 Sources are parsed statically and assigned a content-derived local revision,
 including same-version edits. No checkout is modified. Local observations
 preserve curated resource fields and never claim remote currency. Packages

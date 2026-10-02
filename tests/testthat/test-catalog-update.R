@@ -1,12 +1,3 @@
-local_update_fixture <- function(env = parent.frame()) {
-  parent <- tempfile("cttir-update-")
-  dir.create(parent)
-  withr::defer(unlink(parent, recursive = TRUE), envir = env)
-  source <- fixture_source(file.path(parent, "source"), c("old <- function(x) x", "keep <- function(x = 1) x"), c("old", "keep"))
-  withr::local_options(list(cttiR.catalog_dir = file.path(parent, "store"), cttiR.sources = list(list(id = "fixture", path = source))), .local_envir = env)
-  list(parent = parent, source = source, store = file.path(parent, "store"))
-}
-
 test_that("update preview leaves no store and rejects unsupported policies", {
   f <- local_update_fixture()
   plan <- update(dry_run = TRUE)

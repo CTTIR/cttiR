@@ -18,7 +18,7 @@ update_sources <- function(sources, packages) {
     abort_cttir("packages must contain exact package names.")
   }
   result <- lapply(registry, function(x) {
-    entry <- extract_source(x$path, paste0("local-source:", x$id), "local", "configured_local")
+    entry <- extract_source(x$path, paste0("local-source:", x$id), "local", "configured_local", x$documentation_rights)
     entry$revision <- paste0("local-", entry$source_hash)
     entry$freshness <- "remote_currency_unknown"
     entry
@@ -104,6 +104,13 @@ refresh_resource_observations <- function(file, selected) {
 #' @param bioc_version Release migration is not supported by the local updater.
 #' @details Register trusted local source directories with
 #'   `options(cttiR.sources = list(list(id = "local-example", path = source_dir)))`.
+#'   A source record may include `documentation_rights`, a nonempty description
+#'   of the reviewed rights basis for storing that source's documentation text.
+#'   Without it only document hashes and inventory are retained. This declaration
+#'   must cover the selected documents, including any third-party material.
+#'   Documentation is stored literally, never rendered or evaluated. Each file
+#'   is bounded to one megabyte and each package corpus to ten megabytes. Missing
+#'   vignettes are reported as absent from the source, not proven unpublished.
 #'   Sources are parsed statically and assigned a content-derived local revision,
 #'   including same-version edits. No checkout is modified. Local observations
 #'   preserve curated resource fields and never claim remote currency. Packages
@@ -159,6 +166,8 @@ update <- function(
   warnings <- "Remote currency was not checked; workflow approvals are not granted by extraction."
   if (!length(selected)) warnings <- c(warnings, "No local source records are configured or selected.")
   if (include_embeddings) warnings <- c(warnings, "Embedding backend unavailable; lexical catalog retained.")
+  api_changes <- api_diff(before, after)
+  doc_changes <- documentation_diff(before, after)
   if (changed && !dry_run) {
     retain_api_snapshot(before, root)
     retain_api_snapshot(after, root)
@@ -185,7 +194,8 @@ update <- function(
       resources = list(previous = old_resources$id, current = resource_id)
     ),
     sources = lapply(selected, function(x) list(package = x$name, revision = x$revision, status = "static_extracted")),
-    api_diff = api_diff(before, after), activation = changed && !dry_run, warnings = warnings
+    api_diff = api_changes, documentation_diff = doc_changes,
+    activation = changed && !dry_run, warnings = warnings
   ), class = "cttir_update")
 }
 
@@ -224,11 +234,13 @@ rollback_knowledge <- function(version, dry_run = TRUE) {
     }
   }
   changed <- !identical(previous, target)
+  api_changes <- api_diff(before, after)
+  doc_changes <- documentation_diff(before, after)
   if (changed && !dry_run) activate_catalog(target, previous)
   structure(list(
     status = if (dry_run) "planned" else if (changed) "succeeded" else "unchanged",
     previous_id = previous$manifest_id, new_id = target$manifest_id,
-    api_diff = api_diff(before, after), activation = changed && !dry_run,
+    api_diff = api_changes, documentation_diff = doc_changes, activation = changed && !dry_run,
     warnings = "Existing project pins and installed packages are unchanged."
   ), class = "cttir_update")
 }

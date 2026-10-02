@@ -14,15 +14,7 @@ resolve_catalog <- function(path = NULL) {
       abort_cttir("This project predates the API catalog and has no API snapshot pin.", "cttir_source_unavailable")
     }
     if (!grepl("^[a-f0-9]{64}$", id)) abort_cttir("Invalid catalog snapshot identifier.", "cttir_catalog_corrupt")
-    base <- read_catalog(bundled)
-    if (identical(base$content_id, id)) {
-      return(base)
-    }
-    file <- file.path(catalog_store(), "snapshots", id, "api-catalog.json.gz")
-    if (!file.exists(file)) abort_cttir("Pinned catalog snapshot is unavailable.", "cttir_source_unavailable")
-    result <- read_catalog(file)
-    if (!identical(result$content_id, id)) abort_cttir("Pinned catalog identity mismatch.", "cttir_catalog_corrupt")
-    return(result)
+    return(catalog_snapshot(id))
   }
   active <- file.path(catalog_store(), "active.json")
   assert_plain_path(active)
@@ -55,6 +47,8 @@ packages <- function(path = NULL) {
       pinned_version = if (is.null(path)) NA_character_ else p$version,
       exports = p$coverage$exports, resolved = p$coverage$resolved,
       documented = p$coverage$documented, approved = p$coverage$approved,
+      documents_discovered = if (is.null(p$documentation_corpus)) NA_integer_ else p$documentation_corpus$coverage$discovered,
+      documents_stored = if (is.null(p$documentation_corpus)) NA_integer_ else p$documentation_corpus$coverage$stored,
       freshness = p$freshness, stringsAsFactors = FALSE
     )
   })
@@ -64,7 +58,7 @@ packages <- function(path = NULL) {
   do.call(rbind, rows)
 }
 
-#' Search revision-scoped package and export metadata
+#' Search revision-scoped APIs and stored documentation
 #' @param query Nonempty literal search text, optionally `package::export`.
 #' @param packages Optional character vector of exact package names.
 #' @param path Optional exact project root selecting its pinned API catalog.
@@ -90,6 +84,16 @@ search <- function(query, packages = NULL, path = NULL, limit = 20L) {
   q <- tolower(query)
   for (p in catalog$packages) {
     if (!is.null(packages) && !p$name %in% packages) next
+    for (hit in if (grepl("::", query, fixed = TRUE)) list() else document_hits(p, query)) {
+      source <- if (startsWith(p$repository, "https://github.com/")) {
+        paste0(p$repository, "/blob/", p$revision, "/", hit$path)
+      } else {
+        paste0(p$repository, "#", hit$path)
+      }
+      out[nrow(out) + 1L, ] <- list(hit$id, p$name, p$revision, "document", "",
+        hit$snippet, 5, source,
+        "documentation_indexed", FALSE)
+    }
     for (entry in p$exports) {
       symbol <- paste0(p$name, "::", entry$name)
       haystack <- tolower(paste(symbol, p$title, p$description))
@@ -128,7 +132,7 @@ ask <- function(question, path = NULL, verified_only = TRUE) {
   structure(
     list(
       answer = if (nrow(hits)) {
-        "Matching API records were found; inspect their revision and prerequisites."
+        "Matching evidence records were found; inspect their revision and verification level."
       } else {
         "No matching verified API record was found. Try an exact package::export name."
       },

@@ -3,7 +3,7 @@
 CTTIR Project Builder creates research project scaffolds from three inputs:
 a name, research type and goal.
 
-This is development milestone `0.0.6`. It provides an offline
+This is development milestone `0.0.7`. It provides an offline
 builder, schema validation and a searchable resource snapshot. It does not yet
 provide the complete research workflow described in the development plan.
 
@@ -45,6 +45,14 @@ Unsupported integration requests fail explicitly. Validate documents with
 `cttiR::packages()` and `cttiR::search()` inspect a separate static API catalog
 from 30 public package roots across 40 enumerated CTTIR repositories. It contains
 1,340 export records, with 1,323 statically resolved function signatures.
+The pinned reflowR revision additionally includes 31 licensed documentation texts,
+with image omissions recorded. Search returns bounded literal excerpts. Local
+source registration can declare a reviewed `documentation_rights` basis; otherwise
+only documentation inventory and hashes are retained. Documentation-only changes
+and removed documents participate in immutable updates and rollback. Previous
+bundled catalog pins remain available. Indexed documents do not grant workflow
+approval.
+
 `cttiR::ask()` returns matching source evidence; it does not yet perform
 natural-language planning or generate approved workflow code. Project pins
 prevent silent substitution of another API snapshot.
@@ -91,8 +99,8 @@ To build and test locally with the declared dependencies installed:
 
 ```sh
 R CMD build .
-R CMD check --no-manual cttiR_0.0.6.tar.gz
-R CMD INSTALL cttiR_0.0.6.tar.gz
+R CMD check --no-manual cttiR_0.0.7.tar.gz
+R CMD INSTALL cttiR_0.0.7.tar.gz
 ```
 
 MIT licensed. Milestone 0.0.5 passed hosted checks on Linux release/oldrel/devel,

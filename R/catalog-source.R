@@ -27,7 +27,7 @@ static_functions <- function(text, source_path) {
   result
 }
 
-extract_source <- function(path, repository, revision, family = "local") {
+extract_source <- function(path, repository, revision, family = "local", documentation_rights = NULL) {
   scalar_text(path, "source path")
   scalar_text(repository, "repository")
   scalar_text(revision, "revision")
@@ -86,7 +86,9 @@ extract_source <- function(path, repository, revision, family = "local") {
     aliases <- sub("\\}$", "", sub("^\\\\alias\\{", "", hits))
     for (alias in aliases) topics[[alias]] <- list(path = rel, sha256 = hashes[[rel]])
   }
-  revision_hash <- content_hash(json_text(hashes[sort(names(hashes))]))
+  corpus <- document_inventory(path, documentation_rights)
+  for (doc in corpus$documents) hashes[[doc$path]] <- doc$source_sha256
+  revision_hash <- content_hash(json_text(hashes[sort(names(hashes), method = "radix")]))
   entries <- lapply(sort(unique(exports)), function(name) {
     fn <- funcs[[name]]
     topic <- topics[[name]]
@@ -103,7 +105,7 @@ extract_source <- function(path, repository, revision, family = "local") {
     name = package, version = value("Version"), title = value("Title"),
     description = value("Description"), license = value("License"), repository = repository,
     family = family, revision = revision, source_hash = revision_hash,
-    exports = entries, methods = methods, source_files = hashes,
+    exports = entries, methods = methods, source_files = hashes, documentation_corpus = corpus,
     coverage = list(
       exports = length(entries), documented = sum(vapply(entries, function(x) !is.null(x$documentation), logical(1))),
       resolved = sum(vapply(entries, function(x) x$verification == "static_api_verified", logical(1))),
@@ -150,6 +152,14 @@ read_catalog <- function(file) {
     abort_cttir("Catalog schema or logical hash is invalid.", "cttir_catalog_corrupt")
   }
   catalog$content_id <- id
+  for (package in catalog$packages) {
+    validate_document_corpus(package$documentation_corpus)
+    for (doc in package$documentation_corpus$documents) {
+      if (!identical(doc$source_sha256, package$source_files[[doc$path]])) {
+        abort_cttir("Documentation is not aligned with its source revision.", "cttir_catalog_corrupt")
+      }
+    }
+  }
   if (length(ls(.catalog_cache)) >= 4L) rm(list = ls(.catalog_cache)[[1]], envir = .catalog_cache)
   assign(cache_key, catalog, envir = .catalog_cache)
   catalog

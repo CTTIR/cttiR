@@ -2,7 +2,7 @@
 % Please edit documentation in R/catalog-query.R
 \name{search}
 \alias{search}
-\title{Search revision-scoped package and export metadata}
+\title{Search revision-scoped APIs and stored documentation}
 \usage{
 search(query, packages = NULL, path = NULL, limit = 20L)
 }
@@ -20,5 +20,5 @@ A data frame containing stable IDs, revision, snippet, score and source
 evidence. Static API verification does not imply tested workflow approval.
 }
 \description{
-Search revision-scoped package and export metadata
+Search revision-scoped APIs and stored documentation
 }
