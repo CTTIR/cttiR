@@ -1,0 +1,116 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "cttir adaptive questionnaire registry v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "sections", "questions"],
+  "definitions": {
+    "text": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["en", "de"],
+      "properties": {
+        "en": {"type": "string", "minLength": 1, "maxLength": 400},
+        "de": {"type": "string", "minLength": 1, "maxLength": 400}
+      }
+    },
+    "identifier": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$", "maxLength": 64},
+    "condition": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["all"],
+          "properties": {"all": {"type": "array", "minItems": 1, "items": {"$ref": "#/definitions/condition"}}}
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["any"],
+          "properties": {"any": {"type": "array", "minItems": 1, "items": {"$ref": "#/definitions/condition"}}}
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["question", "in"],
+          "properties": {
+            "question": {"$ref": "#/definitions/identifier"},
+            "in": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["question", "not_in"],
+          "properties": {
+            "question": {"$ref": "#/definitions/identifier"},
+            "not_in": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["question", "answered"],
+          "properties": {
+            "question": {"$ref": "#/definitions/identifier"},
+            "answered": {"type": "boolean"}
+          }
+        }
+      ]
+    }
+  },
+  "properties": {
+    "schema_version": {"const": 1},
+    "sections": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "labels"],
+        "properties": {
+          "id": {"$ref": "#/definitions/identifier"},
+          "labels": {"$ref": "#/definitions/text"}
+        }
+      }
+    },
+    "questions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "section", "pointer", "type", "depends_on", "relevance", "default_source", "optional", "evidence", "labels", "help"],
+        "properties": {
+          "id": {"$ref": "#/definitions/identifier"},
+          "section": {"$ref": "#/definitions/identifier"},
+          "pointer": {"type": "string", "pattern": "^(/[a-z_][a-z0-9_]*|/[0-9]+)+$"},
+          "type": {"enum": ["choice", "text", "boolean", "list"]},
+          "choices": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+          "choices_from": {"$ref": "#/definitions/identifier"},
+          "choices_basis": {"type": "string", "minLength": 1},
+          "pending_choices": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+          "entries": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id_prefix", "label_field", "slug", "skip_first_base", "defaults"],
+            "properties": {
+              "id_prefix": {"type": "string", "pattern": "^[a-z]+$"},
+              "label_field": {"$ref": "#/definitions/identifier"},
+              "slug": {"type": "boolean"},
+              "skip_first_base": {"type": "boolean"},
+              "defaults": {"type": "object"}
+            }
+          },
+          "depends_on": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/definitions/identifier"}},
+          "relevance": {"oneOf": [{"type": "null"}, {"$ref": "#/definitions/condition"}]},
+          "default_source": {"enum": ["spec", "schema", "none"]},
+          "optional": {"type": "boolean"},
+          "evidence": {"type": "string", "minLength": 1},
+          "labels": {"$ref": "#/definitions/text"},
+          "help": {"$ref": "#/definitions/text"}
+        }
+      }
+    }
+  }
+}

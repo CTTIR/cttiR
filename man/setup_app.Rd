@@ -12,17 +12,37 @@ setup_app(mode = c("fast", "detailed"), launch.browser = interactive())
 \item{launch.browser}{Open the browser when the application is run.}
 }
 \value{
-A \code{shiny.appobj}. Shiny and callr must be installed. Run locally only;
-authentication and remote multi-user deployment are not supported.
+A \code{shiny.appobj}. Shiny and callr must be installed. The background
+workers use the installed cttiR, which must match the running version. Run
+locally only; authentication and remote multi-user deployment are not
+supported.
 }
 \description{
-Returns a Shiny application. Printing it in an interactive R session launches
-the local interface. Fast and Detailed share one draft and the package APIs.
-Preview, catalog queries and audits use isolated background R workers. Creation
-requires a reviewed preview. Scientific analysis is never executed by the UI.
+Returns the local cttiR application. Printing it in an interactive R session
+launches it on the loopback interface. Views: Home, Create (Fast and
+Detailed share one draft), Open project/Configure, Ask, Knowledge (package
+coverage, catalog update preview/apply and rollback preview), Resources,
+Audit (report export and the documented repair allowlist) and Runtime setup.
+Every operation calls the same exported functions as the R API
+(\code{\link[=project]{project()}}, \code{\link[=sync]{sync()}}, \code{\link[=ask]{ask()}}, \code{\link[=search]{search()}}, \code{\link[=packages]{packages()}}, \code{\link[=resources]{resources()}},
+\code{\link[=update]{update()}}, \code{\link[=rollback_knowledge]{rollback_knowledge()}}, \code{\link[=audit]{audit()}}, \code{\link[=setup]{setup()}}) in a bounded
+background R process; read-only work can be cancelled and duplicate
+submissions are refused. Creation and configuration require a reviewed
+preview of the current draft and catalog. Scientific analysis and returned
+code are never executed by the interface.
+}
+\details{
+Fast asks only for name, research type and goal (plus the parent directory)
+and shows the resolved workflow profile, routing reason and selected tools.
+Detailed adds optional questions from a declarative registry; every question
+can stay unanswered, changing an answer marks dependent answers for review,
+and answers that no longer apply are not used. Answers are passed as
+\code{options}, the advanced JSON as \code{config}.
+
 Drafts can be exported to JSON and restored explicitly. They retain answers
 but exclude the parent directory, local data bindings and accepted plans.
 Restored drafts require a new preview; Configure drafts are bound to the
 existing project identity. Exported text may contain user-supplied sensitive
-information. Drafts are not automatically saved.
+information. Drafts are not automatically saved. The interface is available
+in English and German.
 }

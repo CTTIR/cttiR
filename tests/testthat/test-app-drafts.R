@@ -4,6 +4,18 @@ new_app_draft <- function() {
     project_id = NULL, config = list(project = list(language = "de")))
 }
 
+new_answer_draft <- function() {
+  value <- new_app_draft()
+  value$answers <- list(
+    analysis_aim = list(status = "answered", value = "explanatory"),
+    analysis_outcome_family = list(status = "review", value = "binary"),
+    data_sources = list(status = "answered", value = list("Cohort A")),
+    research_design = list(status = "skipped", value = NULL),
+    model_reviewed = list(status = "answered", value = FALSE)
+  )
+  value
+}
+
 test_that("unfinished drafts round trip as bounded data without paths or plans", {
   value <- new_app_draft()
   file <- tempfile(fileext = ".json")
@@ -21,6 +33,54 @@ test_that("unfinished drafts round trip as bounded data without paths or plans",
   expect_error(app_draft_read(file), "valid JSON")
   writeLines(paste(rep("x", 1048577L), collapse = ""), file)
   expect_error(app_draft_read(file), "1 MiB")
+})
+
+test_that("questionnaire answers round trip and legacy drafts stay valid", {
+  value <- new_answer_draft()
+  file <- tempfile(fileext = ".json")
+  withr::defer(unlink(file))
+  writeLines(json_text(value, TRUE), file)
+  expect_equal(app_draft_read(file), value)
+  legacy <- new_app_draft()
+  expect_false("answers" %in% names(app_draft_validate(legacy)))
+  empty <- legacy
+  empty$answers <- stats::setNames(list(), character())
+  writeLines(json_text(empty), file)
+  expect_equal(app_draft_read(file)$answers, stats::setNames(list(), character()))
+})
+
+test_that("draft answers are validated against the registry", {
+  bad <- function(edit) {
+    value <- new_answer_draft()
+    value$answers <- edit(value$answers)
+    expect_error(app_draft_validate(value), class = "cttir_schema_error")
+  }
+  bad(function(a) c(a, list(not_a_question = list(status = "answered", value = "x"))))
+  bad(function(a) {
+    a$analysis_aim$value <- "astrology"
+    a
+  })
+  bad(function(a) {
+    a$analysis_aim$status <- "approved"
+    a
+  })
+  bad(function(a) {
+    a$research_design$value <- "should be empty"
+    a
+  })
+  bad(function(a) {
+    a$model_reviewed$value <- "yes"
+    a
+  })
+  bad(function(a) {
+    a$data_sources$value <- list("bad\u0001label")
+    a
+  })
+  bad(function(a) {
+    a$analysis_aim$extra <- TRUE
+    a
+  })
+  bad(function(a) unname(a))
 })
 
 test_that("draft envelopes reject invalid identity and configuration", {
@@ -50,7 +110,7 @@ test_that("uploaded or entered JSON cannot request configuration file reads", {
 test_that("restoring a creation draft invalidates approval without creating files", {
   skip_if_not_installed("shiny")
   parent <- new_parent()
-  shiny::testServer(builder_server, args = list(worker = app_test_worker), {
+  shiny::testServer(app_builder_server, args = app_test_args(), {
     session$setInputs(name = "Original", type = "methods", goal = "Goal", parent = parent, config = "{}", mode = "fast", preview = 1)
     session$flushReact()
     expect_false(is.null(state$accepted))
@@ -61,12 +121,14 @@ test_that("restoring a creation draft invalidates approval without creating file
     expect_null(state$accepted)
     expect_null(state$preview)
     session$setInputs(apply = 1)
-    expect_match(state$status, "no accepted preview")
+    expect_equal(state$status$key, "status.stale_preview")
     expect_false(dir.exists(file.path(parent, "original")))
     session$setInputs(name = saved$project$name, goal = saved$project$goal,
       config = json_text(saved$config), mode = saved$mode, preview = 2)
     session$flushReact()
-    expect_equal(draft_record(), saved)
+    expected <- saved
+    expected$answers <- stats::setNames(list(), character())
+    expect_equal(draft_record(), expected)
     expect_equal(state$preview$spec$project$language, "de")
     session$setInputs(apply = 2)
     session$flushReact()
@@ -75,20 +137,41 @@ test_that("restoring a creation draft invalidates approval without creating file
   })
 })
 
+test_that("restoring a draft brings back questionnaire answers including review state", {
+  skip_if_not_installed("shiny")
+  parent <- new_parent()
+  shiny::testServer(app_builder_server, args = app_test_args(), {
+    session$setInputs(name = "Answers", type = "methods", goal = "Goal", parent = parent, config = "{}", mode = "detailed")
+    saved <- new_answer_draft()
+    saved$project$name <- "Answers"
+    saved$project$goal <- "Goal"
+    restore_draft(saved)
+    expect_equal(answers(), saved$answers)
+    expect_equal(draft()$options$analysis$aim, "explanatory")
+    expect_null(draft()$options$analysis$outcome_family)
+    expect_equal(draft()$options$data_sources[[1]]$label, "Cohort A")
+    session$flushReact()
+    expect_true("analysis_outcome_family" %in% layout()$review)
+    session$setInputs(config = json_text(saved$config))
+    expect_equal(draft_record()$answers, saved$answers)
+  })
+})
+
 test_that("Configure drafts require the same project and refuse active jobs", {
   skip_if_not_installed("shiny")
   p <- project("Draft target", "methods", "Goal", new_parent())
-  shiny::testServer(builder_server, args = list(path = p$path, worker = app_test_worker), {
-    session$setInputs(config = "{}", mode = "detailed")
+  shiny::testServer(app_builder_server, args = app_test_args(path = shiny::reactive(p$path)), {
+    session$setInputs(config = "{}")
     saved <- draft_record()
     expect_equal(saved$project_id, p$spec$project$id)
+    expect_equal(saved$mode, "detailed")
     wrong <- saved
     wrong$project_id <- "different-project"
     expect_error(restore_draft(wrong), "different project")
     expect_error(restore_draft(new_app_draft()), "different project")
-    state$job <- list(mutating = TRUE)
+    slot$state$job <- list(mutating = TRUE)
     expect_error(restore_draft(saved), "current operation")
-    state$job <- NULL
+    slot$state$job <- NULL
     expect_equal(restore_draft(saved), saved)
   })
 })
@@ -102,13 +185,13 @@ test_that("answers changed during a background preview cannot become accepted", 
     list(is_alive = function() control$alive, kill = function() NULL,
       get_result = function() list(ok = TRUE, value = value))
   }
-  shiny::testServer(builder_server, args = list(worker = worker), {
+  shiny::testServer(app_builder_server, args = app_test_args(worker), {
     session$setInputs(name = "Changing", type = "methods", goal = "Before", parent = new_parent(), config = "{}", preview = 1)
     session$setInputs(goal = "After")
     control$alive <- FALSE
     session$elapse(200)
     session$flushReact()
     expect_null(state$accepted)
-    expect_match(state$status, "draft changed while planning")
+    expect_equal(state$status$key, "status.changed_while_planning")
   })
 })

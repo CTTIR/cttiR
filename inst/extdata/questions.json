@@ -1,0 +1,829 @@
+{
+  "schema_version": 1,
+  "sections": [
+    {"id": "design", "labels": {"en": "Design", "de": "Design"}},
+    {"id": "data", "labels": {"en": "Data", "de": "Daten"}},
+    {"id": "analysis", "labels": {"en": "Analysis", "de": "Analyse"}},
+    {"id": "model", "labels": {"en": "Model settings", "de": "Modelleinstellungen"}},
+    {"id": "publications", "labels": {"en": "Publications", "de": "Publikationen"}},
+    {"id": "workflow", "labels": {"en": "Workflow and reporting", "de": "Workflow und Berichte"}},
+    {"id": "figures", "labels": {"en": "Figures", "de": "Abbildungen"}}
+  ],
+  "questions": [
+    {
+      "id": "research_analysis_role",
+      "section": "design",
+      "pointer": "/research/analysis_role",
+      "type": "choice",
+      "choices": ["primary_analysis", "secondary_analysis", "exploratory", "unknown"],
+      "depends_on": [],
+      "relevance": null,
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "11_RESEARCH_DATA_AND_PUBLICATIONS: analysis_role",
+      "labels": {"en": "Role of the analysis", "de": "Rolle der Analyse"},
+      "help": {
+        "en": "A secondary analysis of an existing cohort can still be original research. Leave unknown if undecided.",
+        "de": "Auch eine Sekundäranalyse einer bestehenden Kohorte kann Originalforschung sein. Unbekannt lassen, wenn noch offen."
+      }
+    },
+    {
+      "id": "research_data_origin",
+      "section": "design",
+      "pointer": "/research/data_origin",
+      "type": "choice",
+      "choices": ["new_collection", "existing_dataset", "literature", "mixed", "unknown"],
+      "depends_on": [],
+      "relevance": null,
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "11_RESEARCH_DATA_AND_PUBLICATIONS: data_origin",
+      "labels": {"en": "Origin of the data", "de": "Herkunft der Daten"},
+      "help": {
+        "en": "Where the data come from. This is recorded separately from the research type and review type.",
+        "de": "Woher die Daten stammen. Dies wird getrennt vom Forschungstyp und Reviewtyp erfasst."
+      }
+    },
+    {
+      "id": "research_design",
+      "section": "design",
+      "pointer": "/research/design",
+      "type": "text",
+      "depends_on": [],
+      "relevance": null,
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "11_RESEARCH_DATA_AND_PUBLICATIONS: scientific configuration",
+      "labels": {"en": "Study design", "de": "Studiendesign"},
+      "help": {
+        "en": "Short description, for example 'prospective cohort'. Nothing is decided automatically from this text.",
+        "de": "Kurze Beschreibung, zum Beispiel 'prospektive Kohorte'. Aus diesem Text wird nichts automatisch entschieden."
+      }
+    },
+    {
+      "id": "research_domain",
+      "section": "design",
+      "pointer": "/research/domain",
+      "type": "text",
+      "depends_on": [],
+      "relevance": null,
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "11_RESEARCH_DATA_AND_PUBLICATIONS: domain wording",
+      "labels": {"en": "Research domain", "de": "Forschungsgebiet"},
+      "help": {
+        "en": "Field of research. Non-biomedical projects do not get patient or ethics assumptions.",
+        "de": "Fachgebiet. Nicht-biomedizinische Projekte erhalten keine Patienten- oder Ethikannahmen."
+      }
+    },
+    {
+      "id": "research_ethics_status",
+      "section": "design",
+      "pointer": "/research/ethics_status",
+      "type": "choice",
+      "choices": ["unknown", "not_applicable", "pending", "approved"],
+      "depends_on": ["research_data_origin"],
+      "relevance": {"question": "research_data_origin", "in": ["new_collection", "existing_dataset", "mixed"]},
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "11_RESEARCH_DATA_AND_PUBLICATIONS: research integrity",
+      "labels": {"en": "Ethics review status", "de": "Status des Ethikvotums"},
+      "help": {
+        "en": "Record only what is actually known. cttiR never assumes an approval.",
+        "de": "Nur tatsächlich Bekanntes eintragen. cttiR nimmt nie ein Votum an."
+      }
+    },
+    {
+      "id": "project_language",
+      "section": "design",
+      "pointer": "/project/language",
+      "type": "choice",
+      "choices": ["en", "de"],
+      "depends_on": [],
+      "relevance": null,
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "03_PRODUCT_AND_READINESS: English and German labels",
+      "labels": {"en": "Project document language", "de": "Sprache der Projektdokumente"},
+      "help": {
+        "en": "Language recorded in the specification. File names stay portable.",
+        "de": "In der Spezifikation erfasste Sprache. Dateinamen bleiben portabel."
+      }
+    },
+    {
+      "id": "data_sources",
+      "section": "data",
+      "pointer": "/data_sources",
+      "type": "list",
+      "entries": {
+        "id_prefix": "ds",
+        "label_field": "label",
+        "slug": false,
+        "skip_first_base": false,
+        "defaults": {
+          "logical_uri": null,
+          "format": null,
+          "access_class": "unknown",
+          "checksum": null,
+          "checksum_status": "unknown",
+          "schema_ref": null
+        }
+      },
+      "depends_on": [],
+      "relevance": null,
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "11_RESEARCH_DATA_AND_PUBLICATIONS: data registry",
+      "labels": {"en": "Datasets (one label per line)", "de": "Datensätze (eine Bezeichnung pro Zeile)"},
+      "help": {
+        "en": "Only labels are recorded. Files are never opened, copied or checksummed here; access class stays unknown until you set it. Existing datasets are kept.",
+        "de": "Es werden nur Bezeichnungen erfasst. Dateien werden hier nie geöffnet, kopiert oder geprüft; die Zugriffsklasse bleibt unbekannt, bis Sie sie festlegen. Bestehende Datensätze bleiben erhalten."
+      }
+    },
+    {
+      "id": "mapping_data_source",
+      "section": "data",
+      "pointer": "/analysis/mapping/data_source_id",
+      "type": "choice",
+      "choices_from": "data_sources",
+      "depends_on": ["data_sources"],
+      "relevance": {"question": "data_sources", "answered": true},
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "02_API_CONTRACT: analysis mapping references a registered data source",
+      "labels": {"en": "Dataset used for the analysis", "de": "Für die Analyse verwendeter Datensatz"},
+      "help": {
+        "en": "Must be one of the registered datasets.",
+        "de": "Muss einer der registrierten Datensätze sein."
+      }
+    },
+    {
+      "id": "mapping_missing_data",
+      "section": "data",
+      "pointer": "/analysis/mapping/missing_data",
+      "type": "choice",
+      "choices": ["unknown", "fail", "complete_case"],
+      "depends_on": ["data_sources"],
+      "relevance": {"question": "data_sources", "answered": true},
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "25_STANDARD_PACKAGE_SELECTION: missing-data strategy",
+      "labels": {"en": "Handling of missing values", "de": "Umgang mit fehlenden Werten"},
+      "help": {
+        "en": "Records intent only. No observations are removed during planning.",
+        "de": "Erfasst nur die Absicht. Bei der Planung werden keine Beobachtungen entfernt."
+      }
+    },
+    {
+      "id": "analysis_aim",
+      "section": "analysis",
+      "pointer": "/analysis/aim",
+      "type": "choice",
+      "choices": ["descriptive", "explanatory", "predictive", "causal", "unknown"],
+      "depends_on": [],
+      "relevance": null,
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "25_STANDARD_PACKAGE_SELECTION: distinguish descriptive, explanatory, predictive and causal aims",
+      "labels": {"en": "Analysis aim", "de": "Analyseziel"},
+      "help": {
+        "en": "Goal keywords may suggest an aim in the preview; an explicit answer here takes precedence.",
+        "de": "Schlüsselwörter im Ziel können in der Vorschau ein Ziel nahelegen; eine ausdrückliche Antwort hat Vorrang."
+      }
+    },
+    {
+      "id": "analysis_outcome_family",
+      "section": "analysis",
+      "pointer": "/analysis/outcome_family",
+      "type": "choice",
+      "choices": ["continuous", "binary", "count", "ordinal", "time_to_event", "other", "unknown"],
+      "depends_on": ["analysis_aim"],
+      "relevance": {"question": "analysis_aim", "in": ["explanatory", "predictive", "causal"]},
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "25_STANDARD_PACKAGE_SELECTION: model routing by outcome",
+      "labels": {"en": "Outcome family", "de": "Art des Endpunkts"},
+      "help": {
+        "en": "Type of the main outcome variable.",
+        "de": "Typ der Hauptzielgröße."
+      }
+    },
+    {
+      "id": "analysis_unit_structure",
+      "section": "analysis",
+      "pointer": "/analysis/unit_structure",
+      "type": "choice",
+      "choices": ["independent", "paired", "clustered", "longitudinal", "unknown"],
+      "depends_on": ["analysis_aim"],
+      "relevance": {"question": "analysis_aim", "in": ["explanatory", "predictive", "causal"]},
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "25_STANDARD_PACKAGE_SELECTION: repeated or clustered structure",
+      "labels": {"en": "Repeated or clustered structure", "de": "Wiederholte oder geclusterte Struktur"},
+      "help": {
+        "en": "Are observations independent, or repeated within subjects or clusters?",
+        "de": "Sind die Beobachtungen unabhängig oder innerhalb von Personen oder Clustern wiederholt?"
+      }
+    },
+    {
+      "id": "mapping_outcome",
+      "section": "analysis",
+      "pointer": "/analysis/mapping/outcome",
+      "type": "text",
+      "depends_on": ["analysis_aim", "analysis_outcome_family"],
+      "relevance": {"all": [
+        {"question": "analysis_aim", "in": ["explanatory", "predictive", "causal"]},
+        {"question": "analysis_outcome_family", "not_in": ["time_to_event"]}
+      ]},
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "02_API_CONTRACT: analysis mapping outcome column",
+      "labels": {"en": "Outcome column name", "de": "Spaltenname des Endpunkts"},
+      "help": {
+        "en": "Literal column name. It is stored as data, never evaluated as an expression.",
+        "de": "Wörtlicher Spaltenname. Er wird als Daten gespeichert und nie als Ausdruck ausgewertet."
+      }
+    },
+    {
+      "id": "mapping_predictors",
+      "section": "analysis",
+      "pointer": "/analysis/mapping/predictors",
+      "type": "list",
+      "depends_on": ["analysis_aim"],
+      "relevance": {"question": "analysis_aim", "in": ["explanatory", "predictive", "causal"]},
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "02_API_CONTRACT: analysis mapping predictors",
+      "labels": {"en": "Predictor columns (one per line)", "de": "Prädiktorspalten (eine pro Zeile)"},
+      "help": {
+        "en": "Up to 50 literal column names. Covariates are never filtered automatically.",
+        "de": "Bis zu 50 wörtliche Spaltennamen. Kovariaten werden nie automatisch gefiltert."
+      }
+    },
+    {
+      "id": "mapping_estimand",
+      "section": "analysis",
+      "pointer": "/analysis/mapping/estimand",
+      "type": "text",
+      "depends_on": ["analysis_aim"],
+      "relevance": {"question": "analysis_aim", "in": ["explanatory", "predictive", "causal"]},
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "25_STANDARD_PACKAGE_SELECTION: target estimand",
+      "labels": {"en": "Target estimand", "de": "Ziel-Estimand"},
+      "help": {
+        "en": "What quantity the analysis estimates, in plain words.",
+        "de": "Welche Größe die Analyse schätzt, in einfachen Worten."
+      }
+    },
+    {
+      "id": "mapping_subject",
+      "section": "analysis",
+      "pointer": "/analysis/mapping/subject",
+      "type": "text",
+      "depends_on": ["analysis_unit_structure"],
+      "relevance": {"question": "analysis_unit_structure", "in": ["paired", "clustered", "longitudinal"]},
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "25_STANDARD_PACKAGE_SELECTION: preserve IDs and within-subject dependence",
+      "labels": {"en": "Subject or cluster identifier column", "de": "Spalte mit Personen- oder Cluster-ID"},
+      "help": {
+        "en": "Identifiers are kept together; they cannot also be predictors.",
+        "de": "Kennungen bleiben zusammen; sie können nicht zugleich Prädiktoren sein."
+      }
+    },
+    {
+      "id": "mapping_time",
+      "section": "analysis",
+      "pointer": "/analysis/mapping/time",
+      "type": "text",
+      "depends_on": ["analysis_unit_structure", "analysis_outcome_family"],
+      "relevance": {"any": [
+        {"question": "analysis_unit_structure", "in": ["longitudinal"]},
+        {"question": "analysis_outcome_family", "in": ["time_to_event"]}
+      ]},
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "25_STANDARD_PACKAGE_SELECTION: time coding",
+      "labels": {"en": "Time column", "de": "Zeitspalte"},
+      "help": {
+        "en": "Follow-up or measurement time column.",
+        "de": "Spalte mit Nachbeobachtungs- oder Messzeit."
+      }
+    },
+    {
+      "id": "mapping_time_origin",
+      "section": "analysis",
+      "pointer": "/analysis/mapping/time_origin",
+      "type": "text",
+      "depends_on": ["analysis_unit_structure", "analysis_outcome_family"],
+      "relevance": {"any": [
+        {"question": "analysis_unit_structure", "in": ["longitudinal"]},
+        {"question": "analysis_outcome_family", "in": ["time_to_event"]}
+      ]},
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "25_STANDARD_PACKAGE_SELECTION: origin of time",
+      "labels": {"en": "Time origin", "de": "Zeitnullpunkt"},
+      "help": {
+        "en": "For example 'randomisation' or 'diagnosis'.",
+        "de": "Zum Beispiel 'Randomisierung' oder 'Diagnose'."
+      }
+    },
+    {
+      "id": "mapping_time_unit",
+      "section": "analysis",
+      "pointer": "/analysis/mapping/time_unit",
+      "type": "text",
+      "depends_on": ["analysis_unit_structure", "analysis_outcome_family"],
+      "relevance": {"any": [
+        {"question": "analysis_unit_structure", "in": ["longitudinal"]},
+        {"question": "analysis_outcome_family", "in": ["time_to_event"]}
+      ]},
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "25_STANDARD_PACKAGE_SELECTION: unit transforms",
+      "labels": {"en": "Time unit", "de": "Zeiteinheit"},
+      "help": {
+        "en": "For example 'days' or 'months'.",
+        "de": "Zum Beispiel 'Tage' oder 'Monate'."
+      }
+    },
+    {
+      "id": "mapping_event",
+      "section": "analysis",
+      "pointer": "/analysis/mapping/event",
+      "type": "text",
+      "depends_on": ["analysis_outcome_family"],
+      "relevance": {"question": "analysis_outcome_family", "in": ["time_to_event"]},
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "25_STANDARD_PACKAGE_SELECTION: event and censoring coding",
+      "labels": {"en": "Event indicator column", "de": "Spalte des Ereignisindikators"},
+      "help": {
+        "en": "Column that marks whether the event occurred.",
+        "de": "Spalte, die angibt, ob das Ereignis eingetreten ist."
+      }
+    },
+    {
+      "id": "mapping_event_value",
+      "section": "analysis",
+      "pointer": "/analysis/mapping/event_value",
+      "type": "text",
+      "depends_on": ["analysis_outcome_family"],
+      "relevance": {"question": "analysis_outcome_family", "in": ["binary", "time_to_event"]},
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "25_STANDARD_PACKAGE_SELECTION: event coding",
+      "labels": {"en": "Code of the event value", "de": "Kodierung des Ereigniswerts"},
+      "help": {
+        "en": "The literal value that means 'event'.",
+        "de": "Der wörtliche Wert, der 'Ereignis' bedeutet."
+      }
+    },
+    {
+      "id": "mapping_non_event_value",
+      "section": "analysis",
+      "pointer": "/analysis/mapping/non_event_value",
+      "type": "text",
+      "depends_on": ["analysis_outcome_family"],
+      "relevance": {"question": "analysis_outcome_family", "in": ["binary", "time_to_event"]},
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "25_STANDARD_PACKAGE_SELECTION: event coding",
+      "labels": {"en": "Code of the non-event value", "de": "Kodierung des Nicht-Ereigniswerts"},
+      "help": {
+        "en": "Must differ from the event code.",
+        "de": "Muss sich von der Ereigniskodierung unterscheiden."
+      }
+    },
+    {
+      "id": "model_estimation",
+      "section": "model",
+      "pointer": "/analysis/model/estimation",
+      "type": "choice",
+      "choices": ["ML", "REML"],
+      "depends_on": ["analysis_aim", "analysis_outcome_family", "analysis_unit_structure"],
+      "relevance": {"all": [
+        {"question": "analysis_aim", "in": ["explanatory"]},
+        {"question": "analysis_outcome_family", "in": ["continuous"]},
+        {"question": "analysis_unit_structure", "in": ["clustered", "longitudinal"]}
+      ]},
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "25_STANDARD_PACKAGE_SELECTION: repeated/clustered outcome engines",
+      "labels": {"en": "Mixed-model estimation", "de": "Schätzverfahren des gemischten Modells"},
+      "help": {
+        "en": "Maximum likelihood or restricted maximum likelihood. The model choice stays tentative until all requirements are met.",
+        "de": "Maximum-Likelihood oder Restricted Maximum Likelihood. Die Modellwahl bleibt vorläufig, bis alle Voraussetzungen erfüllt sind."
+      }
+    },
+    {
+      "id": "model_random_effects",
+      "section": "model",
+      "pointer": "/analysis/model/random_effects",
+      "type": "choice",
+      "choices": ["random_intercept"],
+      "depends_on": ["analysis_aim", "analysis_outcome_family", "analysis_unit_structure"],
+      "relevance": {"all": [
+        {"question": "analysis_aim", "in": ["explanatory"]},
+        {"question": "analysis_outcome_family", "in": ["continuous"]},
+        {"question": "analysis_unit_structure", "in": ["clustered", "longitudinal"]}
+      ]},
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "Milestone 18: reviewed mixed random-intercept setting",
+      "labels": {"en": "Random-effects structure", "de": "Struktur der Zufallseffekte"},
+      "help": {
+        "en": "Only a random intercept has a reviewed setting in this build.",
+        "de": "In dieser Version gibt es nur für einen Zufallsachsenabschnitt eine geprüfte Einstellung."
+      }
+    },
+    {
+      "id": "model_residual_structure",
+      "section": "model",
+      "pointer": "/analysis/model/residual_structure",
+      "type": "choice",
+      "choices": ["independent_homoscedastic"],
+      "depends_on": ["analysis_aim", "analysis_outcome_family", "analysis_unit_structure"],
+      "relevance": {"all": [
+        {"question": "analysis_aim", "in": ["explanatory"]},
+        {"question": "analysis_outcome_family", "in": ["continuous"]},
+        {"question": "analysis_unit_structure", "in": ["clustered", "longitudinal"]}
+      ]},
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "Milestone 18: reviewed residual structure",
+      "labels": {"en": "Residual structure", "de": "Residualstruktur"},
+      "help": {
+        "en": "Heterogeneous residual structures are not supported yet.",
+        "de": "Heterogene Residualstrukturen werden noch nicht unterstützt."
+      }
+    },
+    {
+      "id": "model_survival_ties",
+      "section": "model",
+      "pointer": "/analysis/model/survival_ties",
+      "type": "choice",
+      "choices": ["efron", "breslow", "exact"],
+      "depends_on": ["analysis_aim", "analysis_outcome_family"],
+      "relevance": {"all": [
+        {"question": "analysis_aim", "in": ["explanatory"]},
+        {"question": "analysis_outcome_family", "in": ["time_to_event"]}
+      ]},
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "Milestone 18: Cox tie method",
+      "labels": {"en": "Handling of tied event times", "de": "Behandlung gleichzeitiger Ereigniszeiten"},
+      "help": {
+        "en": "Tie method for the Cox model.",
+        "de": "Methode für Bindungen im Cox-Modell."
+      }
+    },
+    {
+      "id": "model_binary_link",
+      "section": "model",
+      "pointer": "/analysis/model/binary_link",
+      "type": "choice",
+      "choices": ["logit"],
+      "depends_on": ["analysis_aim", "analysis_outcome_family"],
+      "relevance": {"all": [
+        {"question": "analysis_aim", "in": ["explanatory"]},
+        {"question": "analysis_outcome_family", "in": ["binary"]}
+      ]},
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "Milestone 18: binary logit link",
+      "labels": {"en": "Link function for the binary outcome", "de": "Linkfunktion für den binären Endpunkt"},
+      "help": {
+        "en": "Only the logit link has a reviewed setting in this build.",
+        "de": "In dieser Version gibt es nur für den Logit-Link eine geprüfte Einstellung."
+      }
+    },
+    {
+      "id": "model_intercept",
+      "section": "model",
+      "pointer": "/analysis/model/intercept",
+      "type": "boolean",
+      "depends_on": ["analysis_aim", "analysis_outcome_family"],
+      "relevance": {"all": [
+        {"question": "analysis_aim", "in": ["explanatory"]},
+        {"question": "analysis_outcome_family", "in": ["continuous", "binary"]}
+      ]},
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "Milestone 18: fixed intercept setting",
+      "labels": {"en": "Include an intercept", "de": "Achsenabschnitt einschließen"},
+      "help": {
+        "en": "Cox models have no estimated intercept, so this is not asked for time-to-event outcomes.",
+        "de": "Cox-Modelle haben keinen geschätzten Achsenabschnitt; daher wird dies bei Ereigniszeiten nicht gefragt."
+      }
+    },
+    {
+      "id": "model_reviewed",
+      "section": "model",
+      "pointer": "/analysis/model/reviewed",
+      "type": "boolean",
+      "depends_on": ["analysis_aim"],
+      "relevance": {"question": "analysis_aim", "in": ["explanatory"]},
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "Milestone 18: explicit review of model settings",
+      "labels": {"en": "Model settings have been reviewed", "de": "Modelleinstellungen wurden geprüft"},
+      "help": {
+        "en": "Records your review of the settings above. It does not approve a package revision, fit a model or interpret results.",
+        "de": "Erfasst Ihre Prüfung der obigen Einstellungen. Es genehmigt keine Paketversion, passt kein Modell an und interpretiert keine Ergebnisse."
+      }
+    },
+    {
+      "id": "publication_type",
+      "section": "publications",
+      "pointer": "/publications/0/type",
+      "type": "choice",
+      "choices": ["original_article", "systematic_review", "scoping_review", "meta_analysis", "methods", "protocol", "software", "narrative_review", "other"],
+      "depends_on": [],
+      "relevance": null,
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "11_RESEARCH_DATA_AND_PUBLICATIONS: publication type",
+      "labels": {"en": "Type of the main publication", "de": "Typ der Hauptpublikation"},
+      "help": {
+        "en": "Reclassification updates metadata only; the publication folder keeps its stable path.",
+        "de": "Eine Umklassifizierung ändert nur Metadaten; der Publikationsordner behält seinen stabilen Pfad."
+      }
+    },
+    {
+      "id": "publication_research_class",
+      "section": "publications",
+      "pointer": "/publications/0/research_class",
+      "type": "choice",
+      "choices": ["primary_research", "secondary_research", "methods", "software", "other", "unknown"],
+      "depends_on": [],
+      "relevance": null,
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "11_RESEARCH_DATA_AND_PUBLICATIONS: research class",
+      "labels": {"en": "Research class of the main publication", "de": "Forschungsklasse der Hauptpublikation"},
+      "help": {
+        "en": "Secondary research means evidence synthesis such as a systematic review.",
+        "de": "Sekundärforschung bedeutet Evidenzsynthese, etwa ein systematisches Review."
+      }
+    },
+    {
+      "id": "publication_analysis_role",
+      "section": "publications",
+      "pointer": "/publications/0/analysis_role",
+      "type": "choice",
+      "choices": ["primary_analysis", "secondary_analysis", "exploratory", "unknown"],
+      "depends_on": [],
+      "relevance": null,
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "11_RESEARCH_DATA_AND_PUBLICATIONS: analysis_role",
+      "labels": {"en": "Analysis role of the main publication", "de": "Analyserolle der Hauptpublikation"},
+      "help": {
+        "en": "Kept separate from the review type and the data origin.",
+        "de": "Getrennt vom Reviewtyp und der Datenherkunft."
+      }
+    },
+    {
+      "id": "publication_data_origin",
+      "section": "publications",
+      "pointer": "/publications/0/data_origin",
+      "type": "choice",
+      "choices": ["new_collection", "existing_dataset", "literature", "mixed", "unknown"],
+      "depends_on": [],
+      "relevance": null,
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "11_RESEARCH_DATA_AND_PUBLICATIONS: data_origin",
+      "labels": {"en": "Data origin of the main publication", "de": "Datenherkunft der Hauptpublikation"},
+      "help": {
+        "en": "Where the data of this publication come from.",
+        "de": "Woher die Daten dieser Publikation stammen."
+      }
+    },
+    {
+      "id": "publications",
+      "section": "publications",
+      "pointer": "/publications",
+      "type": "list",
+      "entries": {
+        "id_prefix": "pub",
+        "label_field": "title",
+        "slug": true,
+        "skip_first_base": true,
+        "defaults": {
+          "research_class": "unknown",
+          "type": "other",
+          "analysis_role": "unknown",
+          "data_origin": "unknown"
+        }
+      },
+      "depends_on": [],
+      "relevance": null,
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "11_RESEARCH_DATA_AND_PUBLICATIONS: publication tree",
+      "labels": {"en": "Additional publications (one title per line)", "de": "Weitere Publikationen (ein Titel pro Zeile)"},
+      "help": {
+        "en": "Each gets its own stable ID and folder with analysis, manuscript, figures and tables. Classification stays unknown until you set it.",
+        "de": "Jede erhält eine stabile ID und einen eigenen Ordner mit Analyse, Manuskript, Abbildungen und Tabellen. Die Klassifizierung bleibt unbekannt, bis Sie sie festlegen."
+      }
+    },
+    {
+      "id": "workflow_profile",
+      "section": "workflow",
+      "pointer": "/workflow/profile",
+      "type": "choice",
+      "choices": ["auto", "cttir_specialist", "hybrid", "standard_reflowR"],
+      "depends_on": [],
+      "relevance": null,
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "02_API_CONTRACT: workflow routing options",
+      "labels": {"en": "Workflow profile", "de": "Workflow-Profil"},
+      "help": {
+        "en": "Automatic routing is recommended. A specialist profile is accepted only when an approved specialist adapter matches.",
+        "de": "Automatische Zuordnung wird empfohlen. Ein Spezialistenprofil wird nur akzeptiert, wenn ein genehmigter Spezialadapter passt."
+      }
+    },
+    {
+      "id": "workflow_table_backend",
+      "section": "workflow",
+      "pointer": "/workflow/table_backend",
+      "type": "choice",
+      "choices": ["DescrTab2", "gtsummary", "gt", "none"],
+      "pending_choices": ["gtsummary", "gt"],
+      "depends_on": [],
+      "relevance": null,
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "25_STANDARD_PACKAGE_SELECTION: descriptive table backend",
+      "labels": {"en": "Descriptive table backend", "de": "Backend für deskriptive Tabellen"},
+      "help": {
+        "en": "DescrTab2 is preferred and used only at its reviewed pinned revision.",
+        "de": "DescrTab2 wird bevorzugt und nur in seiner geprüften, fixierten Version verwendet."
+      }
+    },
+    {
+      "id": "workflow_project_backend",
+      "section": "workflow",
+      "pointer": "/workflow/project_backend",
+      "type": "choice",
+      "choices": ["cttir", "reflowR"],
+      "pending_choices": ["cttir"],
+      "depends_on": [],
+      "relevance": null,
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "02_API_CONTRACT: project_backend",
+      "labels": {"en": "Project structure backend", "de": "Backend der Projektstruktur"},
+      "help": {
+        "en": "The standard profile requires the reflowR layout.",
+        "de": "Das Standardprofil erfordert das reflowR-Layout."
+      }
+    },
+    {
+      "id": "workflow_reporting",
+      "section": "workflow",
+      "pointer": "/workflow/reporting",
+      "type": "choice",
+      "choices": ["generic", "quarto", "rmarkdown", "workflowr", "reflowR"],
+      "pending_choices": ["quarto", "rmarkdown", "workflowr", "reflowR"],
+      "depends_on": [],
+      "relevance": null,
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "11_RESEARCH_DATA_AND_PUBLICATIONS: reporting adapters",
+      "labels": {"en": "Reporting", "de": "Berichterstellung"},
+      "help": {
+        "en": "Only the reviewed generic reflowR-layout rendering is supported in this build.",
+        "de": "In dieser Version wird nur die geprüfte generische Darstellung im reflowR-Layout unterstützt."
+      }
+    },
+    {
+      "id": "workflow_pipeline",
+      "section": "workflow",
+      "pointer": "/workflow/pipeline",
+      "type": "choice",
+      "choices": ["targets", "none"],
+      "pending_choices": ["targets"],
+      "depends_on": [],
+      "relevance": null,
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "25_STANDARD_PACKAGE_SELECTION: reproducibility",
+      "labels": {"en": "Pipeline tool", "de": "Pipeline-Werkzeug"},
+      "help": {
+        "en": "Pipeline integration is pending; the builder rejects it with an explanation.",
+        "de": "Die Pipeline-Integration steht noch aus; der Builder lehnt sie mit einer Erklärung ab."
+      }
+    },
+    {
+      "id": "workflow_environment",
+      "section": "workflow",
+      "pointer": "/workflow/environment",
+      "type": "choice",
+      "choices": ["renv", "none"],
+      "pending_choices": ["renv"],
+      "depends_on": [],
+      "relevance": null,
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "25_STANDARD_PACKAGE_SELECTION: reproducibility",
+      "labels": {"en": "Package environment", "de": "Paketumgebung"},
+      "help": {
+        "en": "Dependencies are listed, not installed. Environment preparation is pending.",
+        "de": "Abhängigkeiten werden aufgelistet, nicht installiert. Die Umgebungsvorbereitung steht noch aus."
+      }
+    },
+    {
+      "id": "workflow_git",
+      "section": "workflow",
+      "pointer": "/workflow/git",
+      "type": "boolean",
+      "pending_choices": ["true"],
+      "depends_on": [],
+      "relevance": null,
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "11_RESEARCH_DATA_AND_PUBLICATIONS: optional Git remote",
+      "labels": {"en": "Initialise a Git repository", "de": "Git-Repository anlegen"},
+      "help": {
+        "en": "Git integration is pending; no credentials are ever stored.",
+        "de": "Die Git-Integration steht noch aus; Zugangsdaten werden nie gespeichert."
+      }
+    },
+    {
+      "id": "workflow_network",
+      "section": "workflow",
+      "pointer": "/workflow/network",
+      "type": "choice",
+      "choices": ["offline", "allowed"],
+      "depends_on": [],
+      "relevance": null,
+      "default_source": "spec",
+      "optional": true,
+      "evidence": "14_SECURITY_AND_PRIVACY: offline mode",
+      "labels": {"en": "Network use by project workflows", "de": "Netzwerknutzung durch Projekt-Workflows"},
+      "help": {
+        "en": "Recorded project policy. Project creation itself never uses the network.",
+        "de": "Erfasste Projektrichtlinie. Die Projekterstellung selbst nutzt nie das Netzwerk."
+      }
+    },
+    {
+      "id": "figures_categorical_palette",
+      "section": "figures",
+      "pointer": "/figures/categorical_palette",
+      "type": "choice",
+      "choices": ["Dark2", "Paired", "Set2"],
+      "choices_basis": "RColorBrewer qualitative palettes flagged colourblind-friendly",
+      "depends_on": [],
+      "relevance": null,
+      "default_source": "schema",
+      "optional": true,
+      "evidence": "29_ACCESSIBLE_FIGURES_AND_SEURAT: prefer Dark2 within its capacity",
+      "labels": {"en": "Palette for unordered categories", "de": "Palette für ungeordnete Kategorien"},
+      "help": {
+        "en": "A palette label does not prove accessibility; shapes, line types or labels are still required.",
+        "de": "Ein Palettenname beweist keine Barrierefreiheit; Formen, Linientypen oder Beschriftungen bleiben erforderlich."
+      }
+    },
+    {
+      "id": "figures_continuous_palette",
+      "section": "figures",
+      "pointer": "/figures/continuous_palette",
+      "type": "choice",
+      "choices": ["viridis", "cividis"],
+      "depends_on": [],
+      "relevance": null,
+      "default_source": "schema",
+      "optional": true,
+      "evidence": "29_ACCESSIBLE_FIGURES_AND_SEURAT: viridis option D or cividis",
+      "labels": {"en": "Palette for continuous values", "de": "Palette für kontinuierliche Werte"},
+      "help": {
+        "en": "Sequential perceptually uniform palettes; no rainbow default.",
+        "de": "Sequenzielle, wahrnehmungsgleichmäßige Paletten; kein Regenbogen als Standard."
+      }
+    },
+    {
+      "id": "figures_diverging_palette",
+      "section": "figures",
+      "pointer": "/figures/diverging_palette",
+      "type": "choice",
+      "choices": ["BrBG", "PuOr", "PiYG", "PRGn", "RdBu", "RdYlBu"],
+      "choices_basis": "RColorBrewer diverging palettes flagged colourblind-friendly",
+      "depends_on": [],
+      "relevance": null,
+      "default_source": "schema",
+      "optional": true,
+      "evidence": "29_ACCESSIBLE_FIGURES_AND_SEURAT: prefer BrBG or PuOr",
+      "labels": {"en": "Palette for signed deviations", "de": "Palette für vorzeichenbehaftete Abweichungen"},
+      "help": {
+        "en": "Use with a meaningful midpoint and additional sign encodings.",
+        "de": "Mit einem sinnvollen Mittelpunkt und zusätzlicher Vorzeichenkodierung verwenden."
+      }
+    }
+  ]
+}
