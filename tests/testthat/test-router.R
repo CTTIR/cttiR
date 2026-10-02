@@ -159,3 +159,33 @@ test_that("projects saved with older defaults remain unchanged on repeat creatio
     options = list(workflow = list(table_backend = "DescrTab2"))), class = "cttir_path_conflict")
   expect_true(all(sync(root)$actions$action == "skip"))
 })
+
+test_that("stage dependencies follow the calls each stage makes", {
+  r <- route_for("Time to relapse",
+    options = list(analysis = list(aim = "explanatory", outcome_family = "time_to_event", unit_structure = "independent")))
+  figures <- Filter(function(x) identical(x$stage, "figures"), r$project$readiness$workflow$stages)
+  route <- route_workflow(r$project$spec, "standard_reflowR")
+  figure_stage <- Filter(function(x) identical(x$stage, "figures"), route$stages)[[1]]
+  expect_contains(unlist(figure_stage$packages), c("ggplot2", "patchwork", "grDevices", "jsonlite", "survival"))
+  plain <- route_workflow(route_for("Describe a cohort")$project$spec, "standard_reflowR")
+  expect_false("survival" %in% unlist(Filter(function(x) identical(x$stage, "figures"), plain$stages)[[1]]$packages))
+})
+
+test_that("sync changes the table backend of a standard project without touching user files", {
+  p <- project("Backend switch", "primary_research", "Describe a cohort", new_parent())
+  writeLines("Reviewed EDA page", file.path(p$path, "analysis/02_eda.Rmd"))
+  preview <- sync(p$path, options = list(workflow = list(table_backend = "none")))
+  expect_equal(preview$state, "planned")
+  expect_contains(preview$actions$path[preview$actions$action == "update"], c("config/workflow.yml", "cttir-lock.json"))
+  applied <- sync(p$path, options = list(workflow = list(table_backend = "none")), dry_run = FALSE)
+  expect_equal(applied$state, "applied")
+  config <- yaml::read_yaml(file.path(p$path, "config/workflow.yml"))
+  expect_equal(config$table_backend, "none")
+  stages <- vapply(config$stages, function(x) x$capability, character(1))
+  expect_contains(stages, "std.describe.base")
+  packages <- vapply(read_project(p$path)$lock$dependencies, function(x) x$package, character(1))
+  expect_false("DescrTab2" %in% packages)
+  expect_equal(readLines(file.path(p$path, "analysis/02_eda.Rmd")), "Reviewed EDA page")
+  expect_error(sync(p$path, options = list(workflow = list(profile = "hybrid"))), class = "cttir_api_mismatch")
+  expect_error(sync(p$path, options = list(workflow = list(table_backend = "gt"))), class = "cttir_api_mismatch")
+})

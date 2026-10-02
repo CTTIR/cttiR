@@ -107,6 +107,13 @@ route_stage <- function(registry, catalog, stage, id, enabled = TRUE, packages =
     approvals = approval$approvals, unapproved = as.list(approval$missing))
 }
 
+# Time-to-event projects draw a Kaplan-Meier panel, which needs survival.
+figure_packages <- function(registry, analysis) {
+  packages <- registry$capabilities[["std.figures.accessible"]]$packages
+  if (identical(analysis$outcome_family, "time_to_event")) packages <- c(packages, "survival")
+  packages
+}
+
 describe_capability <- function(backend) {
   switch(backend, DescrTab2 = "std.describe.descrtab2", gtsummary = "std.describe.gtsummary", "std.describe.base")
 }
@@ -128,7 +135,8 @@ route_workflow <- function(spec, requested = "auto", catalog = catalog_snapshot(
     route_stage(registry, catalog, "check", "std.check.mapped"),
     route_stage(registry, catalog, "tidy", "std.tidy.dplyr"),
     route_stage(registry, catalog, "describe", describe_capability(spec$workflow$table_backend)),
-    route_stage(registry, catalog, "figures", "std.figures.accessible")
+    route_stage(registry, catalog, "figures", "std.figures.accessible",
+      packages = figure_packages(registry, analysis))
   )
   plan <- analysis_configuration(spec)
   engine <- plan$candidate_engine
