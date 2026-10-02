@@ -176,18 +176,18 @@ test_that("a missing template resource raises a typed error before any write", {
   imports <- parent.env(asNamespace("cttiR"))
   real <- if (exists("system.file", envir = imports, inherits = FALSE)) get("system.file", envir = imports) else base::system.file
   local_mocked_bindings(system.file = function(..., package = "base", lib.loc = NULL, mustWork = FALSE) {
-    if (identical(c(...)[1:2], c("templates", "reflowr-0.2.0"))) return("")
+    if (identical(c(...)[1:2], c("templates", "standard-0.3.0"))) return("")
     real(..., package = package, lib.loc = lib.loc, mustWork = mustWork)
   })
   expect_error(project("Template", "methods", "Goal", parent), class = "cttir_api_mismatch")
   expect_length(parent_entries(parent), 0L)
-  copy <- file.path(new_parent(), "reflowr-0.2.0")
+  copy <- file.path(new_parent(), "standard-0.3.0")
   dir.create(copy)
-  file.copy(list.files(real("templates", "reflowr-0.2.0", package = "cttiR"), full.names = TRUE), copy, recursive = TRUE)
+  file.copy(list.files(real("templates", "standard-0.3.0", package = "cttiR"), full.names = TRUE), copy, recursive = TRUE)
   manifest <- read_document(file.path(copy, "manifest.json"))
   unlink(file.path(copy, names(manifest$files)[[1]]))
   local_mocked_bindings(system.file = function(..., package = "base", lib.loc = NULL, mustWork = FALSE) {
-    if (identical(c(...)[1:2], c("templates", "reflowr-0.2.0"))) return(copy)
+    if (identical(c(...)[1:2], c("templates", "standard-0.3.0"))) return(copy)
     real(..., package = package, lib.loc = lib.loc, mustWork = mustWork)
   })
   expect_error(project("Template", "methods", "Goal", parent), "bundled template is missing", class = "cttir_api_mismatch")

@@ -62,7 +62,7 @@ dcf_text <- function(stanzas) {
 
 # Index stanzas reproducing the bundled resource observations.
 bundled_stanzas <- function(repository) {
-  con <- DBI::dbConnect(RSQLite::SQLite(), system.file("extdata", "package-resources.sqlite", package = "cttiR"), flags = RSQLite::SQLITE_RO)
+  con <- DBI::dbConnect(RSQLite::SQLite(), resource_file("extdata", "package-resources.sqlite"), flags = RSQLite::SQLITE_RO)
   on.exit(DBI::dbDisconnect(con))
   sql <- paste("SELECT p.package_id, p.name, o.observed_version, o.license, o.needs_compilation",
     "FROM packages p JOIN observations o USING(package_id) WHERE o.repository = ? AND (o.subrepository IS NULL OR o.subrepository = 'bioc')",

@@ -1,9 +1,5 @@
 standard_bundle_name <- "standard-0.3.0"
 
-standard_bundle_manifest <- function() {
-  read_document(resource_file("templates", standard_bundle_name, "manifest.json"))
-}
-
 bundle_condition_met <- function(condition, spec) {
   if (is.null(condition)) return(TRUE)
   ok <- TRUE
@@ -17,7 +13,7 @@ bundle_condition_met <- function(condition, spec) {
 standard_bundle_files <- function(spec, route) {
   root <- system.file("templates", standard_bundle_name, package = "cttiR")
   if (!nzchar(root)) abort_cttir("The bundled template is missing.", "cttir_api_mismatch")
-  manifest <- standard_bundle_manifest()
+  manifest <- read_document(file.path(root, "manifest.json"))
   files <- list()
   for (path in names(manifest$files)) {
     if (!bundle_condition_met(manifest$conditional[[path]], spec)) next

@@ -68,9 +68,8 @@ test_that("G04 review and secondary research never invent ethics, consent or dat
     expect_length(read_document(file.path(p$path, "metadata/data-registry.yml"))$datasets, 0L)
     expect_false(any(grepl(invented, text_files(p$path), ignore.case = TRUE, perl = TRUE)))
     pub <- p$spec$publications[[1]]
-    # Current behavior: `review` is not yet proposed as secondary research and no
-    # review subtype is guessed; secondary research keeps its declared class.
-    expect_equal(pub$research_class, if (type == "review") "unknown" else "secondary_research")
+    # `review` is proposed as secondary research; no review subtype is guessed.
+    expect_equal(pub$research_class, "secondary_research")
     expect_equal(pub$type, "other")
   }
 })
@@ -128,8 +127,9 @@ test_that("G05 primary and secondary publications get independent trees and shar
   report <- audit(p$path, scope = "project")
   expect_equal(report$checks$status[report$checks$id == "PRJ-003"], "pass")
   expect_equal(report$checks$status[report$checks$id == "PRJ-005"], "pass")
-  # Documented gap: publications cannot yet declare the registry IDs they use.
-  expect_error(validate_config(list(publications = list(list(id = "pub01", data_source_ids = list("cohort2024"))))),
+  # Publications declare the registry IDs they use; unknown IDs are refused.
+  expect_silent(validate_config(list(publications = list(list(id = "pub01", data_source_ids = list("cohort2024"))))))
+  expect_error(sync(p$path, options = list(publications = list(list(id = "pub01", data_source_ids = list("missing"))))),
     class = "cttir_schema_error")
 })
 
