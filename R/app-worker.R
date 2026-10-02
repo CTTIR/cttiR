@@ -34,6 +34,8 @@ app_worker_run <- function(operation, args) {
   attr(args, "cttir_catalog_fingerprint") <- NULL
   expected_plan <- attr(args, "cttir_sync_plan")
   attr(args, "cttir_sync_plan") <- NULL
+  audit_plan <- attr(args, "cttir_audit_plan")
+  attr(args, "cttir_audit_plan") <- NULL
   target <- getExportedValue("cttiR", operation)
   if (operation == "project" && !is.null(expected)) {
     target <- project_impl
@@ -42,6 +44,10 @@ app_worker_run <- function(operation, args) {
   if (operation == "sync" && !is.null(expected_plan)) {
     target <- sync_impl
     args$expected_plan <- expected_plan
+  }
+  if (operation == "audit" && !is.null(audit_plan)) {
+    target <- audit_impl
+    args$expected_plan <- audit_plan
   }
   tryCatch(list(ok = TRUE, value = do.call(target, args)), error = app_condition_payload)
 }

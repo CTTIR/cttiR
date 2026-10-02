@@ -303,3 +303,14 @@ test_that("unsaved drafts are reported until exported or restored", {
     expect_equal(state$status$key, "draft.restored")
   })
 })
+
+test_that("the worker refuses an audit repair whose plan changed since the preview", {
+  p <- project("Worker repair", "methods", "Goal", new_parent())
+  args <- list(path = p$path, scope = "project", repair = TRUE)
+  attr(args, "cttir_audit_plan") <- "previewed-plan-that-no-longer-matches"
+  unlink(file.path(p$path, "code", "run_demo.R"))
+  result <- app_worker_run("audit", args)
+  expect_false(result$ok)
+  expect_equal(result$code, "stale_preview")
+  expect_false(file.exists(file.path(p$path, "code", "run_demo.R")))
+})

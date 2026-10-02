@@ -166,7 +166,7 @@ app_audit_server <- function(id, pool, lang = shiny::reactive("en"), project = s
         if (!identical(plan_of(value), expected)) {
           state$result <- value
           previewed(value)
-          state$status <- app_status("warning", "status.stale_files")
+          state$status <- app_status("warning", "audit.plan_changed")
           return()
         }
         args$repair <- TRUE
