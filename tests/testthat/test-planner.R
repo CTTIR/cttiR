@@ -204,6 +204,7 @@ test_that("identity violations and unverified runtimes fall back without sending
     log <- do.call(local_planner_runtime, args)
     plan <- plan_goal("Case", "methods", "Goal", "local_llm")
     expect_equal(plan$provenance$fallback_reason, reason, info = reason)
+    expect_true(reason %in% planner_fallbacks)
     expect_length(chat_requests(log), 0L)
   }
   log <- local_planner_runtime(list(chat_reply(valid_reply())))
