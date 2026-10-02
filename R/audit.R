@@ -168,6 +168,13 @@ audit_spec <- function(context) {
   if (is.null(p) || inherits(p, "error")) NULL else p$spec
 }
 
+# The files project() regenerates from the accepted spec, lock and pinned catalog.
+audit_bundle <- function(context) {
+  p <- audit_project(context)
+  if (is.null(p) || inherits(p, "error")) return(NULL)
+  audit_cached(context, "bundle", function() project_bundle(p$spec, p$lock))
+}
+
 audit_with_project <- function(context, fun) {
   p <- audit_project(context)
   if (is.null(p) || inherits(p, "error")) {
@@ -274,6 +281,14 @@ audit_overall_reason <- function(checks) {
 #' Runs registered checks with stable IDs (`INS-`, `KB-`, `RES-`, `PRJ-`,
 #' `STD-` and `INT-`). Default inspection is local and read-only: it reads
 #' package resources, catalog metadata, runtime state files and project metadata.
+#' Project control files are compared with what [project()] regenerates from
+#' the accepted specification and lock. All project R code (scripts outside
+#' `data/`, `renv/` and hidden directories, and R chunks, chunk options and
+#' inline R of R Markdown and Quarto documents) is parsed, never evaluated:
+#' unparseable files, forbidden or unsafe calls and clearly unresolved calls
+#' fail `STD-003`; constructs that the package's reviewed generated code uses in
+#' the same file are not reported again. Static checks cannot follow names
+#' built at run time and are no sandbox.
 #' It never opens referenced study datasets or dereferences paths bound in
 #' `.cttir/local.yml`, runs study pipelines, installs dependencies, starts
 #' services, contacts a model daemon or queries remote servers. Declared Imports
