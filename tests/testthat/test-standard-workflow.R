@@ -103,7 +103,12 @@ test_that("reviewed engines match independent references on synthetic data", {
   # DescrTab2 is optional here: without it the documented base fallback is used.
   for (package in c("dplyr", "nlme", "survival", "broom", "broom.mixed")) skip_if_not_installed(package)
   env <- stage_library()
-  receipt <- env$cw_run_demo(root = tempfile(), write = FALSE, figures_policy = default_spec("x", "methods", "x", "x")$figures)
+  # The three-arm demo figure has a grayscale finding no eligible Brewer palette
+  # avoids; it must be reported when the figure is written, not passed silently.
+  expect_warning(
+    receipt <- env$cw_run_demo(root = tempfile(), write = FALSE, figures_policy = default_spec("x", "methods", "x", "x")$figures),
+    "Figure 'overview' has unresolved accessibility findings.*grayscale"
+  )
   expect_equal(receipt$status, "passed")
   expect_setequal(names(receipt$cases), c("continuous", "binary", "longitudinal", "survival"))
   for (case in receipt$cases) {

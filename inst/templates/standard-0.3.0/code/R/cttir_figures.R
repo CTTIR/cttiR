@@ -14,13 +14,18 @@
 # - ordered categories: discretized viridis in explicit level order;
 # - signed deviations: an RColorBrewer diverging palette whose neutral class
 #   sits exactly on a meaningful midpoint;
-# - missing values: the policy NA colour; "unknown" is a separate explicit level;
+# - missing values: the policy NA colour plus a distinct NA shape or line type,
+#   labelled "Missing" in the legend (cf_scale_categorical()); "unknown" is a
+#   separate explicit level;
 # - multi-panel figures: patchwork.
 #
 # Colour-vision simulations (colorspace) are checks, not a guarantee for every
 # observer. Record unresolved findings; do not claim universal accessibility
 # from a palette name.
 
+# The NA colour is a dark grey: every Dark2 or Paired colour with at least 3:1
+# contrast on white has CIELAB lightness 43-62, so a mid grey such as #808080
+# collides with them in grayscale and deuteranopia simulations.
 cf_policy_default <- function() {
   list(
     continuous_palette = "viridis", categorical_provider = "RColorBrewer",
@@ -28,7 +33,7 @@ cf_policy_default <- function() {
     colourblind_friendly_only = TRUE, redundant_encoding_required = TRUE,
     panel_composer = "patchwork",
     checks = c("protanopia", "deuteranopia", "tritanopia", "grayscale"),
-    na_colour = "#808080", pinned_provider_version = "RColorBrewer 1.1-3"
+    na_colour = "#2B2B2B", pinned_provider_version = "RColorBrewer 1.1-3"
   )
 }
 
@@ -61,7 +66,7 @@ cf_check_policy <- function(policy) {
   }
   policy$checks <- cf_check_names(as.character(checks))
   if (!cf_is_hex(policy$na_colour)) {
-    stop("The NA colour must be a hex colour such as '#808080'.", call. = FALSE)
+    stop("The NA colour must be a hex colour such as '#2B2B2B'.", call. = FALSE)
   }
   policy
 }
@@ -286,11 +291,14 @@ cf_scale_diverging <- function(policy, midpoint, limits, aesthetic = "fill",
   do.call(ggplot2::scale_colour_gradientn, args)
 }
 
-# Redundant non-colour encodings, stable over all_levels.
+# Redundant non-colour encodings, stable over all_levels. Missing values get
+# their own shape (open diamond) and line type (short dashes), outside the sets.
 cf_shape_set <- c(16L, 17L, 15L, 3L, 7L, 8L, 4L, 1L)
 cf_linetype_set <- c("solid", "dashed", "dotted", "dotdash", "longdash", "twodash")
+cf_na_shape <- 5L
+cf_na_linetype <- "22"
 
-cf_encoding <- function(levels, all_levels, set, what) {
+cf_encoding <- function(levels, all_levels, set, what, na_value) {
   lv <- cf_resolve_levels(levels, all_levels)
   if (length(lv$all) > length(set)) {
     stop(length(lv$all), " levels exceed the ", length(set), " distinct ", what,
@@ -300,12 +308,44 @@ cf_encoding <- function(levels, all_levels, set, what) {
   names(out) <- lv$all
   out <- out[lv$levels]
   attr(out, "unused_levels") <- lv$unused
+  attr(out, "na_value") <- na_value
   out
 }
 
-cf_shapes <- function(levels, all_levels = NULL) cf_encoding(levels, all_levels, cf_shape_set, "shapes")
+cf_shapes <- function(levels, all_levels = NULL) {
+  cf_encoding(levels, all_levels, cf_shape_set, "shapes", cf_na_shape)
+}
 
-cf_linetypes <- function(levels, all_levels = NULL) cf_encoding(levels, all_levels, cf_linetype_set, "line types")
+cf_linetypes <- function(levels, all_levels = NULL) {
+  cf_encoding(levels, all_levels, cf_linetype_set, "line types", cf_na_linetype)
+}
+
+# Manual scales for one categorical variable: the colour map plus optional
+# shapes under one legend title, so ggplot2 merges them into one legend. Keys
+# follow the colour map, whatever the data's level order. Missing values keep
+# the policy NA colour and the NA shape and are labelled na_label (the key
+# appears only when values are missing); without an NA shape ggplot2 drops
+# those points. Add the returned list to a plot with `+`. For line types, pass
+# na.value = attr(cf_linetypes(...), "na_value") to the line type scale.
+cf_scale_categorical <- function(colours, policy, shapes = NULL, name = ggplot2::waiver(),
+  aesthetic = "colour", na_label = "Missing") {
+  aesthetic <- cf_aesthetic(aesthetic)
+  if (!is.character(colours) || !length(colours) || is.null(names(colours))) {
+    stop("'colours' must be a named level -> colour map such as cf_palette_categorical() returns.", call. = FALSE)
+  }
+  if (!cf_is_string(na_label)) stop("'na_label' must be one nonempty string.", call. = FALSE)
+  policy <- cf_check_policy(policy)
+  manual <- function(fun, values, na_value, ...) {
+    fun(name = name, values = stats::setNames(as.vector(values), names(values)), breaks = c(names(colours), NA),
+      labels = function(x) ifelse(is.na(x), na_label, x), na.value = na_value, drop = FALSE, na.translate = TRUE, ...)
+  }
+  scales <- list(manual(ggplot2::scale_colour_manual, colours, policy$na_colour, aesthetics = aesthetic))
+  if (!is.null(shapes)) {
+    na_shape <- attr(shapes, "na_value")
+    scales <- c(scales, list(manual(ggplot2::scale_shape_manual, shapes, if (is.null(na_shape)) cf_na_shape else na_shape)))
+  }
+  scales
+}
 
 # Colour arithmetic -------------------------------------------------------
 
@@ -392,7 +432,8 @@ cf_contrast <- function(hex, background) {
 #   report but not judge contrast (for example adjacent heatmap tiles).
 # Translucent colours are composited over the background first. A warning is
 # a finding to record and mitigate (non-colour encodings, facets, labels);
-# a pass is a simulation result, not a guarantee for every observer.
+# a pass is a simulation result, not a guarantee for every observer. Attribute
+# "findings" lists each failed threshold as "<check>: <finding>".
 cf_check_accessibility <- function(colours, background = "#FFFFFF", min_delta_e = 10,
   min_contrast = 3, na_colour = NULL,
   checks = c("protanopia", "deuteranopia", "tritanopia", "grayscale")) {
@@ -445,7 +486,7 @@ cf_check_accessibility <- function(colours, background = "#FFFFFF", min_delta_e 
         labels[[which.min(contrast)]], min(contrast), min_contrast
       ))
     }
-    data.frame(
+    row <- data.frame(
       check = check, simulation = sim$label, n_colours = length(shown),
       min_delta_e = round(min_de, 2), closest_pair = pair,
       min_contrast = round(min(contrast), 2), lowest_contrast = labels[[which.min(contrast)]],
@@ -457,8 +498,12 @@ cf_check_accessibility <- function(colours, background = "#FFFFFF", min_delta_e 
       },
       stringsAsFactors = FALSE
     )
+    attr(row, "findings") <- if (length(findings)) paste0(check, ": ", findings) else character()
+    row
   })
   out <- do.call(rbind, rows)
+  # One line per failed threshold, so callers can surface findings directly.
+  attr(out, "findings") <- as.character(unlist(lapply(rows, attr, "findings")))
   attr(out, "method") <- list(
     delta_e = "CIEDE2000 on sRGB converted to CIELAB (D65) with grDevices::convertColor",
     min_delta_e = min_delta_e,
@@ -473,9 +518,79 @@ cf_check_accessibility <- function(colours, background = "#FFFFFF", min_delta_e 
 
 # Panel composition -------------------------------------------------------
 
+# Legends of one panel, read from the unbuilt plot: for each legend title, the
+# explicit scale (or NULL) of every mapped non-position aesthetic shown under it.
+cf_panel_legends <- function(plot) {
+  mapped <- list()
+  for (m in c(list(plot$mapping), lapply(plot$layers, function(layer) layer$mapping))) {
+    for (aesthetic in names(m)) if (is.null(mapped[[aesthetic]])) mapped[[aesthetic]] <- m[[aesthetic]]
+  }
+  legends <- list()
+  for (aesthetic in names(mapped)[!grepl("^(x|y)|^(group|label|weight|sample)$", names(mapped))]) {
+    scale <- plot$scales$get_scales(aesthetic)
+    if (!is.null(scale) && (identical(scale$guide, "none") || inherits(scale$guide, "GuideNone"))) next
+    title <- if (!is.null(scale) && is.character(scale$name)) scale$name else
+      if (is.character(plot$labels[[aesthetic]])) plot$labels[[aesthetic]] else all.vars(mapped[[aesthetic]])
+    legends[[paste(title, collapse = ", ")]][[aesthetic]] <- list(scale = scale)
+  }
+  legends
+}
+
+# What a legend shows, for comparison across panels. Only scales whose keys do
+# not depend on the data can be compared: discrete scales need explicit breaks
+# and a named level -> value map, continuous scales explicit limits.
+cf_legend_key <- function(scale, panel, aesthetic, title) {
+  refuse <- function(why) {
+    stop("Panel '", panel, "': the ", aesthetic, " legend '", title, "' ", why, ", so it cannot be checked ",
+      "against the other panels. Collect guides only for explicit, identical scales, or use ",
+      "collect_guides = FALSE to keep them separate.", call. = FALSE)
+  }
+  if (is.null(scale)) refuse("has no explicit scale")
+  if (scale$is_discrete()) {
+    breaks <- scale$breaks
+    if (!is.atomic(breaks) || !length(breaks)) refuse("needs explicit breaks (cf_scale_categorical() sets them)")
+    levels <- as.character(breaks[!is.na(breaks)])
+    values <- tryCatch(scale$palette(max(1L, length(levels))), error = function(e) NULL)
+    if (is.null(names(values)) || !all(levels %in% names(values))) refuse("needs a named level -> value map")
+    labels <- scale$labels
+    if (is.function(labels)) labels <- labels(breaks)
+    if (inherits(labels, "waiver")) labels <- as.character(breaks)
+    key <- list(breaks = as.character(breaks), labels = as.character(labels), values = unname(values[levels]))
+    return(c(key, list(na_value = scale$na.value)))
+  }
+  if (!is.numeric(scale$limits) || length(scale$limits) != 2L) refuse("needs explicit limits")
+  list(limits = scale$limits, breaks = if (is.numeric(scale$breaks)) scale$breaks else NULL,
+    values = scale$palette(seq(0, 1, length.out = 11L)), na_value = scale$na.value)
+}
+
+# patchwork merges only identical guides: panels whose legends share a title
+# but differ in mapping would be drawn as separate legends with the same title.
+cf_check_collected_guides <- function(plots, ids) {
+  panels <- lapply(plots, cf_panel_legends)
+  for (title in unique(unlist(lapply(panels, names)))) {
+    having <- which(vapply(panels, function(p) title %in% names(p), logical(1)))
+    if (length(having) < 2L) next
+    keys <- lapply(having, function(i) {
+      legend <- panels[[i]][[title]]
+      lapply(stats::setNames(nm = sort(names(legend))), function(a) cf_legend_key(legend[[a]]$scale, ids[[i]], a, title))
+    })
+    for (k in seq_along(keys)[-1L]) {
+      if (!identical(keys[[1L]], keys[[k]])) {
+        aesthetics <- union(names(keys[[1L]]), names(keys[[k]]))
+        stop("Panels '", ids[[having[[1L]]]], "' and '", ids[[having[[k]]]], "' both have a legend titled '", title,
+          "' but map it differently (", paste(aesthetics, collapse = ", "), ": levels, values or palette). ",
+          "Collect guides only for identical scales, or use collect_guides = FALSE to keep them separate.",
+          call. = FALSE)
+      }
+    }
+  }
+  invisible(TRUE)
+}
+
 # Compose ggplot panels with patchwork. Panels keep their own coordinate
 # systems and aspect ratios. Guides are collected only when the caller asserts
-# that the panels share identical scales and meanings (collect_guides = TRUE).
+# that the panels share identical scales and meanings (collect_guides = TRUE);
+# panels whose legends share a title but differ in mapping are refused.
 # The layout record is attached as attribute "cf_layout"; compose last, after
 # adding themes to the individual panels.
 cf_compose <- function(plots, ncol = NULL, tags = TRUE, collect_guides = FALSE,
@@ -499,6 +614,7 @@ cf_compose <- function(plots, ncol = NULL, tags = TRUE, collect_guides = FALSE,
   }
   if (!is.null(widths)) cf_positive(widths, "widths", scalar = FALSE)
   if (!is.null(heights)) cf_positive(heights, "heights", scalar = FALSE)
+  if (collect_guides) cf_check_collected_guides(plots, ids)
   guides <- if (collect_guides) "collect" else "keep"
   composed <- patchwork::wrap_plots(unname(plots), ncol = ncol, widths = widths,
     heights = heights, guides = guides)
@@ -554,11 +670,24 @@ cf_figure_spec <- function(id, mapping, policy, colours = NULL, encodings = NULL
     }
   }
   redundant <- c("shape", "linetype", "label", "facet", "pattern")
-  if (isTRUE(policy$redundant_encoding_required) &&
-      any(vapply(mapping, function(m) identical(m$type, "categorical"), logical(1))) &&
-      !any(names(encodings) %in% redundant)) {
+  supplied <- names(encodings)[vapply(encodings, cf_encoding_supplied, logical(1))]
+  categorical <- Filter(function(m) identical(m$type, "categorical"), mapping)
+  if (isTRUE(policy$redundant_encoding_required) && length(categorical) &&
+      !any(supplied %in% redundant)) {
     stop("Categorical colour needs a non-colour encoding (", paste(redundant, collapse = ", "),
-      ") in 'encodings'.", call. = FALSE)
+      ") in 'encodings'; NULL or empty encodings do not count.", call. = FALSE)
+  }
+  # A level -> value map must cover every categorical level it encodes.
+  for (key in intersect(supplied, redundant)) {
+    e <- encodings[[key]]
+    if (!is.atomic(e) || is.null(names(e))) next
+    for (m in categorical) {
+      uncovered <- setdiff(as.character(unlist(m$levels)), names(e))
+      if (length(uncovered)) {
+        stop("The '", key, "' encoding does not cover the levels of '", m$variable, "': ",
+          paste(uncovered, collapse = ", "), ".", call. = FALSE)
+      }
+    }
   }
   cf_positive(width, "width")
   cf_positive(height, "height")
@@ -578,13 +707,22 @@ cf_figure_spec <- function(id, mapping, policy, colours = NULL, encodings = NULL
     list(status = "not_checked",
       note = "No discrete colours were checked; continuous legends need readable labels, contours or tabular data.")
   } else {
+    findings <- attr(checks, "findings")
+    if (is.null(findings)) findings <- paste0(checks$check, ": ", checks$note)[checks$status != "pass"]
     list(
       status = if (all(checks$status == "pass")) "pass" else "warning",
+      findings = I(as.character(findings)),
       method = attr(checks, "method"),
       checks = checks,
       statement = "Colour-vision simulations are checks, not a guarantee for every observer."
     )
   }
+  na <- list(colour = policy$na_colour)
+  for (key in c("shape", "linetype")) {
+    if (key %in% supplied && !is.null(attr(encodings[[key]], "na_value"))) na[[key]] <- attr(encodings[[key]], "na_value")
+  }
+  na$policy <- paste("Missing values keep the distinct NA colour plus the NA shape or line type and a",
+    "legend label (cf_scale_categorical()); 'unknown' is a separate explicit level.")
   brewer <- cf_package_version("RColorBrewer")
   list(
     figure_spec_version = 1L,
@@ -600,8 +738,7 @@ cf_figure_spec <- function(id, mapping, policy, colours = NULL, encodings = NULL
     ),
     colours = if (length(colours)) as.list(stats::setNames(as.character(colours), names(colours))) else NULL,
     unused_levels = I(as.character(attr(colours, "unused_levels"))),
-    na = list(colour = policy$na_colour,
-      policy = "Missing values use the distinct NA colour; 'unknown' is a separate explicit level."),
+    na = na,
     encodings = lapply(encodings, function(e) {
       if (is.atomic(e) && !is.null(names(e))) as.list(stats::setNames(as.vector(e), names(e))) else e
     }),
@@ -619,8 +756,19 @@ cf_figure_spec <- function(id, mapping, policy, colours = NULL, encodings = NULL
   )
 }
 
+# An encoding counts only when it carries values: NULL, empty, all-missing,
+# blank or FALSE entries do not distinguish anything.
+cf_encoding_supplied <- function(e) {
+  values <- unlist(e, use.names = FALSE)
+  if (!length(values)) return(FALSE)
+  if (is.logical(values)) return(any(values %in% TRUE))
+  !all(is.na(values) | !nzchar(as.character(values)))
+}
+
 # Save the figure at its final size and write '<file>.json' next to it. The
 # export size must equal the spec, so the sidecar describes the actual file.
+# Unresolved accessibility findings raise a warning naming them, and the
+# returned paths carry the accessibility status as attribute "accessibility".
 cf_save <- function(plot, file, spec, width = spec$output$width, height = spec$output$height,
   units = spec$output$units, dpi = spec$output$dpi) {
   if (!inherits(plot, "ggplot")) stop("'plot' must be a ggplot or patchwork object.", call. = FALSE)
@@ -641,5 +789,14 @@ cf_save <- function(plot, file, spec, width = spec$output$width, height = spec$o
   sidecar <- paste0(file, ".json")
   jsonlite::write_json(spec, sidecar, auto_unbox = TRUE, pretty = TRUE, null = "null",
     na = "null", digits = NA)
-  invisible(c(image = file, sidecar = sidecar))
+  access <- spec$accessibility
+  if (identical(access$status, "warning")) {
+    findings <- as.character(access$findings)
+    warning("Figure '", spec$id, "' has unresolved accessibility findings (recorded in ", basename(sidecar), "): ",
+      if (length(findings)) paste(findings, collapse = "; ") else "see the accessibility checks",
+      ". Keep the non-colour encoding and report the finding.", call. = FALSE)
+  }
+  out <- c(image = file, sidecar = sidecar)
+  attr(out, "accessibility") <- if (is.null(access$status)) "not_checked" else access$status
+  invisible(out)
 }
