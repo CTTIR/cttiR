@@ -74,11 +74,30 @@ packages <- function(path = NULL) {
   do.call(rbind, rows)
 }
 
+# Citations name the exact pinned revision, never a moving package page:
+# GitHub sources at their commit, CRAN and Bioconductor sources inside the
+# versioned source tarball that was extracted, and base R packages inside the
+# versioned R source distribution.
 catalog_evidence_url <- function(package, path) {
-  if (!startsWith(package$repository, "https://github.com/")) return(paste0(package$repository, "#", path))
-  prefix <- if (is.null(package$source_subdir)) "" else sub("/+$", "", package$source_subdir)
-  if (nzchar(prefix) && !startsWith(path, paste0(prefix, "/"))) path <- paste0(prefix, "/", path)
-  paste0(package$repository, "/blob/", package$revision, "/", path)
+  if (startsWith(package$repository, "https://github.com/")) {
+    prefix <- if (is.null(package$source_subdir)) "" else sub("/+$", "", package$source_subdir)
+    if (nzchar(prefix) && !startsWith(path, paste0(prefix, "/"))) path <- paste0(prefix, "/", path)
+    return(paste0(package$repository, "/blob/", package$revision, "/", path))
+  }
+  if (startsWith(as.character(package$revision), "r-distribution:")) {
+    return(paste0(package$repository, "#src/library/", package$name, "/", path))
+  }
+  if (is.character(package$archive$url) && length(package$archive$url) == 1L) {
+    return(paste0(package$archive$url, "#", package$name, "/", path))
+  }
+  paste0(package$repository, "#", package$name, "_", package$version, "/", path)
+}
+
+# Text every citation of `package` carries when it names the pinned revision.
+catalog_revision_token <- function(package) {
+  if (startsWith(package$repository, "https://github.com/")) return(paste0("/blob/", package$revision, "/"))
+  if (startsWith(as.character(package$revision), "r-distribution:")) return(paste0("/R-", package$version, ".tar.gz#"))
+  paste0(package$name, "_", package$version)
 }
 
 #' Search revision-scoped APIs and stored documentation

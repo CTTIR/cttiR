@@ -85,6 +85,25 @@ test_that("reindexed bundled evidence retains the previous immutable snapshot", 
   expect_equal(sum(vapply(previous$packages, function(x) x$coverage$approved, numeric(1))), 0)
 })
 
+test_that("citations name the pinned version or commit, never a moving package page", {
+  catalog <- resolve_catalog()
+  a <- ask("Fit a Cox regression and report the hazard ratio")
+  survival <- Filter(function(p) identical(p$name, "survival"), catalog$packages)[[1]]
+  cites <- a$evidence$citation[a$evidence$package == "survival"]
+  expect_true(length(cites) > 0L)
+  expect_true(all(grepl(paste0("survival_", survival$version, ".tar.gz#survival/man/"), cites, fixed = TRUE)))
+  expect_false(any(grepl("cran.r-project.org/package=", unlist(a$citations), fixed = TRUE)))
+  base_r <- Filter(function(p) identical(p$name, "stats"), catalog$packages)[[1]]
+  stats <- a$evidence$citation[a$evidence$package == "stats"]
+  expect_true(all(grepl(paste0("/R-", base_r$version, ".tar.gz#src/library/stats/man/"), stats, fixed = TRUE)))
+  for (i in seq_len(nrow(a$evidence))) {
+    p <- Filter(function(x) identical(x$name, a$evidence$package[[i]]), catalog$packages)[[1]]
+    expect_true(grepl(catalog_revision_token(p), a$evidence$citation[[i]], fixed = TRUE))
+  }
+  moving <- list(name = "x", version = "1.0", repository = "https://cran.r-project.org/package=x", revision = "cran:x@1.0:abc")
+  expect_identical(catalog_evidence_url(moving, "man/f.Rd"), "https://cran.r-project.org/package=x#x_1.0/man/f.Rd")
+})
+
 test_that("nested source citations add exactly one directory prefix", {
   p <- list(repository = "https://github.com/example/project", revision = "exact-revision", source_subdir = "packages/nested")
   expected <- "https://github.com/example/project/blob/exact-revision/packages/nested/R/api.R"
