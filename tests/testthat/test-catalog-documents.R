@@ -17,6 +17,28 @@ test_that("rights-aware literal extraction stores inventories without executing 
   expect_error(validate_document_corpus(broken), class = "cttir_catalog_corrupt")
 })
 
+test_that("Sweave and TeX documentation stays literal and rights-gated", {
+  f <- document_fixture()
+  text <- c("\\Sexpr{stop('must never execute')}", "<<test>>=", "stop('not executable')", "@", "sweave_literal_token")
+  for (extension in c("Rnw", "Snw", "Rtex", "tex", "bib")) {
+    writeLines(text, file.path(f$source, "vignettes", paste0("source.", extension)))
+  }
+  writeBin(charToRaw("%PDF-1.7 fake binary fixture"), file.path(f$source, "vignettes/source.pdf"))
+  restricted <- extract_source(f$source, "fixture", "one")
+  expect_equal(restricted$documentation_corpus$coverage$stored, 0L)
+  expect_length(document_hits(restricted, "sweave_literal_token"), 0L)
+  permitted <- extract_source(f$source, "fixture", "one", documentation_rights = "Synthetic test text")
+  expect_equal(permitted$documentation_corpus$coverage$stored, 10L)
+  hits <- document_hits(permitted, "sweave_literal_token")
+  expect_length(hits, 5L)
+  expect_true(all(vapply(hits, function(x) grepl("must never execute", x$snippet, fixed = TRUE), logical(1))))
+  pdf <- Filter(function(x) x$path == "vignettes/source.pdf", permitted$documentation_corpus$documents)[[1]]
+  expect_identical(pdf$storage, "asset_metadata_only")
+  expect_null(pdf$content)
+  expect_equal(permitted$coverage$approved, 0L)
+  expect_true(validate_document_corpus(permitted$documentation_corpus))
+})
+
 test_that("document-only updates preserve pinned corpus and rollback", {
   f <- document_fixture()
   withr::local_options(cttiR.sources = list(list(id = "fixture", path = f$source,

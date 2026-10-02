@@ -1,6 +1,24 @@
 # cttiR development state
 
-Updated: 2026-10-02. Version: 0.0.12. License: MIT.
+Updated: 2026-10-02. Version: 0.0.13. License: MIT.
+
+## Milestone 13: literal Sweave and TeX corpus coverage
+
+Source inventory now recognizes Rnw, Snw, Rtex, TeX and bibliography documents
+as text when storage rights are supplied. Expressions and code chunks remain
+literal, unevaluated data. Rights-unknown content is not stored; PDF files remain
+metadata-only. The new regression fixture covers all five formats and retains
+zero workflow approvals. Local validation passed: 490 assertions, --as-cran
+zero errors/warnings and only New submission, coverage 84.32%, installed examples,
+lint and pkgdown. Hosted results follow publication.
+
+Canonical CRAN archives for nlme 3.1-170 and survival 3.8-9 were retained under
+ignored admin/standard-sources with SHA256 inventories. They were not installed
+or executed. This exposed the missing Sweave classification. Source extraction
+and installed alignment evidence is local candidate evidence only; it does not
+establish full semantics, licensed public redistribution or role approval.
+
+Milestone 12 (97f1683) passed all five hosted jobs in run 36985142405.
 
 ## Milestone 12: typed analysis mapping and prerequisite assessment
 

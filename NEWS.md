@@ -1,3 +1,8 @@
+# cttiR 0.0.13
+
+* Index licensed Sweave, TeX and bibliography source documents as literal text.
+  Embedded expressions are never evaluated; PDF assets remain metadata-only.
+
 # cttiR 0.0.12
 
 * Record typed dataset, variable, event-coding and missing-data mappings.

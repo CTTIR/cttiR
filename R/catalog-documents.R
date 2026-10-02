@@ -40,7 +40,7 @@ document_inventory <- function(path, rights = NULL) {
     budget$total <- budget$total + size
     if (budget$total > 10000000L) abort_cttir("Documentation exceeds the ten-megabyte package bound.", "cttir_source_unavailable")
     hash <- digest::digest(file = file, algo = "sha256")
-    text_format <- grepl("[.](Rd|Rmd|rmd|qmd|md|txt|R|html)$", rel) ||
+    text_format <- tolower(tools::file_ext(rel)) %in% c("rd", "rmd", "rnw", "snw", "rtex", "qmd", "md", "txt", "r", "html", "tex", "bib") ||
       basename(rel) %in% c("DESCRIPTION", "NAMESPACE", "README", "NEWS", "LICENSE", "LICENCE", "COPYING", "CITATION", "CHANGELOG")
     kind <- if (startsWith(rel, "man/")) "reference" else if (startsWith(rel, "vignettes/") || startsWith(rel, "inst/doc/")) "vignette" else "package_document"
     stored <- !is.null(rights) && text_format
