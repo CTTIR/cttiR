@@ -419,3 +419,31 @@ test_that("KB-006 fails when a standard workflow capability has no valid approva
   expect_identical(survival$status, "fail")
   expect_identical(unlist(survival$evidence$standard_without_approval), "std.figures.accessible:time_to_event (survival)")
 })
+
+test_that("bundled decisions are role-specific and cite fixtures that exercise them", {
+  decisions <- validate_approvals(read_document(resource_file("extdata", "approvals.json")))
+  catalog <- read_catalog(resource_file("extdata", "api-catalog.json.gz"))
+  records <- stats::setNames(catalog$packages, vapply(catalog$packages, function(p) p$name, character(1)))
+  for (d in decisions) expect_identical(approval_coverage(records[[d$package]], d)$state, "complete", info = d$approval_id)
+  ids <- vapply(decisions, function(d) d$approval_id, character(1))
+  by_id <- stats::setNames(decisions, ids)
+  callables <- function(id) unlist(by_id[[id]]$required_callables)
+  stats_scopes <- unique(lapply(decisions[startsWith(ids, "stats:")], function(d) sort(unlist(d$required_callables))))
+  expect_gte(length(stats_scopes), 8L)
+  expect_true("lm" %in% callables("stats:4.6.1:model_lm"))
+  expect_false(any(c("glm", "rexp", "quantile") %in% callables("stats:4.6.1:model_lm")))
+  expect_true(all(c("rexp", "optimize") %in% callables("stats:4.6.1:demo_synthetic")))
+  figures <- by_id[["survival:3.8-9:figures_accessible"]]
+  expect_setequal(unlist(figures$required_callables), c("survfit", "Surv"))
+  expect_identical(vapply(figures$fixtures, function(x) x$test_name, character(1)),
+    "the synthetic demo runs in a generated project and labels its outputs")
+  expect_false("survfit" %in% callables("survival:3.8-9:model_coxph"))
+  cited <- unique(unlist(lapply(decisions, function(d) lapply(d$fixtures, function(x) paste(basename(x$test_file), x$test_name, sep = "::")))))
+  known <- character()
+  for (file in unique(sub("::.*$", "", cited))) {
+    for (e in parse(test_path(file), keep.source = FALSE)) {
+      if (is.call(e) && identical(e[[1]], as.name("test_that"))) known <- c(known, paste(file, e[[2]], sep = "::"))
+    }
+  }
+  expect_identical(setdiff(cited, known), character())
+})
