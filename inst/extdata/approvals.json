@@ -30,10 +30,10 @@
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "descriptive tables never test and DescrTab2 absence uses the documented fallback",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:05Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'GPL (>= 3)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -60,16 +60,16 @@
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "Seurat v5 Assay5 layers are inventoried with counts and data semantics",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
         },
         {
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "donor-level pseudobulk sums raw counts and refuses too few donors",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'GPL (>= 2) | file LICENCE' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -99,46 +99,64 @@
           "test_file": "tests/testthat/test-figures.R",
           "test_name": "the pinned RColorBrewer table is bundled without importing RColorBrewer",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
+          "run_at": "2026-10-02T20:02:37Z"
         },
         {
           "test_file": "tests/testthat/test-figures.R",
           "test_name": "categorical palettes are verified, stable and never recycled",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
+          "run_at": "2026-10-02T20:02:37Z"
         },
         {
           "test_file": "tests/testthat/test-figures.R",
           "test_name": "continuous and diverging scales keep explicit limits, midpoint and NA colour",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
+          "run_at": "2026-10-02T20:02:37Z"
         },
         {
           "test_file": "tests/testthat/test-figures.R",
           "test_name": "categorical NA values use the distinct NA colour",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
+          "run_at": "2026-10-02T20:02:37Z"
+        },
+        {
+          "test_file": "tests/testthat/test-figures.R",
+          "test_name": "missing categories stay visible with a labelled NA colour and NA shape",
+          "result": "pass",
+          "run_at": "2026-10-02T20:02:37Z"
+        },
+        {
+          "test_file": "tests/testthat/test-figures.R",
+          "test_name": "the default NA colour never collides with eligible palette colours",
+          "result": "pass",
+          "run_at": "2026-10-02T20:02:37Z"
         },
         {
           "test_file": "tests/testthat/test-figures.R",
           "test_name": "accessibility checks report every simulation and record findings",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
+          "run_at": "2026-10-02T20:02:37Z"
+        },
+        {
+          "test_file": "tests/testthat/test-figures.R",
+          "test_name": "collected guides must share one meaning per legend title",
+          "result": "pass",
+          "run_at": "2026-10-02T20:02:37Z"
         },
         {
           "test_file": "tests/testthat/test-figures.R",
           "test_name": "figures are saved at final size with a JSON sidecar",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
+          "run_at": "2026-10-02T20:02:37Z"
         },
         {
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "the synthetic demo runs in a generated project and labels its outputs",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'Apache License 2.0' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -168,46 +186,64 @@
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "the static interop source uses only reviewed namespaces and no package references",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
+        },
+        {
+          "test_file": "tests/testthat/test-interop.R",
+          "test_name": "package requirements can enforce exact pinned versions",
+          "result": "pass",
+          "run_at": "2026-10-02T20:03:03Z"
         },
         {
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "a bounded tidy view keeps keys and order without realizing the full assay",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
         },
         {
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "deliberately lossy SummarizedExperiment conversions are flagged field by field",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
         },
         {
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "equal dimensions never make a conversion lossless",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
         },
         {
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "SingleCellExperiment to Seurat conversion reports altExps, reductions and losses",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
+        },
+        {
+          "test_file": "tests/testthat/test-interop.R",
+          "test_name": "reductions filed under an alternative experiment are reported where they went",
+          "result": "pass",
+          "run_at": "2026-10-02T20:03:03Z"
+        },
+        {
+          "test_file": "tests/testthat/test-interop.R",
+          "test_name": "altExps without the requested data assay are reported, not fatal",
+          "result": "pass",
+          "run_at": "2026-10-02T20:03:03Z"
         },
         {
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "observed Seurat 5.5.1 conversion behavior stays recorded in the registry",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
         },
         {
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "Seurat v5 Assay5 layers are inventoried with counts and data semantics",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'Artistic-2.0' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -237,22 +273,22 @@
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "a bounded tidy view keeps keys and order without realizing the full assay",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
         },
         {
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "deliberately lossy SummarizedExperiment conversions are flagged field by field",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
         },
         {
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "equal dimensions never make a conversion lossless",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:05Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'Artistic-2.0' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -281,24 +317,24 @@
       "fixtures": [
         {
           "test_file": "tests/testthat/test-interop.R",
-          "test_name": "Seurat v5 Assay5 layers are inventoried with counts and data semantics",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
-        },
-        {
-          "test_file": "tests/testthat/test-interop.R",
           "test_name": "SingleCellExperiment to Seurat conversion reports altExps, reductions and losses",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
         },
         {
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "observed Seurat 5.5.1 conversion behavior stays recorded in the registry",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
+        },
+        {
+          "test_file": "tests/testthat/test-interop.R",
+          "test_name": "Seurat v5 Assay5 layers are inventoried with counts and data semantics",
+          "result": "pass",
+          "run_at": "2026-10-02T20:03:03Z"
         }
       ],
-      "decided_at": "2026-10-02T19:51:24Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'MIT + file LICENSE' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -343,30 +379,30 @@
       "fixtures": [
         {
           "test_file": "tests/testthat/test-interop.R",
-          "test_name": "Seurat v5 Assay5 layers are inventoried with counts and data semantics",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
-        },
-        {
-          "test_file": "tests/testthat/test-interop.R",
-          "test_name": "donor-level pseudobulk sums raw counts and refuses too few donors",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
-        },
-        {
-          "test_file": "tests/testthat/test-interop.R",
           "test_name": "SingleCellExperiment to Seurat conversion reports altExps, reductions and losses",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
         },
         {
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "observed Seurat 5.5.1 conversion behavior stays recorded in the registry",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
+        },
+        {
+          "test_file": "tests/testthat/test-interop.R",
+          "test_name": "Seurat v5 Assay5 layers are inventoried with counts and data semantics",
+          "result": "pass",
+          "run_at": "2026-10-02T20:03:03Z"
+        },
+        {
+          "test_file": "tests/testthat/test-interop.R",
+          "test_name": "donor-level pseudobulk sums raw counts and refuses too few donors",
+          "result": "pass",
+          "run_at": "2026-10-02T20:03:03Z"
         }
       ],
-      "decided_at": "2026-10-02T19:51:24Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'MIT + file LICENSE' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -404,46 +440,64 @@
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "the static interop source uses only reviewed namespaces and no package references",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
+        },
+        {
+          "test_file": "tests/testthat/test-interop.R",
+          "test_name": "package requirements can enforce exact pinned versions",
+          "result": "pass",
+          "run_at": "2026-10-02T20:03:03Z"
         },
         {
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "a bounded tidy view keeps keys and order without realizing the full assay",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
         },
         {
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "deliberately lossy SummarizedExperiment conversions are flagged field by field",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
         },
         {
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "equal dimensions never make a conversion lossless",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
         },
         {
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "SingleCellExperiment to Seurat conversion reports altExps, reductions and losses",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
+        },
+        {
+          "test_file": "tests/testthat/test-interop.R",
+          "test_name": "reductions filed under an alternative experiment are reported where they went",
+          "result": "pass",
+          "run_at": "2026-10-02T20:03:03Z"
+        },
+        {
+          "test_file": "tests/testthat/test-interop.R",
+          "test_name": "altExps without the requested data assay are reported, not fatal",
+          "result": "pass",
+          "run_at": "2026-10-02T20:03:03Z"
         },
         {
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "observed Seurat 5.5.1 conversion behavior stays recorded in the registry",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
         },
         {
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "Seurat v5 Assay5 layers are inventoried with counts and data semantics",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
         }
       ],
-      "decided_at": "2026-10-02T19:51:24Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'GPL-3' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -479,24 +533,24 @@
       "fixtures": [
         {
           "test_file": "tests/testthat/test-interop.R",
-          "test_name": "Seurat v5 Assay5 layers are inventoried with counts and data semantics",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
-        },
-        {
-          "test_file": "tests/testthat/test-interop.R",
           "test_name": "SingleCellExperiment to Seurat conversion reports altExps, reductions and losses",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
         },
         {
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "observed Seurat 5.5.1 conversion behavior stays recorded in the registry",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
+        },
+        {
+          "test_file": "tests/testthat/test-interop.R",
+          "test_name": "Seurat v5 Assay5 layers are inventoried with counts and data semantics",
+          "result": "pass",
+          "run_at": "2026-10-02T20:03:03Z"
         }
       ],
-      "decided_at": "2026-10-02T19:51:24Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'GPL-3' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -534,52 +588,70 @@
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "the static interop source uses only reviewed namespaces and no package references",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
+        },
+        {
+          "test_file": "tests/testthat/test-interop.R",
+          "test_name": "package requirements can enforce exact pinned versions",
+          "result": "pass",
+          "run_at": "2026-10-02T20:03:03Z"
         },
         {
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "a bounded tidy view keeps keys and order without realizing the full assay",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
         },
         {
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "deliberately lossy SummarizedExperiment conversions are flagged field by field",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
         },
         {
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "equal dimensions never make a conversion lossless",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
         },
         {
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "SingleCellExperiment to Seurat conversion reports altExps, reductions and losses",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
+        },
+        {
+          "test_file": "tests/testthat/test-interop.R",
+          "test_name": "reductions filed under an alternative experiment are reported where they went",
+          "result": "pass",
+          "run_at": "2026-10-02T20:03:03Z"
+        },
+        {
+          "test_file": "tests/testthat/test-interop.R",
+          "test_name": "altExps without the requested data assay are reported, not fatal",
+          "result": "pass",
+          "run_at": "2026-10-02T20:03:03Z"
         },
         {
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "observed Seurat 5.5.1 conversion behavior stays recorded in the registry",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
         },
         {
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "Seurat v5 Assay5 layers are inventoried with counts and data semantics",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
         },
         {
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "donor-level pseudobulk sums raw counts and refuses too few donors",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'Artistic-2.0' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -617,22 +689,22 @@
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "a bounded tidy view keeps keys and order without realizing the full assay",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
         },
         {
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "deliberately lossy SummarizedExperiment conversions are flagged field by field",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
         },
         {
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "equal dimensions never make a conversion lossless",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'Artistic-2.0' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -659,10 +731,10 @@
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "the synthetic demo runs in a generated project and labels its outputs",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:07Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'GPL-3' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -689,16 +761,16 @@
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "tidy aliases keep column names out of formulas and record reference levels",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         },
         {
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "reviewed engines match independent references on synthetic data",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:06Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'GPL-3' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -728,10 +800,10 @@
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "the synthetic demo runs in a generated project and labels its outputs",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:07Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'MIT + file LICENSE' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -761,16 +833,16 @@
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "tidy aliases keep column names out of formulas and record reference levels",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         },
         {
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "reviewed engines match independent references on synthetic data",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:06Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'MIT + file LICENSE' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -804,24 +876,30 @@
       "fixtures": [
         {
           "test_file": "tests/testthat/test-figures.R",
+          "test_name": "the default NA colour never collides with eligible palette colours",
+          "result": "pass",
+          "run_at": "2026-10-02T20:02:37Z"
+        },
+        {
+          "test_file": "tests/testthat/test-figures.R",
           "test_name": "accessibility checks report every simulation and record findings",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
+          "run_at": "2026-10-02T20:02:37Z"
         },
         {
           "test_file": "tests/testthat/test-figures.R",
           "test_name": "figures are saved at final size with a JSON sidecar",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
+          "run_at": "2026-10-02T20:02:37Z"
         },
         {
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "the synthetic demo runs in a generated project and labels its outputs",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'BSD_3_clause + file LICENSE' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -859,10 +937,10 @@
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "the synthetic demo runs in a generated project and labels its outputs",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:06Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'MIT + file LICENSE' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -900,10 +978,10 @@
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "tidy aliases keep column names out of formulas and record reference levels",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:05Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'MIT + file LICENSE' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -933,16 +1011,16 @@
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "tidy aliases keep column names out of formulas and record reference levels",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         },
         {
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "reviewed engines match independent references on synthetic data",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:06Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'MIT + file LICENSE' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -1003,34 +1081,46 @@
           "test_file": "tests/testthat/test-figures.R",
           "test_name": "continuous and diverging scales keep explicit limits, midpoint and NA colour",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
+          "run_at": "2026-10-02T20:02:37Z"
         },
         {
           "test_file": "tests/testthat/test-figures.R",
           "test_name": "categorical NA values use the distinct NA colour",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
+          "run_at": "2026-10-02T20:02:37Z"
         },
         {
           "test_file": "tests/testthat/test-figures.R",
-          "test_name": "figures are saved at final size with a JSON sidecar",
+          "test_name": "missing categories stay visible with a labelled NA colour and NA shape",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-standard-workflow.R",
-          "test_name": "the synthetic demo runs in a generated project and labels its outputs",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:37Z"
         },
         {
           "test_file": "tests/testthat/test-figures.R",
           "test_name": "patchwork composition keeps panel order, tags and guide policy",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
+          "run_at": "2026-10-02T20:02:37Z"
+        },
+        {
+          "test_file": "tests/testthat/test-figures.R",
+          "test_name": "collected guides must share one meaning per legend title",
+          "result": "pass",
+          "run_at": "2026-10-02T20:02:37Z"
+        },
+        {
+          "test_file": "tests/testthat/test-figures.R",
+          "test_name": "figures are saved at final size with a JSON sidecar",
+          "result": "pass",
+          "run_at": "2026-10-02T20:02:37Z"
+        },
+        {
+          "test_file": "tests/testthat/test-standard-workflow.R",
+          "test_name": "the synthetic demo runs in a generated project and labels its outputs",
+          "result": "pass",
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T19:51:24Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'MIT + file LICENSE' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -1059,24 +1149,30 @@
       "fixtures": [
         {
           "test_file": "tests/testthat/test-figures.R",
+          "test_name": "the default NA colour never collides with eligible palette colours",
+          "result": "pass",
+          "run_at": "2026-10-02T20:02:37Z"
+        },
+        {
+          "test_file": "tests/testthat/test-figures.R",
           "test_name": "accessibility checks report every simulation and record findings",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
+          "run_at": "2026-10-02T20:02:37Z"
         },
         {
           "test_file": "tests/testthat/test-figures.R",
           "test_name": "figures are saved at final size with a JSON sidecar",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
+          "run_at": "2026-10-02T20:02:37Z"
         },
         {
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "the synthetic demo runs in a generated project and labels its outputs",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'Part of R (GPL-2 | GPL-3)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -1106,10 +1202,10 @@
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "the synthetic demo runs in a generated project and labels its outputs",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'MIT + file LICENSE' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -1141,16 +1237,16 @@
           "test_file": "tests/testthat/test-figures.R",
           "test_name": "figures are saved at final size with a JSON sidecar",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
+          "run_at": "2026-10-02T20:02:37Z"
         },
         {
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "the synthetic demo runs in a generated project and labels its outputs",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'MIT + file LICENSE' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -1180,16 +1276,16 @@
           "test_file": "tests/testthat/test-templates.R",
           "test_name": "synthetic template renders without importing study data",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:28Z"
+          "run_at": "2026-10-02T20:02:48Z"
         },
         {
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "the synthetic demo runs in a generated project and labels its outputs",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'MIT + file LICENSE' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -1218,10 +1314,10 @@
           "test_file": "tests/testthat/test-templates.R",
           "test_name": "synthetic template renders without importing study data",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:28Z"
+          "run_at": "2026-10-02T20:02:48Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'GPL' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -1250,10 +1346,10 @@
           "test_file": "tests/testthat/test-templates.R",
           "test_name": "synthetic template renders without importing study data",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:28Z"
+          "run_at": "2026-10-02T20:02:48Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'GPL' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -1286,58 +1382,76 @@
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "the static interop source uses only reviewed namespaces and no package references",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
+        },
+        {
+          "test_file": "tests/testthat/test-interop.R",
+          "test_name": "package requirements can enforce exact pinned versions",
+          "result": "pass",
+          "run_at": "2026-10-02T20:03:03Z"
         },
         {
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "a bounded tidy view keeps keys and order without realizing the full assay",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
         },
         {
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "deliberately lossy SummarizedExperiment conversions are flagged field by field",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
         },
         {
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "equal dimensions never make a conversion lossless",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
         },
         {
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "SingleCellExperiment to Seurat conversion reports altExps, reductions and losses",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
+        },
+        {
+          "test_file": "tests/testthat/test-interop.R",
+          "test_name": "reductions filed under an alternative experiment are reported where they went",
+          "result": "pass",
+          "run_at": "2026-10-02T20:03:03Z"
+        },
+        {
+          "test_file": "tests/testthat/test-interop.R",
+          "test_name": "altExps without the requested data assay are reported, not fatal",
+          "result": "pass",
+          "run_at": "2026-10-02T20:03:03Z"
         },
         {
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "observed Seurat 5.5.1 conversion behavior stays recorded in the registry",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
         },
         {
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "Seurat v5 Assay5 layers are inventoried with counts and data semantics",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
         },
         {
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "donor-level pseudobulk sums raw counts and refuses too few donors",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
         },
         {
           "test_file": "tests/testthat/test-interop.R",
           "test_name": "a mixed-model S4 fit maps to broom output matching its fixed effects",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:39Z"
+          "run_at": "2026-10-02T20:03:03Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'Part of R (GPL-2 | GPL-3)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -1375,10 +1489,10 @@
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "the synthetic demo runs in a generated project and labels its outputs",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'GPL (>= 2)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -1415,10 +1529,10 @@
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "reviewed engines match independent references on synthetic data",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'GPL (>= 2)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -1448,24 +1562,30 @@
       "fixtures": [
         {
           "test_file": "tests/testthat/test-figures.R",
+          "test_name": "patchwork composition keeps panel order, tags and guide policy",
+          "result": "pass",
+          "run_at": "2026-10-02T20:02:37Z"
+        },
+        {
+          "test_file": "tests/testthat/test-figures.R",
+          "test_name": "collected guides must share one meaning per legend title",
+          "result": "pass",
+          "run_at": "2026-10-02T20:02:37Z"
+        },
+        {
+          "test_file": "tests/testthat/test-figures.R",
           "test_name": "figures are saved at final size with a JSON sidecar",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
+          "run_at": "2026-10-02T20:02:37Z"
         },
         {
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "the synthetic demo runs in a generated project and labels its outputs",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "patchwork composition keeps panel order, tags and guide policy",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T19:51:24Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'MIT + file LICENSE' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -1511,10 +1631,10 @@
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "delimited import honours dictionary types and missing codes without guessing",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:05Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'MIT + file LICENSE' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -1547,10 +1667,10 @@
           "test_file": "tests/testthat/test-templates.R",
           "test_name": "synthetic template renders without importing study data",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:28Z"
+          "run_at": "2026-10-02T20:02:48Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'GPL-3' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -1583,10 +1703,10 @@
           "test_file": "tests/testthat/test-templates.R",
           "test_name": "synthetic template renders without importing study data",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:28Z"
+          "run_at": "2026-10-02T20:02:48Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'GPL-3' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -1646,10 +1766,10 @@
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "the synthetic demo runs in a generated project and labels its outputs",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'Part of R (GPL-2 | GPL-3)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -1682,10 +1802,10 @@
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "descriptive tables never test and DescrTab2 absence uses the documented fallback",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'Part of R (GPL-2 | GPL-3)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -1718,10 +1838,10 @@
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "descriptive tables never test and DescrTab2 absence uses the documented fallback",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'Part of R (GPL-2 | GPL-3)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -1746,24 +1866,36 @@
       "fixtures": [
         {
           "test_file": "tests/testthat/test-figures.R",
-          "test_name": "figures are saved at final size with a JSON sidecar",
+          "test_name": "missing categories stay visible with a labelled NA colour and NA shape",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-standard-workflow.R",
-          "test_name": "the synthetic demo runs in a generated project and labels its outputs",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:37Z"
         },
         {
           "test_file": "tests/testthat/test-figures.R",
           "test_name": "patchwork composition keeps panel order, tags and guide policy",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
+          "run_at": "2026-10-02T20:02:37Z"
+        },
+        {
+          "test_file": "tests/testthat/test-figures.R",
+          "test_name": "collected guides must share one meaning per legend title",
+          "result": "pass",
+          "run_at": "2026-10-02T20:02:37Z"
+        },
+        {
+          "test_file": "tests/testthat/test-figures.R",
+          "test_name": "figures are saved at final size with a JSON sidecar",
+          "result": "pass",
+          "run_at": "2026-10-02T20:02:37Z"
+        },
+        {
+          "test_file": "tests/testthat/test-standard-workflow.R",
+          "test_name": "the synthetic demo runs in a generated project and labels its outputs",
+          "result": "pass",
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T19:51:24Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'Part of R (GPL-2 | GPL-3)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -1797,10 +1929,10 @@
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "reviewed engines match independent references on synthetic data",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'Part of R (GPL-2 | GPL-3)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -1844,16 +1976,16 @@
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "reviewed engines match independent references on synthetic data",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         },
         {
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "blocked fits do not report estimates",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'Part of R (GPL-2 | GPL-3)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -1899,16 +2031,16 @@
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "reviewed engines match independent references on synthetic data",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         },
         {
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "blocked fits do not report estimates",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'Part of R (GPL-2 | GPL-3)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -1942,10 +2074,10 @@
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "reviewed engines match independent references on synthetic data",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'Part of R (GPL-2 | GPL-3)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -1974,10 +2106,10 @@
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "tidy aliases keep column names out of formulas and record reference levels",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'Part of R (GPL-2 | GPL-3)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -1991,12 +2123,14 @@
       "adapter_version": "0.3.0",
       "status": "approved",
       "required_callables": [
-        "coxph"
+        "coxph",
+        "Surv"
       ],
       "required_methods": [],
       "required_objects": [],
       "required_topics": [
-        "coxph"
+        "coxph",
+        "Surv"
       ],
       "required_documents": [
         "inst/CITATION"
@@ -2006,10 +2140,10 @@
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "the synthetic demo runs in a generated project and labels its outputs",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'LGPL (>= 2)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -2042,10 +2176,10 @@
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "the synthetic demo runs in a generated project and labels its outputs",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'LGPL (>= 2)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -2078,10 +2212,10 @@
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "reviewed engines match independent references on synthetic data",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'LGPL (>= 2)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -2115,10 +2249,10 @@
           "test_file": "tests/testthat/test-environment.R",
           "test_name": "a default tar_make validates, runs the demo and blocks the study target",
           "result": "pass",
-          "run_at": "2026-10-02T16:54:05Z"
+          "run_at": "2026-10-02T20:03:43Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'MIT + file LICENSE' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -2145,10 +2279,10 @@
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "the synthetic demo runs in a generated project and labels its outputs",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:07Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'Part of R (GPL-2 | GPL-3)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -2175,10 +2309,10 @@
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "stage checks agree with check_analysis_data on shared fixtures",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'Part of R (GPL-2 | GPL-3)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -2205,10 +2339,10 @@
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "descriptive tables never test and DescrTab2 absence uses the documented fallback",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'Part of R (GPL-2 | GPL-3)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -2237,58 +2371,76 @@
           "test_file": "tests/testthat/test-figures.R",
           "test_name": "the pinned RColorBrewer table is bundled without importing RColorBrewer",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
+          "run_at": "2026-10-02T20:02:37Z"
         },
         {
           "test_file": "tests/testthat/test-figures.R",
           "test_name": "categorical palettes are verified, stable and never recycled",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "continuous and diverging scales keep explicit limits, midpoint and NA colour",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "categorical NA values use the distinct NA colour",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "accessibility checks report every simulation and record findings",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "figures are saved at final size with a JSON sidecar",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
-        },
-        {
-          "test_file": "tests/testthat/test-standard-workflow.R",
-          "test_name": "the synthetic demo runs in a generated project and labels its outputs",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "patchwork composition keeps panel order, tags and guide policy",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
+          "run_at": "2026-10-02T20:02:37Z"
         },
         {
           "test_file": "tests/testthat/test-figures.R",
           "test_name": "ordered categories use discretized viridis in explicit order",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
+          "run_at": "2026-10-02T20:02:37Z"
+        },
+        {
+          "test_file": "tests/testthat/test-figures.R",
+          "test_name": "continuous and diverging scales keep explicit limits, midpoint and NA colour",
+          "result": "pass",
+          "run_at": "2026-10-02T20:02:37Z"
+        },
+        {
+          "test_file": "tests/testthat/test-figures.R",
+          "test_name": "categorical NA values use the distinct NA colour",
+          "result": "pass",
+          "run_at": "2026-10-02T20:02:37Z"
+        },
+        {
+          "test_file": "tests/testthat/test-figures.R",
+          "test_name": "missing categories stay visible with a labelled NA colour and NA shape",
+          "result": "pass",
+          "run_at": "2026-10-02T20:02:37Z"
+        },
+        {
+          "test_file": "tests/testthat/test-figures.R",
+          "test_name": "the default NA colour never collides with eligible palette colours",
+          "result": "pass",
+          "run_at": "2026-10-02T20:02:37Z"
+        },
+        {
+          "test_file": "tests/testthat/test-figures.R",
+          "test_name": "accessibility checks report every simulation and record findings",
+          "result": "pass",
+          "run_at": "2026-10-02T20:02:37Z"
+        },
+        {
+          "test_file": "tests/testthat/test-figures.R",
+          "test_name": "patchwork composition keeps panel order, tags and guide policy",
+          "result": "pass",
+          "run_at": "2026-10-02T20:02:37Z"
+        },
+        {
+          "test_file": "tests/testthat/test-figures.R",
+          "test_name": "collected guides must share one meaning per legend title",
+          "result": "pass",
+          "run_at": "2026-10-02T20:02:37Z"
+        },
+        {
+          "test_file": "tests/testthat/test-figures.R",
+          "test_name": "figures are saved at final size with a JSON sidecar",
+          "result": "pass",
+          "run_at": "2026-10-02T20:02:37Z"
+        },
+        {
+          "test_file": "tests/testthat/test-standard-workflow.R",
+          "test_name": "the synthetic demo runs in a generated project and labels its outputs",
+          "result": "pass",
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T19:51:24Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'Part of R (GPL-2 | GPL-3)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -2315,10 +2467,10 @@
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "delimited import honours dictionary types and missing codes without guessing",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'Part of R (GPL-2 | GPL-3)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -2347,16 +2499,16 @@
           "test_file": "tests/testthat/test-templates.R",
           "test_name": "synthetic template renders without importing study data",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:28Z"
+          "run_at": "2026-10-02T20:02:48Z"
         },
         {
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "the synthetic demo runs in a generated project and labels its outputs",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T18:54:11Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'Part of R (GPL-2 | GPL-3)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -2384,24 +2536,24 @@
       "fixtures": [
         {
           "test_file": "tests/testthat/test-figures.R",
+          "test_name": "ordered categories use discretized viridis in explicit order",
+          "result": "pass",
+          "run_at": "2026-10-02T20:02:37Z"
+        },
+        {
+          "test_file": "tests/testthat/test-figures.R",
           "test_name": "continuous and diverging scales keep explicit limits, midpoint and NA colour",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
+          "run_at": "2026-10-02T20:02:37Z"
         },
         {
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "the synthetic demo runs in a generated project and labels its outputs",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
-        },
-        {
-          "test_file": "tests/testthat/test-figures.R",
-          "test_name": "ordered categories use discretized viridis in explicit order",
-          "result": "pass",
-          "run_at": "2026-10-02T16:53:19Z"
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T19:51:24Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'MIT + file LICENSE' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -2431,10 +2583,10 @@
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "the synthetic demo runs in a generated project and labels its outputs",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:07Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'BSD_3_clause + file LICENSE' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -2464,10 +2616,10 @@
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "delimited import honours dictionary types and missing codes without guessing",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:05Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'BSD_3_clause + file LICENSE' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     },
     {
@@ -2497,16 +2649,16 @@
           "test_file": "tests/testthat/test-templates.R",
           "test_name": "synthetic template renders without importing study data",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:28Z"
+          "run_at": "2026-10-02T20:02:48Z"
         },
         {
           "test_file": "tests/testthat/test-standard-workflow.R",
           "test_name": "the synthetic demo runs in a generated project and labels its outputs",
           "result": "pass",
-          "run_at": "2026-10-02T16:53:17Z"
+          "run_at": "2026-10-02T20:02:34Z"
         }
       ],
-      "decided_at": "2026-10-02T16:54:07Z",
+      "decided_at": "2026-10-02T20:03:44Z",
       "rights_basis": "Upstream license 'BSD_3_clause + file LICENSE' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
     }
   ]
