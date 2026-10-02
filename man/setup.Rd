@@ -7,7 +7,8 @@
 setup(model = "auto", install_ollama = TRUE, offline = FALSE, dry_run = FALSE)
 }
 \arguments{
-\item{model}{Model tag, or \code{auto} for the recorded candidate. The candidate is
+\item{model}{Plain local model tag (\code{name} or \code{name:tag}, no registry host,
+namespace or URL), or \code{auto} for the recorded candidate. The candidate is
 not yet qualified for workflow planning; runtime readiness is a separate gate.}
 
 \item{install_ollama}{Allow portable acquisition when the runtime is absent.}

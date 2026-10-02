@@ -9,10 +9,14 @@ ask_benchmark <- function(cases = read_document(resource_file("benchmarks", "ask
     a <- ask(case$question, path = path)
     elapsed <- proc.time()[["elapsed"]] - started
     approved <- unlist(a$approved_capabilities)
+    # A citation counts only when it names the pinned revision (version or
+    # commit), not a package page that moves with new releases.
     evidence_ok <- all(vapply(seq_len(nrow(a$evidence)), function(i) {
       p <- index[[a$evidence$package[[i]]]]
+      citation <- a$evidence$citation[[i]]
       !is.null(p) && any(vapply(p$exports, function(x) identical(x$name, a$evidence$export[[i]]), logical(1))) &&
-        startsWith(a$evidence$verification[[i]], "workflow_approved") && !is.na(a$evidence$citation[[i]])
+        startsWith(a$evidence$verification[[i]], "workflow_approved") && !is.na(citation) &&
+        grepl(catalog_revision_token(p), citation, fixed = TRUE)
     }, logical(1)))
     code_ok <- !nzchar(a$code) || isTRUE(attr(validate_generated_code(a$code, catalog), "valid"))
     expected <- unlist(case$expect)

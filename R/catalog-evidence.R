@@ -28,24 +28,42 @@ static_call_head <- function(expr, packages = NULL) {
   NULL
 }
 
-# Exact-name then positional matching against known formals; partial names are
-# never guessed and simply remain unmatched.
+# R's matching rules against known formal names: exact names first, then
+# unique partial prefixes, then positions; formals after `...` match only
+# exactly. An ambiguous abbreviation stays unmatched.
 static_match_args <- function(expr, formals) {
   args <- as.list(expr)[-1]
   keys <- names(args)
   if (is.null(keys)) keys <- rep("", length(args))
   matched <- list()
   present <- !vapply(seq_along(args), function(i) empty_argument(args, i), logical(1))
-  for (i in which(present)) {
-    if (nzchar(keys[[i]]) && keys[[i]] %in% formals && is.null(matched[[keys[[i]]]])) matched[keys[[i]]] <- list(args[[i]])
+  dots <- match("...", formals)
+  open <- if (is.na(dots)) formals else formals[seq_len(dots - 1L)]
+  named <- which(present & nzchar(keys))
+  exact <- vapply(named, function(i) keys[[i]] %in% setdiff(formals, "..."), logical(1))
+  for (i in named[exact]) {
+    if (is.null(matched[[keys[[i]]]])) matched[keys[[i]]] <- list(args[[i]])
   }
-  remaining <- setdiff(formals, names(matched))
+  for (i in named[!exact]) {
+    candidates <- setdiff(open[startsWith(open, keys[[i]])], names(matched))
+    if (length(candidates) == 1L) matched[candidates] <- list(args[[i]])
+  }
+  remaining <- setdiff(open, names(matched))
   for (i in which(!nzchar(keys) & present)) {
     if (!length(remaining)) break
     matched[remaining[[1]]] <- list(args[[i]])
     remaining <- remaining[-1]
   }
   matched
+}
+
+# The same rules applied by R itself: match.call() on a stub with the callee's
+# formals. Nothing is evaluated; NULL when R would refuse the call.
+static_match_call <- function(call, formals) {
+  stub <- function() NULL
+  formals(stub) <- formals
+  matched <- tryCatch(match.call(stub, call, expand.dots = FALSE, envir = emptyenv()), error = function(e) NULL)
+  if (is.null(matched)) NULL else as.list(matched)[-1]
 }
 
 static_signature_values <- function(x) {

@@ -12,6 +12,34 @@ test_that("runtime previews are side effect free and reject unsafe endpoints", {
   expect_error(setup(offline = NA), class = "cttir_input_error")
 })
 
+test_that("model tags are plain local name[:tag] values", {
+  withr::local_options(cttiR.runtime_dir = file.path(new_parent(), "absent"))
+  local_mocked_bindings(runtime_request = function(...) stop("unexpected HTTP"))
+  refused <- c("https://ollama.com/library/qwen", "hf.co/x/y:latest", "library/qwen2.5:1.5b", "qwen:1b:extra",
+    ":latest", "qwen2.5 1.5b")
+  for (model in refused) {
+    expect_error(setup(model = model, dry_run = TRUE), class = "cttir_input_error")
+  }
+  expect_equal(setup(model = "qwen2.5-coder:1.5b", dry_run = TRUE)$model$name, "qwen2.5-coder:1.5b")
+  expect_true(valid_model_tag("qwen3:4b-instruct-2507-q4_K_M"))
+})
+
+test_that("runtime ownership needs the owned binary as the process image, not just in the arguments", {
+  skip_if_not(identical(Sys.info()[["sysname"]], "Linux") && dir.exists("/proc/self"))
+  skip_if_not(nzchar(Sys.which("sleep")) && nzchar(Sys.which("sh")))
+  sleep <- normalizePath(Sys.which("sleep"))
+  real <- processx::process$new(sleep, "30")
+  on.exit(real$kill(), add = TRUE)
+  expect_true(runtime_executable_matches(real$get_pid(), sleep))
+  # A shell whose command line merely names the binary path and "serve".
+  fake <- file.path(new_parent(), "ollama")
+  file.copy(sleep, fake)
+  spoof <- processx::process$new(Sys.which("sh"), c("-c", "sleep 30", fake, "serve"))
+  on.exit(spoof$kill(), add = TRUE)
+  expect_true(fake %in% ps::ps_cmdline(ps::ps_handle(spoof$get_pid())))
+  expect_false(runtime_executable_matches(spoof$get_pid(), fake))
+})
+
 test_that("offline setup never acquires and preserves another setup lock", {
   root <- new_parent()
   withr::local_options(cttiR.runtime_dir = root)

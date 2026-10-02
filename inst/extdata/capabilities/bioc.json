@@ -691,16 +691,20 @@
           "Signac",
           "scATAC-seq",
           "chromatin accessibility",
-          "fragments",
-          "peaks",
+          "fragment file",
+          "fragments file",
+          "peak calling",
+          "atac peaks",
+          "snATAC-seq",
+          "single-cell ATAC",
           "multiome"
         ],
         "de": [
           "Signac",
           "scATAC-Seq",
           "Chromatin-Zugaenglichkeit",
-          "Fragmente",
-          "Peaks",
+          "Fragmentdatei",
+          "Peak-Calling",
           "Multiom"
         ]
       },

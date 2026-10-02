@@ -16,7 +16,7 @@ capability_registry <- function() {
     return(get(key, envir = .capability_cache, inherits = FALSE))
   }
   fail <- function(message) abort_cttir(message, "cttir_schema_error", "invalid_capability_registry")
-  registry <- list(modalities = list(), rules = list(), capabilities = list())
+  registry <- list(modalities = list(), rules = list(), capabilities = list(), required_callables = list())
   for (file in files) {
     doc <- jsonlite::fromJSON(file, simplifyVector = FALSE)
     if (!identical(doc$schema_version, 1L) || !is.list(doc$capabilities)) fail("Unsupported capability registry file.")
@@ -33,9 +33,23 @@ capability_registry <- function() {
       cap$packages <- unlist(cap$packages, use.names = FALSE)
       registry$capabilities[[cap$id]] <- cap
     }
+    for (id in names(doc$required_callables)) {
+      registry$required_callables[[id]] <- unlist(doc$required_callables[[id]], use.names = FALSE)
+    }
   }
   ids <- vapply(registry$capabilities, function(x) x$id, character(1))
   if (anyDuplicated(ids)) fail("Capability IDs must be unique.")
+  # Callables a capability needs are attached after the records are checked,
+  # so capability_approval() can require each one to be approved.
+  for (id in names(registry$required_callables)) {
+    callables <- registry$required_callables[[id]]
+    if (is.null(registry$capabilities[[id]]) || !is.character(callables) ||
+        !all(grepl("^[A-Za-z][A-Za-z0-9.]*::[A-Za-z._][A-Za-z0-9._]*$", callables)) ||
+        !all(sub("::.*$", "", callables) %in% registry$capabilities[[id]]$packages)) {
+      fail("A required-callable record is malformed.")
+    }
+    registry$capabilities[[id]]$callables <- callables
+  }
   if (length(ls(.capability_cache)) >= 2L) rm(list = ls(.capability_cache), envir = .capability_cache)
   assign(key, registry, envir = .capability_cache)
   registry
@@ -44,10 +58,46 @@ capability_registry <- function() {
 # Specialist routing evidence is reserved for CTTIR-family capabilities.
 is_cttir_specialist <- function(cap) isTRUE(cap$specialist) && identical(cap$family, "cttir")
 
+# A keyword matches whole words: it starts at a word boundary and may carry a
+# short inflectional ending ("figures", "logistische"). A trailing "*" marks a
+# deliberate stem that matches any continuation ("vorhersag*", "trajector*");
+# a leading "*" lets a German compound end in the keyword ("*zytometrie" in
+# "Durchflusszytometrie").
+keyword_pattern <- function(keyword) {
+  keyword <- tolower(enc2utf8(keyword))
+  stem <- endsWith(keyword, "*")
+  compound <- startsWith(keyword, "*")
+  body <- gsub("([][{}()^$.|*+?\\\\])", "\\\\\\1", gsub("^[*]|[*]$", "", keyword))
+  ending <- if (stem) "" else "(?:s|es|e|en|er|em|n|ed|d|ing)?(?![\\p{L}\\p{N}])"
+  paste0(if (compound) "" else "(?<![\\p{L}\\p{N}])", body, ending)
+}
+
+# A keyword directly negated ("not a survival study", "without repeated
+# measures", "keine Messwiederholung") is not a signal.
+negation_prefix <- paste0("(?:^|[^\\p{L}\\p{N}/-])(?:not|no|without|non|never|nor|neither|kein|keine|keinen|keinem|",
+  "keiner|keines|ohne|nicht|nie)(?:\\s+|-)(?:(?:a|an|the|any|ein|eine|einen|einem|einer|der|die|das|den|dem)\\s+)?$")
+
+# TRUE when `pattern` (PCRE) matches somewhere that is not directly negated.
+affirmed_hit <- function(text, pattern) {
+  text <- enc2utf8(text)
+  starts <- gregexpr(pattern, text, perl = TRUE)[[1]]
+  if (starts[[1]] < 0L) return(FALSE)
+  any(vapply(starts, function(start) {
+    !grepl(negation_prefix, substr(text, max(1L, start - 40L), start - 1L), perl = TRUE)
+  }, logical(1)))
+}
+
 keyword_hit <- function(text, keywords) {
   words <- unlist(c(keywords$en, keywords$de), use.names = FALSE)
   if (!length(words)) return(FALSE)
-  any(vapply(words, function(k) grepl(tolower(k), text, fixed = TRUE), logical(1)))
+  affirmed_hit(text, paste(vapply(words, keyword_pattern, character(1)), collapse = "|"))
+}
+
+# Event-type outcome words (death, complications, readmission, relapse) make a
+# measured-value reading of the outcome unsafe, so they veto "continuous".
+event_outcome_veto <- function(text, registry, outcome) {
+  identical(outcome, "continuous") &&
+    any(vapply(registry$rules$event_outcome, function(r) keyword_hit(text, r$keywords), logical(1)))
 }
 
 # Conservative deterministic reading of the goal text. Ambiguous or absent
@@ -59,6 +109,8 @@ infer_goal <- function(goal, registry = capability_registry()) {
     if (!length(hits)) return("unknown")
     if (ordered || length(hits) == 1L) hits[[1]] else "unknown"
   }
+  outcome <- pick(registry$rules$outcome_family, FALSE)
+  if (event_outcome_veto(text, registry, outcome)) outcome <- "unknown"
   # Registry order encodes specificity: "single-cell RNA-seq" is single-cell,
   # not bulk RNA; multi-omics needs its own explicit keywords.
   modalities <- vapply(Filter(function(m) keyword_hit(text, m$keywords), registry$modalities),
@@ -69,15 +121,56 @@ infer_goal <- function(goal, registry = capability_registry()) {
   }, registry$capabilities)
   list(
     aim = pick(registry$rules$aim, TRUE),
-    outcome_family = pick(registry$rules$outcome_family, FALSE),
+    outcome_family = outcome,
     unit_structure = pick(registry$rules$unit_structure, TRUE),
     modality = modality,
     keyword_capabilities = unname(vapply(matched, function(x) x$id, character(1)))
   )
 }
 
+# Approved decisions of one package record for one adapter at its exact revision.
+adapter_decisions <- function(record, adapter) {
+  Filter(function(decision) {
+    identical(decision$status, "approved") && identical(decision$source_hash, record$source_hash) &&
+      identical(decision$adapter_id, adapter$id) && identical(decision$adapter_version, adapter$version)
+  }, record$approvals)
+}
+
+# Records from `package` to the owner of `name`, following at most three
+# reexport hops; NULL when the chain does not end in an owned export.
+callable_chain <- function(index, package, name) {
+  record <- index[[package]]
+  chain <- list()
+  for (hop in 0:3) {
+    entry <- if (is.null(record)) list() else Filter(function(x) identical(x$name, name), record$exports)
+    if (!length(entry)) return(NULL)
+    chain <- c(chain, list(record))
+    if (!identical(entry[[1]]$kind, "reexport")) return(chain)
+    record <- index[[if (is.null(entry[[1]]$owner_package)) "" else entry[[1]]$owner_package]]
+  }
+  NULL
+}
+
+callable_owner <- function(index, package, name) {
+  chain <- callable_chain(index, package, name)
+  if (is.null(chain)) NULL else chain[[length(chain)]]
+}
+
+# A required callable counts only when its owning revision carries a complete
+# approval for the capability's adapter that lists it.
+callable_approved <- function(index, callable, adapter) {
+  parts <- strsplit(callable, "::", fixed = TRUE)[[1]]
+  owner <- callable_owner(index, parts[[1]], parts[[2]])
+  if (is.null(owner) || is.null(approved_export_index(owner)[[parts[[2]]]])) return(FALSE)
+  any(vapply(adapter_decisions(owner, adapter), function(d) {
+    parts[[2]] %in% c(approval_text(d$required_callables), approval_text(d$required_objects))
+  }, logical(1)))
+}
+
 # Approval lookup in a catalog snapshot: approved decisions bound to the exact
-# cataloged revision and the adapter that would run.
+# cataloged revision and the adapter that would run. A package-level decision
+# is not enough when the capability declares callables (for example clustering
+# functions): each of them must be approved for that adapter as well.
 capability_approval <- function(cap, catalog) {
   packages <- setdiff(cap$packages, "base")
   if (!length(packages)) return(list(status = "approved", approvals = list(), missing = character()))
@@ -86,15 +179,13 @@ capability_approval <- function(cap, catalog) {
   missing <- character()
   for (name in packages) {
     record <- index[[name]]
-    hit <- NULL
-    for (decision in record$approvals) {
-      if (identical(decision$status, "approved") && identical(decision$source_hash, record$source_hash) &&
-          identical(decision$adapter_id, cap$adapter$id) && identical(decision$adapter_version, cap$adapter$version)) {
-        hit <- decision
-      }
-    }
-    if (is.null(hit)) missing <- c(missing, name) else approvals[[name]] <- hit$approval_id
+    hits <- if (is.null(record)) list() else adapter_decisions(record, cap$adapter)
+    if (!length(hits)) missing <- c(missing, name) else approvals[[name]] <- hits[[length(hits)]]$approval_id
   }
+  # A stage may narrow the packages (broom or broom.mixed); only their callables apply.
+  required <- Filter(function(x) sub("::.*$", "", x) %in% cap$packages, cap$callables)
+  unapproved <- Filter(function(x) !callable_approved(index, x, cap$adapter), required)
+  missing <- c(missing, unlist(unapproved))
   list(status = if (length(missing)) "approval_pending" else "approved", approvals = approvals, missing = missing)
 }
 
@@ -213,13 +304,64 @@ route_workflow <- function(spec, requested = "auto", catalog = catalog_snapshot(
     "No CTTIR specialist capability matches; reflowR layout and standard R stages are used."
   }
   pending <- vapply(stages, function(x) isTRUE(x$enabled) && identical(x$status, "approval_pending"), logical(1))
+  optional <- interop_optional_packages(registry, modality)
+  notes <- if (length(optional)) {
+    paste0("code/R/cttir_interop.R calls ", paste(names(optional), collapse = ", "), "; they are pinned at their ",
+      "catalog versions as optional (required = FALSE) dependencies and are not installed by default.")
+  } else {
+    character()
+  }
   list(profile = profile, requested = requested, reason = reason, engine = engine, modality = modality,
     stages = stages, specialist = specialist, ecosystem = ecosystem, design = design,
-    gaps = unique(gaps), approval_pending = vapply(stages[pending], function(x) x$capability, character(1)))
+    gaps = unique(gaps), approval_pending = vapply(stages[pending], function(x) x$capability, character(1)),
+    optional_packages = optional, notes = notes)
+}
+
+# Packages called by the interoperability template, which modality projects
+# receive: the packages of capabilities backed by the reviewed interop adapters.
+interop_optional_packages <- function(registry, modality) {
+  path <- sub("^[^/]+/", "", interop_adapters()$template[[1]])
+  condition <- standard_bundle_manifest()$conditional[[path]]
+  if (is.null(condition) || !bundle_condition_met(condition, list(ecosystem = list(modality = modality)))) {
+    return(character())
+  }
+  out <- character()
+  for (cap in registry$capabilities) {
+    if (!isTRUE(cap$adapter$id %in% interop_adapters()$id)) next
+    for (package in setdiff(cap$packages, c("base", names(out)))) out[[package]] <- cap$family
+  }
+  out[sort(names(out), method = "radix")]
+}
+
+# Owners (and intermediate reexporters) of approved callables that a package
+# re-exports: broom::tidy is generics::tidy, so generics is pinned with broom.
+reexport_owners <- function(index, record) {
+  out <- list()
+  for (entry in record$exports) {
+    if (!identical(entry$kind, "reexport")) next
+    chain <- callable_chain(index, record$name, entry$name)
+    if (is.null(chain) || length(chain) < 2L) next
+    owner <- chain[[length(chain)]]
+    covering <- approved_export_index(owner)[[entry$name]]
+    if (is.null(covering)) next
+    for (link in chain[-1]) {
+      if (is.null(out[[link$name]])) out[[link$name]] <- list(record = link, approval = covering[[1]]$approval_id)
+    }
+  }
+  out
 }
 
 # Lean per-project dependency manifest derived from enabled stages and the
 # pinned catalog; base R is pinned by the R version, not as a package install.
+# One pinned dependency; `stage` is added to the stages already recorded.
+dependency_row <- function(previous, package, family, record, stage, approval, required = TRUE) {
+  roles <- if (is.null(previous)) character() else unlist(previous$stages)
+  list(package = package, family = family,
+    version = if (is.null(record)) NULL else record$version,
+    source_hash = if (is.null(record)) NULL else record$source_hash,
+    required = required, stages = as.list(unique(c(roles, stage))), approval = approval)
+}
+
 route_dependencies <- function(route, catalog) {
   index <- stats::setNames(catalog$packages, vapply(catalog$packages, function(p) p$name, character(1)))
   rows <- list()
@@ -228,20 +370,31 @@ route_dependencies <- function(route, catalog) {
     for (package in unlist(stage$packages)) {
       if (package == "base") next
       record <- index[[package]]
-      key <- package
-      roles <- if (is.null(rows[[key]])) character() else unlist(rows[[key]]$stages)
-      rows[[key]] <- list(package = package, family = stage$family,
-        version = if (is.null(record)) NULL else record$version,
-        source_hash = if (is.null(record)) NULL else record$source_hash,
-        required = TRUE, stages = as.list(unique(c(roles, stage$stage))),
-        approval = stage$approvals[[package]])
+      rows[[package]] <- dependency_row(rows[[package]], package, stage$family, record, stage$stage,
+        stage$approvals[[package]])
+      if (is.null(record)) next
+      for (owner in reexport_owners(index, record)) {
+        name <- owner$record$name
+        if (name %in% unlist(stage$packages)) next
+        approval <- if (is.null(rows[[name]])) owner$approval else rows[[name]]$approval
+        rows[[name]] <- dependency_row(rows[[name]], name, owner$record$family, owner$record, stage$stage, approval)
+      }
     }
+  }
+  # The interop template is optional code: its packages are pinned so a user
+  # who runs it gets the catalog revisions, but they are never required.
+  for (package in names(route$optional_packages)) {
+    if (!is.null(rows[[package]])) next
+    rows[[package]] <- dependency_row(NULL, package, route$optional_packages[[package]], index[[package]], "interop",
+      NULL, required = FALSE)
   }
   unname(rows[sort(names(rows), method = "radix")])
 }
 
 route_summary <- function(route) {
-  list(profile = route$profile, bundle = "standard-0.3.0", engine = route$engine, modality = route$modality,
+  summary <- list(profile = route$profile, bundle = "standard-0.3.0", engine = route$engine, modality = route$modality,
     stages = lapply(route$stages, function(x) x[c("stage", "capability", "adapter", "enabled", "status")]),
     gaps = as.list(route$gaps))
+  if (length(route$notes)) summary$notes <- as.list(route$notes)
+  summary
 }
