@@ -88,7 +88,7 @@ render_project <- function(spec, route = project_route(spec)) {
       "Describe validation, diagnostics, multiplicity and sensitivity analyses where relevant.\n",
       "These decisions remain unknown until reviewed. No analysis is approved by creation.\n"
     ),
-    "code/validate_project.R" = paste0(
+    "code/validate_project.R" = if (identical(version, "0.3.0")) validate_script_0.3.0 else paste0(
       "# Read-only structural validation; no study data are opened.\n",
       "required <- c('cttir-project.yml', 'cttir-lock.json', 'metadata/data-registry.yml',\n",
       "              'metadata/data-dictionary.csv', 'config/analysis.yml')\n",
@@ -157,6 +157,23 @@ render_project <- function(spec, route = project_route(spec)) {
   }
   files
 }
+
+# Falls back to structural YAML checks when cttiR is not in the active library
+# (for example inside a project renv library).
+validate_script_0.3.0 <- paste0(
+  "# Read-only structural validation; no study data are opened.\n",
+  "required <- c('cttir-project.yml', 'cttir-lock.json', 'metadata/data-registry.yml',\n",
+  "              'metadata/data-dictionary.csv', 'config/analysis.yml', 'config/workflow.yml')\n",
+  "missing <- required[!file.exists(required)]\n",
+  "if (length(missing)) stop(paste('Missing project files:', paste(missing, collapse = ', ')))\n",
+  "if (requireNamespace('cttiR', quietly = TRUE)) {\n",
+  "  cttiR::validate_spec('cttir-project.yml')\n",
+  "  message('Specification validated with cttiR. Data and analysis readiness remain unverified.')\n",
+  "} else {\n",
+  "  for (file in grep('[.]yml$', required, value = TRUE)) yaml::read_yaml(file, eval.expr = FALSE)\n",
+  "  message('YAML structure parsed; install cttiR for full schema validation. Data remain unverified.')\n",
+  "}\n"
+)
 
 project_manifest <- function(files, template_version = "0.1.0") {
   lapply(names(files), function(path) {

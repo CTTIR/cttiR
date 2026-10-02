@@ -5,7 +5,7 @@ capability_fields <- c("id", "family", "stage", "title", "packages", "adapter", 
 
 capability_stages <- c("project", "import", "check", "tidy", "describe", "figures", "model", "effects",
   "report", "pipeline", "environment", "preprocess", "analysis", "design", "interop", "container", "bridge",
-  "aggregation", "normalization", "annotation", "interchange", "acceleration", "data_distribution")
+  "aggregation", "normalization", "annotation", "interchange", "acceleration", "data_distribution", "demo")
 
 # Reviewed capability records are static package resources, one file per module.
 capability_registry <- function() {
@@ -169,7 +169,8 @@ route_workflow <- function(spec, requested = "auto", catalog = catalog_snapshot(
       gaps <- c(gaps, "unsupported_outcome_or_unit_structure")
     }
   }
-  stages <- c(stages, list(route_stage(registry, catalog, "report", "std.report.render")))
+  stages <- c(stages, list(route_stage(registry, catalog, "demo", "std.demo.synthetic"),
+    route_stage(registry, catalog, "report", "std.report.render")))
   # Orchestration is infrastructure: it adds targets to the lean manifest only when requested.
   if (identical(spec$workflow$pipeline, "targets")) {
     stages <- c(stages, list(route_stage(registry, catalog, "pipeline", "std.pipeline.targets")))

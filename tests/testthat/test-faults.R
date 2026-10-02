@@ -185,7 +185,8 @@ test_that("a missing template resource raises a typed error before any write", {
   dir.create(copy)
   file.copy(list.files(real("templates", "standard-0.3.0", package = "cttiR"), full.names = TRUE), copy, recursive = TRUE)
   manifest <- read_document(file.path(copy, "manifest.json"))
-  unlink(file.path(copy, names(manifest$files)[[1]]))
+  unconditional <- setdiff(names(manifest$files), names(manifest$conditional))
+  unlink(file.path(copy, unconditional[[1]]))
   local_mocked_bindings(system.file = function(..., package = "base", lib.loc = NULL, mustWork = FALSE) {
     if (identical(c(...)[1:2], c("templates", "standard-0.3.0"))) return(copy)
     real(..., package = package, lib.loc = lib.loc, mustWork = mustWork)
