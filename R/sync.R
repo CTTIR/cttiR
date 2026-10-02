@@ -16,11 +16,19 @@ sync_spec <- function(saved, config, options) {
       }
     }
   }
+  for (x in list(config, options)) {
+    if (identical(x$workflow$profile, "auto")) abort_cttir("Synchronization keeps the resolved profile; 'auto' is a creation-time request.", "cttir_api_mismatch")
+  }
   merged <- merge_config(merge_config(saved, config), options)
   merged$knowledge <- NULL
-  if (!identical(merged$workflow, saved$workflow) || !identical(merged$packages, saved$packages)) {
+  # Only the table backend of the current standard bundle may change in place;
+  # it alters managed configuration and pinned dependencies, never user files.
+  changeable <- if (identical(saved$provenance$template_version, current_template_version)) "table_backend" else character()
+  fixed <- setdiff(union(names(merged$workflow), names(saved$workflow)), changeable)
+  if (!identical(merged$workflow[fixed], saved$workflow[fixed]) || !identical(merged$packages, saved$packages)) {
     abort_cttir("Workflow and dependency migration are not yet supported.", "cttir_api_mismatch")
   }
+  if (!identical(merged$workflow, saved$workflow)) check_supported_workflow(merged, list())
   for (pub in saved$publications) {
     ids <- vapply(merged$publications, function(p) p$id, character(1))
     if (!identical(merged$publications[[match(pub$id, ids)]]$slug, pub$slug)) {

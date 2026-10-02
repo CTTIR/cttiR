@@ -34,13 +34,14 @@ check_analysis_data <- function(data, spec) {
           "Revision approval, design, model assumptions and diagnostics remain separate requirements.",
           "Units, timestamps, joins, confounding and sampling independence are not established by these checks.")))
   }
-  if (length(missing) || is.null(plan$candidate_engine) ||
+  descriptive <- identical(spec$analysis$aim, "descriptive")
+  if (length(missing) || (is.null(plan$candidate_engine) && !descriptive) ||
       any(!unlist(plan$capability_gaps) %in% "random_effects_and_residual_structure_review_required")) {
     return(result("configuration_incomplete"))
   }
   mapping <- spec$analysis$mapping
   roles <- unique(c(unlist(mapping[c("outcome", "subject", "time", "event")], use.names = FALSE),
-      unlist(mapping$predictors, use.names = FALSE)))
+      unlist(mapping[["predictors"]], use.names = FALSE)))
   absent <- setdiff(roles, names(data))
   for (column in absent) add("missing_column", column)
   if (length(absent)) return(result("failed"))
@@ -61,7 +62,7 @@ check_analysis_data <- function(data, spec) {
     complete <- complete & !is.na(x)
     if (is.numeric(x) && any(!is.finite(x) & !is.na(x))) add("nonfinite_value", column)
   }
-  if (any(!complete) && identical(mapping$missing_data, "fail")) add("missing_values_forbidden")
+  if (any(!complete) && identical(mapping[["missing_data"]], "fail")) add("missing_values_forbidden")
   if (!any(complete)) {
     add("no_complete_rows")
     return(result("failed", sum(complete), missingness))
@@ -75,35 +76,35 @@ check_analysis_data <- function(data, spec) {
       add("positive_time_required", column)
     }
   }
-  engine <- plan$candidate_engine
-  if (engine %in% c("stats::lm", "nlme::lme")) numeric_role(mapping$outcome)
-  if (engine == "survival::coxph") numeric_role(mapping$time, positive = TRUE)
+  engine <- if (descriptive) "descriptive" else plan$candidate_engine
+  if (engine %in% c("stats::lm", "nlme::lme")) numeric_role(mapping[["outcome"]])
+  if (engine == "survival::coxph") numeric_role(mapping[["time"]], positive = TRUE)
   if (engine %in% c("stats::glm", "survival::coxph")) {
-    column <- if (engine == "stats::glm") mapping$outcome else mapping$event
+    column <- if (engine == "stats::glm") mapping[["outcome"]] else mapping[["event"]]
     x <- as.character(values(column))
-    codes <- as.character(c(mapping$event_value, mapping$non_event_value))
+    codes <- as.character(c(mapping[["event_value"]], mapping[["non_event_value"]]))
     if (any(!x %in% codes)) add("unmapped_event_code", column)
     if (!codes[[1]] %in% x) add("no_events", column)
     if (engine == "stats::glm" && !codes[[2]] %in% x) add("no_non_events", column)
   }
-  for (column in unlist(mapping$predictors, use.names = FALSE)) {
+  if (!descriptive) for (column in unlist(mapping[["predictors"]], use.names = FALSE)) {
     if (length(unique(values(column))) < 2L) add("constant_predictor", column)
   }
-  if (!is.null(mapping$subject) && any(!nzchar(trimws(as.character(values(mapping$subject)))))) {
-    add("empty_subject_identifier", mapping$subject)
+  if (!is.null(mapping[["subject"]]) && any(!nzchar(trimws(as.character(values(mapping[["subject"]])))))) {
+    add("empty_subject_identifier", mapping[["subject"]])
   }
   if (engine == "nlme::lme") {
-    ids <- values(mapping$subject)
-    if (length(unique(ids)) < 2L) add("insufficient_groups", mapping$subject)
-    if (!anyDuplicated(ids)) add("no_repeated_units", mapping$subject)
+    ids <- values(mapping[["subject"]])
+    if (length(unique(ids)) < 2L) add("insufficient_groups", mapping[["subject"]])
+    if (!anyDuplicated(ids)) add("no_repeated_units", mapping[["subject"]])
     if (identical(spec$analysis$unit_structure, "longitudinal")) {
-      numeric_role(mapping$time)
-      if (anyDuplicated(data[complete, c(mapping$subject, mapping$time), drop = FALSE])) {
+      numeric_role(mapping[["time"]])
+      if (anyDuplicated(data[complete, c(mapping[["subject"]], mapping[["time"]]), drop = FALSE])) {
         add("duplicate_subject_time")
       }
     }
-  } else if (!is.null(mapping$subject) && anyDuplicated(values(mapping$subject))) {
-    add("repeated_units_in_independent_plan", mapping$subject)
+  } else if (!descriptive && !is.null(mapping[["subject"]]) && anyDuplicated(values(mapping[["subject"]]))) {
+    add("repeated_units_in_independent_plan", mapping[["subject"]])
   }
   result(if (length(checks$issues)) "failed" else "passed", sum(complete), missingness)
 }

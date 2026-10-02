@@ -48,8 +48,16 @@ validate_spec <- function(spec) {
   invisible(spec)
 }
 
+current_template_version <- "0.3.0"
+
 default_spec <- function(name, type, goal, slug, provenance = NULL) {
-  research_class <- if (type %in% c("primary_research", "secondary_research", "methods", "software")) type else "unknown"
+  research_class <- if (type %in% c("primary_research", "secondary_research", "methods", "software")) {
+    type
+  } else if (identical(type, "review")) {
+    "secondary_research"
+  } else {
+    "unknown"
+  }
   list(
     schema_version = 1L,
     project = list(
@@ -69,11 +77,12 @@ default_spec <- function(name, type, goal, slug, provenance = NULL) {
       pipeline = "none", environment = "none", git = FALSE,
       prepare_environment = FALSE, network = "offline", reporting = "generic",
       readiness = "scaffold_ready", profile = "standard_reflowR",
-      project_backend = "reflowR", table_backend = "none"
+      project_backend = "reflowR", table_backend = "DescrTab2"
     ),
     data_sources = list(), packages = list(), decisions = list(),
     provenance = list(
-      catalog_id = if (is.null(provenance)) resolve_catalog()$content_id else provenance$catalog_id, template_version = "0.2.0",
+      catalog_id = if (is.null(provenance)) resolve_catalog()$content_id else provenance$catalog_id,
+      template_version = current_template_version,
       prompt_version = "none", planner_mode = "deterministic", model_id = NULL, model_digest = NULL
     ),
     analysis = list(aim = "unknown", outcome_family = "unknown", unit_structure = "unknown", engine = NULL, approved = FALSE),
@@ -93,14 +102,7 @@ resolve_spec <- function(name, type, goal, config, options, identity = NULL, pro
   scalar_text(goal, "goal")
   config <- validate_config(if (is.null(config)) list() else config)
   options <- validate_config(options)
-  if (any(c("name", "type", "goal") %in% names(options$project))) {
-    abort_cttir("Use the required arguments to set project name, type and goal.")
-  }
-  for (x in list(config, options)) {
-    if (any(c("id", "created_at", "slug") %in% names(x$project))) {
-      abort_cttir("Project identity fields are assigned by the builder.")
-    }
-  }
+  check_explicit_identity(config, options)
   slug <- safe_slug(name)
   defaults <- default_spec(name, type, goal, slug, provenance)
   combined <- merge_config(config, options)
@@ -113,22 +115,40 @@ resolve_spec <- function(name, type, goal, config, options, identity = NULL, pro
     spec$project$created_at <- identity$created_at
   }
   if (!is.null(provenance)) spec$provenance <- provenance
-  if (identical(spec$workflow$profile, "auto")) spec$workflow$profile <- "standard_reflowR"
-  unsupported <- !identical(spec$workflow$profile, "standard_reflowR") ||
-    spec$workflow$prepare_environment || spec$workflow$git ||
-    spec$workflow$pipeline != "none" || spec$workflow$environment != "none" ||
-    spec$workflow$reporting != "generic" || spec$workflow$table_backend != "none" ||
-    spec$workflow$readiness != "scaffold_ready" || length(spec$packages) > 0L ||
-    isTRUE(combined$knowledge$refresh)
-  if (unsupported) {
-    abort_cttir(
-      "This foundation build supports offline scaffolding only; the requested integration is pending.",
-      "cttir_api_mismatch", "integration_pending"
-    )
-  }
   spec$knowledge <- NULL
-  record <- function(field, origin, reason) list(field = field, origin = origin, reason = reason, evidence_ids = list())
-  decisions <- list(record("/workflow/profile", "default", "No approved specialist adapter is available; reflowR integration remains pending."))
+  record <- function(field, origin, reason, evidence = list()) {
+    list(field = field, origin = origin, reason = reason, evidence_ids = as.list(evidence))
+  }
+  decisions <- list()
+  # Goal keywords only fill fields that nobody supplied; they never approve anything.
+  signals <- infer_goal(goal)
+  for (field in c("aim", "outcome_family", "unit_structure")) {
+    if (is.null(combined$analysis[[field]]) && identical(spec$analysis[[field]], "unknown") &&
+        !identical(signals[[field]], "unknown")) {
+      spec$analysis[[field]] <- signals[[field]]
+      decisions[[length(decisions) + 1L]] <- record(paste0("/analysis/", field), "inferred",
+        paste0("Goal keywords suggest '", signals[[field]], "'. Review before analysis; this is not an approval."),
+        paste0("rule:", field, ":", signals[[field]]))
+    }
+  }
+  if (is.null(combined$ecosystem$modality) && identical(spec$ecosystem$modality, "unknown") &&
+      !identical(signals$modality, "unknown")) {
+    spec$ecosystem$modality <- signals$modality
+    decisions[[length(decisions) + 1L]] <- record("/ecosystem/modality", "inferred",
+      paste0("Goal keywords suggest the '", signals$modality, "' data modality."), paste0("modality:", signals$modality))
+  }
+  check_supported_workflow(spec, combined)
+  requested <- if (is.null(combined$workflow$profile)) "auto" else combined$workflow$profile
+  route <- route_workflow(spec, requested, catalog_snapshot(spec$provenance$catalog_id))
+  spec$workflow$profile <- route$profile
+  decisions[[length(decisions) + 1L]] <- record("/workflow/profile",
+    if (identical(requested, "auto")) "inferred" else "explicit", route$reason,
+    paste0("capability:", vapply(route$stages, function(x) x$capability, character(1))))
+  if (is.null(combined$workflow$table_backend)) {
+    decisions[[length(decisions) + 1L]] <- record("/workflow/table_backend", "default",
+      "DescrTab2 is the preferred descriptive table backend; it is used only at its reviewed pinned revision.",
+      "capability:std.describe.descrtab2")
+  }
   walk <- function(x, prefix, origin) {
     for (key in names(x)) {
       field <- paste0(prefix, "/", key)
@@ -141,7 +161,69 @@ resolve_spec <- function(name, type, goal, config, options, identity = NULL, pro
   }
   walk(config, "", "config")
   walk(options, "", "explicit")
-  for (key in c("name", "type", "goal")) decisions <- append(decisions, list(record(paste0("/project/", key), "explicit", "Required argument takes precedence.")))
+  for (key in c("name", "type", "goal")) {
+    decisions <- append(decisions, list(record(paste0("/project/", key), "explicit", "Required argument takes precedence.")))
+  }
   spec$decisions <- decisions
   validate_spec(spec)
+}
+
+check_explicit_identity <- function(config, options) {
+  if (any(c("name", "type", "goal") %in% names(options$project))) {
+    abort_cttir("Use the required arguments to set project name, type and goal.")
+  }
+  for (x in list(config, options)) {
+    if (any(c("id", "created_at", "slug") %in% names(x$project))) {
+      abort_cttir("Project identity fields are assigned by the builder.")
+    }
+  }
+  invisible(TRUE)
+}
+
+# Only integrations with reviewed adapters are accepted; others fail explicitly.
+check_supported_workflow <- function(spec, combined) {
+  pending <- function(message, field) {
+    abort_cttir(message, "cttir_api_mismatch", "integration_pending", field = field)
+  }
+  workflow <- spec$workflow
+  if (workflow$prepare_environment || workflow$git || workflow$pipeline != "none" ||
+      workflow$environment != "none" || workflow$readiness != "scaffold_ready") {
+    pending("Dependency preparation, Git and pipeline integration are pending in this build.", "/workflow")
+  }
+  if (!identical(workflow$reporting, "generic")) pending("Only the reviewed reflowR-layout rendering is supported.", "/workflow/reporting")
+  if (!workflow$table_backend %in% c("DescrTab2", "none")) {
+    pending("This table backend has no reviewed adapter; use DescrTab2 or none.", "/workflow/table_backend")
+  }
+  if (!identical(workflow$project_backend, "reflowR")) pending("The standard profile requires the reflowR layout.", "/workflow/project_backend")
+  if (length(spec$packages) || isTRUE(combined$knowledge$refresh)) {
+    pending("Explicit package requests and knowledge refresh during creation are pending.", "/packages")
+  }
+  invisible(TRUE)
+}
+
+# Repeat creation compares explicit inputs with the accepted specification
+# instead of re-deriving defaults, so older projects stay unchanged.
+resolve_existing <- function(saved, name, type, goal, config, options) {
+  scalar_text(name, "name")
+  scalar_text(type, "type")
+  scalar_text(goal, "goal")
+  config <- validate_config(if (is.null(config)) list() else config)
+  options <- validate_config(options)
+  check_explicit_identity(config, options)
+  different <- function() {
+    abort_cttir("This project has different accepted inputs; use sync() to preview explicit changes.",
+      "cttir_path_conflict", "different_spec",
+      remediation = "Use sync() to preview changes or choose another project name.")
+  }
+  if (!identical(saved$project$name, name) || !identical(saved$project$type, type) ||
+      !identical(saved$project$goal, goal)) {
+    different()
+  }
+  combined <- merge_config(config, options)
+  combined$knowledge <- NULL
+  if (identical(combined$workflow$profile, "auto")) combined$workflow$profile <- NULL
+  if (is.list(combined$workflow) && !length(combined$workflow)) combined$workflow <- NULL
+  merged <- merge_config(saved, combined)
+  if (!identical(json_text(merged), json_text(saved))) different()
+  saved
 }

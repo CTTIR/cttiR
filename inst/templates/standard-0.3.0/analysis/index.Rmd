@@ -1,0 +1,29 @@
+---
+title: "Research workflow"
+---
+
+This standard workflow adapts the minimal reflowR layout and adds reviewed
+stages for import, structural checks, tidy role selection, descriptive tables,
+accessible figures, explanatory models, diagnostics and effect estimates. The
+renderer is explicitly `rmarkdown::render_site`; neither `reflow_init()` nor
+workflowr is invoked. Source revision, file hashes, changes and license are in
+`../metadata/workflow-template.json` and `../licenses/reflowR-MIT.txt`.
+
+Project creation does not read data, install dependencies, initialize Git,
+render pages or approve an analysis. Stage selection, package pins and approval
+status are listed in `../config/workflow.yml`.
+
+From the project root:
+
+1. `Rscript code/run_demo.R` runs every reviewed stage on constructed synthetic
+   data and compares the model adapters with independent reference
+   computations. Results are written to `demo/` and labelled synthetic.
+2. `Rscript code/run_workflow.R` analyses registered study data only after the
+   mapping, reviewed model settings, analysis approval, a local data binding in
+   `.cttir/local.yml`, approved stage adapters and matching installed package
+   versions are all present. Otherwise it stops and lists what is missing.
+3. `Rscript code/render_report.R` renders these pages into `docs/`. Review any
+   edits to these R Markdown files first: rendering executes their code.
+
+Publication-specific outputs belong under `publications/`, with dataset IDs
+referencing the shared registry. No study conclusions are generated here.

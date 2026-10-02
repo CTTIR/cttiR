@@ -1,0 +1,37 @@
+---
+title: "Synthetic demonstration -- no study data"
+---
+
+Every value on this page is constructed by `cw_demo_cases()` with a fixed seed.
+The data are unrelated to the project question or datasets, nothing is read from
+the project and no files are written. Each model adapter is compared with an
+independent reference computation; the comparison checks software, not a
+scientific hypothesis.
+
+```{r synthetic-demo}
+source("../code/R/cttir_figures.R", local = TRUE)
+source("../code/R/cttir_workflow.R", local = TRUE)
+spec <- cw_read_yaml("../cttir-project.yml")
+receipt <- cw_run_demo(root = "..", figures_policy = spec$figures, write = FALSE)
+stopifnot(identical(receipt$status, "passed"))
+checks <- do.call(rbind, lapply(names(receipt$cases), function(name) {
+  x <- receipt$cases[[name]]
+  data.frame(case = name, engine = x$engine, reference = x$reference$name,
+    max_abs_difference = max(abs(x$reference$observed - x$reference$expected)), passed = x$reference$pass)
+}))
+knitr::kable(checks, caption = "Synthetic adapter checks against independent references")
+```
+
+```{r synthetic-effects}
+case <- cw_demo_cases()$continuous
+tidy <- cw_tidy(case$data, case$analysis)
+effects <- cw_effects(cw_model(tidy, case$analysis))
+knitr::kable(effects[c("term_original", "estimate", "conf.low", "conf.high")], digits = 3,
+  caption = "Synthetic linear model estimates; not study results")
+```
+
+## Rendering environment
+
+```{r session-info}
+sessionInfo()
+```

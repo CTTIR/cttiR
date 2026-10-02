@@ -1,0 +1,45 @@
+{
+  "template_version": "0.3.0",
+  "bundle": "standard-0.3.0",
+  "mode": "adapted_templates_with_reviewed_stage_library",
+  "source_repository": "https://github.com/CTTIR/reflowR",
+  "source_revision": "cd1243a068ff2c8fb6796e34b58f6c6ce6af87e8",
+  "license": "MIT",
+  "copyright": "2026 R. Heller",
+  "renderer": "rmarkdown::render_site",
+  "initializer_invoked": false,
+  "workflowr_invoked": false,
+  "changes": [
+    "Correct nested navigation YAML through declarative templates.",
+    "Remove automatic installation, Git changes, user text interpolation and data access.",
+    "Use explicit rmarkdown rendering instead of workflowr.",
+    "Keep unresolved study analyses as prose; add an isolated deterministic synthetic fixture.",
+    "Add reviewed standard stages: delimited import, structural checks, dplyr role selection, DescrTab2 or base descriptive tables, accessible ggplot2/patchwork figures, lm/glm/nlme/survival adapters, diagnostics and broom effects.",
+    "Add a synthetic demonstration with independent reference computations and a guarded study-data runner."
+  ],
+  "source_sha256": {
+    "DESCRIPTION": "c864bd65255f8fb22342789ea8da32266a0d078ae282a732227b118e279a8687",
+    "LICENSE.md": "29b77db3f6c608670bc28cfc77ebba736f75c6abb9d8a32aec917051f4d52cdd",
+    "R/reflow_init.R": "9825de3d10d4b7187e5c6c3a21fc09928578a84f52d72f6572abd2dc84c4deba",
+    "R/generate_rmd.R": "4abfd0a3577cdb3445d88a13926b99729e98e81c1b35d6ad58b55da3c590281e",
+    "R/generate_site_yml.R": "cd18b0d7a5ff8c295266c21ca6a65d565419aa8ebe6db8df3b0f53d5fdacdfeb",
+    "R/generate_setup.R": "6b7d87ce414e49a6d241e3f8ff0c08678c3e28c97c78ec337a496a3bbeaf942d"
+  },
+  "files": {
+    "analysis/01_read_data.Rmd": "93e724730ab6e098a826ce953a10f6aaeef0447f6015e1e245e17649ec75ed0a",
+    "analysis/02_eda.Rmd": "b0e7ed62bb22d5f0bcc3140395c7b6141eb945de153130975ff511b10e4764f7",
+    "analysis/03_report.Rmd": "760e30e097163b3d86780780e4e7705b051a9ccc5244a5e97a3a0f1b21054435",
+    "analysis/_site.yml": "4a0f56bdd77ec1d44d4fa630814bafeab8dddd3e3d02332c1ea09b1bad4ffc46",
+    "analysis/index.Rmd": "6eecb2a2ab04e43a4c043337187ae01c28055f9ab37cda122c3c245880c24f48",
+    "analysis/synthetic_demo.Rmd": "51b1252d158abc6e8dff42ca5c145e3ead512edf30cba847ff6837e3f555a055",
+    "code/R/cttir_workflow.R": "41fb17ae17dc41508a71d330129c002bcf36c0adc61bbb21062124b312143408",
+    "code/render_report.R": "7a227c4c8744446bc5e6c2c903a8b1f40e0fa08f77126a7523299cbf121968fd",
+    "code/run_demo.R": "07c59b2bfe290c57d0b7c533fe6adff7585a46d04d42b1859112069f12a25b61",
+    "code/run_workflow.R": "66c2d98365eb246eb877504698a810c51d6d27011187497f9104404faf8b25e1",
+    "demo/README.md": "234a4e36d535ac3445bd3769a8d644abdbcac98bd8c263deae249483db889735",
+    "licenses/reflowR-MIT.txt": "29b77db3f6c608670bc28cfc77ebba736f75c6abb9d8a32aec917051f4d52cdd"
+  },
+  "conditional": {},
+  "limitations": ["Study-data runs require explicit mappings, reviewed settings, analysis approval, a local binding and approved pinned package revisions.", "Synthetic demonstration results are adapter checks, not scientific results.", "Prediction, causal, count and specialist analyses have no reviewed adapter in this bundle."],
+  "hash_normalization": "UTF-8 text with LF line endings and final newline"
+}

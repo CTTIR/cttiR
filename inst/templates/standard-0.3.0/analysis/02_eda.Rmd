@@ -1,0 +1,21 @@
+---
+title: "02 -- Describe and plan"
+---
+
+Descriptive tables show denominators and missingness and never perform
+inferential tests. Figures use the project figure policy: viridis for
+continuous scales, colour-blind-flagged RColorBrewer palettes for categories,
+redundant shapes, and patchwork panel assembly. Colour-vision simulations are
+recorded as checks, not as guarantees.
+
+Real-data models remain disabled until mappings and scientific prerequisites
+are reviewed. The synthetic demonstration is not an analysis of this project.
+
+```{r workflow-descriptives}
+file <- "../reports/workflow/descriptives.csv"
+if (file.exists(file)) {
+  knitr::kable(utils::read.csv(file, check.names = FALSE), caption = "Study-data descriptives")
+} else {
+  cat("No study-data workflow output yet.\n")
+}
+```

@@ -1,5 +1,11 @@
+project_route <- function(spec) {
+  if (!identical(spec$provenance$template_version, current_template_version)) return(NULL)
+  route_workflow(spec, spec$workflow$profile, catalog_snapshot(spec$provenance$catalog_id))
+}
+
 project_bundle <- function(spec, prior_lock = NULL) {
-  files <- render_project(spec)
+  route <- project_route(spec)
+  files <- render_project(spec, route)
   lock <- list(
     schema_version = 1L, spec_sha256 = content_hash(json_text(spec)),
     template_version = spec$provenance$template_version, catalog_id = spec$provenance$catalog_id, model = NULL,
@@ -10,6 +16,12 @@ project_bundle <- function(spec, prior_lock = NULL) {
     lock <- prior_lock
     lock$spec_sha256 <- content_hash(json_text(spec))
   }
+  if (!is.null(route)) {
+    # Derived from the accepted spec and the pinned catalog only, never from
+    # whatever happens to be installed or active globally.
+    lock$dependencies <- route_dependencies(route, catalog_snapshot(spec$provenance$catalog_id))
+    lock$workflow <- route_summary(route)
+  }
   files[["cttir-lock.json"]] <- paste0(json_text(lock, TRUE), "\n")
   manifest <- project_manifest(files, spec$provenance$template_version)
   files[[".cttir/managed-files.json"]] <- paste0(json_text(list(schema_version = 1L, files = manifest), TRUE), "\n")
@@ -17,7 +29,7 @@ project_bundle <- function(spec, prior_lock = NULL) {
     schema_version = 1L, project_id = spec$project$id,
     status = "created", spec_sha256 = lock$spec_sha256
   ), TRUE), "\n")
-  list(files = files, manifest = manifest, lock = lock)
+  list(files = files, manifest = manifest, lock = lock, route = route)
 }
 
 assert_plain_path <- function(path) {
@@ -42,9 +54,9 @@ assert_plain_path <- function(path) {
   invisible(path)
 }
 
-render_project <- function(spec) {
+render_project <- function(spec, route = project_route(spec)) {
   version <- spec$provenance$template_version
-  if (!version %in% c("0.1.0", "0.2.0")) {
+  if (!version %in% c("0.1.0", "0.2.0", "0.3.0")) {
     abort_cttir("This template version is not supported.", "cttir_api_mismatch")
   }
   # User text stays in structured YAML, never executable code or Markdown markup.
@@ -105,6 +117,23 @@ render_project <- function(spec) {
       "\nReviewed reflowR layout adaptation: see `metadata/reflowr-template.json`.\n",
       "Run `Rscript code/render_report.R` explicitly to render the placeholder\n",
       "pages and labelled synthetic fixture. Standard analysis adapters remain pending.\n")
+  }
+  if (version == "0.3.0") {
+    files <- c(files, standard_bundle_files(spec, route))
+    files[["README.md"]] <- paste0(
+      "# Research project\n\n",
+      "The name, research type and objective are recorded in `cttir-project.yml`.\n",
+      "Workflow profile, stages, package pins and approval status are in `config/workflow.yml`.\n\n",
+      "Status: scaffold ready. No data, scientific findings or approvals have been inferred.\n\n",
+      "1. Review `cttir-project.yml`, `config/workflow.yml` and `protocol/analysis-plan.md`.\n",
+      "2. Define datasets in `metadata/data-registry.yml`; keep local paths in `.cttir/local.yml`.\n",
+      "3. Run `Rscript code/validate_project.R` from this project directory.\n",
+      "4. Run `Rscript code/run_demo.R` to exercise every stage on labelled synthetic data.\n",
+      "5. Record mappings, reviewed model settings and approval with `cttiR::sync()`; then run\n",
+      "   `Rscript code/run_workflow.R`, which stops and lists anything still missing.\n",
+      "6. Run `Rscript code/render_report.R` to render the pages in `analysis/`.\n\n",
+      "The layout adapts the pinned reflowR minimal template (see `metadata/workflow-template.json`);\n",
+      "reflow_init and workflowr are not invoked. Dependencies are listed, not installed.\n")
   }
   files
 }
@@ -189,13 +218,7 @@ project_impl <- function(name, type, goal, path = getwd(), config = NULL,
         abort_cttir("An existing project control file is missing or replaced by a directory.", "cttir_path_conflict", "incomplete_project")
     }
     prior_lock <- read_project(target)$lock
-    spec <- resolve_spec(name, type, goal, config, options, saved$project, saved$provenance)
-    if (!identical(json_text(spec), json_text(saved))) {
-      abort_cttir("This project has different accepted inputs; use sync() to preview explicit changes.",
-        "cttir_path_conflict", "different_spec",
-        remediation = "Use sync() to preview changes or choose another project name."
-      )
-    }
+    spec <- resolve_existing(saved, name, type, goal, config, options)
   } else {
     spec <- resolve_spec(name, type, goal, config, options)
   }
@@ -225,7 +248,8 @@ project_impl <- function(name, type, goal, path = getwd(), config = NULL,
       }
     }
   }
-  warnings <- c("reflowR_integration_pending", "environment_pending", "knowledge_catalog_pending")
+  blockers <- project_blockers(spec, bundle)
+  warnings <- blockers
   if (exists) {
     changed <- vapply(names(files), function(f) !identical(digest::digest(file = file.path(target, f), algo = "sha256"), content_hash(files[[f]])), logical(1))
     if (any(changed)) warnings <- c(warnings, "existing_edits_preserved")
@@ -234,7 +258,9 @@ project_impl <- function(name, type, goal, path = getwd(), config = NULL,
     path = target, spec = spec, plan = plan,
     readiness = list(
       level = "scaffold_ready", materialized = exists || !dry_run,
-      blockers = warnings[1:3], analysis = analysis_configuration(spec)
+      blockers = blockers, analysis = analysis_configuration(spec),
+      workflow = if (is.null(bundle$route)) NULL else route_summary(bundle$route),
+      environment = environment_status(bundle$lock$dependencies)
     ), manifest = manifest,
     warnings = warnings, dry_run = dry_run
   ), class = "cttir_project")
@@ -264,10 +290,40 @@ project_impl <- function(name, type, goal, path = getwd(), config = NULL,
   result
 }
 
+project_blockers <- function(spec, bundle) {
+  if (is.null(bundle$route)) return(c("reflowR_integration_pending", "environment_pending", "knowledge_catalog_pending"))
+  c(if (length(bundle$route$approval_pending)) "workflow_approval_pending",
+    if (!identical(environment_status(bundle$lock$dependencies)$state, "installed_versions_match")) "environment_pending",
+    if (length(bundle$route$gaps)) "capability_gaps_recorded")
+}
+
+# Reads installed package metadata only (no namespace loading) and compares it
+# with the pinned dependency versions. Never installs anything.
+environment_status <- function(dependencies) {
+  if (!length(dependencies)) return(list(state = "no_dependencies_recorded", missing = list(), mismatched = list()))
+  installed <- utils::installed.packages(fields = "Version")
+  missing <- character()
+  mismatched <- character()
+  for (dep in dependencies) {
+    index <- match(dep$package, installed[, "Package"])
+    if (is.na(index)) {
+      missing <- c(missing, dep$package)
+    } else if (!is.null(dep$version) && !identical(unname(installed[index, "Version"]), dep$version)) {
+      mismatched <- c(mismatched, paste0(dep$package, " ", installed[index, "Version"], " != ", dep$version))
+    }
+  }
+  unpinned <- vapply(dependencies, function(dep) is.null(dep$version), logical(1))
+  list(state = if (length(missing)) "dependencies_missing" else if (length(mismatched) || any(unpinned)) "versions_unverified" else "installed_versions_match",
+    missing = as.list(missing), mismatched = as.list(mismatched),
+    unpinned = as.list(vapply(dependencies[unpinned], function(dep) dep$package, character(1))),
+    limitation = "Installed versions are read from package metadata; no environment was prepared or restored.")
+}
+
 #' @export
 print.cttir_project <- function(x, ...) {
   cat(if (x$dry_run) "Planned project: " else "Project: ", x$path, "\n", sep = "")
   cat("Readiness: ", x$readiness$level, "\n", sep = "")
+  if (!is.null(x$readiness$workflow)) cat("Workflow: ", x$readiness$workflow$profile, "\n", sep = "")
   cat("Pending: ", paste(x$readiness$blockers, collapse = ", "), "\n", sep = "")
   invisible(x)
 }

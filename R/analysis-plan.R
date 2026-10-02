@@ -1,9 +1,9 @@
 validate_analysis_mapping <- function(spec) {
   mapping <- spec$analysis$mapping
   if (is.null(mapping)) return(invisible(spec))
-  if (!is.null(mapping$data_source_id)) {
+  if (!is.null(mapping[["data_source_id"]])) {
     ids <- vapply(spec$data_sources, function(x) x$id, character(1))
-    if (!mapping$data_source_id %in% ids) {
+    if (!mapping[["data_source_id"]] %in% ids) {
       abort_cttir("Analysis mapping must reference a registered data source.", "cttir_schema_error",
         "unknown_data_source", field = "/analysis/mapping/data_source_id")
     }
@@ -14,12 +14,12 @@ validate_analysis_mapping <- function(spec) {
       "conflicting_roles", field = "/analysis/mapping")
   }
   forbidden <- unlist(mapping[c("outcome", "subject", "event")], use.names = FALSE)
-  if (any(unlist(mapping$predictors, use.names = FALSE) %in% forbidden)) {
+  if (any(unlist(mapping[["predictors"]], use.names = FALSE) %in% forbidden)) {
     abort_cttir("Outcome, event and subject identifiers cannot also be predictors in this adapter plan.",
       "cttir_schema_error", "conflicting_predictor", field = "/analysis/mapping/predictors")
   }
-  if (!is.null(mapping$event_value) && !is.null(mapping$non_event_value) &&
-      identical(as.character(mapping$event_value), as.character(mapping$non_event_value))) {
+  if (!is.null(mapping[["event_value"]]) && !is.null(mapping[["non_event_value"]]) &&
+      identical(as.character(mapping[["event_value"]]), as.character(mapping[["non_event_value"]]))) {
     abort_cttir("Event and non-event codes must differ.", "cttir_schema_error",
       "identical_event_codes", field = "/analysis/mapping/event_value")
   }
@@ -40,13 +40,15 @@ analysis_configuration <- function(spec) {
     }
   }
   for (field in c("aim", "outcome_family", "unit_structure")) {
-    if (is.null(analysis[[field]]) || identical(analysis[[field]], "unknown")) {
+    if ((is.null(analysis[[field]]) || identical(analysis[[field]], "unknown")) &&
+        !(identical(analysis$aim, "descriptive") && field != "aim")) {
       missing <- c(missing, paste0("/analysis/", field))
     }
   }
   engine <- NULL
-  if (identical(analysis$aim, "descriptive")) {
-    gaps <- c(gaps, "descriptive_adapter_pending")
+  descriptive <- identical(analysis$aim, "descriptive")
+  if (descriptive) {
+    # Descriptive aims use the describe stage; no model engine is selected.
   } else if (isTRUE(analysis$aim %in% c("predictive", "causal"))) {
     gaps <- c(gaps, "specialist_design_and_validation_required")
   } else if (identical(analysis$aim, "explanatory")) {
@@ -58,12 +60,14 @@ analysis_configuration <- function(spec) {
         identical(analysis$outcome_family, "continuous")) {
       engine <- "nlme::lme"
     }
-    if (is.null(engine)) gaps <- c(gaps, "unsupported_outcome_or_unit_structure")
+    if (is.null(engine) && !"unknown" %in% c(analysis$outcome_family, analysis$unit_structure)) {
+      gaps <- c(gaps, "unsupported_outcome_or_unit_structure")
+    }
   }
   if (!is.null(analysis$engine) && !identical(analysis$engine, engine)) {
     gaps <- c(gaps, "requested_engine_not_supported_for_this_configuration")
   }
-  required(c("data_source_id", "estimand", "missing_data"))
+  required(if (descriptive) c("data_source_id", "missing_data") else c("data_source_id", "estimand", "missing_data"))
   if (!is.null(engine)) {
     required("predictors")
     if (engine == "survival::coxph") {
@@ -78,7 +82,12 @@ analysis_configuration <- function(spec) {
     }
   }
   if (!isTRUE(analysis$approved)) missing <- c(missing, "/analysis/approved")
-  model <- analysis_model_configuration(analysis, engine)
+  model <- if (descriptive) {
+    list(state = "not_applicable", settings = analysis$model, missing_fields = list(), inapplicable_fields = list(),
+      capability_gaps = list(), executable = FALSE, limitation = "Descriptive aims do not fit a model.")
+  } else {
+    analysis_model_configuration(analysis, engine)
+  }
   if (identical(engine, "nlme::lme") && model$state != "settings_recorded") {
     gaps <- c(gaps, "random_effects_and_residual_structure_review_required")
   }
@@ -89,7 +98,7 @@ analysis_configuration <- function(spec) {
     model = model,
     executable = FALSE,
     blockers = as.list(c("adapter_and_revision_approval_pending", "data_checks_not_run",
-        if (model$state != "settings_recorded") "model_settings_incomplete")),
+        if (!model$state %in% c("settings_recorded", "not_applicable")) "model_settings_incomplete")),
     limitations = as.list(c("Candidate routing is not methodological or workflow approval.",
         "No dataset is opened and no formula, expression or model is evaluated.",
         "Column types, levels, missingness, model assumptions and diagnostics require runtime checks."))

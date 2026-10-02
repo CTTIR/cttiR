@@ -1,0 +1,31 @@
+---
+title: "01 -- Import and check"
+---
+
+No dataset is imported automatically. Register sources in
+`metadata/data-registry.yml` (format `csv` or `tsv` for the reviewed import
+adapter) and record machine-local paths in `.cttir/local.yml`, for example:
+
+```yaml
+bindings:
+  - id: cohort
+    path: /secure/storage/cohort.csv
+```
+
+Column types and missing-value codes are taken from `metadata/data-dictionary.csv`
+when it lists the dataset; otherwise types are guessed and reported. The check
+stage reports missing columns, unsupported types, nonfinite values, unmapped
+event codes, constant predictors and repeated-unit conflicts without changing
+data. These checks are structural; they do not certify data quality, units,
+joins or study design.
+
+```{r import-status}
+source("../code/R/cttir_workflow.R", local = TRUE)
+config <- cw_config("..")
+requirements <- cw_requirements(config)
+if (requirements$ready) {
+  cat("All prerequisites for a study-data run are recorded.\n")
+} else {
+  cat("Study-data run blocked. Missing:\n", paste("-", requirements$missing, collapse = "\n"), "\n")
+}
+```

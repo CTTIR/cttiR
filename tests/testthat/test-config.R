@@ -49,7 +49,7 @@ test_that("config precedence, keyed publications and explicit nulls work", {
 test_that("unimplemented integrations are never silently claimed", {
   for (workflow in list(
     list(git = TRUE), list(prepare_environment = TRUE),
-    list(profile = "cttir_specialist"), list(table_backend = "DescrTab2")
+    list(profile = "cttir_specialist"), list(table_backend = "gtsummary"), list(pipeline = "targets")
   )) {
     expect_error(project("Pending", "methods", "Goal", tempdir(),
         options = list(workflow = workflow), dry_run = TRUE
@@ -57,7 +57,8 @@ test_that("unimplemented integrations are never silently claimed", {
   }
   p <- project("Standard", "methods", "Goal", tempdir(), dry_run = TRUE)
   expect_equal(p$spec$workflow$profile, "standard_reflowR")
-  expect_contains(p$readiness$blockers, "reflowR_integration_pending")
+  expect_contains(p$readiness$blockers, "workflow_approval_pending")
+  expect_equal(p$spec$workflow$table_backend, "DescrTab2")
   bad <- p$spec
   bad$schema_version <- 2L
   expect_error(validate_spec(bad), class = "cttir_schema_error")

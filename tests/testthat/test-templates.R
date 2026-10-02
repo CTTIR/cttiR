@@ -1,5 +1,18 @@
+legacy_project <- function(parent, name, version, goal = "Goal") {
+  spec <- resolve_spec(name, "methods", goal, NULL, list())
+  spec$provenance$template_version <- version
+  bundle <- project_bundle(spec)
+  root <- file.path(parent, safe_slug(name))
+  for (path in names(bundle$files)) {
+    dest <- file.path(root, path)
+    dir.create(dirname(dest), recursive = TRUE, showWarnings = FALSE)
+    writeBin(charToRaw(bundle$files[[path]]), dest)
+  }
+  structure(list(path = normalizePath(root, winslash = "/")), class = "cttir_project")
+}
+
 test_that("adapted templates are pinned, inert and structurally valid", {
-  p <- project("Template", "methods", "<script>never execute</script>", new_parent())
+  p <- legacy_project(new_parent(), "Template", "0.2.0", "<script>never execute</script>")
   manifest <- read_document(file.path(p$path, "metadata/reflowr-template.json"))
   expect_equal(manifest$mode, "adapted_templates")
   expect_false(manifest$initializer_invoked)
@@ -29,15 +42,7 @@ test_that("adapted templates are pinned, inert and structurally valid", {
 
 test_that("older accepted templates are not silently migrated", {
   parent <- new_parent()
-  spec <- resolve_spec("Legacy", "methods", "Goal", NULL, list())
-  spec$provenance$template_version <- "0.1.0"
-  bundle <- project_bundle(spec)
-  root <- file.path(parent, "legacy")
-  for (path in names(bundle$files)) {
-    dest <- file.path(root, path)
-    dir.create(dirname(dest), recursive = TRUE, showWarnings = FALSE)
-    writeBin(charToRaw(bundle$files[[path]]), dest)
-  }
+  root <- legacy_project(parent, "Legacy", "0.1.0")$path
   before <- tree_hashes(root)
   expect_true(all(project("Legacy", "methods", "Goal", parent)$plan$action == "skip"))
   expect_true(all(sync(root)$actions$action == "skip"))
@@ -45,6 +50,7 @@ test_that("older accepted templates are not silently migrated", {
   sync(root, options = list(project = list(language = "de")), dry_run = FALSE)
   expect_equal(read_project(root)$lock$template_version, "0.1.0")
   expect_false(file.exists(file.path(root, "code/render_report.R")))
+  spec <- read_project(root)$spec
   spec$provenance$template_version <- "unknown"
   expect_error(project_bundle(spec), class = "cttir_api_mismatch")
 })

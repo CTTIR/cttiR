@@ -1,0 +1,23 @@
+name: cttir-research
+output_dir: ../docs
+navbar:
+  title: Research workflow
+  left:
+  - text: Home
+    href: index.html
+  - text: Pipeline
+    menu:
+    - text: Import and check
+      href: 01_read_data.html
+    - text: Describe and plan
+      href: 02_eda.html
+    - text: Report
+      href: 03_report.html
+  - text: Synthetic demonstration
+    href: synthetic_demo.html
+output:
+  rmarkdown::html_document:
+    theme: default
+    mathjax: null
+    self_contained: true
+    toc: true
