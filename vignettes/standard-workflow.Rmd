@@ -1,0 +1,168 @@
+---
+title: "Standard workflow: routing, mappings and reviewed adapters"
+output:
+  rmarkdown::html_vignette:
+    mathjax: null
+vignette: >
+  %\VignetteIndexEntry{Standard workflow: routing, mappings and reviewed adapters}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+example_root <- tempfile("cttir-standard-")
+dir.create(example_root)
+old_catalog_option <- getOption("cttiR.catalog_dir")
+options(cttiR.catalog_dir = file.path(example_root, "catalog"))
+stage_packages <- c("dplyr", "nlme", "survival", "broom", "broom.mixed", "DescrTab2",
+  "ggplot2", "patchwork", "viridisLite", "RColorBrewer", "colorspace", "jsonlite", "yaml")
+has_stage_packages <- all(vapply(stage_packages, requireNamespace, logical(1), quietly = TRUE))
+```
+
+Every project receives a useful workflow from the same three inputs, whether or
+not a CTTIR specialist package fits. This vignette shows how cttiR chooses the
+profile, what the generated standard workflow contains, and which explicit steps
+stand between a scaffold and a study-data analysis.
+
+## Profiles
+
+| Evidence | Profile |
+|---|---|
+| Approved CTTIR specialist adapters cover the analysis | `cttir_specialist` |
+| Approved specialist stages cover part of it | `hybrid` |
+| No approved specialist capability fits | `standard_reflowR` |
+
+Specialist evidence means an adapter-tested capability whose package revisions
+carry approvals in the pinned catalog. Infrastructure such as reflowR, renv or
+targets never counts as a specialist match. When a goal mentions a specialist
+area without an approved adapter, the standard profile is used and the gap is
+recorded.
+
+```{r route}
+p <- cttiR::project(
+  "Cohort outcomes", "primary_research",
+  "Describe outcomes and plan an adjusted regression for a tabular cohort",
+  path = example_root
+)
+p$readiness$workflow$profile
+vapply(p$readiness$workflow$stages, function(x) paste(x$stage, x$capability, x$status), character(1))
+p$readiness$blockers
+```
+
+Goal keywords only suggest unset analysis fields (here the explanatory aim); the
+suggestion is stored as an `inferred` decision and never approves anything.
+Outcome family, unit structure, variables and estimands remain unknown until
+you record them.
+
+```{r decisions}
+Filter(function(d) d$origin == "inferred", p$spec$decisions)[[1]][c("field", "reason")]
+```
+
+## What the standard bundle contains
+
+The layout adapts the pinned MIT-licensed reflowR minimal template. Reviewed,
+static stage code lives in `code/R/`; user text and column names are read from
+configuration files as data and never reach formulas or code.
+
+```{r files}
+sort(grep("^(code|config|analysis|demo)/", p$plan$path, value = TRUE))
+```
+
+`config/workflow.yml` lists the enabled stages, their capability IDs, approval
+status and the package versions pinned from the project's catalog snapshot:
+
+```{r workflow-config}
+config <- yaml::read_yaml(file.path(p$path, "config", "workflow.yml"))
+config[c("profile", "table_backend", "engine")]
+vapply(config$dependencies, function(x) x$package, character(1))
+```
+
+## Recording mappings explicitly
+
+Variables, estimand, missing-data intent and model settings are explicit
+configuration. `sync()` previews the change first.
+
+```{r mapping}
+options <- list(
+  data_sources = list(list(id = "cohort", label = "Cohort extract", logical_uri = NULL,
+    format = "csv", access_class = "restricted", checksum = NULL,
+    checksum_status = "unknown", schema_ref = NULL)),
+  analysis = list(
+    outcome_family = "continuous", unit_structure = "independent",
+    mapping = list(data_source_id = "cohort", outcome = "Systolic BP (mmHg)",
+      predictors = list("Dose (mg)", "Arm"), estimand = "Adjusted mean difference per mg",
+      missing_data = "complete_case"),
+    model = list(intercept = TRUE, reviewed = TRUE)
+  )
+)
+preview <- cttiR::sync(p$path, options = options)
+preview$state
+preview$analysis$candidate_engine
+unlist(preview$analysis$missing_fields)
+applied <- cttiR::sync(p$path, options = options, dry_run = FALSE)
+applied$state
+```
+
+The remaining missing field is the analysis approval, which only a person can
+record. Recording it does not run anything.
+
+## Structural data checks
+
+`check_analysis_data()` checks an explicitly supplied data frame against the
+mapping without changing it or fitting a model.
+
+```{r check}
+synthetic <- data.frame(
+  `Systolic BP (mmHg)` = c(121, 135, 128, NA, 140, 118),
+  `Dose (mg)` = c(1, 5, 3, 4, 8, 0.5),
+  Arm = c("low", "high", "low", "high", "high", "low"),
+  check.names = FALSE
+)
+spec <- cttiR::validate_spec(file.path(p$path, "cttir-project.yml"))
+result <- cttiR::check_analysis_data(synthetic, spec)
+result[c("state", "rows_total", "rows_complete")]
+```
+
+## Synthetic demonstration
+
+`Rscript code/run_demo.R` runs every stage on constructed data and compares the
+linear, logistic, mixed and Cox adapters with independent reference
+computations (normal equations, a hand-written Newton-Raphson, a dense Gaussian
+likelihood and direct partial-likelihood maximisation). The same code can run in
+memory:
+
+```{r demo, eval = has_stage_packages}
+env <- new.env()
+for (file in c("cttir_figures.R", "cttir_workflow.R")) {
+  sys.source(file.path(p$path, "code", "R", file), envir = env)
+}
+receipt <- env$cw_run_demo(root = p$path, figures_policy = spec$figures, write = FALSE)
+receipt$status
+vapply(receipt$cases, function(x) x$reference$name, character(1))
+```
+
+These values are adapter checks on synthetic data, not results.
+
+## Running on study data
+
+`Rscript code/run_workflow.R` reads registered data only when all of these are
+present: complete mapping and reviewed model settings, recorded analysis
+approval, a local binding in `.cttir/local.yml`, approved stage adapters for the
+pinned package revisions and matching installed package versions. Otherwise it
+stops and lists what is missing, without reading data:
+
+```{r runner}
+result <- processx::run(file.path(R.home("bin"), "Rscript"),
+  c("--vanilla", "code/run_workflow.R"), wd = p$path, error_on_status = FALSE)
+cat(result$stderr)
+```
+
+Diagnostics are computational evidence for review; a blocked fit reports no
+estimates. Prediction, causal, count and specialist analyses have no reviewed
+adapter in this bundle and remain explicit gaps.
+
+```{r cleanup, include=FALSE}
+options(cttiR.catalog_dir = old_catalog_option)
+unlink(example_root, recursive = TRUE)
+```
