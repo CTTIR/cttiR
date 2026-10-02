@@ -18,9 +18,13 @@ planner_scaffold <- c("std.project.reflowr_layout", "std.import.delimited", "std
 
 planner_fields <- c("aim", "outcome_family", "unit_structure", "modality")
 
+# Documented fallback reasons recorded in `provenance$fallback_reason` (see
+# plan_goal()). Every reason falls back to reviewed deterministic rules, except
+# the two injection reasons, which leave every planner field unknown.
 planner_fallbacks <- c("runtime_unverified", "endpoint_rejected", "model_refused", "model_digest_unrecorded",
   "model_locality_unverified", "model_absent", "model_digest_mismatch", "runtime_request_failed",
-  "model_identity_mismatch", "validation_failed", "injection_suspected")
+  "model_identity_mismatch", "validation_failed", "injection_suspected", "goal_injection_suspected",
+  "model_not_qualified")
 
 # Plain-text notes must not carry anything that could be mistaken for an
 # instruction to act: locations, commands, code, queries, installs or markup.
@@ -256,13 +260,39 @@ deterministic_proposal <- function(goal, registry = capability_registry()) {
   )
 }
 
-# Conservative proposal used when a reply shows that embedded instructions
-# steered the model: the keyword rules read the same text, so nothing is inferred.
-planner_abstention <- function() {
+# Conservative proposal used when the goal or a reply shows embedded
+# instructions: the keyword rules read the same text, so nothing is inferred.
+planner_abstention <- function(source = c("reply", "goal")) {
+  source <- match.arg(source)
+  rationale <- if (identical(source, "goal")) {
+    "The goal contains instruction-like text, so it was not sent to the local model and no decision is inferred from it."
+  } else {
+    "The local planner reply contained instruction-like content, so no decision is inferred from this goal."
+  }
   list(aim = "unknown", outcome_family = "unknown", unit_structure = "unknown", modality = "unknown",
-    capability_ids = character(),
-    rationale = "The local planner reply contained instruction-like content, so no decision is inferred from this goal.",
+    capability_ids = character(), rationale = rationale,
     unresolved = "Embedded instructions were suspected; set the analysis decisions explicitly.")
+}
+
+# Planner qualification of a model at its expected digest, from the recorded
+# benchmark in the runtime manifest; anything never benchmarked is unvalidated.
+planner_qualification <- function(model, digest) {
+  manifest <- read_document(resource_file("runtime", "manifest.json"))
+  for (entry in manifest$tested_models) {
+    if (identical(entry$tag, model) && identical(entry$digest, digest) && is.character(entry$qualification)) {
+      return(entry$qualification)
+    }
+  }
+  if (identical(model, manifest$model) && identical(digest, manifest$model_digest)) return(manifest$model_validation)
+  "unvalidated_user_override"
+}
+
+planner_allow_unqualified <- function() {
+  allow <- getOption("cttiR.planner_allow_unqualified", FALSE)
+  if (!is.logical(allow) || length(allow) != 1L || is.na(allow)) {
+    abort_cttir("cttiR.planner_allow_unqualified must be TRUE or FALSE.", field = "cttiR.planner_allow_unqualified")
+  }
+  allow
 }
 
 planner_expected_digest <- function(model, owner) {
@@ -300,22 +330,41 @@ planner_attempt_log <- function(response, errors, elapsed, keep_raw) {
 #'
 #' `deterministic` wraps the reviewed keyword rules. `local_llm` sends at most
 #' two bounded chat requests (initial plus one repair carrying validator errors)
-#' to the owned cloud-disabled runtime, after verifying the runtime process and
-#' the recorded model digest, and otherwise falls back to the deterministic
-#' rules with a machine-readable reason. Format and schema errors are repaired
-#' once; a reply carrying command-, path-, URL- or markup-like text is treated as
-#' injection evidence and yields an all-unknown proposal without repair. It
-#' never starts, installs or pulls anything, never sends tools, and never
-#' persists hidden reasoning.
+#' to the owned cloud-disabled runtime, after verifying the runtime process, the
+#' recorded model digest and the model's planner qualification, and otherwise
+#' falls back to the deterministic rules with a machine-readable reason. Format
+#' and schema errors are repaired once; a reply carrying command-, path-, URL-
+#' or markup-like text is treated as injection evidence and yields an
+#' all-unknown proposal without repair. It never starts, installs or pulls
+#' anything, never sends tools, and never persists hidden reasoning.
+#'
+#' A model may drive planning only when the runtime manifest records it as
+#' `qualified_for_planning` at that digest. Models labelled
+#' `not_qualified_for_planning` (all tested models so far) or never benchmarked
+#' (`unvalidated_user_override`) are used only with the separate opt-in
+#' `options(cttiR.planner_allow_unqualified = TRUE)`; the label is then kept in
+#' `provenance$model_qualification` and in the spec decisions.
+#'
+#' Fallback reasons (`provenance$fallback_reason`, listed in
+#' `planner_fallbacks`): `goal_injection_suspected` (the name, type or goal is
+#' instruction-shaped, so nothing is sent and every field stays unknown),
+#' `endpoint_rejected`, `runtime_unverified`, `model_refused` (not a plain local
+#' `name[:tag]`), `model_digest_unrecorded`, `model_not_qualified` (no planner
+#' qualification and no opt-in), `model_locality_unverified`,
+#' `runtime_request_failed`, `model_absent`, `model_digest_mismatch`,
+#' `model_identity_mismatch`, `validation_failed` and `injection_suspected` (the
+#' reply showed instruction-like content; every field stays unknown).
 #' @param mode `deterministic` or `local_llm`.
 #' @param endpoint Loopback endpoint; defaults to the configured runtime endpoint.
 #' @param model Model tag; defaults to the model recorded by `setup()`. Another
 #'   tag needs a digest recorded in the runtime manifest's tested models.
 #' @param keep_raw Benchmark diagnostics only: keep truncated raw replies.
+#' @param allow_unqualified Use a model without planner qualification; defaults
+#'   to `getOption("cttiR.planner_allow_unqualified", FALSE)`.
 #' @return A list with `proposal`, `provenance`, `latency_seconds` and `attempts`.
 #' @noRd
 plan_goal <- function(name, type, goal, mode = c("deterministic", "local_llm"), endpoint = NULL, model = NULL,
-  keep_raw = FALSE) {
+  keep_raw = FALSE, allow_unqualified = planner_allow_unqualified()) {
   scalar_text(name, "name")
   scalar_text(type, "type")
   scalar_text(goal, "goal")
@@ -324,9 +373,11 @@ plan_goal <- function(name, type, goal, mode = c("deterministic", "local_llm"), 
     abort_cttir("The planner mode must be 'deterministic' or 'local_llm'.", field = "mode")
   }
   scalar_flag(keep_raw, "keep_raw")
+  scalar_flag(allow_unqualified, "allow_unqualified")
   started <- proc.time()[["elapsed"]]
   registry <- capability_registry()
   attempts <- list()
+  qualification <- NULL
   result <- function(proposal, planner_mode, model_id = NULL, digest = NULL, reason = NULL, tried = NULL) {
     llm <- identical(planner_mode, "local_llm")
     list(
@@ -336,6 +387,7 @@ plan_goal <- function(name, type, goal, mode = c("deterministic", "local_llm"), 
         model_id = if (llm) model_id else NULL, model_digest = if (llm) digest else NULL,
         prompt_version = if (llm) planner_prompt_version else "none",
         attempts = length(attempts), fallback_reason = reason, attempted_model = tried,
+        model_qualification = qualification,
         options = if (length(attempts)) planner_options() else NULL
       ),
       latency_seconds = unname(proc.time()[["elapsed"]] - started),
@@ -344,17 +396,23 @@ plan_goal <- function(name, type, goal, mode = c("deterministic", "local_llm"), 
   }
   fallback <- function(reason, tried = NULL) result(deterministic_proposal(goal, registry), "deterministic", reason = reason, tried = tried)
   if (identical(mode, "deterministic")) return(result(deterministic_proposal(goal, registry), "deterministic"))
+  # Instruction-shaped inputs never reach a model; the keyword rules would read
+  # the same instructions, so every field stays unknown.
+  if (instruction_like(paste(name, type, goal, sep = "\n"))) {
+    return(result(planner_abstention("goal"), "deterministic", reason = "goal_injection_suspected"))
+  }
   if (is.null(endpoint)) endpoint <- tryCatch(runtime_endpoint(), error = function(e) NA_character_)
   if (!planner_valid_endpoint(endpoint)) return(fallback("endpoint_rejected"))
   owner <- tryCatch(runtime_owner(runtime_directory(), endpoint), error = function(e) NULL)
   if (is.null(owner)) return(fallback("runtime_unverified"))
   if (is.null(model)) model <- owner$model
-  if (!is.character(model) || length(model) != 1L || is.na(model) ||
-      !grepl("^[A-Za-z0-9][A-Za-z0-9._:/-]*$", model) || grepl("cloud", model, ignore.case = TRUE)) {
-    return(fallback("model_refused"))
-  }
+  if (!valid_model_tag(model)) return(fallback("model_refused"))
   digest <- planner_expected_digest(model, owner)
   if (is.null(digest)) return(fallback("model_digest_unrecorded", model))
+  qualification <- planner_qualification(model, digest)
+  if (!identical(qualification, "qualified_for_planning") && !allow_unqualified) {
+    return(fallback("model_not_qualified", model))
+  }
   entry <- tryCatch(local_model(endpoint, model), error = function(e) e)
   if (inherits(entry, "error")) {
     locality <- inherits(entry, "cttir_error") && identical(entry$code, "locality_unverified")
@@ -429,9 +487,10 @@ planner_used <- function(planned) {
 planner_record <- function(planned, field, value, reason, evidence) {
   if (planner_used(planned)) {
     p <- planned$plan$provenance
-    reason <- paste0("Local planner proposal '", value, "' (", p$model_id, ", ", p$prompt_version, "): ",
-      planned$plan$proposal$rationale, " Review before analysis; this is not an approval.")
-    evidence <- c(paste0("planner:", p$prompt_version), paste0("model_digest:", p$model_digest))
+    reason <- paste0("Local planner proposal '", value, "' (", p$model_id, ", ", p$prompt_version, ", ",
+      p$model_qualification, "): ", planned$plan$proposal$rationale, " Review before analysis; this is not an approval.")
+    evidence <- c(paste0("planner:", p$prompt_version), paste0("model_digest:", p$model_digest),
+      paste0("model_qualification:", p$model_qualification))
   }
   list(field = field, origin = "inferred", reason = reason, evidence_ids = as.list(evidence))
 }
@@ -441,9 +500,15 @@ planner_apply <- function(planned, spec, decisions) {
     p <- planned$plan$provenance
     spec$provenance[c("planner_mode", "model_id", "model_digest", "prompt_version")] <-
       list("local_llm", p$model_id, p$model_digest, p$prompt_version)
+    if (!identical(p$model_qualification, "qualified_for_planning")) {
+      decisions[[length(decisions) + 1L]] <- list(field = "/provenance/model_id", origin = "explicit",
+        reason = paste0("The local planner model is labelled '", p$model_qualification, "'; it was used only because ",
+          "options(cttiR.planner_allow_unqualified = TRUE) acknowledges unqualified use."),
+        evidence_ids = list(paste0("model_qualification:", p$model_qualification), "option:cttiR.planner_allow_unqualified"))
+    }
   } else if (!is.null(planned$plan)) {
     reason <- planned$plan$provenance$fallback_reason
-    outcome <- if (identical(reason, "injection_suspected")) {
+    outcome <- if (reason %in% c("injection_suspected", "goal_injection_suspected")) {
       "no decision was inferred from the goal."
     } else {
       "reviewed deterministic rules filled unset fields."
