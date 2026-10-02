@@ -2,6 +2,36 @@
 
 Updated: 2026-10-02. Version: 0.0.18. License: MIT.
 
+## Continuation: unbalanced mixed models and group sensitivity
+
+Checkpoint 2689a11 passed hosted run 37013761531. Public package remains 0.0.18.
+The private candidate now has independent dense Gaussian likelihood verification
+for unequal group sizes and two numeric predictors, under both ML and REML.
+Coefficients, covariance, random/residual variances and random effects agree;
+permutation and explicit complete-case results also pass. Three reference starts
+converge to the same interior optimum. Bounded log variances prevent singular trial
+matrices encountered by the initial unrestricted reference optimizer.
+
+A separate synthetic-only helper implements bounded group-deletion sensitivity
+(3 to 20 groups, at most 5000 rows). Eight deletion results match independent
+reference calculations. Removing the only group with variation in a predictor
+remains a failed refit and makes the result incomplete. Full-fit uncertainty is
+used to standardize coefficient changes, with no automatic scientific cutoff.
+Input remains unchanged; output excludes subject labels and data rows. Invalid
+fixture authorization and too few groups are refused.
+
+Scripts: admin/verify_candidate_mixed_unbalanced.R,
+admin/candidate_mixed_influence.R and admin/verify_candidate_mixed_influence.R.
+Receipts: candidate-mixed-unbalanced.json, candidate-mixed-influence.json and
+candidate-mixed-unbalanced-integrity.json under artifacts/implementation. The
+influence verifier also reruns the eleven original adapter checks. Policy and
+limitations are in admin/candidate-mixed-policy.md.
+
+Remaining: residual model adequacy, full callable/role documentation coverage,
+cross-platform diagnostics and immutable approval records before integration.
+This is private numerical evidence, not full readiness. No submission or COMPLETE
+marker; retry remains enabled and active. No new public-package check is claimed.
+
 ## Continuation: mixed-model variance diagnostics
 
 Checkpoint 4504a2d passed hosted run 37007780581. Public package source remains
