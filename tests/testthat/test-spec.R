@@ -15,3 +15,9 @@ test_that("unmarked UTF-8 input is marked so it compares and hashes the same eve
   expect_identical(input$n, 1L)
   expect_identical(content_hash(utf8_input(unmarked)), content_hash(marked))
 })
+
+test_that("input marking accepts empty, missing and mixed character vectors", {
+  expect_identical(utf8_input(character()), character())
+  expect_identical(utf8_input(NA_character_), NA_character_)
+  expect_identical(utf8_input(c("a", NA, "é")), c("a", NA, "é"))
+})

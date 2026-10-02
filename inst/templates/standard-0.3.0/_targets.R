@@ -116,7 +116,8 @@ ct_study <- function(config, requirements) {
   cw_write_json(list(status = result$status, scheduler = "targets", check = result$check,
       describe = result$describe, model = result$model, diagnostics = result$diagnostics,
       import = attr(data, "cw_import"), outputs = sub("^[.]/", "", result$outputs),
-      session = cw_session(unlist(lapply(config$workflow$dependencies, function(x) x$package)))),
+      session = cw_session(unlist(lapply(config$workflow$dependencies, function(x) x$package))),
+      code_sha256 = cw_code_hashes(".")),
     outputs$receipt)
   if (!identical(result$status, "completed")) {
     stop("The study-data workflow stopped with status '", result$status,

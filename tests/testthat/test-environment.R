@@ -134,6 +134,7 @@ test_that("the study target reads data only when every prerequisite is ready", {
   expect_true(done$data_read)
   receipt <- jsonlite::fromJSON("output/workflow-receipt.json", simplifyVector = FALSE)
   expect_equal(receipt$scheduler, "targets")
+  expect_true("code_sha256" %in% names(receipt))
   expect_equal(receipt$model$engine, "stats::lm")
   expect_true(file.exists("output/tables/effects.csv"))
 })

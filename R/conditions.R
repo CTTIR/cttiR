@@ -24,7 +24,11 @@ scalar_text <- function(x, field) {
 utf8_input <- function(x) {
   if (is.character(x)) {
     unmarked <- !is.na(x) & Encoding(x) == "unknown" & validUTF8(x)
-    Encoding(x)[unmarked] <- "UTF-8"
+    if (any(unmarked)) {
+      marked <- x[unmarked]
+      Encoding(marked) <- "UTF-8"
+      x[unmarked] <- marked
+    }
     return(enc2utf8(x))
   }
   if (is.list(x)) {
