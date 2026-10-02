@@ -151,4 +151,7 @@ test_that("the synthetic demo runs in a generated project and labels its outputs
   expect_true(receipt$synthetic)
   expect_true(file.exists(file.path(p$path, "demo/outputs/continuous/figure-overview.png")))
   expect_true(file.exists(file.path(p$path, "demo/outputs/continuous/effects.csv")))
+  readiness <- project_readiness(p$path)
+  expect_true(readiness$checks[[3]]$passed)
+  expect_false(readiness$checks[[4]]$passed)
 })

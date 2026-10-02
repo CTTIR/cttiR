@@ -505,6 +505,25 @@ cw_write_json <- function(x, file) {
   invisible(file)
 }
 
+# Hashes of the stage code that produced a receipt, normalised like the bundle
+# manifest (UTF-8 lines joined with LF plus a final newline).
+cw_code_hashes <- function(root = ".") {
+  files <- c("code/R/cttir_workflow.R", "code/R/cttir_figures.R")
+  hashes <- lapply(files, function(file) {
+    path <- file.path(root, file)
+    if (!file.exists(path)) return(NULL)
+    # tools::sha256sum() exists from R 4.5; older R records the hash as unknown.
+    if (!exists("sha256sum", envir = asNamespace("tools"), inherits = FALSE)) return(NULL)
+    text <- paste0(paste(readLines(path, warn = FALSE, encoding = "UTF-8"), collapse = "\n"), "\n")
+    tmp <- tempfile()
+    on.exit(unlink(tmp), add = TRUE)
+    writeBin(charToRaw(enc2utf8(text)), tmp)
+    unname(tools::sha256sum(tmp))
+  })
+  names(hashes) <- files
+  hashes
+}
+
 cw_session <- function(packages) {
   versions <- lapply(packages, function(p) tryCatch(as.character(utils::packageVersion(p)), error = function(e) NA_character_))
   names(versions) <- packages
@@ -631,6 +650,7 @@ cw_run_demo <- function(root = ".", out_dir = file.path(root, "demo", "outputs")
   receipt$status <- if (all(vapply(receipt$cases, function(x) identical(x$status, "completed") && isTRUE(x$reference$pass), logical(1)))) "passed" else "failed"
   receipt$session <- cw_session(c("readr", "dplyr", "DescrTab2", "ggplot2", "patchwork", "viridisLite",
     "RColorBrewer", "colorspace", "nlme", "survival", "broom", "broom.mixed", "yaml", "jsonlite"))
+  receipt$code_sha256 <- cw_code_hashes(root)
   if (write) {
     dir.create(file.path(root, "demo"), showWarnings = FALSE)
     cw_write_json(receipt, file.path(root, "demo", "receipt.json"))

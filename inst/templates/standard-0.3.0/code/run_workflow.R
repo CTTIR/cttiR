@@ -18,7 +18,8 @@ result <- cw_run(data, config$analysis, config$figures, file.path("reports", "wo
   backend = config$workflow$table_backend, synthetic = FALSE)
 cw_write_json(list(status = result$status, check = result$check, describe = result$describe,
   model = result$model, diagnostics = result$diagnostics, import = attr(data, "cw_import"),
-  outputs = basename(result$outputs), session = cw_session(unlist(lapply(config$workflow$dependencies, function(x) x$package)))),
+  outputs = basename(result$outputs), session = cw_session(unlist(lapply(config$workflow$dependencies, function(x) x$package))),
+  code_sha256 = cw_code_hashes(".")),
   file.path("reports", "workflow", "receipt.json"))
 message("Workflow ", result$status, ". Review reports/workflow/ before interpreting any estimate.")
 if (!identical(result$status, "completed")) quit(status = 1L)

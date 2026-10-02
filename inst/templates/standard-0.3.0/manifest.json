@@ -34,10 +34,10 @@
     "analysis/synthetic_demo.Rmd": "51b1252d158abc6e8dff42ca5c145e3ead512edf30cba847ff6837e3f555a055",
     "code/R/cttir_figures.R": "4aa727b9690dc6440f6aff66c54332945440d29bb8f93f1c602ef502d445ff6c",
     "code/R/cttir_interop.R": "43983bea2aa33a69effd7a66373adb838318ded86737c0bcc4f7399209448e85",
-    "code/R/cttir_workflow.R": "aadf83de49fa27604d792d14e8f3032b134328fe39be3f40641cd760bbb9d879",
+    "code/R/cttir_workflow.R": "743aed4438b49382ebc279a36b13cd97ecb6d9c612c03c8d1cfd46b72adbe37b",
     "code/render_report.R": "7a227c4c8744446bc5e6c2c903a8b1f40e0fa08f77126a7523299cbf121968fd",
     "code/run_demo.R": "07c59b2bfe290c57d0b7c533fe6adff7585a46d04d42b1859112069f12a25b61",
-    "code/run_workflow.R": "66c2d98365eb246eb877504698a810c51d6d27011187497f9104404faf8b25e1",
+    "code/run_workflow.R": "bfd13e4b3f69592dbbce4072b9309bd3b6ec54cc14bb38be9d1e9ecbd18e01e4",
     "demo/README.md": "234a4e36d535ac3445bd3769a8d644abdbcac98bd8c263deae249483db889735",
     "licenses/reflowR-MIT.txt": "29b77db3f6c608670bc28cfc77ebba736f75c6abb9d8a32aec917051f4d52cdd"
   },
