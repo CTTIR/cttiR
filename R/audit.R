@@ -333,10 +333,20 @@ audit_overall_reason <- function(checks) {
 #' @return A `cttir_audit` with a check table (`id`, `scope`, `status`,
 #'   `required`, `message`, `description`, `severity`, `read_effects`,
 #'   `repair_id`, `evidence` as JSON text, `duration_seconds`), overall status
-#'   and reason, repairs, package identity, effects and limitations.
+#'   and reason, repairs, `repair_plan` (the allowlisted repairs that
+#'   `repair = TRUE` would attempt for the final checks, with their target files
+#'   and current hashes; computed read-only), package identity, effects and
+#'   limitations.
 #' @export
 audit <- function(path = NULL, scope = c("installation", "knowledge", "project"),
   repair = FALSE, output = NULL, strict = FALSE, live = FALSE) {
+  audit_impl(path, scope, repair, output, strict, live)
+}
+
+# `expected_plan` binds a repair to a previewed plan: when the plan computed
+# from the current state has another fingerprint, nothing is repaired.
+audit_impl <- function(path = NULL, scope = c("installation", "knowledge", "project"),
+  repair = FALSE, output = NULL, strict = FALSE, live = FALSE, expected_plan = NULL) {
   for (key in c("repair", "strict", "live")) scalar_flag(get(key), key)
   if (!is.character(scope) || !length(scope) || anyNA(scope) || any(!scope %in% audit_scope_levels)) {
     abort_cttir("scope must be a nonempty subset of installation, knowledge, project and integration.")
@@ -356,18 +366,25 @@ audit <- function(path = NULL, scope = c("installation", "knowledge", "project")
   definitions <- audit_checks(scope)
   context <- audit_context(path, scope, repair, live)
   checks <- audit_run_checks(definitions, context)
+  plan <- audit_repair_plan(checks, context)
+  if (repair && !is.null(expected_plan) && !identical(audit_plan_fingerprint(plan), expected_plan)) {
+    abort_cttir("Project files or checks changed after the repair preview; nothing was repaired.",
+      "cttir_transaction_conflict", "stale_preview", remediation = "Run the audit again and review the new repair preview.")
+  }
   repairs <- list()
   if (repair) {
     repairs <- audit_apply_repairs(checks, context)
     if (any(vapply(repairs, function(x) identical(x$status, "applied"), logical(1)))) {
       rerun <- definitions[vapply(definitions, function(x) x$scope != "integration", logical(1))]
-      fresh <- audit_run_checks(rerun, audit_context(path, scope, repair, live))
+      fresh_context <- audit_context(path, scope, repair, live)
+      fresh <- audit_run_checks(rerun, fresh_context)
       at <- match(fresh$id, checks$id)
       checks[at, ] <- fresh
       for (i in seq_along(repairs)) {
         trigger <- repairs[[i]]$trigger
         repairs[[i]]$recheck <- as.list(stats::setNames(checks$status[match(trigger, checks$id)], trigger))
       }
+      plan <- audit_repair_plan(checks, fresh_context)
     }
   }
   root <- audit_root(context)
@@ -379,7 +396,7 @@ audit <- function(path = NULL, scope = c("installation", "knowledge", "project")
   result <- structure(list(
     schema_version = 2L, timestamp = format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"),
     profile = "scaffold", scopes = scope, live = live, checks = checks, overall_status = audit_overall(checks),
-    repairs = repairs, environment = list(R = as.character(getRversion()), platform = R.version$platform),
+    repairs = repairs, repair_plan = plan, environment = list(R = as.character(getRversion()), platform = R.version$platform),
     limitations = c(
       "Software integrity is not scientific validation.",
       "Default inspection reads metadata only; referenced datasets and bound paths are not opened.",
@@ -402,6 +419,34 @@ audit <- function(path = NULL, scope = c("installation", "knowledge", "project")
   }
   result
 }
+
+# Read-only plan of the allowlisted repairs that repair = TRUE would attempt for
+# these checks: triggering checks, skip reasons and the target files with their
+# current hashes (NA when missing). The application binds a repair to it.
+audit_repair_plan <- function(checks, context) {
+  failing <- checks[checks$status == "fail" & !is.na(checks$repair_id), , drop = FALSE]
+  catalog <- audit_repairs()
+  plan <- list()
+  for (id in intersect(names(catalog), failing$repair_id)) {
+    audit_reset(context)
+    entry <- list(id = id, trigger = failing$id[failing$repair_id == id], status = "skipped",
+      description = catalog[[id]]$description, targets = list())
+    reason <- tryCatch(catalog[[id]]$precondition(context), error = function(e) audit_condition_message(e))
+    targets <- if (is.null(reason)) tryCatch(audit_target_hashes(catalog[[id]]$targets(context)), error = function(e) e)
+    if (inherits(targets, "error")) reason <- audit_condition_message(targets)
+    if (is.null(reason)) {
+      entry$status <- "planned"
+      entry$targets <- targets
+    } else {
+      entry$reason <- reason
+    }
+    plan[[length(plan) + 1L]] <- entry
+  }
+  audit_reset(context)
+  plan
+}
+
+audit_plan_fingerprint <- function(plan) content_hash(json_text(if (length(plan)) plan else list()))
 
 audit_package_identity <- function() {
   description <- suppressWarnings(tryCatch(utils::packageDescription("cttiR"), error = function(e) NULL))
