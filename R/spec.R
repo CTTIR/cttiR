@@ -121,23 +121,30 @@ resolve_spec <- function(name, type, goal, config, options, identity = NULL, pro
     list(field = field, origin = origin, reason = reason, evidence_ids = as.list(evidence))
   }
   decisions <- list()
-  # Goal keywords only fill fields that nobody supplied; they never approve anything.
-  signals <- infer_goal(goal)
+  # Goal keywords (or, when policy enables it, one bounded local planner
+  # exchange; see plan_goal()) only fill fields that nobody supplied; they never
+  # approve anything.
+  unset <- c(vapply(c("aim", "outcome_family", "unit_structure"), function(field) {
+    is.null(combined$analysis[[field]]) && identical(spec$analysis[[field]], "unknown")
+  }, logical(1)), modality = is.null(combined$ecosystem$modality) && identical(spec$ecosystem$modality, "unknown"))
+  planned <- planner_signals(name, type, goal, any(unset), replay = !is.null(provenance))
+  signals <- planned$signals
   for (field in c("aim", "outcome_family", "unit_structure")) {
-    if (is.null(combined$analysis[[field]]) && identical(spec$analysis[[field]], "unknown") &&
-        !identical(signals[[field]], "unknown")) {
+    if (unset[[field]] && !identical(signals[[field]], "unknown")) {
       spec$analysis[[field]] <- signals[[field]]
-      decisions[[length(decisions) + 1L]] <- record(paste0("/analysis/", field), "inferred",
+      decisions[[length(decisions) + 1L]] <- planner_record(planned, paste0("/analysis/", field), signals[[field]],
         paste0("Goal keywords suggest '", signals[[field]], "'. Review before analysis; this is not an approval."),
         paste0("rule:", field, ":", signals[[field]]))
     }
   }
-  if (is.null(combined$ecosystem$modality) && identical(spec$ecosystem$modality, "unknown") &&
-      !identical(signals$modality, "unknown")) {
+  if (unset[["modality"]] && !identical(signals$modality, "unknown")) {
     spec$ecosystem$modality <- signals$modality
-    decisions[[length(decisions) + 1L]] <- record("/ecosystem/modality", "inferred",
+    decisions[[length(decisions) + 1L]] <- planner_record(planned, "/ecosystem/modality", signals$modality,
       paste0("Goal keywords suggest the '", signals$modality, "' data modality."), paste0("modality:", signals$modality))
   }
+  applied <- planner_apply(planned, spec, decisions)
+  spec <- applied$spec
+  decisions <- applied$decisions
   check_supported_workflow(spec, combined)
   requested <- if (is.null(combined$workflow$profile)) "auto" else combined$workflow$profile
   route <- route_workflow(spec, requested, catalog_snapshot(spec$provenance$catalog_id))
