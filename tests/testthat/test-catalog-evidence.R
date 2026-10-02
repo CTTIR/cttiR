@@ -83,6 +83,19 @@ test_that("S4 declarations are literal, static and never evaluated", {
   expect_equal(entry$coverage$s4_unresolved, 2L)
 })
 
+test_that("static argument matching follows R's exact, partial and positional rules", {
+  matched <- static_match_args(quote(lapply("id", F = "system")), c("X", "FUN", "..."))
+  expect_identical(matched$FUN, "system")
+  expect_identical(matched$X, "id")
+  expect_identical(static_match_args(quote(setClass(Cl = "Cell")), "Class")$Class, "Cell")
+  # Ambiguous abbreviations and formals after `...` are never guessed.
+  expect_null(static_match_args(quote(f(fo = 1)), c("format", "formula"))$format)
+  expect_null(static_match_args(quote(f(1, ext = 2)), c("x", "...", "extra"))$extra)
+  expect_identical(static_match_args(quote(f(1, extra = 2)), c("x", "...", "extra"))$extra, 2)
+  expect_identical(static_match_call(quote(outer(1, 2, FU = "system")), formals(args(outer)))$FUN, "system")
+  expect_null(static_match_call(quote(f(y = 1)), alist(x = )))
+})
+
 test_that("S7 declarations label exports without claiming callables", {
   f <- evidence_fixture()
   entry <- extract_source(f$source, "fixture://a", "one")

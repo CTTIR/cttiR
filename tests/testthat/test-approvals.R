@@ -295,6 +295,51 @@ test_that("a large stored document can back an approval with bounded retrieval",
   expect_false(hits$approved)
 })
 
+test_that("the validator resolves function arguments and refuses process and environment control", {
+  catalog <- resolve_catalog()
+  check <- function(code, approved_only = TRUE) validate_generated_code(code, catalog, approved_only)
+  refused <- function(code, approved_only = FALSE) {
+    result <- check(code, approved_only)
+    expect_false(attr(result, "valid"), label = code)
+    result$reason[!result$status %in% c("ok", "warning")]
+  }
+  expect_identical(refused("stats::aggregate(x, by, FUN = 'system')"), "dynamic_function_value")
+  expect_identical(refused("stats::aggregate(x, by, FU = 'system')"), "dynamic_function_value")
+  expect_identical(refused("stats::aggregate(x, by, 'system')"), "forbidden_function_name:system")
+  expect_identical(refused("ggplot2::stat_summary(fun.data = 'system')"), "forbidden_function_name:system")
+  expect_identical(refused("stats::aggregate(x, by, FUN = system)"),
+    c("unverified_function_value:system", "forbidden_reference:system"))
+  forbidden <- c("methods::evalSource('x.R')", "tools::Rcmd('build')", "renv::run('x.R')", "callr::r(function() 1)",
+    "processx::run('ls')", "sys::exec_wait('ls')", "rstudioapi::versionInfo()", "base::options(warn = 2)",
+    "base::Sys.setenv(A = 1)")
+  for (code in forbidden) {
+    expect_match(refused(code), "^forbidden_call:", info = code)
+  }
+  for (name in c("pipe", "url", "socketConnection", "socketAccept", "serverSocket", "make.socket")) {
+    expect_identical(refused(paste0(name, "('x')"), approved_only = TRUE), paste0("forbidden_call:", name))
+    expect_identical(refused(paste0("base::", name, "('x')")), paste0("forbidden_call:", name))
+    expect_contains(refused(paste0("lapply('x', ", name, ")")), paste0("forbidden_reference:", name))
+  }
+  expect_identical(refused(".Internal(foo)"), "forbidden_call:.Internal")
+  expect_identical(refused(".Call('x')"), "forbidden_call:.Call")
+  expect_identical(refused("options(warn = 2)"), "unsupported_call:options")
+  expect_identical(refused("yaml::yaml.load('a', eval.expr = TRUE)"), "yaml_eval_expr_enabled")
+  expect_identical(refused("yaml::read_yaml('a', eval = TRUE)"), "yaml_eval_expr_enabled")
+  expect_true(attr(check("yaml::read_yaml('a', eval.expr = FALSE)", FALSE), "valid"))
+  # A missing first argument without a default is reported at warning level.
+  lm <- check("stats::lm()")
+  expect_true(attr(lm, "valid"))
+  expect_equal(lm$status[lm$reason == "missing_required_argument:formula"], "warning")
+  expect_equal(lm$export[lm$status == "warning"], "stats::lm")
+  expect_false(any(check("stats::lm(y ~ x, data = d)")$status == "warning"))
+  expect_false(any(check("f <- function(...) stats::lm(...)")$status == "warning"))
+  expect_true(attr(check("ggplot2::stat_summary(fun = mean)"), "valid"))
+  # Formals that merely share a name with function arguments are data.
+  expect_true(attr(check("groups <- split(seq_len(3), data$subject)"), "valid"))
+  expect_true(attr(check("inherits(plot, 'ggplot')"), "valid"))
+  expect_identical(refused("inherits(plot, what = 'system')"), "forbidden_function_name:system")
+})
+
 test_that("generated code is validated statically against the approved revision", {
   f <- approval_fixture()
   entry <- extract_source(f$source, "fixture", "one", documentation_rights = fixture_rights)
@@ -348,6 +393,11 @@ test_that("generated code is validated statically against the approved revision"
   expect_identical(reason("median(1:3)"), "unsupported_call:median")
   expect_identical(reason("x$fun(1)"), "computed_function_call")
   expect_identical(reason(paste0("writeLines('ran', ", encodeString(sentinel, quote = '"'), ")")), "unsupported_call:writeLines")
+  # Abbreviated function arguments are matched as R matches them.
+  expect_identical(reason("lapply('id', F = 'system')"), "dynamic_function_value")
+  expect_identical(reason("sapply(1, FU = 'system')", approved_only = FALSE), "dynamic_function_value")
+  expect_identical(reason("outer(1, 2, FU = 'system')", approved_only = FALSE), "dynamic_function_value")
+  expect_identical(reason("do.call(wh = 'system', list('ls'))"), "dynamic_function_value")
   parse_failure <- check("cttirFixtureA::keep(")
   expect_identical(parse_failure$status, "parse_error")
   expect_false(attr(parse_failure, "valid"))

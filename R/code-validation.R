@@ -39,8 +39,9 @@ syntax_calls <- c(
 formula_terms <- c("I", "offset", "log", "exp", "sqrt", "poly", "factor", "as.factor", "scale", "s", "te",
   "ti", "t2", "strata", "cluster", "frailty", "tt", "pspline", "ns", "bs", "interaction", "relevel", "cut")
 
-# Constructs that evaluate text, load or attach code, touch processes/network or
-# rebind namespaces. Rejected bare, namespaced or passed as a function value.
+# Constructs that evaluate text, load or attach code, touch processes/network
+# (including pipe, URL and socket connections) or rebind namespaces. Rejected
+# bare, namespaced or passed as a function value.
 forbidden_calls <- c(
   "eval", "evalq", "eval.parent", "eval_tidy", "eval_bare", "exec", "inject", "source", "sys.source",
   "system", "system2", "shell", "shell.exec", "Sys.setenv", "Sys.unsetenv", "Sys.setlocale", "Sys.chmod",
@@ -48,17 +49,71 @@ forbidden_calls <- c(
   "remove.packages", "update.packages", "download.file", "download.packages", "get", "get0", "mget",
   "getFromNamespace", "getExportedValue", "getAnywhere", "match.fun", "parse", "str2lang", "str2expression",
   "parse_expr", "parse_exprs", "assign", "assignInNamespace", "assignInMyNamespace", "setwd", "unlink",
-  "file.remove", "file.rename", "dyn.load", ".Call", ".External", ".Internal", ".Primitive", "reg.finalizer",
-  "q", "quit", "<<-"
+  "file.remove", "file.rename", "dyn.load", ".Call", ".External", ".External2", ".C", ".Fortran", ".Internal",
+  ".Primitive", "reg.finalizer", "q", "quit", "<<-", "pipe", "url", "socketConnection", "socketAccept", "serverSocket",
+  "make.socket"
 )
 
-# Function-valued argument of base higher-order calls; it must be a symbol, a
-# function literal or a namespaced reference, never a character name.
+# Function-valued argument of base higher-order calls (the last name listed),
+# with the formals before it. The value must be a symbol, a function or formula
+# literal or a namespaced reference, never a character name. The project-code
+# audit reads this table too.
 higher_order_formals <- list(
   lapply = c("X", "FUN"), sapply = c("X", "FUN"), vapply = c("X", "FUN"), mapply = "FUN", Map = "f",
   Reduce = "f", Filter = "f", apply = c("X", "MARGIN", "FUN"), tapply = c("X", "INDEX", "FUN"),
   outer = c("X", "Y", "FUN"), do.call = "what"
 )
+
+# Packages and exports that run processes, evaluate files, install code or
+# change the session environment. Rejected in every mode, also when a catalog
+# revision lists them as statically verified.
+forbidden_packages <- c("callr", "processx", "sys", "rstudioapi")
+forbidden_exports <- list(
+  base = c("options", "Sys.setenv", "Sys.unsetenv", "setwd"),
+  methods = "evalSource", tools = "Rcmd",
+  renv = c("run", "install", "restore", "load", "activate", "update", "hydrate", "rebuild"),
+  withr = c("with_options", "local_options", "with_envvar", "local_envvar", "with_dir", "local_dir", "with_libpaths",
+    "local_libpaths", "with_path", "local_path")
+)
+
+# Argument names that conventionally take a function or its name ("FUN",
+# "fun.data", ".f", "what", "handler"). Their meaning varies by package (".f"
+# is a factor in forcats), so a value there is refused only when it is a string
+# naming a forbidden function; base higher-order functions and `FUN` are checked
+# strictly.
+function_like_argument <- "^(\\.?f(un|n|ns)?|func|what|handler)([._].*)?$"
+
+# Forbidden functions also rejected as unnamed strings passed into `...`, where
+# a method such as aggregate.data.frame() may later call them by name.
+executing_names <- c("system", "system2", "shell", "shell.exec", "eval", "evalq", "eval.parent", "sys.source",
+  "str2lang", "str2expression", "Sys.setenv", "match.fun", "install.packages", "download.file", "unlink",
+  "file.remove", "setwd", "dyn.load", ".Internal", ".Call", ".External", "loadNamespace", "library", "require", "quit")
+
+.base_formals_cache <- new.env(parent = emptyenv())
+
+# Formals of a base R function as R itself declares them (primitives through
+# args()); read from the running base namespace, never from generated text.
+base_formals <- function(name) {
+  if (!exists(name, envir = .base_formals_cache, inherits = FALSE)) {
+    fn <- if (exists(name, envir = baseenv(), inherits = FALSE)) get(name, envir = baseenv(), inherits = FALSE) else NULL
+    shape <- if (is.function(fn)) args(fn) else NULL
+    assign(name, if (is.function(shape)) formals(shape) else NULL, envir = .base_formals_cache)
+  }
+  get(name, envir = .base_formals_cache, inherits = FALSE)
+}
+
+# Formals of a cataloged export, with defaults when its recorded signature
+# parses (static parse only); otherwise names without default information.
+catalog_formals <- function(entry) {
+  parsed <- tryCatch(parse(text = paste(entry$signature, "NULL"), keep.source = FALSE)[[1]], error = function(e) NULL)
+  if (is.call(parsed) && identical(parsed[[1]], as.name("function"))) {
+    return(list(formals = if (is.null(parsed[[2]])) pairlist() else parsed[[2]], defaults = TRUE))
+  }
+  names <- approval_text(entry$arguments)
+  list(formals = as.pairlist(stats::setNames(rep(list(quote(expr = )), length(names)), names)), defaults = FALSE)
+}
+
+no_default <- function(x) is.symbol(x) && !nzchar(as.character(x))
 
 # An omitted argument such as the gap in `x[, 1]` is an empty symbol.
 empty_argument <- function(parts, i) identical(unname(parts[i]), unname(alist(x = )))
@@ -71,7 +126,11 @@ empty_argument <- function(parts, i) identical(unname(parts[i]), unname(alist(x 
 #' @param approved_only Require every namespaced export to be covered by a
 #'   complete workflow approval of that revision.
 #' @return A data frame `call, package, export, status, reason` with attribute
-#'   `valid` that is `TRUE` only when every row has status `ok`.
+#'   `valid` that is `TRUE` only when no row is `rejected` or `parse_error`.
+#'   Rows with status `warning` report findings that do not invalidate the
+#'   code, such as a missing first argument without a default
+#'   (`missing_required_argument:<formal>`); their `package` is `NA` and their
+#'   `export` names the callee as `package::export`.
 #' @noRd
 validate_generated_code <- function(text, catalog = NULL, approved_only = TRUE) {
   scalar_flag(approved_only, "approved_only")
@@ -81,7 +140,7 @@ validate_generated_code <- function(text, catalog = NULL, approved_only = TRUE) 
   acc <- new.env(parent = emptyenv())
   acc$rows <- data.frame(call = character(), package = character(), export = character(), status = character(),
     reason = character(), stringsAsFactors = FALSE)
-  finish <- function(rows) structure(rows, valid = nrow(rows) == 0L || all(rows$status == "ok"))
+  finish <- function(rows) structure(rows, valid = nrow(rows) == 0L || all(rows$status %in% c("ok", "warning")))
   expressions <- tryCatch(parse(text = text, keep.source = FALSE), error = function(e) e)
   if (inherits(expressions, "error")) {
     message <- strsplit(conditionMessage(expressions), "\n", fixed = TRUE)[[1]][[1]]
@@ -122,6 +181,9 @@ validate_generated_code <- function(text, catalog = NULL, approved_only = TRUE) 
     if (is.null(package) || is.null(export)) return(add(expr, NA_character_, NA_character_, "rejected", "nonliteral_namespace_reference"))
     if (identical(ref[[1]], as.name(":::"))) return(add(expr, package, export, "rejected", "internal_triple_colon"))
     if (export %in% forbidden_calls) return(add(expr, package, export, "rejected", paste0("forbidden_call:", export)))
+    if (package %in% forbidden_packages || export %in% forbidden_exports[[package]]) {
+      return(add(expr, package, export, "rejected", paste0("forbidden_call:", package, "::", export)))
+    }
     p <- packages[[package]]
     if (is.null(p)) {
       if (identical(package, "base") && export %in% safe_base_calls) return(add(expr, package, export, "ok", "base_allowlist"))
@@ -186,6 +248,12 @@ validate_generated_code <- function(text, catalog = NULL, approved_only = TRUE) 
         if (length(supplied) > length(formals)) return(add(expr, package, export, "rejected", "too_many_arguments"))
       }
       if (anyDuplicated(named)) return(add(expr, package, export, "rejected", "duplicate_argument"))
+      shape <- catalog_formals(entry)
+      # `FUN` (also abbreviated inside `...`, as a method may match it later)
+      # takes a function by base R convention in every package.
+      check_arguments(call, shape$formals, export, paste0(package, "::", export), c("FUN", "FU"),
+        required = shape$defaults)
+      if (identical(package, "yaml")) check_yaml_eval(call, shape$formals, export)
     }
     add(expr, package, export, "ok", reason)
   }
@@ -196,9 +264,60 @@ validate_generated_code <- function(text, catalog = NULL, approved_only = TRUE) 
       add(call, NA_character_, name, "rejected", paste0("unverified_function_value:", symbol))
       return(FALSE)
     }
-    if (namespaced(value) || (is.call(value) && identical(value[[1]], as.name("function")))) return(TRUE)
+    lambda <- is.call(value) && (identical(value[[1]], as.name("function")) || identical(value[[1]], as.name("~")))
+    if (namespaced(value) || lambda) return(TRUE)
     add(call, NA_character_, name, "rejected", "dynamic_function_value")
     FALSE
+  }
+  check_argument_value <- function(value, key, call, name, dots, strict) {
+    if (key %in% strict) return(invisible(check_function_value(value, call, name)))
+    literal <- static_literal(value)
+    if (is.null(literal) || !literal %in% forbidden_calls) return(invisible(NULL))
+    if (grepl(function_like_argument, key, ignore.case = TRUE) || (dots && !nzchar(key) && literal %in% executing_names)) {
+      add(call, NA_character_, name, "rejected", paste0("forbidden_function_name:", literal))
+    }
+    invisible(NULL)
+  }
+  # Arguments are matched by R's own rules (exact, partial, positional) against
+  # the callee's formals, so abbreviations such as `F =` or `FU =` cannot slip a
+  # function name past the function-value checks. `...` in the call is unknown
+  # and is left out; it also suspends the missing-argument report.
+  check_arguments <- function(call, formals, name, label, strict, required = FALSE) {
+    if (is.null(formals)) return(invisible(NULL))
+    parts <- as.list(call)[-1]
+    dots <- vapply(seq_along(parts), function(i) !empty_argument(parts, i) && identical(parts[[i]], quote(...)), logical(1))
+    matched <- static_match_call(if (any(dots)) call[c(TRUE, !dots)] else call, formals)
+    if (is.null(matched)) return(add(call, NA_character_, name, "rejected", "argument_match_error"))
+    keys <- names(matched)
+    for (i in seq_along(matched)) {
+      if (identical(keys[[i]], "...")) {
+        extra <- matched[[i]]
+        extra_keys <- if (is.null(names(extra))) rep("", length(extra)) else names(extra)
+        for (j in seq_along(extra)) check_argument_value(extra[[j]], extra_keys[[j]], call, name, TRUE, strict)
+      } else {
+        check_argument_value(matched[[i]], keys[[i]], call, name, FALSE, strict)
+      }
+    }
+    first <- names(formals)[1]
+    if (required && !any(dots) && length(formals) && !identical(first, "...") && no_default(formals[[1]]) &&
+        !first %in% keys) {
+      add(call, NA_character_, label, "warning", paste0("missing_required_argument:", first))
+    }
+    invisible(NULL)
+  }
+  # yaml evaluates `!expr` tags only when eval.expr is enabled; any value other
+  # than a literal FALSE (also when abbreviated or passed through `...`) is refused.
+  check_yaml_eval <- function(call, formals, name) {
+    matched <- static_match_call(call, formals)
+    values <- if (is.list(matched[["..."]])) matched[["..."]] else list()
+    if (!is.null(matched[["eval.expr"]])) values <- c(values, list(eval.expr = matched[["eval.expr"]]))
+    keys <- if (is.null(names(values))) rep("", length(values)) else names(values)
+    for (i in seq_along(values)) {
+      if (nchar(keys[[i]]) >= 2L && startsWith("eval.expr", keys[[i]]) && !isFALSE(values[[i]])) {
+        add(call, NA_character_, name, "rejected", "yaml_eval_expr_enabled")
+      }
+    }
+    invisible(NULL)
   }
   walk <- function(expr, depth = 0L, formula = FALSE) {
     if (depth > 256L) return(add(quote(nesting), NA_character_, NA_character_, "rejected", "nesting_exceeds_bound"))
@@ -240,10 +359,12 @@ validate_generated_code <- function(text, catalog = NULL, approved_only = TRUE) 
       add(expr, NA_character_, NA_character_, "rejected", "computed_function_call")
       walk(head, depth + 1L, formula)
     }
-    formals <- if (is.null(name)) NULL else higher_order_formals[[name]]
-    if (!is.null(formals)) {
-      value <- static_match_args(expr, formals)[[formals[[length(formals)]]]]
-      if (!is.null(value)) check_function_value(value, expr, name)
+    base_call <- !is.null(name) && name %in% safe_base_calls && !name %in% local_functions &&
+      (is.symbol(head) || identical(static_atom(head[[2]]), "base"))
+    if (base_call) {
+      positions <- higher_order_formals[[name]]
+      strict <- if (length(positions)) positions[[length(positions)]] else character()
+      check_arguments(expr, base_formals(name), name, paste0("base::", name), strict)
     }
     for (i in seq_along(args)) if (!empty_argument(args, i)) walk(args[[i]], depth + 1L, formula)
     invisible(NULL)
