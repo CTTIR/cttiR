@@ -20,7 +20,8 @@ listed, clearly labelled; nonexistent exports are never presented as real.}
 A \code{cttir_answer} with \code{answer}, \code{steps}, \code{prerequisites}, \code{packages},
 \code{code}, \code{citations}, \code{verification_levels}, \code{evidence}, \code{symbols}, \code{gaps},
 \code{alternatives} (approved capabilities offered only as context when a named
-function does not exist) and \code{limitations}. Citations name the pinned
+function does not exist or the method family is unsupported) and
+\code{limitations}. Citations name the pinned
 revision (versioned source archive or commit). Code uses placeholders
 (\verb{<...>}) for mapped data and is illustrative; generated projects use the
 full reviewed stage library.
@@ -37,7 +38,8 @@ alternatives instead of invented code. Method families without a reviewed
 adapter (competing risks, ordinal or multinomial models, GEE, count models,
 quantile regression, propensity scores and weighting, Bayesian models,
 generalized additive models, machine learning and meta-analysis) are named in
-the gap and never answered with a nearby engine. A question that names an
-absent or unapproved function gets no code. Instruction-shaped text,
+the gap and never answered with a nearby engine; such a question gets no
+code for any part of it. A question that names an absent or unapproved
+function gets no code. Instruction-shaped text,
 including lookalike letters and override markers, is treated as data.
 }

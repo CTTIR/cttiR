@@ -91,9 +91,11 @@ in [CURRENT_STATE.md](https://github.com/CTTIR/cttiR/blob/main/CURRENT_STATE.md)
 Approvals cover pinned package revisions and adapters, not scientific
 conclusions. Prediction, causal, count, Bayesian and specialist CTTIR analyses
 have no reviewed adapter yet and are reported as gaps. `ask()` matches keywords
-and phrase patterns rather than a language model: on the latest held-out set,
-run once, it found the reviewed capability for 8 of 10 supported questions and
-abstained on every unsupported, ambiguous or injected one.
+and phrase patterns rather than a language model. On an independent held-out
+set of 30 questions (v5, run once before release) it answered 11 of 14
+supported questions with validated code, refused 9 of 10 unsupported ones, and
+handled every injected or ambiguous question safely; all citations named the
+pinned version.
 Runtime acquisition is verified on Linux x86_64 only.
 
 MIT licensed.

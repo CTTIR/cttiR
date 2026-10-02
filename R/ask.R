@@ -346,8 +346,9 @@ ask_prerequisites <- function(id) {
 #' adapter (competing risks, ordinal or multinomial models, GEE, count models,
 #' quantile regression, propensity scores and weighting, Bayesian models,
 #' generalized additive models, machine learning and meta-analysis) are named in
-#' the gap and never answered with a nearby engine. A question that names an
-#' absent or unapproved function gets no code. Instruction-shaped text,
+#' the gap and never answered with a nearby engine; such a question gets no
+#' code for any part of it. A question that names an absent or unapproved
+#' function gets no code. Instruction-shaped text,
 #' including lookalike letters and override markers, is treated as data.
 #' @param question Nonempty question, optionally naming `package::export`.
 #' @param path Optional exact project root selecting its pinned catalog.
@@ -358,7 +359,8 @@ ask_prerequisites <- function(id) {
 #' @return A `cttir_answer` with `answer`, `steps`, `prerequisites`, `packages`,
 #'   `code`, `citations`, `verification_levels`, `evidence`, `symbols`, `gaps`,
 #'   `alternatives` (approved capabilities offered only as context when a named
-#'   function does not exist) and `limitations`. Citations name the pinned
+#'   function does not exist or the method family is unsupported) and
+#'   `limitations`. Citations name the pinned
 #'   revision (versioned source archive or commit). Code uses placeholders
 #'   (`<...>`) for mapped data and is illustrative; generated projects use the
 #'   full reviewed stage library.
@@ -404,8 +406,11 @@ ask <- function(question, path = NULL, verified_only = TRUE) {
   pending <- Filter(function(x) !identical(x$status, "approved"), routed)
   order <- order(match(vapply(approved, function(x) x$stage, character(1)), ask_stage_order), na.last = TRUE)
   approved <- approved[order]
-  alternatives <- if (absent) vapply(approved, function(x) x$capability, character(1)) else character()
-  if (absent) approved <- list()
+  # A question whose method family has no reviewed adapter gets no snippet for
+  # any part of it either; matched capabilities are only nearby context.
+  withheld <- absent || length(methods) > 0L
+  alternatives <- if (withheld) vapply(approved, function(x) x$capability, character(1)) else character()
+  if (withheld) approved <- list()
   snippets <- ask_snippets()
   code_blocks <- character()
   evidence <- ask_evidence(data.frame(package = character(), status = character(), stringsAsFactors = FALSE), catalog)
@@ -423,7 +428,7 @@ ask <- function(question, path = NULL, verified_only = TRUE) {
       limitations <- c(limitations, paste0("The snippet for ", stage$capability, " did not validate against this revision and was withheld."))
     }
   }
-  if (!verified_only && !blocked) {
+  if (!verified_only && !blocked && !length(methods)) {
     for (stage in pending) {
       snippet <- snippets[[stage$capability]]
       if (is.null(snippet)) next

@@ -124,3 +124,10 @@ test_that("ask uses a project's pinned catalog, not the active one", {
   pinned <- ask("Make a baseline table 1", path = p$path)
   expect_identical(pinned$catalog_id, read_project(p$path)$lock$catalog_id)
 })
+
+test_that("a question naming an unsupported method family returns no snippet for any part of it", {
+  answer <- ask("Pool the trials in a random-effects meta-analysis and draw a forest plot of the effects")
+  expect_match(paste(unlist(answer$gaps), collapse = " "), "unsupported_method:", fixed = TRUE)
+  expect_identical(answer$code, "")
+  expect_length(unlist(answer$approved_capabilities), 0L)
+})

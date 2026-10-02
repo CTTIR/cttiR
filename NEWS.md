@@ -13,7 +13,8 @@
 * Bundle the standard package family (tidyverse components, DescrTab2,
   ggplot2/patchwork/palettes, model engines, broom, rendering, targets, renv,
   Bioconductor containers, Seurat and R 4.6.1 base packages) from verified
-  sources, with 57 reviewed approvals bound to exact source revisions.
+  sources, with 56 role-scoped approvals bound to exact source revisions and
+  the vignette sources of every approved revision stored as text.
 * `ask()` returns grounded steps, prerequisites, approved revisions, citations
   and reviewed snippets validated against the approved function table.
 * Optional targets pipelines, renv environments prepared in an isolated process
@@ -30,7 +31,44 @@
   knowledge, resources, audit and runtime views.
 * A schema-constrained local-model planner with deterministic fallback and a
   live benchmark; no tested model met the thresholds, so planning stays
-  deterministic by default.
+  deterministic by default. A model plans only when the runtime manifest marks
+  it qualified, and goals that read like instructions are never sent to it.
+
+Changes from the independent pre-release audit:
+
+* The study-data runner compared pinned versions as strings ("1.1-3" against
+  "1.1.3") and refused every configured project; versions are now compared
+  with `package_version()`. Study outputs follow the reflowR `output/` tree.
+* The longitudinal demo check verifies the adapter's own REML fit, demo cases
+  recount event coding from raw data, binary endpoints are described as
+  counts, repeated measures at the first observation per subject, and a
+  two-valued outcome under a continuous model fails the data checks.
+* `ask()` reports precise gaps for method families without an adapter
+  (competing risks, ordinal, GEE, count, quantile, propensity, Bayesian, GAM,
+  prediction, meta-analysis), never returns a nearby engine's snippet, cites
+  versioned sources, normalises lookalike characters before injection
+  screening and no longer refuses benign wording. Capabilities are approved
+  only when every callable they need is approved, so Seurat clustering is a gap.
+* The code validator follows R's partial argument matching (`F =`, `FU =`),
+  rejects more process, evaluation and connection calls and reports missing
+  required arguments.
+* `audit()` parses all project R code (scripts and R Markdown/Quarto chunks)
+  for unsafe, unparseable or unresolved calls, fails on control metadata that
+  differs from its regenerated baseline, compares the resource database with
+  its JSON mirror row by row, and binds app repairs to the previewed plan.
+* Stale creation and writer locks are recovered safely; an edited managed file
+  no longer blocks unrelated syncs; unedited user-owned files (data registry,
+  publication metadata) are updated and edited ones receive reviewable
+  proposals; a hand-edited `cttir-project.yml` is previewed and accepted
+  through `sync()`; analysis plans list research-type specific unknowns.
+* The bundled catalog verifies under the C locale; rollback works when the
+  active snapshot is damaged; `resources()` reports freshness and fetch status;
+  the Bioconductor release policy is part of the atomic snapshot.
+* Figures keep missing values visible with a distinct colour and shape, refuse
+  merged legends with different meanings, and record unresolved accessibility
+  findings in the demo receipt. Interop helpers refuse cells as pseudobulk
+  replicates and check pinned versions.
+* Schema validation no longer creates `.Random.seed` in the user's workspace.
 
 # cttiR 0.0.18
 
