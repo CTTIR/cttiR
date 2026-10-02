@@ -1,3 +1,9 @@
+# cttiR 0.0.15
+
+* Check explicitly supplied analysis data against typed mappings without changing
+  data or fitting models. Report missingness, type/event-code problems and
+  repeated-unit conflicts separately from workflow and scientific approval.
+
 # cttiR 0.0.14
 
 * Resolve nested-package evidence citations with exactly one source prefix.

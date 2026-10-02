@@ -1,6 +1,26 @@
 # cttiR development state
 
-Updated: 2026-10-02. Version: 0.0.14. License: MIT.
+Updated: 2026-10-02. Version: 0.0.15. License: MIT.
+
+## Milestone 15: explicit mapped-data checks
+
+check_analysis_data(data, spec) checks an explicitly supplied plain data frame
+against the registered analysis mapping. It reports aggregate missingness,
+complete rows, unsupported types, nonfinite values, explicit event coding,
+positive survival follow-up and repeated-unit/subject-time conflicts. Literal
+column names are never evaluated. No data are opened from registry locations,
+modified, imputed or fitted; no records or identifier values enter the report.
+Complete-case intent must be explicit. Passing is structural evidence only,
+not independence, rank, diagnostic, provenance or scientific approval. Current
+engines remain candidates and executable remains false.
+
+Local validation: 551 assertions, --as-cran zero errors/warnings with only New
+submission, coverage 85.02%, clean lint, installed foundation/data checks and
+pkgdown. The executed vignette demonstrates the new API. Artifacts and exact
+archive hash are under artifacts/implementation/milestone15-*. Full scientific
+adapters, role approvals and remaining v7 acceptance gates are incomplete.
+
+Milestone 14 (1eccf82) passed all five hosted jobs in run 36987528971.
 
 ## Milestone 14: conservative static assignments and historical citations
 

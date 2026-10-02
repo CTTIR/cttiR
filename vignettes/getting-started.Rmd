@@ -142,6 +142,26 @@ gaps. An explicitly empty predictor list records an intercept-only intention.
 rows. Even a fully recorded configuration and `approved = TRUE` cannot bypass
 pending adapter/revision approval, dataset checks or model diagnostics.
 
+Check an explicitly supplied in-memory data frame separately. This does not read
+registered data locations, modify records or fit a model. Only mapped columns
+participate in missingness; a configured complete-case policy reports how many
+rows are complete without deleting them. Event codes are compared as literal
+text, including factor labels. Data frame subclasses, matrix/list columns and
+unreviewed date transformations are refused rather than coerced.
+
+```{r explicit-data-check}
+synthetic <- data.frame(response = c(2, 4, 6, 8), exposure = 1:4)
+data_check <- cttiR::check_analysis_data(synthetic, mapped$spec)
+data_check[c("state", "rows_total", "rows_complete", "issues", "executable")]
+stopifnot(data_check$state == "passed", !data_check$executable)
+```
+
+A passed result covers only the listed structural checks. It does not establish
+independence, unit correctness, rank, model assumptions, adequate sample size,
+causal identification or scientific approval. Survival checks currently target
+positive follow-up times with explicit right-censoring codes; more complex event
+processes require a different adapter.
+
 ## Query evidence without approving a workflow
 
 The API catalog and resource registry are separate evidence layers. A discovered
