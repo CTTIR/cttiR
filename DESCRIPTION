@@ -1,6 +1,6 @@
 Package: cttiR
 Title: Reproducible Research Project Builder
-Version: 0.0.9
+Version: 0.0.10
 Authors@R: person("R.", "Heller", email = "raban.heller@uni-ulm.de", role = c("aut", "cre"))
 Description: Creates deterministic research project scaffolds from a name,
     research type and goal. Validates declarative configuration, records file
@@ -17,3 +17,4 @@ Roxygen: list(markdown = TRUE)
 URL: https://github.com/CTTIR/cttiR
 BugReports: https://github.com/CTTIR/cttiR/issues
 Config/roxygen2/version: 8.0.0
+VignetteBuilder: knitr

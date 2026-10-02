@@ -1,0 +1,219 @@
+---
+title: "Create, inspect and maintain a research scaffold"
+output:
+  rmarkdown::html_vignette:
+    mathjax: null
+vignette: >
+  %\VignetteIndexEntry{Create, inspect and maintain a research scaffold}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+# This vignette owns only this disposable example directory.
+example_root <- tempfile("cttir-vignette-")
+dir.create(example_root)
+old_catalog_option <- getOption("cttiR.catalog_dir")
+options(cttiR.catalog_dir = file.path(example_root, "catalog"))
+```
+
+cttiR creates a scaffold from a name, research type and goal. The current
+implementation records unresolved scientific decisions and provides a reviewed
+layout adaptation, catalog evidence and transactional maintenance. It does not
+yet implement the complete research workflow or confer scientific approval.
+
+## Start with three inputs
+
+`path` is the existing **parent** directory. Creation uses a portable child name.
+A preview does not create the child or install dependencies.
+
+```{r preview}
+plan <- cttiR::project(
+  "Example comparison", "methods", "Plan a reproducible tabular comparison",
+  path = example_root, dry_run = TRUE
+)
+plan$spec$project[c("name", "slug", "type")]
+plan$readiness
+stopifnot(!dir.exists(plan$path))
+```
+
+Apply the same request explicitly:
+
+```{r create}
+p <- cttiR::project(
+  "Example comparison", "methods", "Plan a reproducible tabular comparison",
+  path = example_root
+)
+stopifnot(dir.exists(p$path))
+p$spec$analysis
+```
+
+Creation does not read study data, infer endpoints or ethics approval, call a
+model, initialize Git, install packages or render the report. The configuration
+and lock record accepted identity and provenance. The lock is not an `renv.lock`.
+
+The project contains:
+
+- `cttir-project.yml`: project, research and publication configuration.
+- `cttir-lock.json`: accepted catalog, resource and template pins.
+- `metadata/`: dataset registry, variable dictionary and template provenance.
+- `protocol/analysis-plan.md`: decisions to review before analysis.
+- `analysis/`: adapted reflowR pages and a labelled synthetic rendering fixture.
+- `publications/`: separate analysis, manuscript, figure, table and submission trees.
+- `.cttir/`: ownership, state and machine-local data bindings.
+
+Raw data are not copied. Keep sensitive local paths in the ignored
+`.cttir/local.yml`; registry descriptions should be suitable for the intended
+repository audience.
+
+## Repeat safely and inspect explicit changes
+
+An identical creation request preserves the accepted identity and existing edits.
+A different request for an occupied project name raises a conflict; use `sync()`
+to preview configuration changes.
+
+```{r repeat}
+again <- cttiR::project(
+  "Example comparison", "methods", "Plan a reproducible tabular comparison",
+  path = example_root
+)
+stopifnot(identical(again$spec$project$id, p$spec$project$id))
+stopifnot(all(again$plan$action == "skip"))
+```
+
+`options` takes precedence over a `config` list or YAML/JSON file. Unknown fields
+are rejected. Updates to publication and dataset arrays are keyed by identity.
+Unsupported workflow or dependency migrations fail explicitly.
+
+```{r sync}
+preview <- cttiR::sync(p$path, options = list(project = list(language = "de")))
+preview$actions[preview$actions$action != "skip", c("path", "action")]
+stopifnot(preview$state == "planned")
+applied <- cttiR::sync(
+  p$path, options = list(project = list(language = "de")), dry_run = FALSE
+)
+applied$state
+```
+
+The language setting is metadata; it does not promise that every generated page
+or interface message is translated. User-owned analysis/manuscript files are
+preserved. Edited managed files cause a conflict. Applied changes have backups and
+a journal, but a multi-file update is not one atomic filesystem operation.
+
+## Query evidence without approving a workflow
+
+The API catalog and resource registry are separate evidence layers. A discovered
+resource is not automatically installed or approved. An extracted function
+signature is not proof of scientific suitability.
+
+```{r evidence}
+hit <- cttiR::search("reflowR::reflow_init", path = p$path)
+hit[, c("package", "revision", "verification", "approved")]
+answer <- cttiR::ask("reflowR::reflow_init", path = p$path)
+stopifnot(identical(answer$code, ""))
+```
+
+Literal documentation search can return bounded excerpts from stored, licensed
+source documents. The initial corpus includes the pinned reflowR revision.
+Documents are not rendered or executed during indexing. Coverage is reported
+separately from workflow approval:
+
+```{r coverage}
+known <- cttiR::packages(path = p$path)
+known[known$package == "reflowR",
+  c("package", "documents_discovered", "documents_stored", "approved")]
+```
+
+`ask(verified_only = TRUE)` restricts evidence to statically resolved API records.
+It does not yet provide qualified natural-language planning. The package currently
+has zero workflow-approved revisions, so a complete research-ready workflow must
+not be inferred from these queries.
+
+## Refresh only sources you select
+
+The following examples are deliberately not run by the vignette. They show
+explicit local and public GitHub source registration:
+
+```{r update-examples, eval=FALSE}
+options(cttiR.sources = list(
+  list(id = "local-tool", path = "/path/to/package-source"),
+  list(id = "public-reflow", github = "CTTIR/reflowR", package = "reflowR",
+       ref = "cd1243a068ff2c8fb6796e34b58f6c6ce6af87e8")
+))
+cttiR::update(dry_run = TRUE)
+cttiR::update(sources = "public-reflow", mode = "remote", dry_run = TRUE)
+```
+
+To store document text, a registration must also declare a reviewed
+`documentation_rights` basis covering those documents. Without it, the updater
+retains inventory and hashes only. Do not assume a package license covers all
+third-party assets.
+
+Remote GitHub mode resolves one commit and verifies bounded downloads against
+Git blob hashes. It does not install the source package. Local mode never fetches
+remote records. Discovery, pruning, non-GitHub backends and release migration remain
+pending. A failed selected source prevents activation.
+
+Updates retain complete immutable snapshots. Existing projects keep their pins;
+removed exports do not reappear through fallback to an older bundled package.
+Use `rollback_knowledge(id)` to preview a retained composite snapshot and
+`dry_run = FALSE` to apply it. Initial resource observation times can make preview
+and applied composite IDs differ even when API content is identical.
+
+An applied update can recover a verified stopped local catalog writer after
+checking the active snapshot and activation journal. It retains old writer
+evidence. Live or unknown writers, conflicting journals and corrupt snapshots
+are refused. An interrupted recovery guard requires manual review.
+
+## Audit and render intentionally
+
+Audit is local and read-only by default. It does not open referenced datasets or
+run an analysis. This example checks only the project:
+
+```{r audit}
+report <- cttiR::audit(p$path, scope = "project")
+report$overall_status
+```
+
+A warning or untested readiness check is not scientific clearance. `strict = TRUE`
+raises a typed condition for required failures or required unverified checks.
+`repair = TRUE` uses a restricted repair set: it does not overwrite arbitrary
+user edits. Consult `help("audit", package = "cttiR")` before repair.
+
+For new adapted-layout projects, run this from the generated project root only
+after installing the rendering dependencies explicitly and reviewing any page edits:
+
+```{r render-example, eval=FALSE}
+# In a terminal at the generated project root:
+# Rscript code/render_report.R
+```
+
+Rendering intentionally executes reviewed R Markdown chunks. The bundled fixture
+uses synthetic values; it does not fit the project's study data. The adaptation
+records its pinned reflowR source and MIT notice, while using
+`rmarkdown::render_site` explicitly. It does not invoke `reflow_init()` or
+workflowr and does not claim all upstream reproducibility features.
+
+## Optional local interface and runtime
+
+With `shiny` and `callr` installed, `setup_app()` provides Fast/Detailed creation,
+and `configure(path)` uses the same synchronization engine. It is a local
+interface; the full typed questionnaire, saved drafts and visual review are
+still incomplete.
+
+```{r optional-tools, eval=FALSE}
+cttiR::setup_app()
+cttiR::configure(p$path)
+cttiR::setup(dry_run = TRUE)
+```
+
+Runtime setup is explicit. The live-tested installer currently targets Linux
+x86_64 and verifies the pinned Ollama runtime and local model. Offline setup
+never acquires software or pulls a model. A successful inference probe is not a
+qualified workflow planner. No CRAN submission is performed by these functions.
+
+```{r cleanup, include=FALSE}
+options(cttiR.catalog_dir = old_catalog_option)
+unlink(example_root, recursive = TRUE)
+```

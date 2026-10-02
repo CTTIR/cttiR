@@ -1,6 +1,31 @@
 # cttiR development state
 
-Updated: 2026-10-02. Version: 0.0.9. License: MIT.
+Updated: 2026-10-02. Version: 0.0.10. License: MIT.
+
+## Milestone 10: executable introductory vignette
+
+Adds vignettes/getting-started.Rmd with executed offline preview/create/repeat,
+configuration sync, pinned evidence/corpus queries and project audit examples.
+Remote update, runtime acquisition and report rendering examples are explicitly
+not run during documentation builds. The vignette labels incomplete scientific,
+planner and UI functionality and separates static evidence from workflow approval.
+Its disposable directory and catalog option are restored at the end. R CMD build
+successfully rendered the vignette. The final source check passed with 406
+assertions, zero errors/warnings and only the New submission NOTE. Installed
+examples, lint and pkgdown pass. Browser screenshot review of the rendered
+vignette passed. Evidence is under artifacts/implementation/milestone10-*.
+
+Next scientific-adapter preparation: admin/verify_standard_candidates.R passed
+reviewed deterministic lm, binomial GLM, nlme mixed-model and survival Cox fixtures;
+Cox results matched a separate partial-likelihood optimizer. DescrTab2 2.1.16
+requires an explicit custom no-inference callback (there is no public No test
+choice); it produced labelled NA test results once per variable. These are local
+candidate smokes only. Source revision alignment, full corpus, mapping/guards,
+generated adapters and workflow approvals are still pending.
+
+Milestone 9 commit 84be55527f58e18be087eda99b70c54e6ad4024c is on main. Four
+hosted jobs passed; oldrel dependency provisioning is still running in run
+36974981221. This is not a completed five-platform pass for that commit.
 
 ## Milestone 9: guarded catalog writer recovery
 
@@ -18,7 +43,7 @@ verified active preimage.
 A real installed 0.0.9 worker was terminated after activation: live writer refusal,
 postimage preservation, retained journal and rollback passed. Source check: 406
 assertions, zero errors/warnings and only the New submission NOTE. Installed
-examples, lint and pkgdown pass. Hosted evidence is pending publication.
+examples, lint and pkgdown pass. Four hosted jobs passed; oldrel provisioning remains pending as recorded above.
 
 Milestone 8 commit bd045faeb2c1ada573cf4799a9015e141bd2ceda passed all five
 hosted jobs in run 36974366046.

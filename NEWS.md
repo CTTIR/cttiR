@@ -1,3 +1,8 @@
+# cttiR 0.0.10
+
+* Add an executable introductory vignette covering offline creation, synchronization,
+  evidence queries, audit and explicit update/render/runtime boundaries.
+
 # cttiR 0.0.9
 
 * Journal catalog pointer activation and retain interrupted writer evidence.
