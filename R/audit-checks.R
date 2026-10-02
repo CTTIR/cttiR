@@ -511,28 +511,88 @@ audit_res_bundled <- function(context) {
   parity <- resource_json_parity()
   result$json_mirror <- parity
   if (!isTRUE(parity$hash_matches) || length(parity$mismatched_tables)) {
-    return(audit_result("fail", "The JSON mirror differs from its imported hash or from the SQLite table counts.", result))
+    message <- "The JSON mirror differs from its imported hash, or its normalized rows differ from the SQLite tables."
+    return(audit_result("fail", message, result))
   }
-  audit_result("pass", "SQLite integrity, foreign keys and SQLite/JSON parity verified.", result)
+  audit_result("pass", "SQLite integrity, foreign keys and normalized SQLite/JSON row content verified.", result)
+}
+
+# Mirror fields stored under another column name; `_json` columns hold the
+# mirror field without the suffix as JSON text.
+resource_mirror_columns <- c(version_constraint = "constraint",
+  eligible_after_adapter_validation = "automatic_selection_eligible_after_adapter_validation")
+
+# Order-independent row keys of a table with every value normalized to text:
+# NULL/NA, 0/1 for logicals, numbers as text and JSON with sorted object keys.
+resource_row_keys <- function(rows, json_columns) {
+  canonical <- function(x) {
+    if (!is.list(x)) return(x)
+    if (!is.null(names(x))) x <- x[order(names(x))]
+    lapply(x, canonical)
+  }
+  cell <- function(value, json) {
+    if (is.null(value) || (length(value) == 1L && !is.list(value) && is.na(value))) return("\001")
+    if (json || is.list(value)) return(json_text(canonical(value)))
+    if (is.logical(value)) value <- as.integer(value)
+    as.character(value)
+  }
+  if (!length(rows)) return(character())
+  sort(vapply(rows, function(row) {
+    paste(vapply(names(row), function(column) cell(row[[column]], column %in% json_columns), character(1)), collapse = "\037")
+  }, character(1)), method = "radix")
 }
 
 # The JSON mirror is stored gzip-compressed; its decompressed bytes must equal the
-# originally imported file, and its table row counts must match the database.
-resource_json_parity <- function() {
-  con <- gzfile(resource_file("extdata", "package-resources.json.gz"), "rb")
+# originally imported file, and each table must hold the same rows as the
+# database after normalization. Profile memberships and the manifest are
+# stored in their own tables; mirror fields without a column are listed.
+resource_json_parity <- function(database = resource_file("extdata", "package-resources.sqlite"),
+  mirror = resource_file("extdata", "package-resources.json.gz")) {
+  con <- gzfile(mirror, "rb")
   bytes <- tryCatch(readBin(con, "raw", n = 20000000L), finally = close(con))
   expected <- read_document(resource_file("extdata", "mirror-hashes.json"))[["package-resources.json"]]
-  mirror <- jsonlite::fromJSON(rawToChar(bytes), simplifyVector = FALSE)
-  db <- DBI::dbConnect(RSQLite::SQLite(), resource_file("extdata", "package-resources.sqlite"), flags = RSQLite::SQLITE_RO)
+  json <- jsonlite::fromJSON(rawToChar(bytes), simplifyVector = FALSE)
+  records <- json[setdiff(names(json), "manifest")]
+  records[["profile_packages"]] <- c(list(), unlist(lapply(json$profiles, function(profile) {
+    lapply(profile$packages, function(id) list(profile_id = profile$profile_id, package_id = id))
+  }), recursive = FALSE))
+  records$catalog_metadata <- lapply(names(json$manifest), function(key) list(key = key, value = json$manifest[[key]]))
+  db <- DBI::dbConnect(RSQLite::SQLite(), database, flags = RSQLite::SQLITE_RO)
   on.exit(DBI::dbDisconnect(db), add = TRUE)
-  tables <- setdiff(names(mirror), "manifest")
-  counts <- vapply(tables, function(table) {
-    if (!DBI::dbExistsTable(db, table)) return(NA_integer_)
-    as.integer(DBI::dbGetQuery(db, paste0("SELECT COUNT(*) AS n FROM \"", table, "\""))$n)
-  }, integer(1))
-  mismatched <- tables[is.na(counts) | counts != lengths(mirror[tables])]
+  tables <- DBI::dbGetQuery(db, "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'")$name
+  mismatched <- character()
+  unmirrored <- character()
+  rows <- 0L
+  for (table in sort(union(tables, names(records)))) {
+    if (!table %in% tables || !table %in% names(records)) {
+      mismatched <- c(mismatched, table)
+      next
+    }
+    stored <- DBI::dbGetQuery(db, paste0("SELECT * FROM \"", table, "\""))
+    columns <- names(stored)
+    json_columns <- grep("_json$", columns, value = TRUE)
+    renamed <- columns %in% names(resource_mirror_columns)
+    source <- stats::setNames(ifelse(renamed, resource_mirror_columns[columns], sub("_json$", "", columns)), columns)
+    sql <- lapply(seq_len(nrow(stored)), function(i) {
+      row <- lapply(stats::setNames(columns, columns), function(column) stored[[column]][[i]])
+      for (column in json_columns) {
+        if (!is.na(row[[column]])) row[[column]] <- jsonlite::fromJSON(row[[column]], simplifyVector = FALSE)
+      }
+      row
+    })
+    mirrored <- lapply(records[[table]], function(record) {
+      lapply(stats::setNames(columns, columns), function(column) record[[source[[column]]]])
+    })
+    fields <- unique(unlist(lapply(records[[table]], names)))
+    extra <- setdiff(fields, if (table == "profiles") c(source, "packages") else source)
+    unmirrored <- c(unmirrored, if (length(extra)) paste0(table, ".", extra))
+    rows <- rows + nrow(stored)
+    if (!identical(resource_row_keys(sql, json_columns), resource_row_keys(mirrored, json_columns))) {
+      mismatched <- c(mismatched, table)
+    }
+  }
   list(hash_matches = identical(digest::digest(bytes, algo = "sha256", serialize = FALSE), expected),
-    tables = length(tables), mismatched_tables = as.list(mismatched))
+    tables = length(tables), rows = rows, mismatched_tables = as.list(mismatched), unmirrored_fields = as.list(unmirrored))
 }
 
 # Project ----------------------------------------------------------------------
