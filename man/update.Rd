@@ -3,7 +3,7 @@
 \name{update}
 \alias{update}
 \alias{update_knowledge}
-\title{Refresh explicitly registered package sources}
+\title{Refresh explicitly registered package sources and resource metadata}
 \usage{
 update(
   sources = NULL,
@@ -24,74 +24,143 @@ update_knowledge(...)
 
 \item{packages}{Optional vector of exact package names within selected sources.}
 
-\item{mode}{\code{local} reads configured local sources without network access.
-\code{remote} also fetches registered public GitHub repositories at one resolved
-commit, verifying each file against its Git blob hash.}
+\item{mode}{\code{local} reads configured local sources without any network access
+and marks remote currency unknown. \code{remote} also fetches registered public
+GitHub, CRAN and Bioconductor sources and refreshes resource observations
+from the official repository indices.}
 
-\item{dry_run}{Compute the candidate and diff in disposable temporary storage.}
+\item{dry_run}{Compute the candidate and diff in disposable temporary storage.
+Remote previews download only into that storage and delete it afterwards.}
 
 \item{include_embeddings}{Request derived embeddings. No embedding backend is
 yet configured; lexical search remains usable with a warning.}
 
-\item{prune}{Retention pruning is not yet supported and is explicitly rejected.}
+\item{prune}{When \code{TRUE}, registry records declaring \code{retired = TRUE} with a
+nonempty \code{retirement_evidence} are removed from the new current API snapshot
+and recorded as tombstones. Without evidence the update is refused. When
+\code{FALSE} (default), retired or unavailable packages stay current with a stale
+freshness flag.}
 
 \item{catalogs}{Nonempty subset of \code{knowledge} and \code{resources}.}
 
-\item{discover}{Discovery is not yet supported and is explicitly rejected.}
+\item{discover}{When \code{TRUE} (remote mode only), adds a bounded number of new
+quarantined \code{discovered_candidate} rows matching configured keywords.}
 
-\item{bioc_version}{Release migration is not supported by the local updater.}
+\item{bioc_version}{Optional exact Bioconductor release such as \code{"3.23"}.
+\code{NULL} keeps the catalog-store policy or derives the release compatible with
+the running R. Aliases such as \code{release}/\code{devel} and unknown releases fail.}
 
 \item{...}{Arguments forwarded unchanged to \code{\link[=update]{update()}}.}
 }
 \value{
-A \code{cttir_update} with previous/new composite IDs, per-catalog state,
-source identities, conservative API diff, activation and warnings.
+A \code{cttir_update} with \code{status} (\code{planned}, \code{unchanged}, \code{succeeded},
+\code{partial}; failures raise with a \code{failed} report), previous/new composite
+IDs, per-catalog IDs, per-source status and report, repository index
+reports, the exact repository URLs requested, \code{resource_changes}, API and
+documentation diffs, new \code{tombstones}, the Bioconductor release policy,
+activation and warnings.
 }
 \description{
 Builds complete immutable API and resource snapshots before one atomic pointer
-activation. Never installs packages, executes source code, changes project pins
-or promotes workflow approvals. Removed exports do not fall back to bundled
-revisions. Failed extraction preserves the previous active catalog.
+activation. Never installs or upgrades packages, runs \code{install.packages()} or
+\code{BiocManager}, executes downloaded or source code, changes project pins or
+promotes workflow approvals. Removed exports do not fall back to bundled
+revisions. A failed required source or catalog preserves both previous
+catalogs; the typed error carries a failed \code{cttir_update} in \verb{$report}.
 }
 \details{
-Register trusted local source directories with
-\code{options(cttiR.sources = list(list(id = "local-example", path = source_dir)))}.
-For public GitHub sources, replace \code{path} with \code{github = "owner/repository"}
-and \code{package = "ExpectedPackageName"}; optional \code{ref} selects a commit,
-tag or branch (default \code{HEAD}), and \code{subdir} selects a nested package root.
-Local mode skips remote registrations unless explicitly selected, in which
-case it reports that remote mode is required. Remote mode still reads local
-registrations locally. Redirects and private authentication are not used.
-Remote fetches allow at most 5000 tree entries, 250 selected files, 20 MB
-total, and one MB per file. A two-minute source budget is checked between
-requests, each of which has a 30-second timeout. Truncated trees fail closed.
-A newly added resource observation records its actual observation time, so
-its preview and applied composite IDs can differ even when API content is
-identical. Repeating an already applied unchanged source retains its ID.
-Applied updates can recover a stopped local writer lock only after checking
-its owner, the active snapshot and any activation journal. The old lock is
-retained under \code{recovered-locks}. Active or unknown writers, corrupt pointers
-and conflicting journals are refused. Preview never recovers locks. Recovery
-itself uses a guard; an interrupted recovery guard requires manual review.
-A local released R source tree can be registered with \code{r_distribution}
-(the directory containing \code{VERSION} and \code{COPYING}) and an exact \code{package}.
-This reads \verb{src/library/<package>/DESCRIPTION.in}, replacing only the literal
-\verb{@VERSION@} marker in memory. Original files are never changed or evaluated.
-Version/license hashes participate in source identity. Development versions,
-unknown substitutions and conflicting location fields are refused. This
-indexes the package subtree, not the distribution manuals or NEWS, and does
-not authenticate a local tree as canonical or approve a workflow.
-A source record may include \code{documentation_rights}, a nonempty description
-of the reviewed rights basis for storing that source's documentation text.
-Without it only document hashes and inventory are retained. This declaration
-must cover the selected documents, including any third-party material.
-Documentation is stored literally, never rendered or evaluated. Each text
-file is bounded to one megabyte and each package corpus to ten megabytes;
-binary assets and rendered \code{inst/doc} HTML/PDF up to 25 MB are hashed but
-never stored, and oversize renders are reported as such. Missing
-vignettes are reported as absent from the source, not proven unpublished.
-Sources are parsed statically and assigned a content-derived local revision,
-including same-version edits. No checkout is modified. Local observations
-preserve curated resource fields and never claim remote currency. Packages
-absent from the resource registry are indexed as APIs only, without discovery.
+\strong{Registry.} Register trusted sources with \code{options(cttiR.sources = list(...))}.
+Each record has an \code{id} and exactly one location:
+\itemize{
+\item \code{path}: a trusted local package source directory.
+\item \code{github = "owner/repository"} with \code{package}; optional \code{ref} (commit, tag or
+branch, default \code{HEAD}) and \code{subdir}. Fetches resolve one commit and verify
+each file against its Git blob hash. At most 5000 tree entries, 250 files,
+20 MB in total and one MB per file; 30-second request timeouts and a
+two-minute source budget. Truncated trees fail closed.
+\item \code{cran = "pkg"}, optional exact \code{version} and \code{md5}. The current version is
+fetched from \verb{https://cloud.r-project.org/src/contrib/<pkg>_<ver>.tar.gz}
+and verified against the \code{MD5sum} in \verb{https://cloud.r-project.org/src/contrib/PACKAGES}.
+Other versions use \verb{.../src/contrib/Archive/<pkg>/<pkg>_<ver>.tar.gz}; CRAN
+publishes no checksum for those, so a registered \code{md5} is verified when
+given and otherwise the locally computed MD5 is labelled as unverified.
+\item \code{bioc = "pkg"}, optional \code{bioc_version} and \code{version}: the tarball listed in
+\verb{https://bioconductor.org/packages/<release>/bioc/src/contrib/PACKAGES},
+verified against its \code{MD5sum}. Only the version listed in that release index
+can be fetched.
+\item \code{r_distribution}: a local released R source tree (directory containing
+\code{VERSION} and \code{COPYING}) with an exact \code{package}. This reads
+\verb{src/library/<package>/DESCRIPTION.in}, replacing only the literal
+\verb{@VERSION@} marker in memory; development versions are refused and the tree
+is not authenticated as canonical.
+}
+
+MD5 values are repository integrity metadata, not publisher authenticity.
+Repository fetches use only those fixed HTTPS endpoints, never follow
+redirects or send credentials, time out after 60 seconds per request, and
+bound each index to 50 MB and each tarball to 30 MB (120 MB uncompressed).
+Archives are parsed in memory and fully listed first; absolute or parent
+paths, links, devices, duplicate or out-of-package members refuse the whole
+archive. Only DESCRIPTION, NAMESPACE, top-level \verb{R/*.R}, \code{man}, vignettes,
+\code{inst/doc}, \code{inst/CITATION} and top-level README/NEWS/licence files are
+written to a temporary stage; documentation files above one MB are omitted
+with their size and hash recorded, and oversize API files fail closed.
+
+Optional records may set \code{optional = TRUE}: an unavailable optional remote
+source keeps its previous revision marked \code{source_unavailable} and the result
+is \code{partial}; a required failure aborts before activation. A record may also
+declare \code{retired = TRUE} with \code{retirement_evidence} (see \code{prune}). Local mode
+skips remote registrations unless they are explicitly selected, in which case
+it reports that remote mode is required.
+
+\strong{Resources.} In remote mode the resource catalog reads the CRAN index and
+the selected Bioconductor release software index once each per run and
+refreshes observations of CRAN and Bioconductor software packages already in
+the resource database (version, licence, R and dependency floors,
+compilation flag, observation time and fetch status). Curated purpose, tiers,
+notes and verification states are preserved. Absence from an index is
+recorded as \code{missing_from_selected_index}, never as retirement. Version,
+licence and dependency-floor changes and dual CRAN/Bioconductor listings with
+different versions are reported in \code{resource_changes}. An unavailable index
+fails the update unless declared optional via
+\code{options(cttiR.resource_refresh = list(optional = c("cran", "bioconductor")))};
+its previous observations are then kept as \code{source_unavailable}. The same
+option takes \code{exclude}, exact package names that are never refreshed or
+discovered. Discovery uses \code{options(cttiR.discovery = list(keywords = ..., biocViews = ..., limit = 25L))} (limit at most 100) against package names
+and any Title/biocViews fields present in the fetched indices; the current
+official PACKAGES files carry neither field, so matching is effectively by
+name. Discovered rows are quarantined and never promoted. An explicit
+\code{bioc_version} that differs from the stored policy stages a separate
+observation set (release in each observation ID) and records the new policy
+in the catalog store only after a successful applied run; project pins keep
+their resource snapshots. Upstream-only, base R, historical Bioconductor and
+data packages are not refreshed by index. A resources-only run observes CRAN
+and Bioconductor registrations through the indices without downloading their
+tarballs.
+
+\strong{Not supported.} Discovery from Bioconductor VIEWS or package pages,
+archived Bioconductor versions, alternate CRAN paths (such as recommended
+package copies), private repositories, conditional HTTP requests, embeddings
+and automatic promotion of candidates.
+
+Documentation text is stored only for records with \code{documentation_rights}, a
+nonempty description of the reviewed rights basis covering all selected
+documents; otherwise only hashes and inventory are kept. Documents are stored
+literally, never rendered or evaluated (one MB per file, ten MB per package);
+binary assets and rendered \code{inst/doc} HTML/PDF up to 25 MB are hashed but never
+stored. Reviewed workflow approvals (see \code{inst/extdata/approvals.json} and
+\code{options(cttiR.approvals)}) attach only to the exact extracted revision; the
+result reports approvals added, removed or invalidated in \code{approval_diff}.
+Missing vignettes are reported as absent from the source, not unpublished.
+Sources are parsed statically; local sources receive a content-derived
+revision, including same-version edits. Packages absent from the resource
+registry are indexed as APIs only.
+
+Observation times are part of the resource snapshot, so a preview and its
+applied run can have different composite IDs even when API content matches.
+Repeating an unchanged update retains its ID. Applied updates can recover a
+stopped local writer lock only after checking its owner, the active snapshot
+and any activation journal; the old lock is retained under \code{recovered-locks}.
+Active or unknown writers, corrupt pointers and conflicting journals are
+refused, and previews never recover locks.
 }

@@ -1,5 +1,6 @@
 test_that("remote update verifies blobs and publishes a complete pinned revision", {
   f <- remote_fixture()
+  local_repository_mock()
   local_mocked_bindings(github_json = f$json, github_download = f$download)
   withr::local_options(cttiR.sources = list(f$record))
   expect_equal(update(dry_run = TRUE)$status, "planned")
@@ -17,6 +18,7 @@ test_that("remote update verifies blobs and publishes a complete pinned revision
 
 test_that("incomplete remote trees and mismatched blobs do not activate", {
   f <- remote_fixture()
+  local_repository_mock()
   withr::local_options(cttiR.sources = list(f$record))
   local_mocked_bindings(github_json = f$json, github_download = f$download)
   update(mode = "remote")
@@ -47,6 +49,7 @@ test_that("remote registry and transport reject untrusted destinations", {
 
 test_that("nested source paths, malformed metadata and identity mismatch are checked", {
   f <- remote_fixture()
+  local_repository_mock()
   record <- f$record
   record$subdir <- "packages/nested"
   tree <- lapply(f$tree, function(x) {
@@ -71,5 +74,7 @@ test_that("explicit package selection does not fetch unrelated registered source
   withr::local_options(cttiR.sources = list(list(id = "local", package = "cttirFixtureA", path = f$source),
       list(id = "unrelated", github = "CTTIR/missing", package = "missing")))
   local_mocked_bindings(github_source = function(...) stop("Unselected source fetched"))
+  mock <- local_repository_mock()
   expect_equal(update(packages = "cttirFixtureA", mode = "remote", dry_run = TRUE)$status, "planned")
+  expect_length(mock$calls, 0L)
 })
