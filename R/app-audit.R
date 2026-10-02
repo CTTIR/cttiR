@@ -12,9 +12,12 @@ app_audit_columns <- c("id", "scope", "status", "severity", "required", "message
 # Check IDs whose failure the documented repair allowlist addresses.
 app_repair_candidates <- function(checks) {
   if (!is.data.frame(checks) || !nrow(checks) || !all(c("id", "status") %in% names(checks))) return(checks[0, , drop = FALSE])
-  missing <- grepl("^PRJ-002:", checks$id) & checks$status == "fail"
-  interrupted <- checks$id %in% c("PRJ-007", "PRJ-008") & checks$status == "fail"
-  checks[missing | interrupted, , drop = FALSE]
+  repairable <- if ("repair_id" %in% names(checks)) {
+    !is.na(checks$repair_id) & nzchar(checks$repair_id)
+  } else {
+    grepl("^PRJ-002", checks$id) | checks$id %in% c("PRJ-007", "PRJ-008")
+  }
+  checks[repairable & checks$status == "fail", , drop = FALSE]
 }
 
 app_audit_next_actions <- function(result, lang) {
@@ -25,7 +28,7 @@ app_audit_next_actions <- function(result, lang) {
   if (!is.data.frame(checks) || !nrow(checks)) return(app_list_block(NULL, lang))
   keys <- character()
   if (nrow(app_repair_candidates(checks))) keys <- c(keys, "audit.next_repair")
-  if (any(checks$status == "fail" & !grepl("^PRJ-002:", checks$id) & !checks$id %in% c("PRJ-007", "PRJ-008"))) keys <- c(keys, "audit.next_fail")
+  if (sum(checks$status == "fail") > nrow(app_repair_candidates(checks))) keys <- c(keys, "audit.next_fail")
   if (any(checks$status == "warning")) keys <- c(keys, "audit.next_warning")
   if (any(checks$status == "not_tested")) keys <- c(keys, "audit.next_not_tested")
   if (!length(keys)) keys <- "audit.next_none"
@@ -192,7 +195,8 @@ app_audit_server <- function(id, pool, lang = shiny::reactive("en"), project = s
       candidates <- app_repair_candidates(value$checks)
       if (!nrow(candidates)) return(shiny::tags$p(app_t("audit.repair_none", language)))
       shiny::tagList(shiny::tags$p(app_t("audit.repair_candidates", language, count = nrow(candidates))),
-        app_table(candidates, language, columns = c("id", "status", "message"), badges = "status"))
+        app_table(candidates, language, columns = intersect(c("id", "status", "message", "evidence"), names(candidates)),
+          badges = "status"))
     })
     output$repairs <- shiny::renderUI({
       repaired <- state$repaired

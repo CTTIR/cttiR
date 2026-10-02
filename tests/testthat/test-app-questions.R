@@ -147,7 +147,7 @@ test_that("unknown answers and skipped questions are accepted by the builder", {
 test_that("pending builder choices fail with a typed domain error", {
   questions <- app_questions()$questions
   base <- app_default_base()
-  for (id in c("workflow_pipeline", "workflow_table_backend", "workflow_reporting")) {
+  for (id in c("workflow_table_backend", "workflow_reporting", "workflow_project_backend")) {
     q <- questions[[id]]
     answers <- stats::setNames(list(list(status = "answered", value = unlist(q$pending_choices)[[1]])), id)
     options <- app_answers_options(answers, questions, base)
