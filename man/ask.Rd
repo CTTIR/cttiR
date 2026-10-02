@@ -11,7 +11,8 @@ ask(question, path = NULL, verified_only = TRUE)
 
 \item{path}{Optional exact project root selecting its pinned catalog.}
 
-\item{verified_only}{Restrict results to resolved static APIs.}
+\item{verified_only}{Restrict results to resolved static APIs, including
+those covered by a reviewed workflow approval.}
 }
 \value{
 A \code{cttir_answer} with evidence, citations, limitations and no executable

@@ -85,8 +85,10 @@ A source record may include \code{documentation_rights}, a nonempty description
 of the reviewed rights basis for storing that source's documentation text.
 Without it only document hashes and inventory are retained. This declaration
 must cover the selected documents, including any third-party material.
-Documentation is stored literally, never rendered or evaluated. Each file
-is bounded to one megabyte and each package corpus to ten megabytes. Missing
+Documentation is stored literally, never rendered or evaluated. Each text
+file is bounded to one megabyte and each package corpus to ten megabytes;
+binary assets and rendered \code{inst/doc} HTML/PDF up to 25 MB are hashed but
+never stored, and oversize renders are reported as such. Missing
 vignettes are reported as absent from the source, not proven unpublished.
 Sources are parsed statically and assigned a content-derived local revision,
 including same-version edits. No checkout is modified. Local observations

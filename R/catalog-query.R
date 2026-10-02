@@ -34,7 +34,19 @@ resolve_catalog <- function(path = NULL) {
 #' @param path Optional exact project root selecting its pinned API catalog.
 #' @return A data frame of package identity, revision, extraction coverage and
 #'   verification limits. S3 counts are missing for historical snapshots without
-#'   a method index. No namespaces are loaded to inspect installed versions.
+#'   a method index. `approved` counts callables covered by a complete reviewed
+#'   workflow approval of that exact revision and `approved_roles` lists the
+#'   approved roles (comma separated, empty when none). No namespaces are loaded
+#'   to inspect installed versions.
+#' @details Workflow approvals are reviewer decisions keyed to an exact package
+#'   `source_hash`. [update()] attaches the bundled reviewed decisions and, when
+#'   set, those in the JSON file named by `options(cttiR.approvals = path)` to
+#'   the matching extracted revision inside the immutable snapshot, so project
+#'   pins and [rollback_knowledge()] carry them. A decision counts only when
+#'   that revision stores every required topic and document under a rights
+#'   basis, every required callable is a statically verified documented export
+#'   and a recorded fixture passed. Any source change, including documentation
+#'   only, requires a new decision. Decisions never install or run anything.
 #' @export
 packages <- function(path = NULL) {
   catalog <- resolve_catalog(path)
@@ -48,6 +60,7 @@ packages <- function(path = NULL) {
       pinned_version = if (is.null(path)) NA_character_ else p$version,
       exports = p$coverage$exports, resolved = p$coverage$resolved,
       documented = p$coverage$documented, approved = p$coverage$approved,
+      approved_roles = paste(approval_text(p$approval_state$roles), collapse = ","),
       s3_declared = if (is.null(p$s3_methods)) NA_integer_ else length(p$s3_methods),
       s3_resolved = if (is.null(p$s3_methods)) NA_integer_ else sum(vapply(p$s3_methods, function(x) x$verification == "static_method_verified", logical(1))),
       documents_discovered = if (is.null(p$documentation_corpus)) NA_integer_ else p$documentation_corpus$coverage$discovered,
@@ -76,7 +89,10 @@ catalog_evidence_url <- function(package, path) {
 #' @return A data frame containing stable IDs, revision, snippet, score and source
 #'   evidence. S3 declarations are labelled separately, including private
 #'   implementations; static evidence does not establish installed dispatch or
-#'   tested workflow approval.
+#'   tested workflow approval. Reexports (`reexport_declared`) and S4/S7
+#'   declarations (`static_declaration_only`) are never callable evidence.
+#'   Only exports covered by a complete reviewed approval of the exact revision
+#'   are labelled `workflow_approved` with `approved = TRUE`.
 #' @export
 search <- function(query, packages = NULL, path = NULL, limit = 20L) {
   scalar_text(query, "query")
@@ -106,16 +122,22 @@ search <- function(query, packages = NULL, path = NULL, limit = 20L) {
       out[nrow(out) + 1L, ] <- list(hit$id, p$name, p$revision, "s3_method_declaration", hit$symbol,
         hit$snippet, 8, catalog_evidence_url(p, hit$source_path), hit$verification, FALSE)
     }
+    for (hit in object_hits(p, query)) {
+      out[nrow(out) + 1L, ] <- list(hit$id, p$name, p$revision, hit$kind, hit$symbol,
+        hit$snippet, 8, catalog_evidence_url(p, hit$source_path), "static_declaration_only", FALSE)
+    }
+    approved <- approved_export_index(p)
     for (entry in p$exports) {
       symbol <- paste0(p$name, "::", entry$name)
       haystack <- tolower(paste(symbol, p$title, p$description))
       exact <- q %in% tolower(c(symbol, entry$name))
       if (!exact && !grepl(q, haystack, fixed = TRUE)) next
       evidence <- catalog_evidence_url(p, entry$source_path)
+      covered <- !is.null(approved[[entry$name]]) && identical(entry$verification, "static_api_verified")
       out[nrow(out) + 1L, ] <- list(
         content_hash(paste(p$source_hash, symbol)), p$name, p$revision,
         entry$kind, symbol, paste(symbol, entry$signature), if (exact) 100 else 10,
-        evidence, entry$verification, entry$approved
+        evidence, if (covered) "workflow_approved" else entry$verification, covered
       )
     }
   }
@@ -129,14 +151,15 @@ search <- function(query, packages = NULL, path = NULL, limit = 20L) {
 #' workflow advice. It never evaluates code, calls a model or transmits a question.
 #' @param question Nonempty question or exact package/export name.
 #' @param path Optional exact project root selecting its pinned catalog.
-#' @param verified_only Restrict results to resolved static APIs.
+#' @param verified_only Restrict results to resolved static APIs, including
+#'   those covered by a reviewed workflow approval.
 #' @return A `cttir_answer` with evidence, citations, limitations and no executable
 #'   code when approved workflow evidence is unavailable.
 #' @export
 ask <- function(question, path = NULL, verified_only = TRUE) {
   scalar_flag(verified_only, "verified_only")
   hits <- search(question, path = path, limit = 10L)
-  if (verified_only) hits <- hits[hits$verification == "static_api_verified", , drop = FALSE]
+  if (verified_only) hits <- hits[hits$verification %in% c("static_api_verified", "workflow_approved"), , drop = FALSE]
   structure(
     list(
       answer = if (nrow(hits)) {
