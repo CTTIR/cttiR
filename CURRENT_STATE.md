@@ -2,6 +2,33 @@
 
 Updated: 2026-10-02. Version: 0.0.18. License: MIT.
 
+## Continuation: mixed-model variance diagnostics
+
+Checkpoint 4504a2d passed hosted run 37007780581. Public package source remains
+0.0.18; this continuation develops ignored candidate adapter diagnostics.
+
+Six mixed-model cases pass in admin/verify_candidate_mixed_variance.R. Balanced
+ML/REML residual and random-intercept variances, fitted-mean covariance and random
+effects agree with independent closed-form calculations. Row reversal is invariant.
+The policy blocks numerical random-variance boundaries, a nonconverged returned
+object with warnings, unavailable variance-parameter covariance, and unsupported
+heterogeneous residuals. Residual structure and influence remain explicit gaps;
+these numerical checks do not establish scientific or workflow approval.
+
+Actual installed inherited dispatch was traced in an isolated session: pdMatrix
+uses pdSymm then pdMat and pdFactor.pdLogChol for the observed random-intercept
+class chain. Thirty-three selected callable signatures and bodies match pinned
+source. Source integrity remains unchanged for 441 nlme and 736 survival files.
+The ten existing diagnostic cases, eleven adapter fixtures and all three Cox tie
+checks still pass. Evidence: candidate-mixed-variance.json, candidate-mixed-dispatch.json,
+candidate-callable-alignment-mixed.json and candidate-mixed-integrity.json under
+artifacts/implementation; policy details are in admin/candidate-mixed-policy.md.
+
+Next: unbalanced/multiple-predictor uncertainty and residual/influence diagnostics,
+then full role corpus and immutable approval records before production integration.
+Full readiness is still incomplete. No COMPLETE/STOP marker or submission; timer
+remains enabled and active. No new package build is claimed for private-only changes.
+
 ## Continuation: private adapter diagnostics and tied survival events
 
 Milestone 18 commit dd1ea38 passed all five hosted jobs in run 37002612423.
