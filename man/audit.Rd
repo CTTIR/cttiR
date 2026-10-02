@@ -34,12 +34,23 @@ query for model locality. Never installs, pulls or starts a runtime.}
 A \code{cttir_audit} with a check table (\code{id}, \code{scope}, \code{status},
 \code{required}, \code{message}, \code{description}, \code{severity}, \code{read_effects},
 \code{repair_id}, \code{evidence} as JSON text, \code{duration_seconds}), overall status
-and reason, repairs, package identity, effects and limitations.
+and reason, repairs, \code{repair_plan} (the allowlisted repairs that
+\code{repair = TRUE} would attempt for the final checks, with their target files
+and current hashes; computed read-only), package identity, effects and
+limitations.
 }
 \description{
 Runs registered checks with stable IDs (\verb{INS-}, \verb{KB-}, \verb{RES-}, \verb{PRJ-},
 \verb{STD-} and \verb{INT-}). Default inspection is local and read-only: it reads
 package resources, catalog metadata, runtime state files and project metadata.
+Project control files are compared with what \code{\link[=project]{project()}} regenerates from
+the accepted specification and lock. All project R code (scripts outside
+\verb{data/}, \verb{renv/} and hidden directories, and R chunks, chunk options and
+inline R of R Markdown and Quarto documents) is parsed, never evaluated:
+unparseable files, forbidden or unsafe calls and clearly unresolved calls
+fail \code{STD-003}; constructs that the package's reviewed generated code uses in
+the same file are not reported again. Static checks cannot follow names
+built at run time and are no sandbox.
 It never opens referenced study datasets or dereferences paths bound in
 \code{.cttir/local.yml}, runs study pipelines, installs dependencies, starts
 services, contacts a model daemon or queries remote servers. Declared Imports

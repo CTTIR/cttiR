@@ -11,30 +11,350 @@ audit_standard_project <- function(context) {
   TRUE
 }
 
-audit_project_code <- function(root) {
-  files <- c(list.files(file.path(root, "code"), "\\.R$", recursive = TRUE, full.names = TRUE),
-    if (file.exists(file.path(root, "_targets.R"))) file.path(root, "_targets.R"),
-    list.files(file.path(root, "analysis"), "\\.Rmd$", full.names = TRUE))
-  texts <- lapply(files, function(file) {
-    assert_plain_path(file)
-    lines <- readLines(file, warn = FALSE, encoding = "UTF-8")
-    if (grepl("[.]Rmd$", file)) {
-      inside <- FALSE
-      keep <- character()
-      for (line in lines) {
-        if (grepl("^```\\{r", line)) {
-          inside <- TRUE
-        } else if (grepl("^```", line)) {
-          inside <- FALSE
-        } else if (inside) {
-          keep <- c(keep, line)
+# Project code audit ------------------------------------------------------------
+#
+# All R code of a project is parsed (never evaluated) and classified with the
+# vocabulary of R/code-validation.R. Constructs that also occur in the reviewed
+# code the package generates for the same file are not reported again.
+
+# Process and network connection constructors; forbidden_calls does not list
+# them, but project code must not open them either.
+audit_connection_calls <- c("pipe", "url", "socketConnection", "socketAccept", "serverSocket", "make.socket")
+
+# Knitr engines that run a shell. Other non-R engines cannot be checked statically.
+audit_shell_engines <- c("bash", "sh", "zsh", "shell", "system", "cmd", "powershell", "bat")
+
+audit_default_packages <- c("base", "methods", "datasets", "utils", "grDevices", "graphics", "stats")
+
+# R scripts anywhere and R Markdown/Quarto documents, outside data/, renv/ and
+# hidden directories.
+audit_code_files <- function(root) {
+  pattern <- "[.]([Rr]|[Rr]md|[Qq]md)$"
+  top <- list.files(root, all.files = TRUE, no.. = TRUE)
+  folder <- dir.exists(file.path(root, top))
+  # Project libraries and data can be large, so they are not traversed at all.
+  walk <- top[folder & !top %in% c("data", "renv") & !startsWith(top, ".")]
+  files <- c(grep(pattern, top[!folder], value = TRUE), unlist(lapply(walk, function(dir) {
+    found <- list.files(file.path(root, dir), pattern, recursive = TRUE, all.files = TRUE)
+    if (length(found)) file.path(dir, found) else character()
+  })))
+  hidden <- vapply(strsplit(files, "/", fixed = TRUE), function(parts) any(startsWith(parts[-length(parts)], ".")), logical(1))
+  sort(files[!hidden])
+}
+
+# R code of one file. Documents contribute R chunks, evaluated chunk options and
+# inline R; the engines of other chunks are returned separately.
+audit_code_text <- function(path, lines) {
+  if (!grepl("[.]([Rr]md|[Qq]md)$", path)) return(list(code = lines, engines = character()))
+  code <- character()
+  engines <- character()
+  inside <- NULL
+  for (line in lines) {
+    if (is.null(inside)) {
+      open <- regmatches(line, regexec("^[[:space:]>]*```+[[:space:]]*\\{[[:space:]]*([A-Za-z0-9_.]+)(.*)\\}[[:space:]]*$", line))[[1]]
+      if (length(open)) {
+        inside <- tolower(open[[2]])
+        if (inside == "r") code <- c(code, audit_chunk_options(open[[3]])) else engines <- c(engines, inside)
+      } else {
+        inline <- regmatches(line, gregexpr("`(r|\\{r\\})[[:space:]]+[^`]+`", line))[[1]]
+        code <- c(code, sub("`$", "", sub("^`(r|\\{r\\})[[:space:]]+", "", inline)))
+      }
+    } else if (grepl("^[[:space:]>]*```+[[:space:]]*$", line)) {
+      inside <- NULL
+    } else if (inside == "r") {
+      code <- c(code, line)
+      # Quarto `#| key: !expr value` options are evaluated as R.
+      if (grepl("^[[:space:]]*#[|].*!expr[[:space:]]", line)) {
+        code <- c(code, gsub("^['\"]|['\"][[:space:]]*$", "", sub("^[[:space:]]*#[|].*!expr[[:space:]]+", "", line)))
+      }
+    }
+  }
+  list(code = code, engines = engines)
+}
+
+# Chunk header options after the engine, without the chunk label.
+audit_chunk_options <- function(rest) {
+  rest <- trimws(sub("^[[:space:]]*,", "", rest))
+  label <- regmatches(rest, regexpr("^[^,=]*", rest))
+  after <- substring(rest, nchar(label) + 1L)
+  if (!startsWith(after, "=")) rest <- trimws(sub("^,", "", after))
+  if (nzchar(rest)) paste0("list(", rest, ")") else character()
+}
+
+audit_parse_code <- function(code) {
+  if (sum(nchar(code, type = "bytes")) > 1048576L) return(structure(list(), class = "audit_too_large"))
+  tryCatch(parse(text = code, keep.source = FALSE, encoding = "UTF-8"), error = function(e) e)
+}
+
+audit_call_text <- function(expr) {
+  substr(paste(deparse(expr, width.cutoff = 120L, nlines = 2L), collapse = " "), 1L, 200L)
+}
+
+audit_namespaced <- function(x) {
+  is.call(x) && length(x) == 3L && (identical(x[[1]], as.name("::")) || identical(x[[1]], as.name(":::")))
+}
+
+# Names bound in the code: defined functions, other assigned or formal symbols,
+# and packages attached by literal name.
+audit_code_bindings <- function(exprs) {
+  out <- new.env(parent = emptyenv())
+  out$functions <- character()
+  out$locals <- character()
+  out$attached <- character()
+  visit <- function(expr, depth = 0L) {
+    if (depth > 256L) return(invisible(NULL))
+    if (!is.call(expr) && !is.pairlist(expr)) return(invisible(NULL))
+    parts <- as.list(expr)
+    if (is.pairlist(expr)) {
+      for (i in seq_along(parts)) if (!empty_argument(parts, i)) visit(parts[[i]], depth + 1L)
+      return(invisible(NULL))
+    }
+    head <- expr[[1]]
+    name <- if (is.symbol(head)) as.character(head) else if (audit_namespaced(head)) static_atom(head[[3]]) else ""
+    if (length(name) != 1L) name <- ""
+    if (name %in% c("<-", "=", "<<-") && length(expr) == 3L && is.symbol(expr[[2]])) {
+      value <- expr[[3]]
+      if (is.call(value) && identical(value[[1]], as.name("function"))) {
+        out$functions <- c(out$functions, as.character(expr[[2]]))
+      } else {
+        out$locals <- c(out$locals, as.character(expr[[2]]))
+      }
+    } else if (name == "function" && !is.null(expr[[2]])) {
+      out$locals <- c(out$locals, names(expr[[2]]))
+    } else if (name == "for" && is.symbol(expr[[2]])) {
+      out$locals <- c(out$locals, as.character(expr[[2]]))
+    } else if (name == "setGeneric" && length(expr) > 1L && is.character(expr[[2]])) {
+      out$functions <- c(out$functions, expr[[2]])
+    } else if (name %in% c("library", "require") && length(expr) > 1L) {
+      package <- static_match_args(expr, "package")$package
+      dynamic <- isTRUE(as.list(expr)$character.only) && !is.character(package)
+      if (!is.null(package) && !dynamic && !is.null(static_atom(package))) out$attached <- c(out$attached, static_atom(package))
+    }
+    for (i in seq_along(parts)) if (!empty_argument(parts, i)) visit(parts[[i]], depth + 1L)
+    invisible(NULL)
+  }
+  for (expr in exprs) visit(expr)
+  list(functions = unique(out$functions), locals = unique(out$locals), attached = unique(out$attached))
+}
+
+# A static relative path: a string literal or file.path() of string literals.
+audit_static_path <- function(x) {
+  if (is.character(x) && length(x) == 1L && !is.na(x)) return(x)
+  if (!is.call(x) || !(identical(x[[1]], as.name("file.path")) || identical(x[[1]], quote(base::file.path)))) return(NULL)
+  parts <- as.list(x)[-1]
+  if (!is.null(names(parts)) && any(nzchar(names(parts)))) return(NULL)
+  values <- lapply(parts, audit_static_path)
+  if (!length(values) || any(vapply(values, is.null, logical(1)))) return(NULL)
+  paste(unlist(values), collapse = "/")
+}
+
+# Project-relative target of a static source() path, if it is checked R code.
+audit_source_target <- function(path, from, scanned) {
+  if (is.null(path) || grepl("^(/|~|[A-Za-z]:|\\\\)", path)) return(NULL)
+  for (base in unique(c("", dirname(from)))) {
+    parts <- strsplit(gsub("\\\\", "/", if (base %in% c("", ".")) path else paste0(base, "/", path)), "/", fixed = TRUE)[[1]]
+    kept <- character()
+    for (part in parts[nzchar(parts) & parts != "."]) {
+      if (part != "..") {
+        kept <- c(kept, part)
+      } else if (length(kept)) {
+        kept <- kept[-length(kept)]
+      } else {
+        kept <- NULL
+        break
+      }
+    }
+    target <- paste(kept, collapse = "/")
+    if (length(kept) && target %in% scanned && grepl("[.][Rr]$", target)) return(target)
+  }
+  NULL
+}
+
+# Status of a forbidden name used as a call: NULL when the reviewed generated
+# code's use is matched (attaching by literal name, sourcing checked project
+# code, quitting and superassignment), otherwise a finding.
+audit_forbidden_use <- function(name, expr, path, scanned) {
+  if (name %in% c("<<-", "q", "quit")) return(NULL)
+  if (name %in% c("library", "require", "requireNamespace", "loadNamespace")) {
+    package <- static_match_args(expr, "package")$package
+    by_name <- name %in% c("library", "require") && !isTRUE(as.list(expr)$character.only)
+    literal <- is.character(package) || (is.symbol(package) && by_name)
+    if (is.null(package) || literal) return(NULL)
+    return(c("warning", "dynamic_package_load"))
+  }
+  if (name %in% c("source", "sys.source")) {
+    target <- audit_source_target(audit_static_path(static_match_args(expr, "file")$file), path, scanned)
+    if (!is.null(target)) return(NULL)
+    return(c("fail", "source_outside_checked_code"))
+  }
+  c("fail", if (name %in% audit_connection_calls) "connection_call" else "forbidden_call")
+}
+
+audit_no_findings <- function() {
+  data.frame(file = character(), status = character(), reason = character(), name = character(),
+    call = character(), stringsAsFactors = FALSE)
+}
+
+# Findings for one parsed file: forbidden or unsafe calls and function values,
+# and non-namespaced calls that resolve to no default-attached or project
+# function. Namespaced approvals are checked by validate_generated_code().
+audit_code_findings <- function(exprs, path, context) {
+  out <- new.env(parent = emptyenv())
+  out$rows <- list()
+  unsafe <- c(forbidden_calls, audit_connection_calls)
+  loaders <- c("requireNamespace", "loadNamespace")
+  locals <- audit_code_bindings(exprs)$locals
+  resolved <- c(context$defined, locals, context$base, syntax_calls, "function", ":=")
+  add <- function(status, reason, name, expr) {
+    out$rows[[length(out$rows) + 1L]] <- data.frame(file = path, status = status, reason = reason, name = name,
+      call = audit_call_text(expr), stringsAsFactors = FALSE)
+  }
+  resolve <- function(name, expr, formula) {
+    if (name %in% resolved || paste0(name, "<-") %in% resolved || (formula && name %in% formula_terms)) return()
+    if (name %in% context$attached_exports) return(add("warning", "attached_package_call", name, expr))
+    if (context$unknown_attached) return(add("warning", "unresolved_call", name, expr))
+    add("fail", "unresolved_call", name, expr)
+  }
+  call_name <- function(name, expr, formula) {
+    if (!name %in% unsafe) return(resolve(name, expr, formula))
+    finding <- audit_forbidden_use(name, expr, path, context$scanned)
+    if (!is.null(finding)) add(finding[[1]], finding[[2]], name, expr)
+  }
+  # A function passed by name (or, to higher-order calls, as a string).
+  value_name <- function(value, strings) {
+    if (audit_namespaced(value)) return(static_atom(value[[3]]))
+    if (is.symbol(value) && !as.character(value) %in% locals) return(as.character(value))
+    if (strings) static_literal(value) else NULL
+  }
+  function_value <- function(name, value, expr, formula) {
+    if (name %in% loaders) return(add("warning", "dynamic_package_load", name, expr))
+    if (name %in% unsafe) return(add("fail", "forbidden_function_value", name, expr))
+    if (!audit_namespaced(value)) resolve(name, expr, formula)
+  }
+  walk <- function(expr, depth = 0L, formula = FALSE, parent = expr) {
+    if (depth > 256L) return(add("not_tested", "nesting_exceeds_bound", "", parent))
+    if (is.symbol(expr)) {
+      name <- as.character(expr)
+      # Data columns may share these names, so a bare reference is advisory.
+      if (!formula && nzchar(name) && name %in% unsafe && !name %in% locals) add("warning", "forbidden_name_reference", name, parent)
+      return(invisible(NULL))
+    }
+    if (is.pairlist(expr)) {
+      parts <- as.list(expr)
+      for (i in seq_along(parts)) if (!empty_argument(parts, i)) walk(parts[[i]], depth + 1L, formula, parent)
+      return(invisible(NULL))
+    }
+    if (!is.call(expr)) return(invisible(NULL))
+    if (audit_namespaced(expr)) {
+      name <- static_atom(expr[[3]])
+      if (!is.null(name) && name %in% setdiff(unsafe, loaders)) add("fail", "forbidden_function_value", name, parent)
+      return(invisible(NULL))
+    }
+    head <- expr[[1]]
+    args <- as.list(expr)[-1]
+    name <- NULL
+    if (is.symbol(head)) {
+      name <- as.character(head)
+      call_name(name, expr, formula)
+    } else if (audit_namespaced(head)) {
+      export <- static_atom(head[[3]])
+      base <- identical(static_atom(head[[2]]), "base")
+      if (!is.null(export) && (base || export %in% unsafe)) call_name(export, expr, formula)
+      if (base) name <- export
+    } else {
+      # Members such as baseenv()$system(...) reach the same functions.
+      if (is.call(head) && length(head) == 3L && is.symbol(head[[1]]) && as.character(head[[1]]) %in% c("$", "@", "[[")) {
+        member <- static_atom(head[[3]])
+        if (!is.null(member) && member %in% unsafe) add("fail", "forbidden_member_call", member, expr)
+      }
+      walk(head, depth + 1L, formula, expr)
+    }
+    if (!is.null(name)) {
+      if (name %in% c("$", "@")) args <- args[1]
+      if (name %in% c("<-", "=", "<<-") && length(args) == 2L && is.symbol(args[[1]])) {
+        args <- args[-1]
+        alias <- value_name(args[[1]], strings = FALSE)
+        if (!is.null(alias) && alias %in% setdiff(unsafe, loaders)) {
+          add("fail", "forbidden_function_value", alias, expr)
+          args <- list()
         }
       }
-      lines <- keep
+      if (name == "~") formula <- TRUE
+      formals <- higher_order_formals[[name]]
+      if (!is.null(formals)) {
+        value <- static_match_args(expr, formals)[[formals[[length(formals)]]]]
+        fun <- if (is.null(value)) NULL else value_name(value, strings = TRUE)
+        if (!is.null(fun)) {
+          function_value(fun, value, expr, formula)
+          args <- Filter(function(x) !identical(x, value), args)
+        }
+      }
     }
-    lines
+    for (i in seq_along(args)) if (!empty_argument(args, i)) walk(args[[i]], depth + 1L, formula, expr)
+    invisible(NULL)
+  }
+  for (expr in exprs) walk(expr)
+  if (!length(out$rows)) return(audit_no_findings())
+  do.call(rbind, out$rows)
+}
+
+# Removes findings that also occur (as often) in the reviewed version of a file.
+audit_unreviewed <- function(findings, reviewed) {
+  key <- function(x) paste(x$reason, x$name, x$call, sep = "\r")
+  pool <- key(reviewed)
+  keep <- logical(nrow(findings))
+  for (i in seq_along(keep)) {
+    at <- match(key(findings[i, ]), pool)
+    keep[[i]] <- is.na(at)
+    if (!is.na(at)) pool <- pool[-at]
+  }
+  findings[keep, , drop = FALSE]
+}
+
+# Reads, parses and classifies every project code file. `bundle` holds the
+# package's regenerated files; byte-identical copies are its reviewed code.
+audit_project_code <- function(p, catalog, bundle) {
+  scanned <- audit_code_files(p$path)
+  units <- lapply(scanned, function(path) {
+    file <- file.path(p$path, path)
+    assert_plain_path(file)
+    unit <- audit_code_text(path, readLines(file, warn = FALSE, encoding = "UTF-8"))
+    unit$path <- path
+    unit$exprs <- audit_parse_code(unit$code)
+    unit$reviewed <- bundle$files[[path]]
+    unit$identical <- !is.null(unit$reviewed) && identical(content_hash(unit$reviewed), file_hash(file))
+    unit
   })
-  stats::setNames(texts, substring(files, nchar(root) + 2L))
+  parsed <- Filter(function(u) is.expression(u$exprs), units)
+  bindings <- lapply(parsed, function(u) audit_code_bindings(u$exprs))
+  attached <- setdiff(unique(unlist(lapply(bindings, function(b) b$attached))), audit_default_packages)
+  index <- stats::setNames(catalog$packages, vapply(catalog$packages, function(x) x$name, character(1)))
+  exports <- lapply(index[intersect(attached, names(index))], function(x) vapply(x$exports, function(e) e$name, character(1)))
+  context <- list(scanned = scanned, base = unique(unlist(lapply(audit_default_packages, getNamespaceExports))),
+    defined = unique(unlist(lapply(bindings, function(b) b$functions))),
+    attached_exports = unique(unlist(exports)), unknown_attached = any(!attached %in% names(index)))
+  findings <- lapply(units, function(u) {
+    row <- function(status, reason, name = "") {
+      data.frame(file = u$path, status = status, reason = reason, name = name, call = "", stringsAsFactors = FALSE)
+    }
+    found <- if (inherits(u$exprs, "audit_too_large")) {
+      row("not_tested", "too_large_to_check")
+    } else if (inherits(u$exprs, "error")) {
+      row("fail", "parse_error")
+    } else if (u$identical) {
+      audit_no_findings()
+    } else {
+      current <- audit_code_findings(u$exprs, u$path, context)
+      original <- NULL
+      if (!is.null(u$reviewed)) {
+        original <- audit_parse_code(audit_code_text(u$path, strsplit(u$reviewed, "\n", fixed = TRUE)[[1]])$code)
+      }
+      if (is.expression(original)) audit_unreviewed(current, audit_code_findings(original, u$path, context)) else current
+    }
+    engines <- lapply(u$engines, function(e) row(if (e %in% audit_shell_engines) "fail" else "warning", "non_r_chunk", e))
+    do.call(rbind, c(list(found), engines))
+  })
+  list(units = units, findings = do.call(rbind, c(list(audit_no_findings()), findings)))
 }
 
 audit_std_routing <- function(context) {
@@ -82,12 +402,15 @@ audit_std_bundle <- function(context) {
 audit_std_apis <- function(context) {
   audit_with_project(context, function(p) {
     catalog <- catalog_snapshot(p$spec$provenance$catalog_id)
+    bundle <- audit_bundle(context)
+    if (inherits(bundle, "error")) stop(bundle)
+    code <- audit_project_code(p, catalog, bundle)
     rows <- list()
-    for (file in names(texts <- audit_project_code(p$path))) {
-      result <- tryCatch(validate_generated_code(texts[[file]], catalog), error = function(e) NULL)
-      if (is.null(result)) next
+    for (unit in code$units) {
+      if (!is.expression(unit$exprs)) next
+      result <- validate_generated_code(unit$code, catalog)
       namespaced <- result[!is.na(result$package) & result$package != "base", , drop = FALSE]
-      if (nrow(namespaced)) rows[[file]] <- cbind(file = file, namespaced, stringsAsFactors = FALSE)
+      if (nrow(namespaced)) rows[[unit$path]] <- cbind(file = unit$path, namespaced, stringsAsFactors = FALSE)
     }
     calls <- if (length(rows)) do.call(rbind, rows) else data.frame(status = character(), package = character())
     # The generated validation script optionally calls the builder that created
@@ -99,15 +422,46 @@ audit_std_apis <- function(context) {
       record <- index[[dep$package]]
       !is.null(record) && identical(record$version, dep$version) && identical(record$source_hash, dep$source_hash)
     }, logical(1))
-    evidence <- list(namespaced_calls = nrow(calls), unapproved = lapply(seq_len(nrow(unapproved)), function(i) {
-      paste0(unapproved$file[[i]], ": ", unapproved$package[[i]], "::", unapproved$export[[i]], " (", unapproved$reason[[i]], ")")
-    }), builder_self_checks = sum(self_check), dependencies = length(pins), pins_consistent = all(pins))
-    if (nrow(unapproved) || !all(pins)) {
-      return(audit_result("fail", "Project code calls APIs without an approval of the pinned revision, or dependency pins differ.", evidence))
+    found <- code$findings
+    listed <- function(keep) {
+      x <- found[keep, , drop = FALSE]
+      lapply(seq_len(nrow(x)), function(i) paste0(x$file[[i]], ": ", x$name[[i]], if (nzchar(x$name[[i]])) " ", "(", x$reason[[i]], ")"))
     }
-    audit_result("pass", paste0(nrow(calls), " namespaced calls are covered by approvals of the pinned catalog revision."), evidence)
+    fail <- found$status == "fail"
+    evidence <- list(files = length(code$units), namespaced_calls = nrow(calls),
+      unapproved = lapply(seq_len(nrow(unapproved)), function(i) {
+        paste0(unapproved$file[[i]], ": ", unapproved$package[[i]], "::", unapproved$export[[i]], " (", unapproved$reason[[i]], ")")
+      }),
+      unsafe = listed(fail & !found$reason %in% c("parse_error", "unresolved_call")),
+      unparseable = as.list(found$file[found$reason == "parse_error"]),
+      unresolved = listed(fail & found$reason == "unresolved_call"),
+      advisory = listed(found$status == "warning"), not_checked = listed(found$status == "not_tested"),
+      builder_self_checks = sum(self_check), dependencies = length(pins), pins_consistent = all(pins))
+    counts <- c(unsafe = length(evidence$unsafe), unparseable = length(evidence$unparseable),
+      unresolved = length(evidence$unresolved), unapproved = nrow(unapproved))
+    if (any(counts > 0L) || !all(pins)) {
+      message <- paste0("Project code has ", counts[["unsafe"]], " forbidden or unsafe constructs, ", counts[["unparseable"]],
+        " unparseable files, ", counts[["unresolved"]], " unresolved calls and ", counts[["unapproved"]],
+        " namespaced calls without an approval of the pinned revision; dependency pins ",
+        if (all(pins)) "agree." else "differ.")
+      return(audit_result("fail", message, evidence))
+    }
+    if (length(evidence$not_checked)) {
+      return(audit_result("not_tested", paste0(length(evidence$not_checked), " code files could not be checked statically."), evidence))
+    }
+    if (length(evidence$advisory)) {
+      message <- paste0(length(evidence$advisory), " calls or chunks need review: non-namespaced package calls, ",
+        "dynamic package loads, forbidden names used as values or chunk engines that cannot be checked.")
+      return(audit_result("warning", message, evidence))
+    }
+    message <- paste0(nrow(calls), " namespaced calls in ", length(code$units),
+      " code files are covered by approvals of the pinned catalog revision; no unsafe or unresolved calls.")
+    audit_result("pass", message, evidence)
   })
 }
+
+audit_std_apis_description <- paste("All project R code parses without forbidden, unsafe or unresolved calls,",
+  "every namespaced call is approved for the pinned revision and dependency pins agree.")
 
 audit_std_preconditions <- function(context) {
   audit_with_project(context, function(p) {
@@ -227,9 +581,10 @@ audit_checks_standard <- function() {
     project_check("STD-002", "Adapted reflowR layout provenance and unmodified reviewed stage code.",
       audit_std_bundle, required = TRUE, read_effects = c("reads_project_metadata", "reads_installation"),
       evidence_schema = c("mode", "initializer_invoked", "source_revision", "manifest_matches_bundle", "edited_code")),
-    project_check("STD-003", "Every namespaced call in project code is approved for the pinned revision; dependency pins agree.",
+    project_check("STD-003", audit_std_apis_description,
       audit_std_apis, required = TRUE, read_effects = c("reads_project_metadata", "reads_catalog_store", "reads_installation"),
-      evidence_schema = c("namespaced_calls", "unapproved", "builder_self_checks", "dependencies", "pins_consistent")),
+      evidence_schema = c("files", "namespaced_calls", "unapproved", "unsafe", "unparseable", "unresolved", "advisory",
+        "not_checked", "builder_self_checks", "dependencies", "pins_consistent")),
     project_check("STD-004", "Model data and design preconditions are recorded (no data are opened).",
       audit_std_preconditions, required = function(context) audit_readiness_at_least(context, "analysis_ready"),
       severity = "warning", read_effects = "reads_project_metadata", evidence_schema = c("state", "engine", "missing", "gaps")),

@@ -1,12 +1,14 @@
 # Audit view over audit(): scopes, status filters, next actions, report export
 # to a chosen directory and the documented repair allowlist. The repair preview
-# lists failed checks in the allowlisted categories from the last read-only
-# audit; audit(repair = TRUE) decides and reports what it actually changed.
+# shows the read-only repair plan of the last audit run: triggering checks and
+# the target files a repair would create or replace. A repair is bound to that
+# plan; when the project changed since the preview it is refused and the new
+# plan is shown for review instead.
 
 app_audit_scopes <- c("installation", "knowledge", "project", "integration")
 app_audit_statuses <- c("fail", "warning", "not_tested", "not_applicable", "pass")
 app_audit_known_fields <- c("schema_version", "timestamp", "scopes", "live", "checks", "overall_status", "repairs",
-  "limitations", "reports", "next_actions", "actions")
+  "repair_plan", "limitations", "reports", "next_actions", "actions")
 app_audit_columns <- c("id", "scope", "status", "severity", "required", "message", "evidence")
 
 # Check IDs whose failure the documented repair allowlist addresses.
@@ -18,6 +20,20 @@ app_repair_candidates <- function(checks) {
     grepl("^PRJ-002", checks$id) | checks$id %in% c("PRJ-007", "PRJ-008")
   }
   checks[repairable & checks$status == "fail", , drop = FALSE]
+}
+
+# One row per target file of each planned repair (or per skipped repair).
+app_repair_plan_rows <- function(plan) {
+  rows <- lapply(plan, function(entry) {
+    targets <- entry$targets
+    missing <- vapply(targets, function(hash) is.null(hash) || is.na(hash[[1]]), logical(1))
+    data.frame(id = paste(unlist(entry$trigger), collapse = ", "), change = entry$id %||% NA_character_,
+      path = if (length(targets)) names(targets) else NA_character_,
+      action = if (length(targets)) ifelse(missing, "create", "update") else NA_character_,
+      status = entry$status %||% NA_character_, message = entry$reason %||% entry$description %||% NA_character_,
+      stringsAsFactors = FALSE)
+  })
+  do.call(rbind, rows)
 }
 
 app_audit_next_actions <- function(result, lang) {
@@ -73,8 +89,13 @@ app_audit_server <- function(id, pool, lang = shiny::reactive("en"), project = s
   shiny::moduleServer(id, function(input, output, session) {
     slot <- app_job_slot(pool, session)
     state <- shiny::reactiveValues(status = app_status("info", "audit.ready"), result = NULL, args = NULL,
-      reports = NULL, repaired = NULL)
+      preview = NULL, plan = NULL, reports = NULL, repaired = NULL)
     signature <- function(x) content_hash(json_text(x))
+    plan_of <- function(value) audit_plan_fingerprint(unclass(value)$repair_plan)
+    previewed <- function(value) {
+      state$preview <- value
+      state$plan <- plan_of(value)
+    }
     shiny::observeEvent(project(), {
       if (!nzchar(input$path %||% "")) shiny::updateTextInput(session, "path", value = project())
     }, ignoreNULL = TRUE)
@@ -106,6 +127,7 @@ app_audit_server <- function(id, pool, lang = shiny::reactive("en"), project = s
       run(args, "job.audit", function(value) {
         state$result <- value
         state$args <- signature(args)
+        previewed(value)
         kind <- if (identical(value$overall_status, "pass")) "success" else "warning"
         state$status <- app_status(kind, "audit.done", status = app_value_label(value$overall_status, lang()))
       })
@@ -134,18 +156,31 @@ app_audit_server <- function(id, pool, lang = shiny::reactive("en"), project = s
         session$sendCustomMessage("cttir-focus", list(id = session$ns("path")))
         return()
       }
-      if (is.null(state$result) || !identical(signature(args), state$args)) {
+      if (is.null(state$preview) || !identical(signature(args), state$args)) {
         state$status <- app_status("warning", "audit.repair_preview_first")
         return()
       }
-      args$scope <- union(args$scope, "project")
-      args$repair <- TRUE
-      run(args, "job.audit_repair", function(value) {
-        state$result <- value
-        state$repaired <- value$repairs %||% list()
-        state$args <- NULL
-        state$status <- app_status("success", "audit.repaired", count = length(value$repairs))
-      }, mutating = TRUE)
+      expected <- state$plan
+      # Recompute the plan read-only; repair only what the preview showed.
+      run(args, "job.audit", function(value) {
+        if (!identical(plan_of(value), expected)) {
+          state$result <- value
+          previewed(value)
+          state$status <- app_status("warning", "status.stale_files")
+          return()
+        }
+        args$repair <- TRUE
+        # A worker that runs audit_impl() also refuses a plan changed since now.
+        attr(args, "cttir_audit_plan") <- expected
+        run(args, "job.audit_repair", function(value) {
+          state$result <- value
+          state$repaired <- value$repairs %||% list()
+          state$args <- NULL
+          state$preview <- NULL
+          state$plan <- NULL
+          state$status <- app_status("success", "audit.repaired", count = length(value$repairs))
+        }, mutating = TRUE)
+      })
     })
     shiny::observeEvent(input$cancel, state$status <- app_cancel_status(slot))
     output$status <- shiny::renderUI(app_status_ui(state$status, lang()))
@@ -187,16 +222,20 @@ app_audit_server <- function(id, pool, lang = shiny::reactive("en"), project = s
         shiny::tags$ul(lapply(reports, function(x) shiny::tags$li(shiny::tags$code(x)))))
     })
     output$repair_preview <- shiny::renderUI({
-      value <- state$result
+      value <- state$preview
       language <- lang()
       if (is.null(value)) return(shiny::tags$p(class = "cttir-empty", app_t("audit.repair_needs_audit", language)))
-      plan <- unclass(value)$repair_plan %||% unclass(value)$repair_preview
-      if (length(plan)) return(app_render_value(plan, language))
       candidates <- app_repair_candidates(value$checks)
-      if (!nrow(candidates)) return(shiny::tags$p(app_t("audit.repair_none", language)))
+      plan <- unclass(value)$repair_plan
+      if (!nrow(candidates) && !length(plan)) return(shiny::tags$p(app_t("audit.repair_none", language)))
       shiny::tagList(shiny::tags$p(app_t("audit.repair_candidates", language, count = nrow(candidates))),
-        app_table(candidates, language, columns = intersect(c("id", "status", "message", "evidence"), names(candidates)),
-          badges = "status"))
+        if (length(plan)) {
+          app_table(app_repair_plan_rows(plan), language, columns = c("id", "change", "path", "action", "status", "message"),
+            badges = c("action", "status"))
+        } else {
+          app_table(candidates, language, columns = intersect(c("id", "status", "message", "evidence"), names(candidates)),
+            badges = "status")
+        })
     })
     output$repairs <- shiny::renderUI({
       repaired <- state$repaired
