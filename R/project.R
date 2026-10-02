@@ -6,11 +6,15 @@ project_route <- function(spec) {
 project_bundle <- function(spec, prior_lock = NULL) {
   route <- project_route(spec)
   files <- render_project(spec, route)
+  # The lock pins inputs; it cannot claim an installed environment (file 04).
+  # Environment readiness is derived on each machine from renv.lock and the
+  # project library (environment_status()); locks written by earlier versions
+  # keep their historical `environment_status` field unchanged.
   lock <- list(
     schema_version = 1L, spec_sha256 = content_hash(json_text(spec)),
     template_version = spec$provenance$template_version, catalog_id = spec$provenance$catalog_id, model = NULL,
     resource_snapshot = if (is.null(prior_lock)) resource_snapshot()$id else prior_lock$resource_snapshot,
-    dependencies = list(), environment_status = "pending"
+    dependencies = list()
   )
   if (!is.null(prior_lock)) {
     lock <- prior_lock
@@ -29,6 +33,13 @@ project_bundle <- function(spec, prior_lock = NULL) {
     schema_version = 1L, project_id = spec$project$id,
     status = "created", spec_sha256 = lock$spec_sha256
   ), TRUE), "\n")
+  # A verified copy of the accepted spec lets sync() review hand edits of
+  # cttir-project.yml field by field. Older template versions stay unchanged.
+  if (identical(spec$provenance$template_version, current_template_version)) {
+    files[[".cttir/accepted-spec.yml"]] <- paste0(
+      "# Accepted copy of cttir-project.yml, kept by cttiR to review hand edits. Do not edit.\n",
+      files[["cttir-project.yml"]])
+  }
   list(files = files, manifest = manifest, lock = lock, route = route)
 }
 
@@ -81,7 +92,7 @@ render_project <- function(spec, route = project_route(spec)) {
     "metadata/data-registry.yml" = yaml::as.yaml(list(datasets = spec$data_sources)),
     "metadata/data-dictionary.csv" = "dataset_id,variable,type,unit,allowed_values,missing_codes,description\n",
     "config/analysis.yml" = yaml::as.yaml(spec$analysis),
-    "protocol/analysis-plan.md" = paste0(
+    "protocol/analysis-plan.md" = if (identical(version, current_template_version)) analysis_plan_text(spec) else paste0(
       "# Analysis plan\n\n",
       "Record the question, design, sampling unit and provenance.\n",
       "Specify outcomes, variable roles, missingness handling and dependence structure.\n",
@@ -175,6 +186,152 @@ validate_script_0.3.0 <- paste0(
   "}\n"
 )
 
+# Research-type specific unknowns for protocol/analysis-plan.md (file 11). The
+# items are prompts only: each stays a TODO until the researcher records it,
+# and no user text is interpolated.
+analysis_plan_sections <- list(
+  primary_research = list(
+    "Question and design" = c(
+      "Objectives and hypotheses",
+      "Confirmatory or exploratory status of each question",
+      "Study design",
+      "Population, setting and eligibility criteria",
+      "Data origin (new collection or existing dataset) and analysis role"),
+    "Variables and estimands" = c(
+      "Exposure or intervention, and comparator",
+      "Primary outcome and its timepoint",
+      "Secondary outcomes",
+      "Estimand: population, variable, handling of intercurrent events and summary measure",
+      "Covariates and confounders, with the reason for each adjustment"),
+    "Data structure" = c(
+      "Unit of analysis",
+      "Repeated measures, clustering or other dependence"),
+    "Analysis" = c(
+      "Statistical model and its assumptions",
+      "Missing-data handling",
+      "Multiplicity",
+      "Sensitivity analyses",
+      "Sample size or precision rationale"),
+    "Ethics and reporting" = c(
+      "Ethics approval and consent status",
+      "Reporting guideline, if any",
+      "Preregistration or protocol registration (this file does not claim one)")),
+  secondary_research = list(
+    "Review question" = c(
+      "Review question and its elements (population, intervention or exposure, comparator, outcomes)",
+      "Review type: systematic review, scoping review, meta-analysis or other",
+      "Protocol registration (this file does not claim one)"),
+    "Search and selection" = c(
+      "Eligibility criteria",
+      "Information sources and search dates",
+      "Search strategy for each source",
+      "Screening process: number of reviewers and how disagreements are resolved"),
+    "Extraction and appraisal" = c(
+      "Data extraction items and process",
+      "Risk-of-bias or quality appraisal tool"),
+    "Synthesis" = c(
+      "Effect measures",
+      "Synthesis method (narrative or meta-analytic) and model",
+      "Heterogeneity and sensitivity assessment",
+      "Certainty-of-evidence assessment",
+      "Reporting guideline, if any")),
+  methods = list(
+    "Problem and method" = c(
+      "Methodological problem and the claim to be tested",
+      "Proposed method and its assumptions",
+      "Comparator methods"),
+    "Validation" = c(
+      "Validation strategy: simulation study, benchmark data or both",
+      "Simulation design: data-generating mechanisms, scenarios and number of repetitions",
+      "Benchmark datasets and their provenance",
+      "Performance measures",
+      "Monte Carlo uncertainty of the reported performance"),
+    "Implementation" = c(
+      "Software implementation and its test plan",
+      "Reproducibility: random seeds and computing environment",
+      "Licensing decision for code and outputs")),
+  software = list(
+    "Scope" = c(
+      "Purpose and intended users",
+      "Interface (API) design",
+      "Supported inputs, outputs and platforms"),
+    "Quality" = c(
+      "Test plan: unit, integration and validation against reference results",
+      "Benchmarks",
+      "Dependencies and their versions"),
+    "Release" = c(
+      "Licensing decision",
+      "Documentation and release plan")),
+  other = list(
+    "Plan" = c(
+      "Question or objective",
+      "Design or approach",
+      "Inputs and data sources",
+      "Planned outputs",
+      "Validation or quality checks",
+      "Whether ethics or other approvals apply"))
+)
+
+analysis_plan_text <- function(spec) {
+  type <- spec$project$type
+  labels <- c(primary_research = "primary research", secondary_research = "secondary research (evidence synthesis)",
+    methods = "methods", review = "review (evidence synthesis; the review type is unknown)", software = "software",
+    mixed = "mixed (publications of several classes)", other = "other")
+  todo <- function(sections, suffix = "") {
+    unlist(lapply(names(sections), function(title) {
+      c(paste0("## ", title, suffix), "", paste0("- TODO: ", sections[[title]]), "")
+    }))
+  }
+  body <- if (identical(type, "mixed")) {
+    classes <- unique(vapply(spec$publications, function(p) p$research_class, character(1)))
+    classes <- intersect(c("primary_research", "secondary_research", "methods", "software"), classes)
+    if (!length(classes)) classes <- "other"
+    c("## Shared across publications", "",
+      "- TODO: Which publication answers which question",
+      "- TODO: Shared data sources, preprocessing and quality checks (root `analysis/`)", "",
+      "Publication-specific plans belong in `publications/<slug>/analysis/`.", "",
+      unlist(lapply(classes, function(class) {
+        todo(analysis_plan_sections[[class]], paste0(" (", gsub("_", " ", class), " publications)"))
+      })))
+  } else {
+    key <- if (identical(type, "review")) "secondary_research" else if (type %in% names(analysis_plan_sections)) type else "other"
+    todo(analysis_plan_sections[[key]])
+  }
+  synthesis <- type %in% c("secondary_research", "review") ||
+    (identical(type, "mixed") && any(vapply(spec$publications, function(p) identical(p$research_class, "secondary_research"), logical(1))))
+  paste0(paste(c(
+    "# Analysis plan", "",
+    paste0("Research type: ", labels[[type]], "."), "",
+    "Every item below is unknown until you record it. Replace `TODO` with the reviewed decision,",
+    "or with `not applicable` and the reason. Nothing here was inferred from the project goal,",
+    "and creating this file approves no analysis.", "",
+    body,
+    if (synthesis) c("No literature search has been run, and no studies or citations are recorded.", ""),
+    "Record reviewed choices in `cttir-project.yml` with `cttiR::sync()`; analysis mappings and",
+    "approval go to `config/analysis.yml` the same way."), collapse = "\n"), "\n")
+}
+
+# User ownership is sticky, and a user-owned file keeps its accepted baseline
+# while it differs from it, so its edits stay recognisable. sync() moves an
+# unedited user file to its new baseline together with its update (`refresh`);
+# a repeat project() only reads and keeps every recorded user baseline.
+carry_user_records <- function(bundle, p, refresh = FALSE) {
+  recorded <- vapply(p$manifest$files, function(f) f$path, character(1))
+  for (i in seq_along(bundle$manifest)) {
+    at <- match(bundle$manifest[[i]]$path, recorded)
+    if (is.na(at) || !identical(p$manifest$files[[at]]$ownership, "user")) next
+    old <- p$manifest$files[[at]]
+    current <- if (refresh) file_hash(file.path(p$path, old$path)) else NULL
+    if (refresh && (is.na(current) || current %in% c(old$baseline_sha256, bundle$manifest[[i]]$baseline_sha256))) {
+      bundle$manifest[[i]]$ownership <- "user"
+    } else {
+      bundle$manifest[[i]] <- old
+    }
+  }
+  bundle$files[[".cttir/managed-files.json"]] <- paste0(json_text(list(schema_version = 1L, files = bundle$manifest), TRUE), "\n")
+  bundle
+}
+
 project_manifest <- function(files, template_version = "0.1.0") {
   lapply(names(files), function(path) {
     ownership <- if (grepl("^(protocol/|analysis/|publications/|metadata/|administration/|reports/|data/)", path) ||
@@ -206,7 +363,17 @@ project_manifest <- function(files, template_version = "0.1.0") {
 #' or commits. Failures of these steps keep the scaffold and are reported as
 #' readiness blockers with a recovery command.
 #'
-#' @param name Nonempty project title. A portable child-directory slug is derived.
+#' Creation stages the scaffold next to the target and publishes it with one
+#' rename while holding a creation lock that records its process. A lock left
+#' by a stopped process on this host (or an ownerless lock from an older
+#' version, after 24 hours) is recovered on the next attempt: only the lock and
+#' that attempt's staging directory are removed, and `recovered` reports it.
+#'
+#' @param name Nonempty project title, kept as written. A portable
+#'   child-directory slug is derived once: ASCII transliteration where
+#'   possible; when letters have no transliteration (for example CJK script) or
+#'   the slug would exceed 80 characters, a short hash of the name is appended
+#'   (`project_<hash>` when nothing transliterates).
 #' @param type One of `primary_research`, `secondary_research`, `methods`,
 #'   `review`, `software`, `mixed`, or `other`.
 #' @param goal Nonempty research objective.
@@ -218,7 +385,10 @@ project_manifest <- function(files, template_version = "0.1.0") {
 #'   warnings. An identical repeat is read-only and preserves user edits.
 #'   `readiness$level` becomes `environment_ready` only when `renv.lock` and the
 #'   project library match the pinned dependencies; `readiness$environment` and
-#'   `readiness$git` report the evidence and any recovery command.
+#'   `readiness$git` report the evidence and any recovery command. The
+#'   environment state is derived on each machine from `renv.lock`, the project
+#'   library and `.cttir/environment.json`; `cttir-lock.json` pins versions but
+#'   never records an installed environment.
 #'   `readiness$analysis` reports candidate routing, missing fields and capability
 #'   gaps. It never opens data or executes a model, even with `analysis$approved`.
 #' @details Optional `analysis$mapping` records `data_source_id`, `outcome`,
@@ -271,19 +441,20 @@ project_impl <- function(name, type, goal, path = getwd(), config = NULL,
     spec_file <- file.path(target, "cttir-project.yml")
     assert_plain_path(spec_file)
     if (!file.exists(spec_file)) abort_cttir("The target is not a recognized project.", "cttir_path_conflict")
-    saved <- validate_spec(spec_file)
     for (file in c("cttir-lock.json", ".cttir/state.json", ".cttir/managed-files.json")) {
       actual <- file.path(target, file)
       assert_plain_path(actual)
       if (!file.exists(actual) || dir.exists(actual))
         abort_cttir("An existing project control file is missing or replaced by a directory.", "cttir_path_conflict", "incomplete_project")
     }
-    prior_lock <- read_project(target)$lock
-    spec <- resolve_existing(saved, name, type, goal, config, options)
+    existing <- read_project(target)
+    prior_lock <- existing$lock
+    spec <- resolve_existing(existing$spec, name, type, goal, config, options)
   } else {
     spec <- resolve_spec(name, type, goal, config, options)
   }
   bundle <- project_bundle(spec, prior_lock)
+  if (exists) bundle <- carry_user_records(bundle, existing)
   if (!exists && (!identical(spec$provenance$catalog_id, context$content_id) ||
         !identical(bundle$lock$resource_snapshot, context$resource_id))) {
     abort_cttir("The catalog changed during planning; retry against one complete snapshot.", "cttir_transaction_conflict")
@@ -295,17 +466,23 @@ project_impl <- function(name, type, goal, path = getwd(), config = NULL,
     sha256 = vapply(files, content_hash, character(1)), stringsAsFactors = FALSE, row.names = NULL
   )
   if (exists) {
+    # Generated files of an earlier build of the same template version differ
+    # from this build's rendering; sync() previews and applies the difference.
+    refresh <- sprintf("If an earlier cttiR build created this project, preview its regenerated files with cttiR::sync(%s) %s",
+      r_literal(target), "and apply them with dry_run = FALSE; otherwise restore the file from version control.")
     for (file in names(files)) {
       actual <- file.path(target, file)
       assert_plain_path(actual)
       if (!file.exists(actual) || dir.exists(actual)) {
-        abort_cttir("An existing project file is missing or replaced by a directory.", "cttir_path_conflict", "incomplete_project")
+        abort_cttir(sprintf("The existing project file %s is missing or replaced by a directory.", file),
+          "cttir_path_conflict", "incomplete_project", field = file, remediation = refresh)
       }
     }
     # Control metadata must match the accepted spec and generated baseline.
     for (file in c("cttir-lock.json", ".cttir/state.json", ".cttir/managed-files.json")) {
       if (!identical(digest::digest(file = file.path(target, file), algo = "sha256"), content_hash(files[[file]]))) {
-        abort_cttir("Project control metadata differs from its accepted baseline.", "cttir_path_conflict", "changed_metadata")
+        abort_cttir(sprintf("Project control metadata (%s) differs from its accepted baseline.", file),
+          "cttir_path_conflict", "changed_metadata", field = file, remediation = refresh)
       }
     }
   }
@@ -328,15 +505,24 @@ project_impl <- function(name, type, goal, path = getwd(), config = NULL,
     ), manifest = manifest,
     warnings = warnings, dry_run = dry_run
   ), class = "cttir_project")
+  lockdir <- creation_lock_path(parent, spec$project$slug)
+  if (dry_run && !exists) {
+    lock <- lock_state(lockdir)$state
+    if (!identical(lock, "absent")) {
+      result$warnings <- c(result$warnings, if (identical(lock, "stale")) "stale_creation_lock" else "creation_lock_held")
+    }
+  }
   if (dry_run || exists) {
     return(result)
   }
-  lockdir <- file.path(parent, paste0(".", spec$project$slug, ".cttir-create-lock"))
+  recovered <- list()
   if (!dir.create(lockdir, showWarnings = FALSE)) {
-    abort_cttir("Another creation operation may own this destination.", "cttir_transaction_conflict", "writer_lock")
+    recovered <- list(recover_creation_lock(parent, spec$project$slug))
+    if (!dir.create(lockdir, showWarnings = FALSE)) abort_creation_lock(lockdir, lock_state(lockdir))
   }
   on.exit(unlink(lockdir, recursive = TRUE), add = TRUE)
   stage <- tempfile(pattern = paste0(".", spec$project$slug, "-stage-"), tmpdir = parent)
+  write_lock_owner(lockdir, list(stage = basename(stage)))
   if (!dir.create(stage, mode = "0700")) abort_cttir("Could not create staging directory.", "cttir_path_conflict")
   on.exit(unlink(stage, recursive = TRUE), add = TRUE)
   for (file in names(files)) {
@@ -355,7 +541,8 @@ project_impl <- function(name, type, goal, path = getwd(), config = NULL,
   environment <- environment_step(target, spec, bundle$lock$dependencies)
   git <- if (isTRUE(spec$workflow$git)) git_initialize(target) else git_status(target, FALSE)
   result$readiness <- readiness_with(result$readiness, spec, bundle, environment, git)
-  result$warnings <- result$readiness$blockers
+  result$warnings <- c(result$readiness$blockers, if (length(recovered)) "stale_creation_lock_recovered")
+  result$recovered <- recovered
   result
 }
 
@@ -395,5 +582,6 @@ print.cttir_project <- function(x, ...) {
   cat("Readiness: ", x$readiness$level, "\n", sep = "")
   if (!is.null(x$readiness$workflow)) cat("Workflow: ", x$readiness$workflow$profile, "\n", sep = "")
   cat("Pending: ", paste(x$readiness$blockers, collapse = ", "), "\n", sep = "")
+  if (length(x$recovered)) cat("Recovered: a creation lock left by a stopped process\n")
   invisible(x)
 }

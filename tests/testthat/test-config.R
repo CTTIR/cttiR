@@ -33,8 +33,11 @@ test_that("config precedence, keyed publications and explicit nulls work", {
     research = list(design = NULL, analysis_role = "secondary_analysis"),
     publications = list(list(id = "pub02", title = "Updated review"))
   )
-  p <- project("Actual name", "primary_research", "Goal", parent, config, options)
+  expect_warning(p <- project("Actual name", "primary_research", "Goal", parent, config, options),
+    "configuration sets project.name", class = "cttir_config_override")
   expect_identical(p$spec$project$name, "Actual name")
+  overridden <- Filter(function(d) identical(d$field, "/project/name") && identical(d$origin, "config"), p$spec$decisions)
+  expect_match(overridden[[1]]$reason, "overridden by the required argument")
   expect_null(p$spec$research$design)
   expect_identical(p$spec$research$data_origin, "existing_dataset")
   expect_identical(p$spec$research$analysis_role, "secondary_analysis")
@@ -78,4 +81,19 @@ test_that("multiline goals and literal tag text round trip without evaluation", 
   expect_equal(validate_spec(file.path(p$path, "cttir-project.yml"))$project$goal, goal)
   expect_error(validate_config(structure(list(), class = "custom")), class = "cttir_input_error")
   expect_error(validate_config(list(research = structure(list(notes = "text"), class = "custom"))), class = "cttir_input_error")
+})
+
+test_that("schema versions other than the supported one get a precise typed error", {
+  code <- function(expr) tryCatch(expr, error = function(e) c(class(e)[[1]], e$code, paste(e$field, collapse = "")))
+  expect_equal(code(validate_config(list(schema_version = 0L))), c("cttir_schema_error", "unsupported_schema_version", "/schema_version"))
+  expect_match(tryCatch(validate_config(list(schema_version = 0L)), error = conditionMessage), "older than the supported version 1")
+  expect_equal(code(validate_config(list(schema_version = 1.5)))[1:2], c("cttir_schema_error", "schema_validation"))
+  p <- project("Versioned", "methods", "Goal", new_parent())
+  file <- file.path(p$path, "cttir-project.yml")
+  writeLines(sub("^schema_version: 1$", "schema_version: 0", readLines(file)), file)
+  before <- tree_hashes(p$path)
+  expect_equal(code(sync(p$path))[1:2], c("cttir_schema_error", "unsupported_schema_version"))
+  expect_match(tryCatch(read_project(p$path), error = conditionMessage), "no migration from version 0 is defined")
+  expect_identical(tree_hashes(p$path), before)
+  expect_identical(migrate_spec(p$spec)$steps, list())
 })

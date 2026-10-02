@@ -16,13 +16,17 @@ environment_requirements <- function(dependencies) {
   rows[sort(names(rows), method = "radix")]
 }
 
+# One-line R literal for recovery commands; deparse() alone wraps long vectors
+# into several strings, none of which parses on its own.
+r_literal <- function(x) paste(deparse(x, width.cutoff = 500L), collapse = "")
+
 environment_recovery <- function(root, reason, missing = character()) {
   sync_call <- function(options = NULL) {
-    sprintf("cttiR::sync(%s,%s dry_run = FALSE)", deparse(root),
+    sprintf("cttiR::sync(%s,%s dry_run = FALSE)", r_literal(root),
       if (is.null(options)) "" else paste0(" options = ", options, ","))
   }
   prepare <- 'list(workflow = list(environment = "renv", prepare_environment = TRUE))'
-  install <- if (length(missing)) sprintf("install.packages(%s); ", deparse(as.character(missing))) else ""
+  install <- if (length(missing)) sprintf("install.packages(%s); ", r_literal(as.character(missing))) else ""
   switch(reason,
     not_materialized = "Create the project first; environment preparation runs after the scaffold exists.",
     callr_unavailable = paste0('install.packages(c("callr", "renv")); ', sync_call(prepare)),
@@ -31,7 +35,7 @@ environment_recovery <- function(root, reason, missing = character()) {
     packages_unavailable_offline = paste0(install, sync_call(prepare), "  # or allow downloads: ",
       sync_call('list(workflow = list(network = "allowed"))')),
     project_library_missing = ,
-    library_out_of_sync = sprintf("renv::restore(project = %s, prompt = FALSE); %s", deparse(root), sync_call()),
+    library_out_of_sync = sprintf("renv::restore(project = %s, prompt = FALSE); %s", r_literal(root), sync_call()),
     existing_rprofile = paste0("Review the existing .Rprofile (renv would append to it), add ",
       "source(\"renv/activate.R\") yourself or move the file, then run ", sync_call()),
     paste0(install, sync_call(prepare)))
@@ -484,7 +488,7 @@ git_status <- function(root, enabled, parent = NULL) {
     return(list(state = "planned"))
   }
   if (file.exists(file.path(root, ".git"))) return(list(state = "initialized"))
-  list(state = "pending", recovery = sprintf("cttiR::sync(%s, dry_run = FALSE)", deparse(root)))
+  list(state = "pending", recovery = sprintf("cttiR::sync(%s, dry_run = FALSE)", r_literal(root)))
 }
 
 # `git init` in the project root only. Refuses when the root already sits inside

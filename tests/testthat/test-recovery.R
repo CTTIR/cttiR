@@ -42,3 +42,42 @@ test_that("recovery refuses active writers and post-interruption edits", {
   expect_error(recover_transactions(p$path), "changed after interruption", class = "cttir_transaction_conflict")
   expect_identical(tree_hashes(p$path), before)
 })
+
+test_that("a writer lock left before any journal is released by sync and by audit repair", {
+  skip_if_not_installed("callr")
+  parent <- new_parent()
+  p <- project("Stale writer", "methods", "Goal", parent)
+  lock <- file.path(p$path, ".cttir/write-lock")
+  stale_lock <- function(pid) {
+    dir.create(lock, showWarnings = FALSE)
+    write_bytes(json_text(list(pid = pid, host = Sys.info()[["nodename"]])), file.path(lock, "owner.json"))
+  }
+  stale_lock(dead_pid())
+  before <- tree_hashes(p$path)
+  report <- audit(p$path, scope = "project")
+  expect_equal(report$checks$status[report$checks$id == "PRJ-007"], "fail")
+  expect_identical(tree_hashes(p$path), before)
+  repaired <- audit(p$path, scope = "project", repair = TRUE)
+  expect_equal(repaired$repairs[[1]]$status, "applied")
+  expect_equal(repaired$checks$status[repaired$checks$id == "PRJ-007"], "pass")
+  expect_false(dir.exists(lock))
+  stale_lock(dead_pid())
+  preview <- sync(p$path, options = list(analysis = list(aim = "descriptive")))
+  expect_equal(preview$writer_lock$state, "stale")
+  applied <- sync(p$path, options = list(analysis = list(aim = "descriptive")), dry_run = FALSE)
+  expect_equal(applied$state, "applied")
+  expect_equal(applied$recovered[[1]]$id, "release_stale_writer_lock")
+  expect_null(applied$writer_lock)
+  expect_false(dir.exists(lock))
+  # A running owner or an ownerless lock is never taken over.
+  stale_lock(Sys.getpid())
+  err <- expect_error(sync(p$path, options = list(analysis = list(aim = "explanatory")), dry_run = FALSE),
+    "running cttiR process", class = "cttir_transaction_conflict")
+  expect_match(err$remediation, "Wait for the other cttiR operation")
+  expect_length(recover_transactions(p$path), 0L)
+  unlink(file.path(lock, "owner.json"))
+  err <- expect_error(sync(p$path, options = list(analysis = list(aim = "explanatory")), dry_run = FALSE),
+    "no owner record", class = "cttir_transaction_conflict")
+  expect_match(err$remediation, "remove the directory .cttir/write-lock")
+  expect_true(dir.exists(lock))
+})

@@ -37,9 +37,17 @@ project_readiness <- function(path) {
     for (level in readiness_levels[-1]) add(level, FALSE, "This template version has no standard workflow stages.")
     return(list(level = "scaffold_ready", checks = state$checks))
   }
-  environment <- environment_status(p$lock$dependencies)
-  add("environment_ready", identical(environment$state, "installed_versions_match"),
-    paste("Pinned dependencies:", environment$state))
+  # Same rule as project() and sync(): only a verified renv.lock and project
+  # library count; packages that merely match in a user library do not.
+  environment <- environment_status(p$lock$dependencies, p$path, p$spec$workflow$environment)
+  environment_ok <- identical(environment$state, "environment_ready")
+  environment_reason <- if (environment_ok) {
+    "renv.lock and the project library match the pinned dependencies."
+  } else {
+    paste0("Dependency environment: ", environment$state, if (!is.null(environment$reason)) paste0(" (", environment$reason, ")"),
+      ". environment_ready requires workflow.environment = 'renv' with a matching renv.lock and project library.")
+  }
+  add("environment_ready", environment_ok, environment_reason)
   demo <- read_receipt(p, "demo/receipt.json")
   demo_ok <- !is.null(demo) && identical(demo$status, "passed") && isTRUE(demo$synthetic) &&
     receipt_matches_code(p, demo)
@@ -61,6 +69,6 @@ project_readiness <- function(path) {
   checks <- state$checks
   passed <- vapply(checks, function(x) x$passed, logical(1))
   reached <- if (all(passed)) length(passed) else which(!passed)[[1]] - 1L
-  list(level = readiness_levels[[max(1L, reached)]], checks = checks,
+  list(level = readiness_levels[[max(1L, reached)]], checks = checks, environment = environment,
     limitation = "Readiness reflects recorded evidence; it is not scientific validation of results.")
 }

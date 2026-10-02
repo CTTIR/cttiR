@@ -16,16 +16,26 @@ sync(path = ".", config = NULL, options = list(), dry_run = TRUE)
 \item{dry_run}{Return a read-only plan by default.}
 }
 \value{
-A \code{cttir_sync} with actions, conflicts, changed files, journal, the
-computed readiness level, blockers, \code{environment} and \code{git} status and an
-\code{analysis} configuration assessment. Recording mappings does not approve or
-execute an analysis.
+A \code{cttir_sync} with actions (with a \code{reason} per file), conflicts,
+changed files, \code{preserved} edited files, \code{pending_updates} (kept user files
+with a proposed update), \code{spec_edit} (a reviewed hand edit and its changed
+JSON pointers), \code{recovered} stale locks, journal, the computed readiness
+level, blockers, \code{environment} and \code{git} status and an \code{analysis}
+configuration assessment. Recording mappings does not approve or execute an
+analysis.
 }
 \description{
-Preserves identity, catalog pins and user-owned files. Edited managed files
-yield a conflict; no writes occur if any conflict is present. Applied changes
-have per-file backups and a journal. The operation is not a multi-file atomic
-filesystem transaction. Interrupted writers require review.
+Preserves identity, catalog pins and edits. A file changed both by its user
+and by the new rendering is never overwritten: a managed file yields a
+conflict, and no writes occur while any conflict is present; a user-owned
+file (protocol, metadata, publication and analysis text) is kept and the
+rendered update is written to \verb{.cttir/proposed/<path>} for review. Edited
+files whose rendering did not change are simply kept. Unedited user-owned
+files, such as \code{metadata/data-registry.yml} or \code{publication.yml}, are updated
+like managed files. Applied changes have per-file backups and a journal. The
+operation is not a multi-file atomic filesystem transaction. Interrupted
+writers require review; a writer lock left by a stopped process that had not
+started its journal is released.
 }
 \details{
 For current standard projects, \code{workflow} options \code{pipeline},
@@ -35,4 +45,12 @@ environment and Git steps; dry runs only read their state. \code{renv.lock} is
 derived output and is never planned as a template file. A lockfile whose
 project library is absent on this machine is not rewritten: the recovery
 command restores it with \code{renv::restore()}.
+
+\code{cttir-project.yml} may be edited by hand. \code{project()} and \code{audit()} then
+report the edit, and \code{sync(path)} previews it against the accepted copy in
+\code{.cttir/accepted-spec.yml}: the edit is checked with the same rules as
+configuration input (schema version, identity, provenance and decisions
+stay as recorded; entries are not removed; publication paths are stable).
+\code{sync(path, dry_run = FALSE)} accepts it; \code{config} and \code{options} passed in
+the same call take precedence over the hand edit.
 }

@@ -485,3 +485,21 @@ test_that("allowed network installs only the packages missing locally", {
   expect_equal(lock$Packages$cttirEnvFixture$Version, "0.0.1")
   expect_setequal(names(lock$Packages), c("yaml", "cttirEnvFixture"))
 })
+
+test_that("recovery commands stay one parseable line however many packages are missing", {
+  packages <- c("DescrTab2", "RColorBrewer", "broom", "broom.mixed", "colorspace", "dplyr", "ggplot2", "jsonlite",
+    "knitr", "patchwork", "readr", "rmarkdown", "viridisLite", "yaml")
+  root <- file.path(new_parent(), "a project directory with a rather long name to force wrapping")
+  for (reason in c("packages_unavailable_offline", "install_incomplete", "library_out_of_sync", "renv_unavailable")) {
+    recovery <- environment_recovery(root, reason, packages)
+    expect_length(recovery, 1L)
+    expect_type(parse(text = recovery), "expression")
+  }
+  expect_match(environment_recovery(root, "packages_unavailable_offline", packages), '"viridisLite", "yaml")', fixed = TRUE)
+  dir.create(file.path(root, ".cttir"), recursive = TRUE)
+  recovery <- environment_recovery(root, "packages_unavailable_offline", packages)
+  write_environment_record(root, list(state = "environment_pending", recovery = recovery))
+  stored <- read_environment_record(root)$recovery
+  expect_length(stored, 1L)
+  expect_type(parse(text = stored), "expression")
+})

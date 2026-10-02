@@ -36,8 +36,11 @@ test_that("adapted templates are pinned, inert and structurally valid", {
   result <- sync(p$path, options = list(project = list(language = "de")), dry_run = FALSE)
   expect_equal(result$state, "applied")
   expect_equal(readLines(file.path(p$path, "analysis/01_read_data.Rmd")), "Reviewed page")
+  # An edited managed file is kept while its rendering is unchanged.
   writeLines("{}", file.path(p$path, "metadata/reflowr-template.json"))
-  expect_contains(sync(p$path)$conflicts, "metadata/reflowr-template.json")
+  kept <- sync(p$path)
+  expect_length(kept$conflicts, 0L)
+  expect_contains(kept$preserved, "metadata/reflowr-template.json")
 })
 
 test_that("older accepted templates are not silently migrated", {

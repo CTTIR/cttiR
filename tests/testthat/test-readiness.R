@@ -17,3 +17,27 @@ test_that("readiness levels follow local evidence and stale receipts do not coun
   legacy <- resolve_spec("Legacy", "methods", "Goal", NULL, list())
   expect_true(readiness_levels[[1]] == "scaffold_ready")
 })
+
+test_that("environment readiness is derived consistently and never claimed by the lock", {
+  p <- project("Derived env", "primary_research", "Describe outcomes", new_parent())
+  lock <- read_project(p$path)$lock
+  expect_false("environment_status" %in% names(lock))
+  # Matching packages in a user library are not an environment_ready project.
+  local_mocked_bindings(environment_status = function(dependencies, root = NULL, mode = "none") {
+    list(state = "installed_versions_match", missing = list(), mismatched = list())
+  })
+  check <- project_readiness(p$path)$checks[[2]]
+  expect_false(check$passed)
+  expect_match(check$reason, "installed_versions_match")
+  expect_match(check$reason, "workflow.environment = 'renv'")
+  seen <- NULL
+  local_mocked_bindings(environment_status = function(dependencies, root = NULL, mode = "none") {
+    seen <<- list(root = root, mode = mode)
+    list(state = "environment_ready", mode = "renv")
+  })
+  ready <- project_readiness(p$path)
+  expect_true(ready$checks[[2]]$passed)
+  expect_equal(ready$environment$state, "environment_ready")
+  expect_equal(seen$root, p$path)
+  expect_equal(seen$mode, "none")
+})
