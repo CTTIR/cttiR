@@ -1,4 +1,4 @@
-# cttiR
+# cttiR <img src="man/figures/logo.png" align="right" width="150" alt="cttiR hex logo" />
 
 CTTIR Project Builder creates research project scaffolds from three inputs:
 a name, research type and goal.
