@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CTTIR planner proposal",
+  "description": "Restricted planner-1 proposal. It can express only enumerated project decisions, registered capability IDs and short plain-text notes; it cannot express paths, commands, SQL, URLs or package installation. At request time capability_ids.items is narrowed to the selectable registered IDs.",
+  "type": "object",
+  "properties": {
+    "rationale": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 400
+    },
+    "aim": {
+      "type": "string",
+      "enum": [
+        "descriptive",
+        "explanatory",
+        "predictive",
+        "causal",
+        "unknown"
+      ]
+    },
+    "outcome_family": {
+      "type": "string",
+      "enum": [
+        "continuous",
+        "binary",
+        "count",
+        "ordinal",
+        "time_to_event",
+        "other",
+        "unknown"
+      ]
+    },
+    "unit_structure": {
+      "type": "string",
+      "enum": [
+        "independent",
+        "paired",
+        "clustered",
+        "longitudinal",
+        "unknown"
+      ]
+    },
+    "modality": {
+      "type": "string",
+      "enum": [
+        "unknown",
+        "tabular",
+        "single_cell",
+        "bulk_rna",
+        "cytometry",
+        "spatial",
+        "proteomics",
+        "multiomics",
+        "microbiome",
+        "imaging"
+      ]
+    },
+    "capability_ids": {
+      "type": "array",
+      "maxItems": 8,
+      "items": {
+        "type": "string",
+        "minLength": 3,
+        "maxLength": 64,
+        "pattern": "^[a-z][a-z0-9_]*([.][a-z0-9_]+)+$"
+      }
+    },
+    "unresolved": {
+      "type": "array",
+      "maxItems": 8,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 160
+      }
+    }
+  },
+  "required": [
+    "rationale",
+    "aim",
+    "outcome_family",
+    "unit_structure",
+    "modality",
+    "capability_ids",
+    "unresolved"
+  ],
+  "additionalProperties": false
+}
