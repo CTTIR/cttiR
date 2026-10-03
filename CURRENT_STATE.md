@@ -2,6 +2,30 @@
 
 Updated: 2026-10-03. Version: 0.1.1. License: MIT.
 
+## Live combined planner candidate
+
+The private metadata prompt plus post-validation keyword grounding now passes
+all ten frozen development thresholds in a LIVE run: capability precision 0.8571,
+recall 0.75, field accuracy 0.9073 overall / 0.9211 on the already examined held-out
+subset, no injection violations, 12/12 identical repeats, warm p95 6.809 s.
+There are 73 records of retained/omitted capabilities across accepted model calls.
+The wrapper preserves fallback behavior, bounds explanatory notes and revalidates
+every modified proposal; its boundary tests pass. Owned runtime stopped.
+
+This is not production qualification: the 66-case corpus was already examined.
+No public prompt, model manifest or default changed. Next freeze genuinely unseen
+validation cases, then integrate and test the combined policy before considering
+promotion. The private candidate does not close independent retrieval or G26.
+Scripts: admin/planner_grounded_candidate.R and run_planner_grounded_benchmark.R.
+Evidence: artifacts/implementation/planner-grounded-live*.json/.log, especially
+planner-grounded-live-review.json and the grounding receipt. Do not mistake the
+benchmark's development `qualified` flag for a public model approval.
+
+Draft cran-comments.md records the full check for 432fa34 and is excluded from
+the package build. README now accurately distinguishes default offline creation
+from opt-in local-model use. These documentation updates follow that full check;
+package R code, tests and runtime approvals remain unchanged.
+
 ## Screening validation and planner development experiments
 
 All five hosted jobs passed for source 432fa34 in run 37094093244, including
@@ -21,13 +45,14 @@ HTML manual passed; PDF generation failed and left manual TeX detritus. This is
 not a passing full check. With the corrected PATH, standalone PDF generation
 passes (18 pages), recorded in planner-injection-manual.log/.pdf.
 
-A fresh FULL check is now running in user service
-cttir-injection-full-check-texpath-432fa34.service. Its authoritative receipt is
-artifacts/injection-followup-check-texpath/status.json. The worker records PATH
-and executable discovery and refuses to start without R/pdflatex/makeindex.
-Inspect this run before starting any duplicate check; retain earlier attempts.
-The full clean-check result remains pending. Do not replace it with the separate
-passing tests/manual checks.
+The corrected FULL check completed for source 432fa34: 0 errors, 0 warnings,
+1 incoming NOTE (new submission and Title prefix), 5470 passing assertions and
+13 documented skips. Rebuilt vignettes and PDF/HTML manuals all pass. Reviewed
+receipt: artifacts/implementation/planner-injection-full-validation.json;
+logs and archive: artifacts/injection-followup-check-texpath. Archive SHA-256:
+3a8d633a2bb6dafd19597b706c5d0e570bc5269196cffd60e690612256ae2730.
+The 234-member archive excludes private directories and its changed source files
+match the worktree. No duplicate full check is needed for this source revision.
 
 Two private planner experiments do not change the public prompt or approval:
 - Filtering saved planner-2 capabilities by registered keywords raises precision
@@ -71,10 +96,9 @@ changed R sources pass lint. Evidence: planner-injection-followup-*.
 These are development regressions informed by known cases, not an independent
 security or usefulness qualification. G12 and G26 remain partial.
 
-The previous full local and hosted checks below apply to 343d644, not this new
-source change. A fresh full check is required before calling this revision a
-validated CRAN candidate. The continuation must inspect the dedicated
-artifacts/injection-followup-check run before starting any duplicate check.
+The screening source at 432fa34 now has full local and hosted validation, as
+recorded above. Earlier checks below apply to 343d644 and remain historical
+evidence. The interrupted and failed attempts are preserved separately.
 No COMPLETE/STOP marker, CRAN submission or external-builder submission.
 
 ## Seurat numerical ablation

@@ -16,8 +16,9 @@ p
 ```
 
 `path` is an existing **parent** directory; this creates `example_study/`.
-Use `dry_run = TRUE` for a read-only preview. Creation never reads data,
-installs packages, calls a model or contacts a network.
+Use `dry_run = TRUE` for a read-only preview. Creation uses local resources by
+default and does not read study data or install packages. An explicitly enabled
+local planner can consult the configured local model.
 
 ## What a project contains
 
