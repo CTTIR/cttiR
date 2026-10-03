@@ -30,21 +30,37 @@ project: artifacts/examples/planner3-installed-project/. The initial smoke had a
 missing parent directory; the corrected harness creates it first. Owned runtime
 stopped, with cleanup receipt. No model manifest/default promotion occurred.
 
-Full R CMD check --as-cran for 834dcd9 is running in independent user service
-cttir-planner-integration-check-834dcd9.service; build/vignettes passed and tests
-are underway. Inspect artifacts/planner-integration-check-834dcd9/status.json and
-check.log before starting another full check. GitHub run 37109873337 targets the
-same source. Tarball SHA-256:
+Full R CMD check --as-cran for 834dcd9 passed: 5547 assertions, 13 documented
+skips, 0 errors, 0 warnings and 1 incoming NOTE. Vignettes and PDF/HTML manuals
+passed; all five jobs in GitHub run 37109873337 passed. Reviewed receipt:
+artifacts/implementation/planner-integration-full-validation.json. Tarball SHA-256:
 c1e9270b5afe2589beb9cd74e66655ae507283385f9c8f34dda58135d64fe156.
 
-Next review full checks, then bind future qualification to tested prompt/policy
-and exact model digest before promoting any model. Current qualification lookup
-uses model tag/digest only, so do not add a positive approval without that guard.
+Qualification safeguards are committed and pushed as 91e69fc. A positive approval
+now requires the tested prompt, grounding policy, capability registry, response
+schema, runtime binary and inference options to match. Setup rechecks the acquired
+model digest, preventing mutable tags from inheriting stale approval. Targeted
+planner/runtime tests and lint pass, including JSON round-trip and stale-context
+refusals. No actual model approval or automatic default was changed.
+
+A separate full check is running in independent user service
+cttir-qualification-check-91e69fc.service. Inspect
+artifacts/qualification-check-91e69fc/status.json and check.log before starting
+another check. The prior source's full check does not validate these new changes.
+Next review this check and its hosted jobs, then evaluate an explicit qualified
+model profile and conservative resource-selection policy before default promotion.
 Historical admin/planner_metadata_prompt.R and planner_grounded_candidate.R
 monkeypatch pre-integration code: do not source them into planner-3 or their
 policies will be applied twice. The new live runner uses production code directly.
 G26 remains unfinished; admin/seurat-workflow-integration-notes.md identifies
-the missing generated analysis entry point and distinct role-approval work.
+the missing generated analysis entry point and distinct role-approval work. A private static
+entry point now passes 17 refusal cases plus repeated synthetic clustering/UMAP;
+a separate FindAllMarkers fixture passes direct fold-change/adjustment references.
+See seurat-static-candidate-review.json and the integration notes. This entry point
+is not bundled, stops before markers, and explicitly refuses backing inputs.
+Its 40000-cell resource fixture passed at 1743.21 MiB peak RSS, below the frozen
+2 GiB budget; seurat-static-memory-review.json records unchanged source hashes.
+This is bounded Linux evidence, not a universal memory limit or public approval.
 
 The preceding retrieval revision d2c0ee4 passed its full check: 5528 PASS, 13 SKIP,
 0 errors/warnings, 1 incoming NOTE; PDF/HTML manuals and rebuilt vignettes passed.
@@ -87,7 +103,7 @@ The preceding benchmark revision a05a2d7 has completed full local validation:
 PDF/HTML manuals passed. All five jobs in GitHub run 37103479376 passed. Receipt:
 artifacts/implementation/repeat-evidence-full-validation.json. Tarball SHA-256:
 9f833e915245df27e15a3e046ffaf1cd1c734c5ddeb609f08990677a94c4ba29.
-The subsequent retrieval check also passed, as recorded above; planner-3 has a separate active check.
+The subsequent retrieval check also passed, as recorded above; qualification safeguards have a separate active check.
 The hourly retry timer remains active; COMPLETE and STOP remain absent.
 
 ## Fresh planner validation and repeat evidence
