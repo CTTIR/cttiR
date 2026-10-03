@@ -20,6 +20,11 @@ project_bundle <- function(spec, prior_lock = NULL) {
     lock <- prior_lock
     lock$spec_sha256 <- content_hash(json_text(spec))
   }
+  if (identical(spec$provenance$planner_mode, "local_llm")) {
+    lock$model <- list(id = spec$provenance$model_id, digest = spec$provenance$model_digest,
+      prompt_version = spec$provenance$prompt_version, qualification = spec$provenance$model_qualification,
+      options = spec$provenance$planner_options)
+  }
   if (!is.null(route)) {
     # Derived from the accepted spec and the pinned catalog only, never from
     # whatever happens to be installed or active globally.

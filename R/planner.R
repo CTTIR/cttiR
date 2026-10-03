@@ -25,7 +25,7 @@ planner_fields <- c("aim", "outcome_family", "unit_structure", "modality")
 planner_fallbacks <- c("runtime_unverified", "endpoint_rejected", "model_refused", "model_digest_unrecorded",
   "model_locality_unverified", "model_absent", "model_digest_mismatch", "runtime_request_failed",
   "model_identity_mismatch", "validation_failed", "injection_suspected", "goal_injection_suspected",
-  "model_not_qualified", "context_overflow")
+  "model_not_qualified", "context_overflow", "goal_instruction_phrase")
 
 # Plain-text notes must not carry anything that could be mistaken for an
 # instruction to act: locations, commands, code, queries, installs or markup.
@@ -330,7 +330,7 @@ planner_qualification_context <- function(manifest = NULL) {
     planner_assets_sha256 = content_hash(json_text(list(
       user = planner_prompt("<name>", "<type>", "<goal>", registry)$user,
       repair = planner_repair_text("<errors>"), limits = planner_limits,
-      unsafe = planner_unsafe_patterns, injection = injection_patterns))),
+      unsafe = planner_unsafe_patterns, injection = injection_patterns, hard_injection = injection_hard_patterns))),
     registry_sha256 = content_hash(json_text(registry)),
     schema_sha256 = content_hash(json_text(planner_schema(registry))),
     runtime_binary_sha256 = manifest$binary_sha256, options = planner_options())
@@ -463,18 +463,18 @@ plan_goal <- function(name, type, goal, mode = c("deterministic", "local_llm"), 
         prompt_version = if (llm) planner_prompt_version else "none",
         attempts = length(attempts), fallback_reason = reason, attempted_model = tried,
         model_qualification = qualification,
-        options = if (length(attempts)) planner_options() else NULL
+        options = if (length(attempts)) request$options else NULL
       ),
       latency_seconds = unname(proc.time()[["elapsed"]] - started),
       attempts = attempts
     )
   }
   fallback <- function(reason, tried = NULL) result(deterministic_proposal(goal, registry), "deterministic", reason = reason, tried = tried)
-  # Instruction-shaped inputs never reach a model; the keyword rules would read
-  # the same instructions, so every field stays unknown.
-  if (instruction_like(paste(name, type, goal, sep = "\n"))) {
+  text <- paste(name, type, goal, sep = "\n")
+  if (instruction_like(text, hard_only = identical(mode, "deterministic"))) {
     return(result(planner_abstention("goal"), "deterministic", reason = "goal_injection_suspected"))
   }
+  if (identical(mode, "deterministic") && instruction_like(text)) return(fallback("goal_instruction_phrase"))
   if (identical(mode, "deterministic")) return(result(deterministic_proposal(goal, registry), "deterministic"))
   if (is.null(endpoint)) endpoint <- tryCatch(runtime_endpoint(), error = function(e) NA_character_)
   if (!planner_valid_endpoint(endpoint)) return(fallback("endpoint_rejected"))
@@ -590,6 +590,8 @@ planner_apply <- function(planned, spec, decisions) {
     p <- planned$plan$provenance
     spec$provenance[c("planner_mode", "model_id", "model_digest", "prompt_version")] <-
       list("local_llm", p$model_id, p$model_digest, p$prompt_version)
+    spec$provenance$planner_options <- p$options
+    spec$provenance$model_qualification <- p$model_qualification
     grounding <- p$capability_grounding
     if (!is.null(grounding)) {
       evidence <- c(paste0("capability_grounding:", grounding$policy),
@@ -608,6 +610,7 @@ planner_apply <- function(planned, spec, decisions) {
     }
   } else if (!is.null(planned$plan)) {
     reason <- planned$plan$provenance$fallback_reason
+    if (!is.null(reason)) spec$provenance$fallback_reason <- reason
     outcome <- if (reason %in% c("injection_suspected", "goal_injection_suspected")) {
       "no decision was inferred from the goal."
     } else {

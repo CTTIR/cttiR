@@ -480,6 +480,68 @@
             "string",
             "null"
           ]
+        },
+        "fallback_reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "planner_options": {
+          "type": "object",
+          "properties": {
+            "seed": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 2147483647
+            },
+            "top_k": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "num_ctx": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1048576
+            },
+            "num_predict": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1048576
+            },
+            "num_thread": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 256
+            },
+            "num_gpu": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000
+            },
+            "temperature": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 2
+            }
+          },
+          "required": [
+            "temperature",
+            "seed",
+            "top_k",
+            "num_ctx",
+            "num_predict",
+            "num_thread"
+          ],
+          "additionalProperties": false
+        },
+        "model_qualification": {
+          "type": "string",
+          "enum": [
+            "qualified_for_planning",
+            "not_qualified_for_planning",
+            "unvalidated_user_override",
+            "candidate_pending_benchmark"
+          ]
         }
       },
       "required": [

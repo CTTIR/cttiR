@@ -242,6 +242,9 @@ route_workflow <- function(spec, requested = "auto", catalog = catalog_snapshot(
   analysis <- spec$analysis
   modality <- if (is.null(spec$ecosystem$modality)) "unknown" else spec$ecosystem$modality
   signals <- infer_goal(spec$project$goal, registry)
+  screened <- any(spec$provenance$fallback_reason %in% c("goal_injection_suspected", "injection_suspected")) ||
+    instruction_like(paste(spec$project$name, spec$project$type, spec$project$goal, sep = "\n"), hard_only = TRUE)
+  if (screened) signals$keyword_capabilities <- character()
   gaps <- character()
   stages <- list(
     route_stage(registry, catalog, "project", "std.project.reflowr_layout"),
@@ -306,7 +309,7 @@ route_workflow <- function(spec, requested = "auto", catalog = catalog_snapshot(
     stage$enabled <- TRUE
     stages <- c(stages, list(stage))
   }
-  relevant <- ecosystem_gap_candidates(registry, modality, spec$project$goal,
+  relevant <- ecosystem_gap_candidates(registry, modality, if (screened) "" else spec$project$goal,
     isTRUE(spec$ecosystem$seurat_for_relevant_gaps), stages,
     if (is.null(spec$ecosystem$allowed_providers)) c("bioconductor", "seurat") else unlist(spec$ecosystem$allowed_providers))
   ecosystem <- lapply(relevant, function(cap) route_stage(registry, catalog, cap$stage, cap$id, enabled = FALSE))

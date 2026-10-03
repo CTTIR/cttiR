@@ -1,5 +1,8 @@
 # cttiR 0.1.1.9000
 
+* Preserve deterministic inference for ambiguous instruction phrases, with a review note; hard instruction markers still block inference. Local model requests keep the full screen. Screened goals no longer supply workflow candidates, and withheld answers report a specific gap.
+* Retain the accepted model identity, digest, qualification, prompt version and actual inference options in project provenance and locks; replay never substitutes current runtime settings.
+
 * Match base R and report website requests without treating database records, study sites or composite endpoints as those capabilities.
 
 * Planner 4 retains the longest fitting JSON-escaped input prefix. Missing, invalid or excessive reported prompt token counts cause deterministic fallback without another repair request; the output token budget is reserved. Earlier planner evaluations do not qualify this policy.

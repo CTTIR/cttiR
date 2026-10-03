@@ -12,7 +12,7 @@ ask_stage_order <- c("project", "import", "check", "tidy", "describe", "figures"
 # switches, chat-template and override markers, and requests to run code. A
 # single word such as "disregard" or "system prompt" is not enough, so benign
 # questions ("disregard rows with missing values") are answered normally.
-injection_patterns <- c(
+injection_hard_patterns <- c(
   paste0("\\b(ignore|ignoring|disregard|forget|override|overrule|bypass|skip|abandon)\\s+((all|any|the|your|my|these|those|",
     "every|of|previous|prior|above|earlier|preceding|former|existing|current|system|safety|original|initial|given)\\s+){0,4}",
     "(instructions?|rules?|guidelines?|guardrails?|constraints?|restrictions?|directives?|polic(y|ies)|prompts?|",
@@ -23,20 +23,27 @@ injection_patterns <- c(
     "ihre\\w*|s(\u00e4|ae)mtliche\\w*|bisherige\\w*|vorherige\\w*|obige\\w*|vorigen?|jede\\w*)\\s+){0,4}",
     "(anweisung|regel|vorgabe|richtlinie|instruktion|befehl|systemprompt|prompt)"),
   "\\bvergiss\\s+alles\\b",
-  "\\byou\\s+are\\s+now\\b", "\\bfrom\\s+now\\s+on\\b", "\\bpretend\\s+(to\\s+be|you\\s+are)\\b",
+  "\\byou\\s+are\\s+now\\b", "\\bpretend\\s+(to\\s+be|you\\s+are)\\b",
   "\\bact\\s+as\\s+(an?\\s+)?(admin|administrator|root|developer|system|unrestricted|jailbroken)\\b",
   "\\bdu\\s+bist\\s+(jetzt|nun|ab\\s+sofort)\\b", "\\bab\\s+(jetzt|sofort)\\s+(bist|gilt|antworte|ignorier)",
-  "\\bnew\\s+(instructions?|rules?|system\\s+prompt)\\b", "\\bneue\\s+(anweisung|regel)",
   "(^|\\s)#{1,6}\\s*(system|admin|developer|override|instructions?)\\b",
-  "\\b(system|admin|developer|safety|security)\\s+(override|mode)\\b",
+  "\\b(system|admin|developer|safety|security)\\s+override\\b",
   "(^|[\\n.!?])\\s*(system|assistant|developer)\\s*:", "\\[/?(inst|system)\\]", "<\\|?(system|im_start|im_end|endoftext)\\|?>",
   "<<\\s*/?sys\\s*>>",
   "\\b(reveal|show|print|repeat|output|leak|change|replace)\\s+((the|your|this)\\s+)*system\\s+prompt\\b",
   "\\bjailbreak", "\\bdan\\s+mode\\b",
   "\\b(system2?|shell|shell\\.exec|eval|evalq|install\\.packages|download\\.file|unlink|file\\.remove|sys\\.setenv)\\(",
-  "\\brm\\s+-[a-z]*[rf]", "\\b(curl|wget)\\s+\\S", "\\bsudo\\b",
+  "\\brm\\s+-[a-z]*[rf]", "\\b(curl|wget)\\s+\\S", "\\bsudo\\b"
+)
+
+# Ambiguous phrases can describe ordinary research. Only the local model uses
+# the full screen; deterministic matching retains signals and reports a review.
+injection_soft_patterns <- c(
+  "\\bfrom\\s+now\\s+on\\b", "\\bnew\\s+(instructions?|rules?|system\\s+prompt)\\b",
+  "\\bneue\\s+(anweisung|regel)(n|en)?\\b", "\\b(system|admin|developer|safety|security)\\s+mode\\b",
   "\\b(delete|wipe|erase)\\s+(all|every|everything)\\b"
 )
+injection_patterns <- c(injection_hard_patterns, injection_soft_patterns)
 
 # Cyrillic and Greek lookalikes of Latin letters, by code point, and their
 # Latin counterparts ("Ign\u043ere" reads as "Ignore").
@@ -63,9 +70,10 @@ fold_confusables <- function(x) {
 }
 
 # Shared by ask() and both planner modes, before deriving any decisions.
-instruction_like <- function(text) {
+instruction_like <- function(text, hard_only = FALSE) {
   text <- tolower(fold_confusables(text))
-  any(vapply(injection_patterns, function(p) grepl(p, text, perl = TRUE), logical(1)))
+  patterns <- if (hard_only) injection_hard_patterns else injection_patterns
+  any(vapply(patterns, function(p) grepl(p, text, perl = TRUE), logical(1)))
 }
 
 # Phrase patterns for questions (regular expressions on lower-case text). They
@@ -391,7 +399,8 @@ ask <- function(question, path = NULL, verified_only = TRUE) {
   # Package names inside exact symbols must not trigger capability keywords.
   unqualified <- gsub(symbol_pattern, " ", question, perl = TRUE)
   text <- tolower(enc2utf8(unqualified))
-  injected <- instruction_like(unqualified)
+  injected <- instruction_like(unqualified, hard_only = TRUE)
+  soft_instruction <- !injected && instruction_like(unqualified)
   signals <- if (injected) {
     list(aim = "unknown", outcome_family = "unknown", unit_structure = "unknown", modality = "unknown")
   } else {
@@ -497,6 +506,8 @@ ask <- function(question, path = NULL, verified_only = TRUE) {
   for (row in symbol_rows) {
     if (!identical(row$status, "ok")) gaps <- c(gaps, paste0(row$symbol, ": ", if (row$found) row$reason else "not in the pinned catalog revision"))
   }
+  if (injected) gaps <- c(gaps, "instruction_screened: instruction-shaped input was withheld from capability inference")
+  if (soft_instruction) limitations <- c(limitations, "Ambiguous instruction-like wording was matched only as research data; review the inferred capabilities.")
   if (injected) limitations <- c(limitations, "Instruction-like text in the question was treated as data; no capability was inferred from it.")
   if (blocked) {
     limitations <- c(limitations, "The question names a function that is absent or not approved at the pinned revision, so no code is returned for this request.")

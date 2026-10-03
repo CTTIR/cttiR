@@ -105,7 +105,10 @@ the fallback reason `model_not_qualified` is recorded. Using an unqualified
 model needs the separate acknowledgement
 `options(cttiR.planner_allow_unqualified = TRUE)`, and its qualification label
 is then stored with every decision it made. Goals that read like instructions
-to the model are never sent (`goal_injection_suspected`). Explicit options
+to the model are never sent (`goal_injection_suspected`). Deterministic planning
+and `ask()` block hard instruction markers; ambiguous phrases such as "safety
+mode" retain keyword matching with a review note. Screened goals cannot add
+keyword-derived workflow candidates. Explicit options
 always win over suggestions, and replay or `sync()` never re-plan.
 
 The prompt includes registered package names and aliases. A validated model
@@ -122,6 +125,16 @@ cause `context_overflow` fallback without another request. This checks the
 runtime's reported count; it is not an independent tokenizer or proof that the
 runtime preserved every input token. Earlier planner evaluations remain
 historical development evidence and do not qualify the new policy.
+
+Accepted local planning stores the model identity, digest, qualification, prompt
+version and request options in the specification and project lock. Replay uses
+these recorded values; older specifications with no recorded settings keep them
+unknown. `cttiR.planner_threads` defaults to the smaller of 16 and the measured
+physical core count. `cttiR.planner_processor` defaults to `"cpu"`; `"auto"`
+permits unqualified GPU use. `cttiR.planner_timeout` defaults to 120 seconds
+(allowed range 5 to 600). Changing options does not confer qualification.
+Historical CPU results used a Xeon w9-3475X with 16 threads; other CPUs and
+runtime backends have not inherited that measured result.
 
 ## Data flow and privacy
 
