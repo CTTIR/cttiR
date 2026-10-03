@@ -2,6 +2,49 @@
 
 Updated: 2026-10-03. Version: 0.1.1. License: MIT.
 
+## Screening validation and planner development experiments
+
+All five hosted jobs passed for source 432fa34 in run 37094093244, including
+Windows/macOS and Linux release/oldrel/devel. Receipt:
+artifacts/implementation/planner-injection-hosted-ci.json. The isolated archive
+installation and public project()/ask() injection/benign smoke checks also pass.
+
+The initial detached local check was interrupted during vignette building; its
+recorded processes were absent and it produced no check result. That attempt is
+retained in artifacts/injection-followup-check. Its first replacement ran independently
+in user service cttir-injection-full-check-432fa34.service, with receipts in
+artifacts/injection-followup-check-retry. Inspect that status before restarting.
+The replacement completed 5470 test assertions with zero failures/warnings and
+13 documented skips, but the overall check failed (1 ERROR, 1 WARNING, 2 NOTEs):
+the service PATH omitted ~/.local/bin, so pdflatex was unavailable. Vignettes and
+HTML manual passed; PDF generation failed and left manual TeX detritus. This is
+not a passing full check. With the corrected PATH, standalone PDF generation
+passes (18 pages), recorded in planner-injection-manual.log/.pdf.
+
+A fresh FULL check is now running in user service
+cttir-injection-full-check-texpath-432fa34.service. Its authoritative receipt is
+artifacts/injection-followup-check-texpath/status.json. The worker records PATH
+and executable discovery and refuses to start without R/pdflatex/makeindex.
+Inspect this run before starting any duplicate check; retain earlier attempts.
+The full clean-check result remains pending. Do not replace it with the separate
+passing tests/manual checks.
+
+Two private planner experiments do not change the public prompt or approval:
+- Filtering saved planner-2 capabilities by registered keywords raises precision
+  to 0.8667 but lowers recall to 0.4063: below the frozen 0.50 threshold.
+- Exposing registered package names and language aliases in a private prompt
+  raises live recall to 0.8750, but precision is only 0.6829: still unqualified.
+- Applying the same filter to the saved metadata-prompt proposals gives precision
+  0.8571 and recall 0.75. This is promising offline development evidence, not a
+  live, full-threshold or fresh independent qualification.
+
+The metadata run has no injection violations and 12/12 identical repeats. Its
+owned runtime is stopped. Full provenance, limitations and next integration/evaluation
+steps: artifacts/implementation/planner-candidate-followup.md and
+planner-metadata-candidate*.json/.log. The existing corpus was already examined;
+no thresholds/gold labels changed and no model approval was granted.
+G12/G26 remain open. No submission, COMPLETE or STOP; hourly retry remains enabled.
+
 ## Planner screening follow-up (development)
 
 The current-tree CPU benchmark of qwen2.5:7b at 9d4f551 still fails qualification:
