@@ -88,6 +88,12 @@ or skips. An initial resource-read regression was fixed; a concurrent-source
 print-test attempt is retained as superseded evidence. Final log:
 artifacts/implementation/runtime-readiness-verified-tests.log.
 
+Runtime-readiness milestone committed/pushed as 57f3583. Full source-isolated
+check is running in cttir-runtime-readiness-check-57f3583.service under
+artifacts/runtime-readiness-check-57f3583. Hosted validation is pending.
+Review these before starting another full check. Receipt:
+artifacts/implementation/runtime-readiness-review.json.
+
 Next: finish the new runtime-readiness milestone's full checks; finish R07 readiness
 reporting and actual live probe evidence; R21 maintainer provenance; R22/R39
 current consolidated gate/requirements evidence. Reconcile every other owner
