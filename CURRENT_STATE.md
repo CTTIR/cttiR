@@ -75,8 +75,11 @@ two 4.68 GB model-size copies plus headroom. This bounded observation is not a
 universal memory guarantee. Owned runtime stopped; receipts:
 automatic-selection-review.json, automatic-profile-final-live-smoke.json,
 automatic-profile-final-resource-observation.json, automatic-profile-cleanup.json.
-This source milestone requires its own full check; do not use the preceding
-profile check to claim these additional resource guards are fully validated.
+This source milestone is a7fc3f8, pushed to main. Its full check is running in
+cttir-automatic-selection-check-a7fc3f8.service; inspect
+artifacts/automatic-selection-check-a7fc3f8/status.json and check.log before
+starting another check. Review its hosted jobs too. The preceding profile check
+does not validate these additional resource guards. G26 remains unfinished.
 
 Historical admin/planner_metadata_prompt.R and planner_grounded_candidate.R
 monkeypatch pre-integration code: do not source them into planner-3 or their
