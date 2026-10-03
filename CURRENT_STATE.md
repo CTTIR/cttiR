@@ -50,7 +50,9 @@ Unicode YAML/JSON inputs, original hashes, catalog pins, future-version refusal,
 unknown modality/provider/policy rejection and incompatible extension pins.
 Logs: artifacts/implementation/ecosystem-schema-integration.log,
 ecosystem-schema-lint-final.log, ecosystem-schema-scalar-validation.log.
-Full validation of the new source is pending; do not equate targeted passes with
+Committed/pushed as e5ec69f. Full validation runs in
+cttir-ecosystem-schema-check-e5ec69f.service, with status/logs under
+artifacts/ecosystem-schema-check-e5ec69f. Do not equate targeted passes with
 complete readiness. Earlier failed logs are retained alongside corrected runs.
 
 Next: review the source-isolated schema milestone check and hosted results, then
