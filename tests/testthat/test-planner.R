@@ -98,10 +98,10 @@ test_that("the prompt is bounded and keeps the three inputs as delimited data", 
 
 test_that("a valid local proposal is accepted with provenance and no hidden reasoning", {
   log <- local_planner_runtime(list(chat_reply(valid_reply())))
-  plan <- plan_goal("Statins", "secondary_research", "Association of statins with LDL", "local_llm")
+  plan <- plan_goal("Statins", "secondary_research", "Linear regression of LDL on statins", "local_llm")
   expect_equal(plan$provenance$planner_mode, "local_llm")
   expect_equal(plan$provenance[c("model_id", "model_digest", "prompt_version", "attempts")],
-    list(model_id = "local:small", model_digest = fake_digest, prompt_version = "planner-2", attempts = 1L))
+    list(model_id = "local:small", model_digest = fake_digest, prompt_version = "planner-3", attempts = 1L))
   expect_equal(plan$provenance$model_qualification, "unvalidated_user_override")
   expect_null(plan$provenance$fallback_reason)
   expect_equal(plan$proposal$aim, "explanatory")
@@ -355,14 +355,14 @@ test_that("resolve_spec applies proposals only to unset fields and records prove
   expect_equal(spec$analysis$unit_structure, "clustered")
   expect_equal(spec$ecosystem$modality, "single_cell")
   expect_equal(spec$provenance[c("planner_mode", "model_id", "model_digest", "prompt_version")],
-    list(planner_mode = "local_llm", model_id = "local:small", model_digest = fake_digest, prompt_version = "planner-2"))
+    list(planner_mode = "local_llm", model_id = "local:small", model_digest = fake_digest, prompt_version = "planner-3"))
   inferred <- Filter(function(d) identical(d$origin, "inferred") && grepl("^/analysis|^/ecosystem", d$field), spec$decisions)
   expect_setequal(vapply(inferred, function(d) d$field, character(1)),
     c("/analysis/aim", "/analysis/unit_structure", "/ecosystem/modality"))
   for (d in inferred) {
     expect_match(d$reason, "Local planner proposal", fixed = TRUE)
     expect_match(d$reason, "not an approval", fixed = TRUE)
-    expect_contains(unlist(d$evidence_ids), c("planner:planner-2", paste0("model_digest:", fake_digest)))
+    expect_contains(unlist(d$evidence_ids), c("planner:planner-3", paste0("model_digest:", fake_digest)))
   }
   explicit <- Filter(function(d) identical(d$field, "/analysis/outcome_family"), spec$decisions)
   expect_equal(explicit[[1]]$origin, "explicit")
@@ -580,4 +580,46 @@ test_that("benchmark repeats retain evidence and distinguish wording from decisi
   expect_null(no_repeats$summary$determinism)
   expect_length(no_repeats$repeat_rows, 0L)
   expect_length(no_repeats$repeat_comparisons, 0L)
+})
+
+test_that("grounding retains keyword evidence and records omissions without changing fallback", {
+  proposal <- planner_validate(valid_reply(capability_ids = list("std.model.lm", "std.import.spreadsheet"),
+    unresolved = as.list(rep("Study details are missing.", 8L))))$proposal
+  original <- list(proposal = proposal, provenance = list(planner_mode = "local_llm"))
+  plan <- planner_ground(original, "Fit linear regression for blood pressure.")
+  expect_identical(plan$proposal$capability_ids, "std.model.lm")
+  expect_identical(plan$provenance$capability_grounding$removed, list("std.import.spreadsheet"))
+  expect_identical(plan$provenance$capability_grounding$retained, list("std.model.lm"))
+  expect_length(plan$proposal$unresolved, 8L)
+  expect_match(tail(plan$proposal$unresolved, 1), "omitted", fixed = TRUE)
+  expect_true(planner_validate(planner_proposal_json(plan$proposal))$ok)
+  expect_length(original$proposal$capability_ids, 2L)
+  keep <- planner_ground(original, "Fit linear regression using an Excel file.")
+  expect_identical(keep$proposal, original$proposal)
+  original$provenance$planner_mode <- "deterministic"
+  expect_identical(planner_ground(original, "Nothing specified."), original)
+})
+
+test_that("accepted model capabilities are filtered and omissions persist in spec decisions", {
+  withr::local_options(cttiR.planner = "local_llm")
+  local_planner_runtime(list(chat_reply(valid_reply(capability_ids = list("std.import.spreadsheet")))))
+  spec <- resolve_spec("Cohort", "methods", "Describe blood pressure.", NULL, list())
+  notes <- Filter(function(d) identical(d$field, "/provenance/prompt_version"), spec$decisions)
+  expect_length(notes, 1L)
+  expect_contains(unlist(notes[[1]]$evidence_ids), c("capability_grounding:registry-keywords-1",
+    "capability_omitted:std.import.spreadsheet"))
+  expect_match(notes[[1]]$reason, "does not approve", fixed = TRUE)
+  expect_false(spec$analysis$approved)
+})
+
+test_that("metadata prompts remain valid JSON within budget for escaped inputs", {
+  prompt <- planner_prompt(strrep('"', 200), strrep('\\', 100), strrep('"\\', 1000))
+  expect_lte(prompt$characters, planner_limits$prompt)
+  expect_true(any(prompt$truncated))
+  line <- strsplit(prompt$user, "\n", fixed = TRUE)[[1]][[3]]
+  expect_true(jsonlite::validate(line))
+  data <- jsonlite::fromJSON(line)
+  expect_named(data, c("name", "type", "goal"))
+  expect_match(prompt$system, "registered aliases:", fixed = TRUE)
+  expect_match(prompt$system, "packages:", fixed = TRUE)
 })

@@ -78,8 +78,8 @@ plan$model$name
 ```
 
 The default project planner is deterministic. Tested local models are listed
-with their benchmark results in the runtime manifest; none met the
-pre-registered planning thresholds. With `options(cttiR.planner = "local_llm")`
+with their benchmark results in the runtime manifest; no model is currently
+qualified in that manifest. With `options(cttiR.planner = "local_llm")`
 and a verified owned runtime, a model plans only if the manifest marks it
 qualified at its exact digest; otherwise the deterministic planner is used and
 the fallback reason `model_not_qualified` is recorded. Using an unqualified
@@ -88,6 +88,14 @@ model needs the separate acknowledgement
 is then stored with every decision it made. Goals that read like instructions
 to the model are never sent (`goal_injection_suspected`). Explicit options
 always win over suggestions, and replay or `sync()` never re-plan.
+
+The prompt includes registered package names and aliases. A validated model
+proposal retains only capabilities with registered keyword evidence in the goal;
+omissions are recorded in bounded notes and the project decision evidence.
+This can omit legitimate requests expressed without those keywords. Filtering
+is not workflow approval, and fixed inference settings do not guarantee identical
+suggestions. Review proposed study decisions before using them for analysis.
+Long inputs are bounded again after JSON escaping, preserving valid input JSON.
 
 ## Data flow and privacy
 
