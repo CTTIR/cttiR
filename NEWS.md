@@ -1,5 +1,7 @@
 # cttiR 0.1.1.9000
 
+* Persist fixed planner decision explanations with keyword evidence only when the rules agree; never copy the model rationale into accepted decision reasons. Bind qualification to user and repair prompts, limits and screening patterns as well as the existing context.
+
 * Interoperability adapters 1.1.0 report graph, neighbor, image, coordinate, command, identity, reduction component and SCE pairing losses, including same-class comparisons. Sparse graph comparison preserves sparse storage. Instrumented delayed-layer tests verify bounded inventory, pseudobulk and Seurat-to-SCE conversion; reverse coercion refuses backed assays before reading values.
 
 - Use broom.mixed fixed-effect tidiers for nlme answers, check known fitted-class dispatch, and surface unresolved argument warnings.

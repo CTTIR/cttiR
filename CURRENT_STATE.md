@@ -22,7 +22,26 @@ The P1 items are `ask()` emitting `broom::tidy()` for `nlme` fits, which fails
 at run time, and the conversion-loss report missing graphs and loadings. Fix
 these first.
 
-## Current continuation point: conversion losses and backed layers
+## Current continuation point: planner evidence safeguards
+
+Review R00 and R37 are implemented: persisted local-planner decision reasons use
+fixed text naming field, value and provenance, never the model's rationale.
+Matching deterministic keywords contribute rule/modality evidence; disagreement
+is explicitly flagged as unsupported and receives no invented rule citation.
+Qualification context now additionally hashes the rendered user-message template,
+repair text, limits, unsafe patterns and injection patterns. Five independent
+asset-mutation regressions invalidate a synthetic positive context. No production
+model is promoted and old development evidence is retained unchanged.
+Planner/runtime-selection tests pass with only the explicit live-model skip;
+R/planner.R lint passes. Log: review-planner-evidence-final-tests.log. Full
+validation of this additional source change is still required.
+
+The conversion milestone below is committed and pushed as 9c7a0e8. Its full check
+runs independently in cttir-interop-loss-check-9c7a0e8.service; logs are under
+artifacts/interop-loss-check-9c7a0e8 and hosted run is 37124734694. The preceding
+9ac5360 check also remains source-specific; inspect both before duplicating work.
+
+## Conversion losses and backed layers
 
 Interoperability adapters 1.1.0 now compare Seurat graphs, neighbors, images and
 coordinates, commands and identities; reduction loadings, projected loadings,
@@ -52,8 +71,8 @@ artifacts/review-r02-check-9ac5360; hosted run 37123686589 is separate evidence.
 Do not attribute those results to the later conversion changes.
 
 Remaining review work includes versioned ecosystem schema/policy and enforced
-pins, targeted ecosystem routing, planner evidence and asset binding, strict ask
-scoring, independent qualification and final current-source checks. G12 and G26
+pins, targeted ecosystem routing, strict ask
+scoring and data requirements, independent qualification and final current-source checks. G12 and G26
 remain open. COMPLETE and STOP remain absent; preserve the active retry timer.
 
 ## Preceding owner review corrections

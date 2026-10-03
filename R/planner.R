@@ -320,6 +320,10 @@ planner_qualification_context <- function(manifest = NULL) {
   registry <- capability_registry()
   list(prompt_version = planner_prompt_version, grounding_policy = planner_grounding_policy,
     prompt_sha256 = content_hash(paste(planner_rules(registry), collapse = "\n")),
+    planner_assets_sha256 = content_hash(json_text(list(
+      user = planner_prompt("<name>", "<type>", "<goal>", registry)$user,
+      repair = planner_repair_text("<errors>"), limits = planner_limits,
+      unsafe = planner_unsafe_patterns, injection = injection_patterns))),
     registry_sha256 = content_hash(json_text(registry)),
     schema_sha256 = content_hash(json_text(planner_schema(registry))),
     runtime_binary_sha256 = manifest$binary_sha256, options = planner_options())
@@ -536,7 +540,7 @@ planner_signals <- function(name, type, goal, needed, replay = FALSE) {
     return(list(signals = infer_goal(goal), plan = NULL))
   }
   plan <- plan_goal(name, type, goal, policy)
-  list(signals = plan$proposal, plan = plan)
+  list(signals = plan$proposal, plan = plan, keyword_signals = infer_goal(goal))
 }
 
 planner_used <- function(planned) {
@@ -546,9 +550,14 @@ planner_used <- function(planned) {
 planner_record <- function(planned, field, value, reason, evidence) {
   if (planner_used(planned)) {
     p <- planned$plan$provenance
-    reason <- paste0("Local planner proposal '", value, "' (", p$model_id, ", ", p$prompt_version, ", ",
-      p$model_qualification, "): ", planned$plan$proposal$rationale, " Review before analysis; this is not an approval.")
-    evidence <- c(paste0("planner:", p$prompt_version), paste0("model_digest:", p$model_digest),
+    key <- sub("^.*/", "", field)
+    supported <- identical(planned$keyword_signals[[key]], value)
+    keyword_evidence <- if (supported) evidence else character()
+    reason <- paste0("Local planner proposal for ", field, " = '", value, "' (", p$model_id, ", ", p$prompt_version, ", ",
+      p$model_qualification, "). ", if (supported) "Deterministic goal keywords agree. " else
+        "No supporting deterministic keyword evidence; review this proposal. ",
+      "Review before analysis; this is not an approval.")
+    evidence <- c(keyword_evidence, paste0("planner:", p$prompt_version), paste0("model_digest:", p$model_digest),
       paste0("model_qualification:", p$model_qualification))
   }
   list(field = field, origin = "inferred", reason = reason, evidence_ids = as.list(evidence))

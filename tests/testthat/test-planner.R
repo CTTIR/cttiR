@@ -691,3 +691,50 @@ test_that("development-only 7B evidence cannot authorize production planning", {
   withr::local_options(cttiR.planner_threads = 16L, cttiR.planner_processor = "auto")
   expect_identical(planner_qualification(entry$tag, entry$digest), "not_qualified_for_planning")
 })
+
+
+test_that("persisted planner decisions exclude ungrounded rationales and distinguish keyword support", {
+  withr::local_options(cttiR.planner = "local_llm")
+  rationale <- "The outcome is binary with 99 percent confidence."
+  local_planner_runtime(list(chat_reply(valid_reply(rationale = rationale))))
+  spec <- resolve_spec("Evidence review", "methods", "Linear regression for a continuous outcome with independent observations", NULL, list())
+  records <- Filter(function(d) d$field %in% c("/analysis/aim", "/analysis/outcome_family", "/analysis/unit_structure", "/ecosystem/modality"), spec$decisions)
+  expect_gt(length(records), 0L)
+  expect_false(any(grepl("99 percent|outcome is binary", vapply(records, function(d) d$reason, character(1)))))
+  supported <- Filter(function(d) d$field == "/analysis/outcome_family", records)[[1]]
+  expect_contains(unlist(supported$evidence_ids), "rule:outcome_family:continuous")
+  expect_match(supported$reason, "keywords agree", fixed = TRUE)
+  # A model field unsupported by the deterministic rules is labelled honestly.
+  planned <- list(plan = list(provenance = list(planner_mode = "local_llm", model_id = "fixture",
+    model_digest = "fixture-digest", prompt_version = "fixture", model_qualification = "not_qualified_for_planning"),
+    proposal = list(rationale = rationale)), keyword_signals = list(outcome_family = "continuous"))
+  unsupported <- planner_record(planned, "/analysis/outcome_family", "binary", "unused", "rule:outcome_family:binary")
+  expect_false("rule:outcome_family:binary" %in% unlist(unsupported$evidence_ids))
+  expect_match(unsupported$reason, "No supporting deterministic keyword evidence", fixed = TRUE)
+  expect_false(grepl(rationale, unsupported$reason, fixed = TRUE))
+})
+
+test_that("qualification binds user and repair templates and all acceptance limits and patterns", {
+  manifest <- read_document(resource_file("runtime", "manifest.json"))
+  entry <- manifest$tested_models[[1L]]
+  entry$qualification <- "qualified_for_planning"
+  entry$qualification_context <- planner_qualification_context(manifest)
+  manifest$tested_models[[1L]] <- entry
+  expect_identical(planner_qualification(entry$tag, entry$digest, manifest), "qualified_for_planning")
+  verify_change <- function(binding) {
+    do.call(local_mocked_bindings, c(binding, list(.package = "cttiR", .env = environment())))
+    expect_identical(planner_qualification(entry$tag, entry$digest, manifest), "not_qualified_for_planning")
+  }
+  original_prompt <- planner_prompt
+  verify_change(list(planner_prompt = function(...) {
+    prompt <- original_prompt(...)
+    prompt$user <- paste(prompt$user, "Changed user instructions.")
+    prompt
+  }))
+  verify_change(list(planner_repair_text = function(errors) "Changed repair instructions."))
+  limits <- planner_limits; limits$output_bytes <- limits$output_bytes + 1L
+  verify_change(list(planner_limits = limits))
+  verify_change(list(planner_unsafe_patterns = c(planner_unsafe_patterns, fixture = "changed_unsafe_pattern")))
+  verify_change(list(injection_patterns = c(injection_patterns, fixture = "changed_injection_pattern")))
+  expect_identical(planner_qualification(entry$tag, entry$digest, manifest), "qualified_for_planning")
+})
