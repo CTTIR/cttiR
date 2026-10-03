@@ -88,9 +88,16 @@ or skips. An initial resource-read regression was fixed; a concurrent-source
 print-test attempt is retained as superseded evidence. Final log:
 artifacts/implementation/runtime-readiness-verified-tests.log.
 
-Runtime-readiness milestone committed/pushed as 57f3583. Full source-isolated
-check is running in cttir-runtime-readiness-check-57f3583.service under
-artifacts/runtime-readiness-check-57f3583. Hosted validation is pending.
+Runtime-readiness milestone 57f3583 failed the full local check (6078 passing
+assertions, one failed assertion, 13 skips) and all five hosted jobs in run
+37158689977. The sole failure was test-app-views.R expecting exactly one blocker
+instead of the expanded preview's three. Manual/vignette checks passed. The
+corrected test checks required blocker identities, rendered qualification notice,
+empty acquisition actions and absence of runtime directory creation. Shiny-view
+and runtime suites now pass 228 assertions without failures, warnings or skips;
+log: artifacts/implementation/runtime-readiness-app-regression.log.
+A fixed synthetic live probe is running against the installed 57f3583 archive;
+it cannot qualify the model. Evidence: grounded-runtime-probe.json/log.
 Review these before starting another full check. Receipt:
 artifacts/implementation/runtime-readiness-review.json.
 
