@@ -22,7 +22,7 @@ The P1 items are `ask()` emitting `broom::tidy()` for `nlme` fits, which fails
 at run time, and the conversion-loss report missing graphs and loadings. Fix
 these first.
 
-## Current continuation point: planner context and phrase matching
+## Current continuation point: planner benchmark diagnostics
 
 Runtime-pin milestone fa68f0d passed the complete source-isolated check:
 5910 assertions, 13 documented skips (none in interop), zero errors/warnings,
@@ -46,9 +46,12 @@ and repair replies; invalid/missing counts fall back without another request.
 This checks reported counts, not independent tokenization. Policy planner-4 is
 not qualified by historical runs. Base R/report website matching excludes
 incidental substrings, and the bare-association conservative miss is pinned.
-Targeted ask/planner tests and changed-file lint passed. Full source-isolated
-check remains active in cttir-planner-context-check-ce13fe8.service; directory
-artifacts/planner-context-check-ce13fe8. Hosted run: 37148037476.
+The full ce13fe8 source check passed: 5958 assertions, 13 documented skips,
+zero errors/warnings and one NOTE (new submission, development version, Title
+prefix). PDF/HTML manuals and rebuilt vignettes passed. All five jobs in hosted
+run 37148037476 passed. Its archive has 243 members and excludes admin/artifacts.
+SHA-256: b2cfb0fb95899164fb98a5d0533c41301c455c67fe15a2d8de6b3eb3764c6c3a.
+Receipt: artifacts/implementation/planner-context-full-validation.json.
 
 Milestone a368b47 then addresses R28/R29 and R09 provenance: deterministic
 screening distinguishes hard instructions from ambiguous research phrases;
@@ -71,13 +74,32 @@ artifacts/implementation/instruction-lock-final-source-tests.log,
 instruction-lock-schema-tests.log, instruction-hard-binding-test.log and
 instruction-lock-review.json. Earlier failed attempts remain retained.
 
-Full check a368b47 is queued behind ce13fe8 in
-cttir-instruction-lock-check-a368b47.service. Queue receipt:
-artifacts/instruction-lock-check-a368b47-queue.json. Review both exact-source
-results and hosted jobs before claiming full validation or duplicating checks.
+Full check a368b47 is now running in cttir-instruction-lock-check-a368b47.service,
+under artifacts/instruction-lock-check-a368b47. Hosted run 37148803041 remains
+in progress at this checkpoint. Preserve its queue receipt and inspect results
+before claiming full validation.
 
-Next: finish owner-review R07 readiness/probe behavior, R10/R31 raw and grounded
-benchmark metrics, R20 explicit adapter memory-budget evidence, R21 maintainer
+Milestone 95740cd implements R10/R31 diagnostic reporting: benchmark rows and
+compact exports preserve pre-grounding capability IDs/scores and removed IDs.
+Summaries include pre/post-filter capability metrics, unsupported-claim share,
+and first-attempt rejection rate. With keep_raw=TRUE, parseable diagnostic
+capability arrays are scored even for rejected replies; coverage identifies
+missing/malformed/truncated unscored attempts. These are separate from validated
+pre-grounding proposals. Deterministic baseline metrics remain alongside model
+results; no threshold was replaced or relaxed. Historical planner-3 comparison
+and representative failures are shipped in inst/benchmarks/planner-review-history.json;
+missing historical pre-grounding aggregates are null, not reconstructed or zero.
+
+The planner and new metrics suites passed (one opt-in live skip), changed-file
+lint passed, and compact export JSON roundtrip passed. Evidence:
+artifacts/implementation/planner-metrics-final-tests.log and
+planner-metrics-export-test.log. Initial lint findings were fixed; the initial
+log is retained. Full source-isolated check 95740cd is queued behind a368b47 in
+cttir-planner-metrics-check-95740cd.service; queue receipt:
+artifacts/planner-metrics-check-95740cd-queue.json. Review both pending exact-source
+checks and hosted jobs before duplicating work.
+Next: finish owner-review R07 readiness/probe behavior, R20 explicit adapter
+memory-budget evidence, R21 maintainer
 provenance, and R22/R39 consolidated current gate/requirements evidence. Reconcile
 other review items individually; do not infer whole-gate completion from tests.
 G12 still needs a fresh independently authored frozen corpus and shipped-artifact
