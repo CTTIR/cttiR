@@ -31,7 +31,13 @@ import produces character columns and role selection does not silently convert
 them or produce model data. Printed answers and API documentation expose the
 contract. Ask/app-question regression tests and R/ask.R lint pass. Evidence:
 artifacts/implementation/ask-contract-final-tests.log and ask-contract-docs.log.
-Full current-source validation remains required.
+Milestone 7c6cd22 is committed and pushed. Its source-pinned full check is queued
+in cttir-answer-contract-check-7c6cd22.service behind the running 9c7a0e8 check;
+queue receipt: artifacts/answer-contract-check-7c6cd22-queue.json. It includes the
+planner safeguards from 189fdba, so that earlier queued check was superseded
+before starting (receipt retained). Hosted run 37125575122 is in progress.
+Inspect these services/receipts before launching another check. No readiness
+claim, completion marker or CRAN/external-builder submission has been made.
 
 A diagnostic strict scorer (private candidate, not yet integrated) on the already
 seen 51-case development benchmark scores supported answers only when code exists
