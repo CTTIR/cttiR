@@ -1,7 +1,7 @@
 # Reviewed static interoperability helpers for Bioconductor and Seurat objects.
 #
-# Adapters: interop.bioc_s4 1.1.0 (ci_validate_s4, ci_conversion_report),
-# interop.se_tidy_view 1.1.0 (ci_se_tidy_view) and interop.seurat_v5 1.1.0
+# Adapters: interop.bioc_s4 1.2.0 (ci_validate_s4, ci_conversion_report),
+# interop.se_tidy_view 1.2.0 (ci_se_tidy_view) and interop.seurat_v5 1.2.0
 # (ci_seurat_layers, ci_pseudobulk, ci_convert).
 #
 # Rules followed by every function in this file:
@@ -19,27 +19,46 @@ ci_stop <- function(...) stop(paste0(...), call. = FALSE)
 
 ci_prefix <- function(prefix, x) if (length(x)) paste0(prefix, x) else character()
 
-# Requires an installed package. With `version` (for example the pin from the
-# config/workflow.yml dependencies) the installed version must equal it exactly;
+# Requires an installed package with a project pin or explicit version.
+# The installed version must equal the pin exactly;
 # package_version() compares numerically, so "1.1-3" equals "1.1.3".
 # First n elements, for short messages (base indexing; no extra package API).
 ci_first <- function(x, n) x[seq_len(min(n, length(x)))]
 
-ci_need <- function(pkg, version = NULL) {
-  if (!requireNamespace(pkg, quietly = TRUE)) {
-    ci_stop("Package '", pkg, "' is required for this step but is not installed. Install it deliberately; nothing is installed automatically.")
+# Read metadata only, from the project root. Nothing from the project is sourced.
+ci_project_pins <- function(root = ".") {
+  path <- file.path(root, "cttir-lock.json")
+  if (!file.exists(path) || dir.exists(path) || file.info(path)$size > 4194304) {
+    ci_stop("A project lock of at most 4 MiB is required. Run from the project root or supply pins explicitly.")
   }
-  if (!is.null(version)) {
-    ok <- (is.character(version) && length(version) == 1L && !is.na(version) && nzchar(version)) ||
-      (inherits(version, "package_version") && length(version) == 1L)
-    pinned <- if (ok) tryCatch(package_version(as.character(version)), error = function(e) NULL)
-    if (is.null(pinned)) ci_stop("The pinned version for '", pkg, "' must be one version such as '1.1-3'.")
-    installed <- utils::packageVersion(pkg)
-    if (installed != pinned) {
-      ci_stop("Package '", pkg, "' ", as.character(installed), " is installed but the project pins ", as.character(version),
-        ". Install the pinned version deliberately or review and update the pin; nothing is installed automatically.")
-    }
+  if (!requireNamespace("jsonlite", quietly = TRUE)) ci_stop("jsonlite is required to read the project pins.")
+  lock <- tryCatch(jsonlite::fromJSON(path, simplifyVector = FALSE), error = function(e) NULL)
+  pins <- if (is.list(lock)) lock$dependencies else NULL
+  if (!is.list(pins) || !length(pins) || !is.null(names(pins))) ci_stop("The project lock must contain dependency pins.")
+  names <- vapply(pins, function(pin) {
+    name <- if (is.list(pin)) pin$package else NULL
+    if (!is.character(name) || length(name) != 1L || is.na(name) ||
+        !grepl("^[A-Za-z][A-Za-z0-9.]*$", name)) ci_stop("Invalid package identity in project pins.")
+    name
+  }, character(1))
+  if (anyDuplicated(names)) ci_stop("Duplicate package identities in project pins.")
+  ci_need("jsonlite", ci_pinned_version(pins, "jsonlite"))
+  pins
+}
+
+ci_need <- function(pkg, version = ci_pinned_version(ci_project_pins(), pkg)) {
+  if (is.null(version)) ci_stop("Package '", pkg, "' has no project pin; supply a reviewed exact version.")
+  ok <- (is.character(version) && length(version) == 1L && !is.na(version) && nzchar(version)) ||
+    (inherits(version, "package_version") && length(version) == 1L)
+  pinned <- if (ok) tryCatch(package_version(as.character(version)), error = function(e) NULL)
+  if (is.null(pinned)) ci_stop("The pinned version for '", pkg, "' must be one version such as '1.1-3'.")
+  installed <- tryCatch(utils::packageVersion(pkg), error = function(e) NULL)
+  if (is.null(installed)) ci_stop("Package '", pkg, "' is not installed. Install it deliberately; nothing is installed automatically.")
+  if (installed != pinned) {
+    ci_stop("Package '", pkg, "' ", as.character(installed), " is installed but the project pins ", as.character(version),
+      ". Install the pinned version deliberately or review and update the pin; nothing is installed automatically.")
   }
+  if (!requireNamespace(pkg, quietly = TRUE)) ci_stop("Package '", pkg, "' could not be loaded.")
   invisible(TRUE)
 }
 
@@ -50,26 +69,34 @@ ci_pinned_version <- function(pins, pkg) {
   if (is.null(pins)) return(NULL)
   if (is.data.frame(pins)) {
     if (!all(c("package", "version") %in% names(pins))) ci_stop("A pins table needs 'package' and 'version' columns.")
+    if (anyDuplicated(pins$package)) ci_stop("Duplicate package identities in pins.")
     hit <- which(pins$package == pkg)
     return(if (length(hit) && !is.na(pins$version[[hit[[1L]]]])) as.character(pins$version[[hit[[1L]]]]) else NULL)
   }
   if (!is.null(names(pins))) {
+    if (anyDuplicated(names(pins))) ci_stop("Duplicate package identities in pins.")
     if (!pkg %in% names(pins)) return(NULL)
     return(if (is.list(pins)) pins[[pkg]] else unname(pins[[pkg]]))
   }
   if (!is.list(pins)) ci_stop("pins must be a dependency list (package, version) or a named vector of versions.")
+  ids <- vapply(pins, function(dep) if (is.list(dep) && is.character(dep$package) && length(dep$package) == 1L) dep$package else "", character(1))
+  if (anyDuplicated(ids)) ci_stop("Duplicate package identities in pins.")
   for (dep in pins) if (is.list(dep) && identical(dep$package, pkg)) return(dep$version)
   NULL
 }
 
 # Load the namespace that defines an S4 object's class so that its documented
-# methods dispatch (for example after readRDS()). Only installed packages named
-# by the object's own class attribute are loaded; a pinned version is enforced.
-ci_load_class_pkg <- function(x, pins = NULL) {
+# methods dispatch (for example after readRDS()). Required accessor packages
+# and the class-defining package must match explicit pins, even if already loaded.
+ci_load_class_pkg <- function(x, pins = ci_project_pins()) {
+  for (name in c("methods", "utils", "stats")) ci_need(name, ci_pinned_version(pins, name))
+  needed <- if (methods::is(x, "Seurat")) c("SeuratObject", "Matrix") else
+    if (methods::is(x, "SummarizedExperiment")) c("SummarizedExperiment", "S4Vectors") else character()
+  for (name in needed) ci_need(name, ci_pinned_version(pins, name))
   pkg <- attr(class(x), "package")
   if (!isS4(x) || !is.character(pkg) || length(pkg) != 1L || !nzchar(pkg)) return(invisible(TRUE))
   version <- ci_pinned_version(pins, pkg)
-  if (!is.null(version) || !isNamespaceLoaded(pkg)) ci_need(pkg, version)
+  ci_need(pkg, version)
   invisible(TRUE)
 }
 
@@ -260,7 +287,7 @@ ci_seurat_components <- function(x) {
   out
 }
 
-ci_profile <- function(x, pins = NULL) {
+ci_profile <- function(x, pins = ci_project_pins()) {
   ci_load_class_pkg(x, pins)
   if (methods::is(x, "Seurat")) {
     ci_need("SeuratObject", ci_pinned_version(pins, "SeuratObject"))
@@ -632,8 +659,8 @@ ci_long_columns <- function(src_cols, df, keys, field, tgt) {
 # slice. Selections are sets; rows follow the object's original order
 # (samples outer, features inner). Refuses before realizing more than
 # `max_cells` values; the stored assay object is never coerced as a whole.
-ci_se_tidy_view <- function(se, assay = 1L, features = NULL, samples = NULL, max_cells = 1e5) {
-  ci_load_class_pkg(se)
+ci_se_tidy_view <- function(se, assay = 1L, features = NULL, samples = NULL, max_cells = 1e5, pins = ci_project_pins()) {
+  ci_load_class_pkg(se, pins)
   if (!methods::is(se, "SummarizedExperiment")) ci_stop("se must be a SummarizedExperiment (or a subclass such as SingleCellExperiment).")
   if (!is.numeric(max_cells) || length(max_cells) != 1L || is.na(max_cells) || max_cells < 1) ci_stop("max_cells must be one positive number.")
   nm <- ci_assay_names(se)
@@ -676,7 +703,7 @@ ci_se_tidy_view <- function(se, assay = 1L, features = NULL, samples = NULL, max
     if (length(fi) < nrow(se)) paste0("features outside slice: ", nrow(se) - length(fi)),
     if (length(si) < ncol(se)) paste0("samples outside slice: ", ncol(se) - length(si)),
     paste0("storage: ", ci_storage(a), " ", class(a)[[1L]], " representation (values copied for the slice only)"))
-  attr(out, "ci_view") <- list(adapter = "interop.se_tidy_view", adapter_version = "1.1.0",
+  attr(out, "ci_view") <- list(adapter = "interop.se_tidy_view", adapter_version = "1.2.0",
     source_class = ci_class_label(se), assay = nm[[i]], assay_class = class(a)[[1L]], storage = ci_storage(a),
     source_dim = as.integer(dim(se)), slice_dim = c(length(fi), length(si)), realized_values = n_values,
     max_cells = max_cells, order = "original object order; samples outer, features inner",
@@ -712,16 +739,16 @@ ci_select <- function(sel, keys, n, what) {
 # `to` is one of those or a data.frame. Status is preserved, transformed or
 # lost. Values are compared block-wise after key alignment. The attribute
 # "lossless" is TRUE only when every field is preserved; equal dimensions
-# alone never make a conversion lossless. `pins` (optional, see
+# alone never make a conversion lossless. `pins` (defaults to the project lock; see
 # ci_pinned_version()) enforces exact versions of the packages used.
-ci_conversion_report <- function(from, to, pins = NULL) {
+ci_conversion_report <- function(from, to, pins = ci_project_pins()) {
   if (is.data.frame(from)) ci_stop("from must be a SummarizedExperiment, SingleCellExperiment or Seurat object.")
   src <- ci_profile(from, pins)
   rows <- if (is.data.frame(to)) ci_report_data_frame(src, to) else ci_report_objects(src, ci_profile(to, pins))
   out <- do.call(rbind, rows)
   rownames(out) <- NULL
   attr(out, "lossless") <- all(out$status == "preserved")
-  attr(out, "adapter") <- c(id = "interop.bioc_s4", version = "1.1.0")
+  attr(out, "adapter") <- c(id = "interop.bioc_s4", version = "1.2.0")
   out
 }
 
@@ -734,10 +761,11 @@ ci_conversion_report <- function(from, to, pins = NULL) {
 # lacks one (for example ADT with counts only) is left out, reported as lost and
 # listed in `limitations` (also attribute "limitations" of the report).
 ci_convert <- function(x, to = c("Seurat", "SingleCellExperiment"), counts = "counts", data = "logcounts",
-  pins = NULL) {
+  pins = ci_project_pins()) {
   to <- match.arg(to)
   ci_load_class_pkg(x, pins)
   ci_need("Seurat", ci_pinned_version(pins, "Seurat"))
+  ci_need("Matrix", ci_pinned_version(pins, "Matrix"))
   limitations <- character()
   skipped <- character()
   if (identical(to, "Seurat")) {
@@ -787,7 +815,7 @@ ci_convert <- function(x, to = c("Seurat", "SingleCellExperiment"), counts = "co
 #
 # One row per assay layer. Value checks walk column blocks and never realize
 # a whole layer at once. `issue` is empty when no problem was detected.
-ci_seurat_layers <- function(obj, pins = NULL) {
+ci_seurat_layers <- function(obj, pins = ci_project_pins()) {
   ci_load_class_pkg(obj, pins)
   ci_need("SeuratObject", ci_pinned_version(pins, "SeuratObject"))
   if (!methods::is(obj, "Seurat")) ci_stop("obj must be a Seurat object.")
@@ -843,7 +871,7 @@ ci_seurat_layers <- function(obj, pins = NULL) {
 # for every cell (a cell identifier). A pseudobulk sample built from one cell
 # is refused unless allow_single_cell_samples = TRUE. Returns list(counts,
 # samples, design); pseudobulk samples, not cells, are the replicates downstream.
-ci_pseudobulk <- function(obj_or_sce, donor, group, allow_single_cell_samples = FALSE, pins = NULL) {
+ci_pseudobulk <- function(obj_or_sce, donor, group, allow_single_cell_samples = FALSE, pins = ci_project_pins()) {
   x <- obj_or_sce
   for (arg in list(donor, group)) {
     if (!is.character(arg) || length(arg) != 1L || is.na(arg) || !nzchar(arg)) ci_stop("donor and group must each name one sample-level column.")
@@ -853,6 +881,7 @@ ci_pseudobulk <- function(obj_or_sce, donor, group, allow_single_cell_samples = 
     ci_stop("allow_single_cell_samples must be TRUE or FALSE.")
   }
   ci_load_class_pkg(x, pins)
+  ci_need("Matrix", ci_pinned_version(pins, "Matrix"))
   if (methods::is(x, "Seurat")) {
     ci_need("SeuratObject", ci_pinned_version(pins, "SeuratObject"))
     a <- SeuratObject::DefaultAssay(x)
@@ -916,7 +945,7 @@ ci_pseudobulk <- function(obj_or_sce, donor, group, allow_single_cell_samples = 
   }
   dimnames(res) <- list(rownames(counts), ids)
   samples <- data.frame(pseudobulk_id = ids, donor = pairs$donor, group = pairs$group, n_cells = n_cells, stringsAsFactors = FALSE)
-  list(counts = res, samples = samples, design = list(adapter = "interop.seurat_v5", adapter_version = "1.1.0",
+  list(counts = res, samples = samples, design = list(adapter = "interop.seurat_v5", adapter_version = "1.2.0",
       source = source, donor_column = donor, group_column = group, n_cells = length(cells),
       donors_per_group = per_group, single_cell_samples = length(single),
       allow_single_cell_samples = allow_single_cell_samples, unit = "donor x group pseudobulk sample",
@@ -927,8 +956,9 @@ ci_pseudobulk <- function(obj_or_sce, donor, group, allow_single_cell_samples = 
 #
 # Returns list(class, package, package_version, is_s4, class_defined, valid,
 # message, extends). Non-S4 inputs report valid = NA (not applicable).
-ci_validate_s4 <- function(x) {
-  ci_load_class_pkg(x)
+ci_validate_s4 <- function(x, pins = ci_project_pins()) {
+  ci_need("methods", ci_pinned_version(pins, "methods"))
+  ci_load_class_pkg(x, pins)
   cls <- class(x)
   pkg <- attr(cls, "package")
   pkg <- if (is.character(pkg) && length(pkg) == 1L) pkg else NA_character_

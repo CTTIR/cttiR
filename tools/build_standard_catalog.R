@@ -135,6 +135,19 @@ template_code <- function(file) {
   parse(text = text, keep.source = FALSE)
 }
 
+# all.names() omits calls nested in formal-argument pairlists. Defaults are
+# executable code too, so include their names in the approval closure.
+template_names <- function(expr) {
+  out <- all.names(expr)
+  if (is.call(expr) || is.pairlist(expr)) {
+    parts <- as.list(expr)
+    for (i in seq_along(parts)) {
+      if (!identical(unname(parts[i]), unname(alist(x = )))) out <- c(out, template_names(parts[[i]]))
+    }
+  }
+  unique(out)
+}
+
 # One unit per top-level template function, plus the remaining top-level code of
 # each file as `<file>path`: its namespaced usage and every name it references.
 template_units <- function(root = template_root) {
@@ -144,7 +157,7 @@ template_units <- function(root = template_root) {
     for (e in template_code(file)) {
       if (is.call(e) && identical(e[[1]], as.name("<-")) && is.name(e[[2]]) && is.call(e[[3]]) &&
           identical(e[[3]][[1]], as.name("function"))) {
-        units[[as.character(e[[2]])]] <- list(usage = namespaced_usage(e[[3]]), names = all.names(e[[3]]))
+        units[[as.character(e[[2]])]] <- list(usage = namespaced_usage(e[[3]]), names = template_names(e[[3]]))
       } else {
         top[[length(top) + 1L]] <- e
       }

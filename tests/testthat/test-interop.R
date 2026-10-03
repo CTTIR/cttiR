@@ -24,6 +24,14 @@ interop_template <- function() {
   expect_true(nzchar(path))
   env <- new.env(parent = baseenv())
   sys.source(path, envir = env, keep.source = FALSE)
+  root <- tempfile("interop-pins-")
+  dir.create(root)
+  withr::defer(unlink(root, recursive = TRUE), envir = parent.frame())
+  installed <- utils::installed.packages()
+  installed <- installed[!duplicated(installed[, "Package"]), , drop = FALSE]
+  pins <- lapply(seq_len(nrow(installed)), function(i) list(package = installed[i, "Package"], version = installed[i, "Version"]))
+  jsonlite::write_json(list(dependencies = pins), file.path(root, "cttir-lock.json"), auto_unbox = TRUE)
+  withr::local_dir(root, .local_envir = parent.frame())
   env
 }
 
@@ -100,9 +108,9 @@ field_status <- function(report, field) report$status[report$field == field]
 test_that("the static interop source uses only reviewed namespaces and no package references", {
   path <- interop_template_path()
   text <- readLines(path, warn = FALSE)
-  expect_false(any(grepl("cttir", text, ignore.case = TRUE)))
+  expect_false(any(grepl("cttiR::", text, fixed = TRUE)))
   pd <- utils::getParseData(parse(path, keep.source = TRUE))
-  allowed <- c("SummarizedExperiment", "SingleCellExperiment", "S4Vectors", "Matrix", "SeuratObject", "Seurat", "methods", "stats", "utils")
+  allowed <- c("SummarizedExperiment", "SingleCellExperiment", "S4Vectors", "Matrix", "SeuratObject", "Seurat", "methods", "stats", "utils", "jsonlite")
   expect_true(all(unique(pd$text[pd$token == "SYMBOL_PACKAGE"]) %in% allowed))
   expect_false(any(pd$token == "NS_GET_INT"))
   expect_false(any(pd$token == "'@'"))
@@ -116,7 +124,7 @@ test_that("the static interop source uses only reviewed namespaces and no packag
   for (f in c("ci_se_tidy_view", "ci_conversion_report", "ci_seurat_layers", "ci_pseudobulk", "ci_validate_s4", "ci_convert")) {
     expect_true(is.function(env[[f]]))
   }
-  expect_equal(names(formals(env$ci_se_tidy_view)), c("se", "assay", "features", "samples", "max_cells"))
+  expect_equal(names(formals(env$ci_se_tidy_view)), c("se", "assay", "features", "samples", "max_cells", "pins"))
   expect_equal(formals(env$ci_se_tidy_view)$max_cells, 1e5)
   expect_equal(names(formals(env$ci_conversion_report)), c("from", "to", "pins"))
   expect_equal(names(formals(env$ci_pseudobulk)), c("obj_or_sce", "donor", "group", "allow_single_cell_samples", "pins"))
@@ -154,9 +162,12 @@ test_that("package requirements can enforce exact pinned versions", {
   skip_if_not_installed("Matrix")
   skip_if_not_installed("DelayedArray")
   se <- se_fixture()$se
-  wrong <- list(list(package = "SummarizedExperiment", version = "0.0.1"))
+  right <- env$ci_project_pins()
+  wrong <- lapply(right, function(pin) {
+    if (pin$package == "SummarizedExperiment") pin$version <- "0.0.1"
+    pin
+  })
   expect_error(env$ci_conversion_report(se, se, pins = wrong), "'SummarizedExperiment' .* pins 0.0.1")
-  right <- list(list(package = "SummarizedExperiment", version = as.character(utils::packageVersion("SummarizedExperiment"))))
   expect_true(attr(env$ci_conversion_report(se, se, pins = right), "lossless"))
 })
 
@@ -382,7 +393,11 @@ test_that("altExps without the requested data assay are reported, not fatal", {
   SummarizedExperiment::assay(no_log, "logcounts") <- NULL
   expect_error(env$ci_convert(no_log, "Seurat"), "main experiment has no assay 'logcounts'")
   expect_error(env$ci_convert(sce, "Seurat", counts = NULL, data = NULL), "cannot both be NULL")
-  expect_error(env$ci_convert(sce, "Seurat", pins = list(Seurat = "0.0.1")), "'Seurat' .* pins 0.0.1")
+  wrong <- lapply(env$ci_project_pins(), function(pin) {
+    if (pin$package == "Seurat") pin$version <- "0.0.1"
+    pin
+  })
+  expect_error(env$ci_convert(sce, "Seurat", pins = wrong), "'Seurat' .* pins 0.0.1")
 })
 
 test_that("observed Seurat 5.5.1 conversion behavior stays recorded in the registry", {
@@ -580,7 +595,7 @@ test_that("the bioc/seurat capability registry is valid and truthful about testi
   status <- stats::setNames(vapply(caps, function(x) x$status, character(1)), ids)
   expect_equal(status[["bioc.se.tidy_view"]], "adapter_tested")
   expect_equal(status[["seurat.single_cell.exploration"]], "candidate")
-  tested_packages <- c("SummarizedExperiment", "S4Vectors", "SingleCellExperiment", "Matrix", "Seurat", "SeuratObject", "methods")
+  tested_packages <- c("SummarizedExperiment", "S4Vectors", "SingleCellExperiment", "Matrix", "Seurat", "SeuratObject", "methods", "jsonlite", "utils", "stats")
   adapters <- interop_adapters()
   env <- interop_template()
   for (cap in caps) {
@@ -659,7 +674,7 @@ test_that("invalid capability registries are rejected", {
       x
     },
     candidate_with_adapter = function(x) {
-      x$capabilities[[candidate]]$adapter <- list(id = "interop.bioc_s4", version = "1.1.0")
+      x$capabilities[[candidate]]$adapter <- list(id = "interop.bioc_s4", version = "1.2.0")
       x
     },
     tested_without_adapter = function(x) {
@@ -669,7 +684,7 @@ test_that("invalid capability registries are rejected", {
     },
     unreviewed_adapter = function(x) {
       x$capabilities[[seurat]]$status <- "adapter_tested"
-      x$capabilities[[seurat]]$adapter <- list(id = "interop.seurat_v5", version = "1.1.0")
+      x$capabilities[[seurat]]$adapter <- list(id = "interop.seurat_v5", version = "1.2.0")
       x$capabilities[[seurat]]$adapter$version <- "9.9.9"
       x
     },
@@ -802,4 +817,40 @@ test_that("Seurat delayed layers preserve backing and bounded pseudobulk while r
   SingleCellExperiment::altExp(plain, "backed") <- converted$object
   expect_error(env$ci_convert(plain, "Seurat", data = NULL), "backed/counts")
   expect_equal(delayed$log$total, 0)
+})
+
+test_that("Seurat interop pins default to a static lock and cannot be bypassed with NULL", {
+  env <- interop_template()
+  version <- as.character(utils::packageVersion("utils"))
+  expect_true(env$ci_need("utils"))
+  expect_error(env$ci_need("utils", NULL), "no project pin")
+  expect_error(env$ci_pinned_version(c(utils = version, utils = version), "utils"), "Duplicate")
+  lock <- jsonlite::read_json("cttir-lock.json")
+  lock$dependencies <- Filter(function(pin) pin$package != "utils", lock$dependencies)
+  jsonlite::write_json(lock, "cttir-lock.json", auto_unbox = TRUE)
+  expect_error(env$ci_need("utils"), "no project pin")
+  unlink("cttir-lock.json")
+  expect_error(env$ci_need("utils"), "project lock")
+  expect_true(env$ci_need("utils", version))
+  writeLines('{"dependencies": [', "cttir-lock.json")
+  expect_error(env$ci_project_pins(), "dependency pins")
+})
+
+test_that("Seurat interop checks already loaded class namespaces against default pins", {
+  interop_skip_if_not_installed("SummarizedExperiment")
+  skip_if_not_installed("S4Vectors")
+  skip_if_not_installed("Matrix")
+  skip_if_not_installed("DelayedArray")
+  env <- interop_template()
+  se <- se_fixture()$se
+  expect_true(isNamespaceLoaded("SummarizedExperiment"))
+  lock <- jsonlite::read_json("cttir-lock.json")
+  lock$dependencies <- lapply(lock$dependencies, function(pin) {
+    if (pin$package == "SummarizedExperiment") pin$version <- "0.0.1"
+    pin
+  })
+  jsonlite::write_json(lock, "cttir-lock.json", auto_unbox = TRUE)
+  expect_error(env$ci_conversion_report(se, se), "SummarizedExperiment.*pins 0.0.1")
+  expect_error(env$ci_se_tidy_view(se), "SummarizedExperiment.*pins 0.0.1")
+  expect_error(env$ci_validate_s4(se), "SummarizedExperiment.*pins 0.0.1")
 })

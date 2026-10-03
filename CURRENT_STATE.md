@@ -22,43 +22,45 @@ The P1 items are `ask()` emitting `broom::tidy()` for `nlme` fits, which fails
 at run time, and the conversion-loss report missing graphs and loadings. Fix
 these first.
 
-## Current continuation point: audit all dependency pins
+## Current continuation point: runtime interoperability pins and approval closure
 
-Milestone e5ec69f passed the complete source-isolated local check: 5861 assertions,
+Milestone becdb38 passed the complete source-isolated local check: 5886 assertions,
 13 skips, zero errors/warnings and one NOTE (new submission and Title prefix).
 PDF/HTML manuals and rebuilt vignettes passed. Tarball SHA-256:
-8fa3c05b74e03a632214f7c2c31e48e7857a5396c93109135c70741de46252e2.
-Its 240 members exclude admin/artifacts. All five jobs in hosted run 37136966203
-passed. Evidence: artifacts/implementation/ecosystem-schema-full-validation.json
-and ecosystem-schema-hosted-ci.json. R15 schema migration retains the exact v1
-contracts and project hashes on read; sync preserves originals and pins, with
-preview/conflict/rollback tests. General explicit package-request generation is
-still unsupported; that existing typed refusal is retained.
+18155306505984874d81232e2b2b5f39013db2cec9595ffc5b35f3779129ed81.
+Its 241 members exclude admin/artifacts. All five jobs in hosted run 37140698195
+passed. Receipt: artifacts/implementation/all-pins-full-validation.json.
 
-R16 audit portion: new RES-008 checks every required and optional dependency pin,
-including CRAN packages. In renv mode it reads the recorded/discovered project
-library rather than substituting a global installation. Missing, mismatched or
-invalid pins warn at scaffold level and fail an analysis_ready claim. No package
-is installed, namespace loaded, or project code executed. Metadata version matches
-do not prove source hashes or scientific suitability. Focused tests and the audit-registry/environment integration suites pass, with
-two opt-in install/restore skips.
-Logs: artifacts/implementation/all-pins-tests.log and all-pins-verified-tests.log.
-New source lint passes; existing lintr object_usage diagnostics at unchanged
-R/environment.R:213 (renv::paths$library) are retained in diagnostic logs.
-The old environment implementation is byte-identical; only the inventory helper
-was appended. Committed/pushed as becdb38; full validation runs in
-cttir-all-pins-check-becdb38.service, with status/logs under
-artifacts/all-pins-check-becdb38. No current-source full-check claim is made yet.
+R16 runtime portion is now implemented in interoperability adapters 1.2.0.
+The standalone helpers read cttir-lock.json from the project root by default,
+require exact pins for accessor/class packages, and refuse missing/mismatched
+pins even for already-loaded namespaces. Explicit complete reviewed pins remain
+supported. No packages are installed or project code sourced. jsonlite reads the
+lock and is then version-checked before object operations. Regression fixtures
+use isolated synthetic lockfiles recording the test environment's versions;
+these are not substituted for real project pins in production.
+Missing locks/pins, explicit NULL, duplicates, malformed JSON, and loaded-namespace
+mismatches are tested. Bounded/loss-report/Seurat fixtures continue to pass.
 
-R16 remains OPEN: standalone ci_* interop helpers still default to pins = NULL.
-Next implement a static project-pin reader, missing-pin refusal and default
-runtime enforcement, including the already-loaded class-namespace path. Review
-adapter version/evidence and regenerate the template manifest/catalog approvals
-as necessary; do not treat this audit-only milestone as runtime enforcement.
-Then close remaining owner review items and independently authored held-out
-qualification/manual usefulness checks. The corpus still needs a separate author;
-no reviewer agent has been authorized or started. G12/G26 remain open.
-COMPLETE/STOP absent; retry timer active. No CRAN/external-builder submission.
+The first catalog build stopped because the approval scanner did not traverse
+formal-argument defaults. template_names now includes default-expression calls;
+tools/test_template_defaults.R covers direct and nested defaults. No failed build
+was treated as complete. The corrected build passed all 63 recorded fixtures,
+with 67/67 complete approval decisions and 192 approved callables. New catalog:
+3e1983fd7f81b618d8cf614d33775068d8ad5628fa96723c515d331122e1501a.
+Previous c538a9f snapshot is retained under inst/extdata/history. Ask,
+catalog-evidence and router integration suites pass with the new catalog.
+Logs: artifacts/implementation/runtime-pins-final-tests.log,
+runtime-pins-default-closure.log, runtime-pins-catalog-build-final.log,
+runtime-pins-catalog-integration.log and standard-catalog-build.json.
+Full source-isolated check and hosted validation of this milestone are pending.
+
+Next: review the new full-check/CI results, reconcile R16/G26 evidence, then close
+remaining owner-review items before independent held-out qualification/manual
+usefulness checks. The corpus still needs a separate author; no reviewer agent
+has been authorized or started. No production model qualification was promoted.
+G12/G26 and full readiness remain open. COMPLETE/STOP absent; retry timer active.
+No CRAN/external-builder submission.
 
 ## Preceding explicit answer data requirements
 

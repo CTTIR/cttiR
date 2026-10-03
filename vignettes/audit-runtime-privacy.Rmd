@@ -45,6 +45,14 @@ missing project package. Unresolved pins warn for a scaffold and fail an
 `analysis_ready` claim. Matching version numbers alone do not establish matching
 source hashes or scientific suitability. Nothing is installed by this check.
 
+Generated interoperability helpers also enforce pins at runtime. Run them from
+the project root so they can read `cttir-lock.json`, or pass a complete reviewed
+`pins` list explicitly. They refuse a missing lock, missing package pins and
+installed-version mismatches, including when the class namespace is already
+loaded. The lock is read as JSON; no project code is sourced, and nothing is
+installed automatically. `jsonlite` reads the lock and its version is then
+checked against that lock before object operations proceed.
+
 Repairs are an explicit allowlist: restore a missing managed file whose
 baseline is known, roll back an interrupted write whose writer has stopped, and
 repoint a corrupt catalog pointer to the last verified snapshot. Edited files
