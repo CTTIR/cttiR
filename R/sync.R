@@ -136,8 +136,14 @@ sync_plan <- function(project, bundle, accepted = character()) {
     baseline <- if (is.na(index)) NA_character_ else old[[index]]$baseline_sha256
     ownership <- if (control) "managed" else if (is.na(index)) "new" else old[[index]]$ownership
     if ((control && is.na(baseline)) || path %in% accepted) baseline <- actual
-    edited <- !identical(actual, baseline)
-    if (identical(actual, desired)) {
+    # A file that differs only by CRLF line endings (saved on Windows) is
+    # compared by its LF content; old_hash keeps the exact bytes for the writer.
+    current <- actual
+    if (!is.na(actual) && !identical(actual, baseline) && !identical(actual, desired)) {
+      current <- lf_file_hash(file.path(project$path, path), actual)
+    }
+    edited <- !identical(current, baseline)
+    if (identical(current, desired)) {
       action <- c("skip", "unchanged")
     } else if (is.na(actual)) {
       action <- c("create", if (is.na(index) && !control) "new_file" else "missing_file")

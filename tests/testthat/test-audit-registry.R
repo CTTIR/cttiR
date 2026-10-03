@@ -597,7 +597,16 @@ test_that("RES-007 enforces the Bioconductor release of a project's pins against
   expect_gt(length(pins), 0L)
   expect_true(all(vapply(pins, function(d) identical(d$bioc_release, "3.23"), logical(1))))
   local_mocked_bindings(running_r_minor = function() "4.5")
+  # Modality interop pins are optional: another R only makes that code unusable here.
   row <- audit_res_bioc_pins(audit_context(cells$path, "project", FALSE, FALSE))
-  expect_equal(row$status, "fail")
+  expect_equal(row$status, "warning")
   expect_match(row$message, "not verified for this R", fixed = TRUE)
+  lock <- file.path(cells$path, "cttir-lock.json")
+  record <- jsonlite::read_json(lock)
+  record$dependencies <- lapply(record$dependencies, function(d) {
+    if (!is.null(d$bioc_release)) d$required <- TRUE
+    d
+  })
+  jsonlite::write_json(record, lock, auto_unbox = TRUE, pretty = TRUE, null = "null")
+  expect_equal(audit_res_bioc_pins(audit_context(cells$path, "project", FALSE, FALSE))$status, "fail")
 })

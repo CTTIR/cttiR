@@ -64,6 +64,7 @@ slug_loses_letters <- function(x) {
 # short hash of the full name, so that distinct names keep distinct slugs; long
 # names are shortened the same way.
 safe_slug <- function(x) {
+  x <- utf8_input(x)
   scalar_text(x, "name")
   if (grepl("[/\\\\]", x) || x %in% c(".", "..")) {
     abort_cttir("Names cannot contain path separators or traversal.", field = "name")

@@ -23,6 +23,19 @@ file_hash <- function(path) {
   digest::digest(file = path, algo = "sha256")
 }
 
+# Hash of a text file with CRLF line endings read as LF; files with NUL bytes
+# (binary) keep their exact hash.
+lf_file_hash <- function(path, exact = file_hash(path)) {
+  size <- file.info(path)$size
+  if (is.na(size) || size > 26214400) return(exact)
+  bytes <- readBin(path, "raw", size)
+  if (any(bytes == as.raw(0L))) return(exact)
+  cr <- which(bytes == as.raw(13L))
+  crlf <- cr[cr < length(bytes) & bytes[pmin(cr + 1L, length(bytes))] == as.raw(10L)]
+  if (!length(crlf)) return(exact)
+  digest::digest(bytes[-crlf], algo = "sha256", serialize = FALSE)
+}
+
 abort_not_project_root <- function(root) {
   if (file.exists(file.path(root, ".cttir", "state.json"))) {
     abort_cttir("The project file cttir-project.yml is missing.", "cttir_path_conflict", "incomplete_project",

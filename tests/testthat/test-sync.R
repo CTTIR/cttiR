@@ -203,3 +203,17 @@ test_that("sync names the project root and refuses empty answers", {
   unknown <- project("Unknown", "methods", "Goal", new_parent(), options = list(research = list(design = NULL)), dry_run = TRUE)
   expect_null(unknown$spec$research$design)
 })
+
+test_that("files that differ from their baseline only by CRLF line endings are not edits", {
+  p <- project("Line endings", "methods", "Goal", new_parent())
+  crlf <- function(file) {
+    lines <- readLines(file)
+    writeBin(charToRaw(paste0(paste(lines, collapse = "\r\n"), "\r\n")), file)
+  }
+  crlf(file.path(p$path, "config/analysis.yml"))
+  crlf(file.path(p$path, "cttir-project.yml"))
+  expect_equal(sync(p$path)$state, "planned")
+  applied <- sync(p$path, options = list(analysis = list(aim = "descriptive")), dry_run = FALSE)
+  expect_equal(applied$state, "applied")
+  expect_equal(read_project(p$path)$spec$analysis$aim, "descriptive")
+})

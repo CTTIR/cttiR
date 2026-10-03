@@ -262,7 +262,8 @@ test_that("offline preparation hydrates only the selected packages in an isolate
   expect_s3_class(result, "cttir_environment")
   expect_equal(result$state, "environment_ready", info = paste(unlist(result$process_log), collapse = "\n"))
   expect_null(result$reason)
-  expect_length(result$refused_downloads, 0L)
+  # renv may look up repository indexes (refused offline); no package archive is ever needed.
+  expect_false(any(grepl("[.](tar[.]gz|tgz|zip)$", unlist(result$refused_downloads))))
   expect_length(result$files_modified, 0L)
   expect_setequal(unlist(result$files_created), renv_files)
   after <- tree_hashes(p$path)

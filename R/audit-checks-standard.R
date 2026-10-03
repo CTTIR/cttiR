@@ -614,10 +614,14 @@ audit_res_bioc_pins <- function(context) {
     evidence <- list(releases = as.list(releases), r_minor = as.list(r_minor), running_r = running,
       version_mismatches = as.list(mismatches))
     if (length(releases) > 1L || anyNA(r_minor) || any(r_minor != running)) {
+      # Required pins make the workflow depend on these revisions; optional
+      # interop pins only need them when that code is used.
+      required <- any(vapply(pins, function(d) !identical(d$required, FALSE), logical(1)))
       message <- paste0("The project pins Bioconductor ", paste(releases, collapse = ", "), " (R ",
         paste(r_minor, collapse = ", "), ") but this session runs R ", running,
-        "; those revisions were not verified for this R.")
-      return(audit_result("fail", message, evidence))
+        "; those revisions were not verified for this R",
+        if (required) "." else ", so the optional interop code cannot use them here.")
+      return(audit_result(if (required) "fail" else "warning", message, evidence))
     }
     if (length(mismatches)) {
       message <- paste0("Installed Bioconductor-family packages differ from the project pins: ",
