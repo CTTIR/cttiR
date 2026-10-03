@@ -41,8 +41,9 @@ modality. Signac, plain scRNA, Azimuth and donor-pseudobulk requests have positi
 and negative regressions, including negation. Only approved, enabled CTTIR
 specialists suppress covered stages. Ecosystem candidates stay disabled, and
 clinical/tabular requests remain excluded. Router/planner/standard-workflow tests
-and source lint pass (one opt-in live planner skip). Full validation of this new
-source is still required. Logs: requested-routing-tests-final.log and
+and source lint pass (one opt-in live planner skip). Committed/pushed as 9f041c7. Its full check runs in
+cttir-requested-routing-check-9f041c7.service, with status/logs under
+artifacts/requested-routing-check-9f041c7. Logs: requested-routing-tests-final.log and
 requested-routing-integration-tests.log under artifacts/implementation.
 
 R03 strict scoring/data contracts pass the full check above. The previously seen
