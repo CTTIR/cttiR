@@ -96,13 +96,21 @@ corrected test checks required blocker identities, rendered qualification notice
 empty acquisition actions and absence of runtime directory creation. Shiny-view
 and runtime suites now pass 228 assertions without failures, warnings or skips;
 log: artifacts/implementation/runtime-readiness-app-regression.log.
-A fixed synthetic live probe is running against the installed 57f3583 archive;
-it cannot qualify the model. Evidence: grounded-runtime-probe.json/log.
+The fixed synthetic live probe passed against installed archive 57f3583 in
+48.24 seconds: planner-4 returned the approved std.model.lm capability with valid
+schema and grounding. Explicit offline setup retained not_qualified_for_planning.
+Owned PID 1725382 was stopped and confirmed absent; no other daemon was changed.
+Evidence: grounded-runtime-probe.json/log and grounded-runtime-probe-review.json
+(command, script/archive hashes, expected/actual, runtime and cleanup).
+
+Correction 9afb6e5 is pushed. Full source-isolated check is running in
+cttir-runtime-preview-check-9afb6e5.service, under
+artifacts/runtime-preview-check-9afb6e5; hosted validation is pending.
 Review these before starting another full check. Receipt:
 artifacts/implementation/runtime-readiness-review.json.
 
 Next: finish the new runtime-readiness milestone's full checks; finish R07 readiness
-reporting and actual live probe evidence; R21 maintainer provenance; R22/R39
+incremental acquisition reporting; R21 maintainer provenance; R22/R39
 current consolidated gate/requirements evidence. Reconcile every other owner
 review item individually. R10/R31 diagnostics now expose pre-grounding and raw
 claim coverage without changing thresholds; historical missing metrics remain
