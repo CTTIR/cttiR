@@ -363,3 +363,17 @@ test_that("an unapproved scheduler name still blocks pipeline code", {
   expect_identical(a$code, "")
   expect_true(any(grepl("not_workflow_approved_for_revision", unlist(a$gaps), fixed = TRUE)))
 })
+
+test_that("base R and report-site phrases do not match incidental substrings", {
+  for (question in c("Summarize the database records counts by site.",
+    "Fit a linear regression of FEV1 on age by means of a database reader.",
+    "Compute the average from the database records.")) {
+    answer <- ask(question)
+    expect_false("std.describe.base" %in% unlist(answer$approved_capabilities))
+  }
+  for (question in c("Render the project for each study site.", "Refresh the report on the composite endpoint.")) {
+    answer <- ask(question)
+    expect_false("std.report.render" %in% unlist(answer$approved_capabilities))
+  }
+  expect_true("std.report.render" %in% unlist(ask("Render the project site.")$approved_capabilities))
+})

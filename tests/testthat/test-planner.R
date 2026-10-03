@@ -101,7 +101,7 @@ test_that("a valid local proposal is accepted with provenance and no hidden reas
   plan <- plan_goal("Statins", "secondary_research", "Linear regression of LDL on statins", "local_llm")
   expect_equal(plan$provenance$planner_mode, "local_llm")
   expect_equal(plan$provenance[c("model_id", "model_digest", "prompt_version", "attempts")],
-    list(model_id = "local:small", model_digest = fake_digest, prompt_version = "planner-3", attempts = 1L))
+    list(model_id = "local:small", model_digest = fake_digest, prompt_version = "planner-4", attempts = 1L))
   expect_equal(plan$provenance$model_qualification, "unvalidated_user_override")
   expect_null(plan$provenance$fallback_reason)
   expect_equal(plan$proposal$aim, "explanatory")
@@ -355,14 +355,14 @@ test_that("resolve_spec applies proposals only to unset fields and records prove
   expect_equal(spec$analysis$unit_structure, "clustered")
   expect_equal(spec$ecosystem$modality, "single_cell")
   expect_equal(spec$provenance[c("planner_mode", "model_id", "model_digest", "prompt_version")],
-    list(planner_mode = "local_llm", model_id = "local:small", model_digest = fake_digest, prompt_version = "planner-3"))
+    list(planner_mode = "local_llm", model_id = "local:small", model_digest = fake_digest, prompt_version = "planner-4"))
   inferred <- Filter(function(d) identical(d$origin, "inferred") && grepl("^/analysis|^/ecosystem", d$field), spec$decisions)
   expect_setequal(vapply(inferred, function(d) d$field, character(1)),
     c("/analysis/aim", "/analysis/unit_structure", "/ecosystem/modality"))
   for (d in inferred) {
     expect_match(d$reason, "Local planner proposal", fixed = TRUE)
     expect_match(d$reason, "not an approval", fixed = TRUE)
-    expect_contains(unlist(d$evidence_ids), c("planner:planner-3", paste0("model_digest:", fake_digest)))
+    expect_contains(unlist(d$evidence_ids), c("planner:planner-4", paste0("model_digest:", fake_digest)))
   }
   explicit <- Filter(function(d) identical(d$field, "/analysis/outcome_family"), spec$decisions)
   expect_equal(explicit[[1]]$origin, "explicit")
@@ -737,4 +737,49 @@ test_that("qualification binds user and repair templates and all acceptance limi
   verify_change(list(planner_unsafe_patterns = c(planner_unsafe_patterns, fixture = "changed_unsafe_pattern")))
   verify_change(list(injection_patterns = c(injection_patterns, fixture = "changed_injection_pattern")))
   expect_identical(planner_qualification(entry$tag, entry$digest, manifest), "qualified_for_planning")
+})
+
+test_that("escaped prompt truncation retains the longest fitting goal prefix", {
+  for (goal in c(strrep('"\\', 1000), paste0(strrep("a", 1000), strrep('"', 1000)))) {
+    prompt <- planner_prompt(strrep('"', 200), strrep('\\', 100), goal)
+    data <- jsonlite::fromJSON(strsplit(prompt$user, "\n", fixed = TRUE)[[1]][[3]])
+    expect_gt(nchar(data$goal), 1000L)
+    expect_lte(prompt$characters, planner_limits$prompt)
+    expect_lte(planner_limits$prompt - prompt$characters, 1L)
+    expect_identical(data$goal, substr(goal, 1L, nchar(data$goal)))
+  }
+})
+
+test_that("missing or overflowing context accounting falls back without repair", {
+  for (tokens in list(NULL, NA_real_, Inf, -1, 0, 1.5, "900", c(1, 2), 3713L)) {
+    reply <- chat_reply(valid_reply())
+    reply$prompt_eval_count <- tokens
+    log <- local_planner_runtime(list(reply))
+    plan <- plan_goal("Case", "methods", "Linear regression of LDL on statins", "local_llm")
+    expect_identical(plan$provenance$planner_mode, "deterministic")
+    expect_identical(plan$provenance$fallback_reason, "context_overflow")
+    expect_length(chat_requests(log), 1L)
+  }
+})
+
+test_that("context boundary accepts a full output reserve and also checks repairs", {
+  reply <- chat_reply(valid_reply())
+  reply$prompt_eval_count <- 3712L
+  log <- local_planner_runtime(list(reply))
+  plan <- plan_goal("Case", "methods", "Linear regression of LDL on statins", "local_llm")
+  expect_identical(plan$provenance$planner_mode, "local_llm")
+  reply$prompt_eval_count <- 3713L
+  log <- local_planner_runtime(list(chat_reply("not JSON"), reply))
+  plan <- plan_goal("Case", "methods", "Linear regression of LDL on statins", "local_llm")
+  expect_identical(plan$provenance$fallback_reason, "context_overflow")
+  expect_length(chat_requests(log), 2L)
+})
+
+test_that("a bare association retains the documented conservative grounding miss", {
+  local_planner_runtime(list(chat_reply(valid_reply())))
+  plan <- plan_goal("Statins", "secondary_research", "Association of statins with LDL", "local_llm")
+  expect_identical(plan$provenance$planner_mode, "local_llm")
+  expect_length(plan$proposal$capability_ids, 0L)
+  expect_identical(plan$provenance$capability_grounding$removed, list("std.model.lm"))
+  expect_match(tail(plan$proposal$unresolved, 1), "omitted", fixed = TRUE)
 })

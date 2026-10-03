@@ -87,8 +87,8 @@ ask_patterns <- list(
     std.describe.descrtab2 = c("overview table", "demographic", "characteristics", "summary of the (sample|population|patients|cohort)",
       "\u00fcbersichtstabelle", "uebersichtstabelle", "patientenmerkmale", "merkmale der"),
     std.describe.base = c(
-      "(base[- ]?r|basis[- ]?r).*(means?|averages?|standard deviations?|sds|counts?|percentages?|mittelwert|standardabweichung|h(\u00e4|ae)ufigkeit)",
-      "(means?|averages?|standard deviations?|counts?|percentages?|mittelwert|standardabweichung).*(base[- ]?r|basis[- ]?r)"),
+      "\\b(base[- ]?r|basis[- ]?r)\\b.*(means?|averages?|standard deviations?|sds|counts?|percentages?|mittelwert|standardabweichung|h(\u00e4|ae)ufigkeit)",
+      "(means?|averages?|standard deviations?|counts?|percentages?|mittelwert|standardabweichung).*\\b(base[- ]?r|basis[- ]?r)\\b"),
     std.tidy.dplyr = c(
       "\\b(variablen|daten|datenrollen)\\b.*\\b(umkodieren|umcodieren|rekodieren|aufbereiten)\\b",
       "\\b(umkodieren|umcodieren|rekodieren|aufbereiten)\\b.*\\b(variablen|daten|datenrollen)\\b"),
@@ -97,7 +97,7 @@ ask_patterns <- list(
       "\\b(rendern|erstellen)\\b.*\\b(projektbericht|bericht)\\b",
       "(bericht|report).*(website|webseite).*(neu|aktuali|render)",
       "(neu|aktuali|render).*(bericht|report).*(website|webseite)",
-      "(rebuild|render|refresh).*(report|project).*(website|site)"),
+      "\\b(rebuild|render|refresh)\\b.*\\b(report|project)[- ]?(web)?site\\b|\\b(rebuild|render|refresh)\\b.*\\b(report|project)\\b.*\\bwebsite\\b"),
     std.import.delimited = c("(read|load|import)( in)? [a-z ]*(csv|tsv|delimited|text file)", "(csv|tsv)",
       "einlesen", "importieren"),
     std.figures.accessible = c("greyscale", "grayscale", "\\bchart\\b", "\\bplot", "visuali[sz]", "graustufen")

@@ -115,6 +115,13 @@ This can omit legitimate requests expressed without those keywords. Filtering
 is not workflow approval, and fixed inference settings do not guarantee identical
 suggestions. Review proposed study decisions before using them for analysis.
 Long inputs are bounded again after JSON escaping, preserving valid input JSON.
+Planner 4 keeps the longest prefix that fits this character budget. Every reply,
+including a repair, must report a valid prompt token count with room for the
+reserved output tokens in the configured context. Missing or excessive counts
+cause `context_overflow` fallback without another request. This checks the
+runtime's reported count; it is not an independent tokenizer or proof that the
+runtime preserved every input token. Earlier planner evaluations remain
+historical development evidence and do not qualify the new policy.
 
 ## Data flow and privacy
 

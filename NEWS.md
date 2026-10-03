@@ -1,5 +1,9 @@
 # cttiR 0.1.1.9000
 
+* Match base R and report website requests without treating database records, study sites or composite endpoints as those capabilities.
+
+* Planner 4 retains the longest fitting JSON-escaped input prefix. Missing, invalid or excessive reported prompt token counts cause deterministic fallback without another repair request; the output token budget is reserved. Earlier planner evaluations do not qualify this policy.
+
 * Interoperability adapters 1.2.0 read exact dependency pins from the project lock by default. Missing or mismatched pins stop before object operations, including for already-loaded namespaces; explicit reviewed pins remain supported.
 
 * Audit every project dependency pin, including optional CRAN interoperability packages and the renv project library. Unresolved pins warn for scaffolds and fail an analysis-ready claim.

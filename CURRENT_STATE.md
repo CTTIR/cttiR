@@ -22,46 +22,41 @@ The P1 items are `ask()` emitting `broom::tidy()` for `nlme` fits, which fails
 at run time, and the conversion-loss report missing graphs and loadings. Fix
 these first.
 
-## Current continuation point: runtime interoperability pins and approval closure
+## Current continuation point: planner context and phrase matching
 
-Milestone becdb38 passed the complete source-isolated local check: 5886 assertions,
-13 skips, zero errors/warnings and one NOTE (new submission and Title prefix).
-PDF/HTML manuals and rebuilt vignettes passed. Tarball SHA-256:
-18155306505984874d81232e2b2b5f39013db2cec9595ffc5b35f3779129ed81.
-Its 241 members exclude admin/artifacts. All five jobs in hosted run 37140698195
-passed. Receipt: artifacts/implementation/all-pins-full-validation.json.
+Runtime-pin milestone fa68f0d passed the complete source-isolated check:
+5910 assertions, 13 documented skips (none in interop), zero errors/warnings,
+one incoming NOTE (new submission, development version, Title prefix).
+PDF/HTML manuals and rebuilt vignettes passed. All five hosted jobs in run
+37144741327 passed. Its 243-member archive excludes admin/artifacts and its
+changed bundled source files match the commit. SHA-256:
+c84d12df386cc906ae208bc3072f0c9975d5ebc90514448902a109dbb1940d03.
+Receipt: artifacts/implementation/runtime-pins-full-validation.json.
 
-R16 runtime portion is now implemented in interoperability adapters 1.2.0.
-The standalone helpers read cttir-lock.json from the project root by default,
-require exact pins for accessor/class packages, and refuse missing/mismatched
-pins even for already-loaded namespaces. Explicit complete reviewed pins remain
-supported. No packages are installed or project code sourced. jsonlite reads the
-lock and is then version-checked before object operations. Regression fixtures
-use isolated synthetic lockfiles recording the test environment's versions;
-these are not substituted for real project pins in production.
-Missing locks/pins, explicit NULL, duplicates, malformed JSON, and loaded-namespace
-mismatches are tested. Bounded/loss-report/Seurat fixtures continue to pass.
-
-The first catalog build stopped because the approval scanner did not traverse
-formal-argument defaults. template_names now includes default-expression calls;
-tools/test_template_defaults.R covers direct and nested defaults. No failed build
-was treated as complete. The corrected build passed all 63 recorded fixtures,
-with 67/67 complete approval decisions and 192 approved callables. New catalog:
+Interoperability adapters 1.2.0 enforce project-lock pins by default, including
+already-loaded namespaces. The catalog scanner now includes formal-argument
+default expressions: 63 passing fixtures, 67/67 complete approvals and 192
+approved callables. Current catalog:
 3e1983fd7f81b618d8cf614d33775068d8ad5628fa96723c515d331122e1501a.
-Previous c538a9f snapshot is retained under inst/extdata/history. Ask,
-catalog-evidence and router integration suites pass with the new catalog.
-Logs: artifacts/implementation/runtime-pins-final-tests.log,
-runtime-pins-default-closure.log, runtime-pins-catalog-build-final.log,
-runtime-pins-catalog-integration.log and standard-catalog-build.json.
-Committed/pushed as fa68f0d. Full source-isolated validation runs in
-cttir-runtime-pins-check-fa68f0d.service, with status/logs under
-artifacts/runtime-pins-check-fa68f0d. Hosted validation is also pending.
+Previous catalog retained under inst/extdata/history. No model was promoted.
 
-Next: review the new full-check/CI results, reconcile R16/G26 evidence, then close
-remaining owner-review items before independent held-out qualification/manual
-usefulness checks. The corpus still needs a separate author; no reviewer agent
-has been authorized or started. No production model qualification was promoted.
-G12/G26 and full readiness remain open. COMPLETE/STOP absent; retry timer active.
+Current changes address R34/R35/R36/R38: rendered-size truncation preserves the
+longest fitting input prefix; reported prompt token counts must leave room for
+the output reserve on initial and repair responses; invalid/missing counts
+fall back without another request. This checks reported counts, not independent
+tokenization. Policy version is planner-4; historical runs do not qualify it.
+Base R/report website patterns exclude database records, study sites and
+composite endpoints. A regression preserves the documented bare-association
+conservative grounding miss. Targeted validation is in progress; failed lint,
+old-version expectations and the initially incorrect answer-test accessor are
+retained in artifacts/implementation/planner-context* and ask-phrase* logs.
+
+Next: finish this milestone's validation, then address remaining owner-review
+items (instruction screening/routing, lock options, readiness probes, benchmark
+metrics and evidence reconciliation). G12 still requires a fresh independently
+authored frozen corpus and shipped-artifact evaluation; no reviewer agent has
+been authorized or started. G26 needs its consolidated gate evidence reviewed.
+Full readiness remains open. COMPLETE/STOP absent; retry timer active.
 No CRAN/external-builder submission.
 
 ## Preceding explicit answer data requirements

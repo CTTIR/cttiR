@@ -4,7 +4,7 @@
 # Model output is untrusted data: it is validated, never evaluated, and only
 # enumerated decisions plus a validated plain-text rationale can be accepted.
 
-planner_prompt_version <- "planner-3"
+planner_prompt_version <- "planner-4"
 planner_grounding_policy <- "registry-keywords-1"
 
 planner_limits <- list(
@@ -25,7 +25,7 @@ planner_fields <- c("aim", "outcome_family", "unit_structure", "modality")
 planner_fallbacks <- c("runtime_unverified", "endpoint_rejected", "model_refused", "model_digest_unrecorded",
   "model_locality_unverified", "model_absent", "model_digest_mismatch", "runtime_request_failed",
   "model_identity_mismatch", "validation_failed", "injection_suspected", "goal_injection_suspected",
-  "model_not_qualified")
+  "model_not_qualified", "context_overflow")
 
 # Plain-text notes must not carry anything that could be mistaken for an
 # instruction to act: locations, commands, code, queries, installs or markup.
@@ -146,8 +146,15 @@ planner_prompt <- function(name, type, goal, registry = capability_registry()) {
   # then encode again so truncation cannot cut through an escape sequence.
   while (characters > planner_limits$prompt && any(nchar(unlist(values)) > 0L)) {
     field <- names(values)[which.max(nchar(unlist(values)))]
-    limit <- max(0L, nchar(values[[field]]) - (characters - planner_limits$prompt))
-    values[[field]] <- substr(values[[field]], 1L, limit)
+    original <- values[[field]]
+    lower <- 0L
+    upper <- nchar(original)
+    while (lower < upper) {
+      middle <- ceiling((lower + upper) / 2)
+      values[[field]] <- substr(original, 1L, middle)
+      if (nchar(system) + nchar(render()) <= planner_limits$prompt) lower <- middle else upper <- middle - 1L
+    }
+    values[[field]] <- substr(original, 1L, lower)
     truncated[[field]] <- TRUE
     user <- render()
     characters <- nchar(system) + nchar(user)
@@ -372,7 +379,13 @@ planner_valid_endpoint <- function(endpoint) {
 
 planner_attempt_log <- function(response, errors, elapsed, keep_raw) {
   seconds <- function(x) if (is.numeric(x) && length(x) == 1L) x / 1e9 else NA_real_
-  count <- function(x) if (is.numeric(x) && length(x) == 1L) as.integer(x) else NA_integer_
+  count <- function(x) {
+    if (is.numeric(x) && length(x) == 1L && is.finite(x) && x >= 0 && x <= .Machine$integer.max) {
+      as.integer(x)
+    } else {
+      NA_integer_
+    }
+  }
   log <- list(
     accepted = !length(errors), errors = as.list(errors), elapsed_seconds = elapsed,
     load_seconds = seconds(response$load_duration), prompt_tokens = count(response$prompt_eval_count),
@@ -412,6 +425,8 @@ planner_attempt_log <- function(response, errors, elapsed, keep_raw) {
 #' `name[:tag]`), `model_digest_unrecorded`, `model_not_qualified` (no planner
 #' qualification and no opt-in), `model_locality_unverified`,
 #' `runtime_request_failed`, `model_absent`, `model_digest_mismatch`,
+#' `context_overflow` (missing or invalid prompt token count, or insufficient
+#' context for the reserved output; no repair is attempted),
 #' `model_identity_mismatch`, `validation_failed` and `injection_suspected` (the
 #' reply showed instruction-like content; every field stays unknown).
 #' @param mode `deterministic` or `local_llm`.
@@ -485,7 +500,8 @@ plan_goal <- function(name, type, goal, mode = c("deterministic", "local_llm"), 
   errors <- NULL
   for (attempt in 1:2) {
     sent <- proc.time()[["elapsed"]]
-    response <- tryCatch(runtime_request(endpoint, "chat", planner_request(prompt, model, schema, errors), timeout = planner_timeout()),
+    request <- planner_request(prompt, model, schema, errors)
+    response <- tryCatch(runtime_request(endpoint, "chat", request, timeout = planner_timeout()),
       error = function(e) NULL)
     elapsed <- unname(proc.time()[["elapsed"]] - sent)
     if (!is.list(response)) {
@@ -498,6 +514,12 @@ plan_goal <- function(name, type, goal, mode = c("deterministic", "local_llm"), 
         !is.null(response$remote_host) || !is.null(response$remote_model)) {
       attempts[[attempt]] <- planner_attempt_log(response, "model_identity_mismatch", elapsed, keep_raw)
       return(fallback("model_identity_mismatch", model))
+    }
+    tokens <- response$prompt_eval_count
+    if (!is.numeric(tokens) || length(tokens) != 1L || !is.finite(tokens) || tokens < 1 || tokens != floor(tokens) ||
+        tokens + request$options$num_predict > request$options$num_ctx) {
+      attempts[[attempt]] <- planner_attempt_log(response, "context_overflow", elapsed, keep_raw)
+      return(fallback("context_overflow", model))
     }
     message <- response$message
     errors <- if (!isTRUE(response$done)) {
