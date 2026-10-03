@@ -1,6 +1,52 @@
 # cttiR development state
 
-Updated: 2026-10-02. Version: 0.0.18. License: MIT.
+Updated: 2026-10-03. Version: 0.1.0. License: MIT.
+
+## Release 0.1.0: implemented with blockers
+
+Classification: `implemented_with_blockers`. Every gate passes except G12
+(no local model qualifies for planning; independent held-out `ask()` recall
+11/14) and G26 (no reviewed Seurat analysis workflow; disk-backed BPCells
+layers untested). Evidence is in artifacts/implementation: final-audit.md
+(gate matrix), requirements-evidence.json, support-matrix.md,
+independent-audit-2026-10-02.md and reverify-150e67b.md.
+
+What 0.1.0 adds over 0.0.18:
+- capability routing to the standard reflowR, hybrid or specialist profile;
+- template 0.3.0 with reviewed lm/glm/nlme/Cox stages and a synthetic demo
+  checked against independent references;
+- a guarded study-data runner that writes to the reflowR `output/` tree;
+- the standard package family in the catalog, with 56 role-scoped approvals,
+  81/81 vignette sources and catalog `b726a5f4`;
+- grounded `ask()`, a qualification-gated planner and a whole-project audit;
+- the Shiny application, renv and targets, Bioconductor/Seurat bridges, and
+  RES-007 release enforcement.
+
+Six independent auditors tested 59eece2 and found defects in most gate groups,
+including a runner that refused every configured project. Five repair branches
+and follow-ups fixed them. An independent re-verification at 150e67b confirmed
+all 18 re-checked defects fixed. Its one new C-locale finding was fixed in
+bf3fce4.
+
+Release commit eceb2bf passed locally:
+- build, isolated install and `R CMD check --as-cran` with 0 errors,
+  0 warnings and 1 NOTE (new submission; the Title starts with "CTTIR", as
+  the spec prescribes);
+- tests 5364 passed, 0 failed;
+- coverage 90.17%, lint 0, installed smoke, the authored `ask()` benchmark
+  (51 cases, all metrics 1) and pkgdown;
+- three example projects, the standard one reaching `analysis_ready`;
+- a live browser suite of 38 expectations, with screenshots reviewed.
+
+Tarball SHA-256: 67338943b77ec3a2b42b5d5d8c230e1496990a00360bd635b4798bdf7bf2dd77.
+Hosted run 37081334144 on eceb2bf passed all five jobs with `Status: OK`:
+ubuntu release with all Suggests, Windows release, macOS release, ubuntu
+oldrel-1 and ubuntu devel. The first hosted run (37077700370 on 4eea4cf)
+failed on CRLF checkouts, the C locale on Windows and macOS, a RES-007
+severity on R 4.5/4.7 and a test assumption; eceb2bf fixed these.
+
+No CRAN or external-builder submission. No COMPLETE marker: G12 and G26 are
+partial. The retry timer was stopped for this session and has been restarted.
 
 ## Continuation: unbalanced mixed models and group sensitivity
 
