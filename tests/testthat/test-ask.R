@@ -158,3 +158,44 @@ test_that("base summaries and report rebuild requests retrieve approved roles", 
     expect_false("std.report.render" %in% unlist(answer$approved_capabilities))
   }
 })
+
+test_that("German data preparation and report requests retrieve approved evidence", {
+  questions <- c(
+    "Wie kann ich Variablen mit dplyr umkodieren und die zugeordneten Datenrollen aufbereiten?",
+    "Die Daten aufbereiten und Variablen umcodieren.",
+    "Umkodieren der Variablen aus dem Fragebogen.",
+    "Den Projektbericht aus den gespeicherten Ergebnissen rendern.",
+    "Erstellen des Berichts? Bitte den Bericht erstellen.")
+  expected <- c(rep("std.tidy.dplyr", 3), rep("std.report.render", 2))
+  for (i in seq_along(questions)) {
+    answer <- ask(questions[[i]])
+    expect_contains(unlist(answer$approved_capabilities), expected[[i]])
+    expect_true(nzchar(answer$code))
+    expect_true(isTRUE(attr(validate_generated_code(answer$code, resolve_catalog()), "valid")))
+    expect_gt(nrow(answer$evidence), 0L)
+  }
+  for (question in c("Ein Bild rendern.", "Ich habe einen Bericht gelesen.",
+    "Die Variablen stehen noch nicht fest.", "Die Daten wurden gestern besprochen.")) {
+    answer <- ask(question)
+    expect_false(any(c("std.tidy.dplyr", "std.report.render") %in% unlist(answer$approved_capabilities)))
+  }
+})
+
+test_that("qualified Unicode identifiers are reported in full without fabricated code", {
+  for (symbol in c("survival::allesk\u00f6nner_cox", "stats::r\u00e9gression", "stats::\u03b4_model", "stats:::\u00fcber_fit")) {
+    answer <- ask(paste("Does", symbol, "exist?"))
+    expect_contains(vapply(answer$symbols, function(x) x$symbol, character(1)), symbol)
+    expect_true(any(grepl(symbol, unlist(answer$gaps), fixed = TRUE)))
+    expect_identical(answer$code, "")
+    expect_length(unlist(answer$approved_capabilities), 0L)
+  }
+})
+
+test_that("bare Unicode function calls are not truncated into another identifier", {
+  for (symbol in c("fantasie_\u00fcber()", "\u03b4_unknown()")) {
+    answer <- ask(paste("Call", symbol))
+    expect_contains(vapply(answer$symbols, function(x) x$symbol, character(1)), symbol)
+    expect_true(any(grepl(symbol, unlist(answer$gaps), fixed = TRUE)))
+    expect_identical(answer$code, "")
+  }
+})

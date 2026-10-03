@@ -1,5 +1,10 @@
 # cttiR development
 
+* Recognize German data-recoding and report-rendering requests, and retain full
+  Unicode function names when reporting absent or unapproved APIs in `ask()`.
+* Keep planner benchmark repeat responses and distinguish decision changes from
+  changes in explanatory wording.
+
 * Screen instruction-shaped inputs before deterministic planning, matching the
   local-model path and leaving inferred fields unknown on suspected injection.
 

@@ -89,7 +89,12 @@ ask_patterns <- list(
     std.describe.base = c(
       "(base[- ]?r|basis[- ]?r).*(means?|averages?|standard deviations?|sds|counts?|percentages?|mittelwert|standardabweichung|h(\u00e4|ae)ufigkeit)",
       "(means?|averages?|standard deviations?|counts?|percentages?|mittelwert|standardabweichung).*(base[- ]?r|basis[- ]?r)"),
+    std.tidy.dplyr = c(
+      "\\b(variablen|daten|datenrollen)\\b.*\\b(umkodieren|umcodieren|rekodieren|aufbereiten)\\b",
+      "\\b(umkodieren|umcodieren|rekodieren|aufbereiten)\\b.*\\b(variablen|daten|datenrollen)\\b"),
     std.report.render = c(
+      "\\b(projektbericht|bericht)\\b.*\\b(rendern|erstellen)\\b",
+      "\\b(rendern|erstellen)\\b.*\\b(projektbericht|bericht)\\b",
       "(bericht|report).*(website|webseite).*(neu|aktuali|render)",
       "(neu|aktuali|render).*(bericht|report).*(website|webseite)",
       "(rebuild|render|refresh).*(report|project).*(website|site)"),
@@ -271,7 +276,7 @@ ask_export_index <- function(catalog) {
 # Known exports become exact symbols; an unknown name written as a call is
 # reported absent. Base R functions and package names are not function claims.
 ask_function_names <- function(question, catalog) {
-  tokens <- regmatches(question, gregexpr("(?<![[:alnum:]._:])[A-Za-z][A-Za-z0-9._]*(\\(\\))?", question, perl = TRUE))[[1]]
+  tokens <- regmatches(question, gregexpr("(?<![\\p{L}\\p{N}._:])[\\p{L}][\\p{L}\\p{N}._]*(\\(\\))?", question, perl = TRUE))[[1]]
   called <- endsWith(tokens, "()")
   words <- sub("[.]+$", "", sub("\\(\\)$", "", tokens))
   keep <- (called | grepl("_|[.]|[a-z][A-Z]", words)) & nzchar(words)
@@ -377,9 +382,9 @@ ask <- function(question, path = NULL, verified_only = TRUE) {
   scalar_flag(verified_only, "verified_only")
   catalog <- resolve_catalog(path)
   registry <- capability_registry()
-  symbol_pattern <- "[A-Za-z][A-Za-z0-9.]*:{2,3}[A-Za-z._][A-Za-z0-9._]*"
+  symbol_pattern <- "[A-Za-z][A-Za-z0-9.]*:{2,3}[\\p{L}._][\\p{L}\\p{N}._]*"
   # Package names inside exact symbols must not trigger capability keywords.
-  unqualified <- gsub(symbol_pattern, " ", question)
+  unqualified <- gsub(symbol_pattern, " ", question, perl = TRUE)
   text <- tolower(enc2utf8(unqualified))
   injected <- instruction_like(unqualified)
   signals <- if (injected) {
@@ -389,7 +394,7 @@ ask <- function(question, path = NULL, verified_only = TRUE) {
   }
   methods <- if (injected) character() else ask_unsupported(text)
   named <- ask_function_names(unqualified, catalog)
-  symbols <- unique(regmatches(question, gregexpr(symbol_pattern, question))[[1]])
+  symbols <- unique(regmatches(question, gregexpr(symbol_pattern, question, perl = TRUE))[[1]])
   symbol_rows <- lapply(symbols, ask_symbol, catalog = catalog, verified_only = verified_only)
   # Bare names are reported only when they are not usable at this revision.
   for (row in lapply(setdiff(named$symbols, symbols), ask_symbol, catalog = catalog, verified_only = verified_only)) {

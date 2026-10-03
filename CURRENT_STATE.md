@@ -2,28 +2,33 @@
 
 Updated: 2026-10-03. Version: 0.1.1. License: MIT.
 
-## Active verification and retrieval follow-up
+## German retrieval and Unicode identifier follow-up
 
-Commit a05a2d7 is pushed to main. Its full R CMD check --as-cran is running in
-independent user service cttir-repeat-evidence-check-a05a2d7.service.
-Build/vignettes succeeded; the full check reached testthat. Inspect
-artifacts/repeat-evidence-check-a05a2d7/status.json and check.log before starting
-another check. GitHub CI run 37103479376 also targets this source and is pending.
-The previous 432fa34 full check is still the latest completed local validation.
+The German data preparation/report-rendering phrase candidate is now integrated
+in R/ask.R. A new 30-question frozen evaluation retrieved every supported task,
+but failed negative abstention (11/12): an explicitly named Unicode function was
+truncated. Qualified and bare identifiers now recognize Unicode letters/numbers,
+preserving the complete name in rejection evidence. Regression tests cover
+German task phrases, unrelated phrases, Unicode calls and triple-colon names;
+the ask suite and lint pass.
 
-A separate 24-question ask() corpus (12 English, 12 German), frozen before
-results, FAILED supported retrieval: 10/12 = 0.8333 against the unchanged 0.90
-threshold. Citations, code validity, negative abstention and injection resistance
-all passed. QF09 (German variable recoding/data preparation) and QF11 (German
-project report rendering) were missed. Preserve this failure and its gold labels.
-A private phrase-pattern candidate passes both examined corpora and four unrelated
-phrase controls. It is not integrated; these 24 cases are now development evidence
-for that candidate and cannot serve as independent validation of its repair.
-Next integrate/test the candidate and freeze another evaluation before viewing
-results. Source: admin/evaluate_ask_german_candidate.R; evidence:
-artifacts/implementation/ask-fresh-validation-review.json and ask-german-candidate.json.
+A subsequent NEW 20-question corpus (10 English, 10 German), frozen after those
+fixes and before evaluation, passes all five unchanged thresholds: supported
+retrieval 11/12 = 0.9167, citations/code validity/abstention/injection resistance
+all 1.0. BF06, a German missing-values request, remains unmatched. The original
+24- and 30-question failures are preserved; the latter passes only as a development
+replay after repair. These are single-author labels, not independent scientific
+annotation. Evidence: artifacts/implementation/ask-german-unicode-review.json,
+ask-fresh-validation-3*.json and ask-validation-followup.log; frozen corpora and
+runners remain under ignored admin/. No public planner/model approval changed.
 
-The hourly retry timer is enabled/active; COMPLETE and STOP remain absent.
+The preceding benchmark revision a05a2d7 has completed full local validation:
+0 errors, 0 warnings, 1 incoming NOTE; 5482 PASS, 13 SKIP; vignettes rebuilt and
+PDF/HTML manuals passed. All five jobs in GitHub run 37103479376 passed. Receipt:
+artifacts/implementation/repeat-evidence-full-validation.json. Tarball SHA-256:
+9f833e915245df27e15a3e046ffaf1cd1c734c5ddeb609f08990677a94c4ba29.
+This does not validate the subsequent retrieval edits; their full check is next.
+The hourly retry timer remains active; COMPLETE and STOP remain absent.
 
 ## Fresh planner validation and repeat evidence
 
@@ -42,8 +47,8 @@ The benchmark now retains repeat rows and per-case comparisons and reports
 full-proposal equality separately from decision equality. The developer report
 also retains unresolved notes. Regression tests pass, including a simulated
 wording change, decision change, unchanged response and absent repeat request.
-A fresh full package check is pending for this benchmark-only source change;
-the full check below remains evidence for source 432fa34, not this new revision.
+The full package check for this benchmark-only source change (a05a2d7) passed;
+the later retrieval follow-up has its own validation boundary above.
 
 No public planner prompt, model qualification or default has changed. The fresh
 threshold pass does not close production integration, repeatability assessment,
