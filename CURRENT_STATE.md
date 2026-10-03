@@ -2,6 +2,38 @@
 
 Updated: 2026-10-03. Version: 0.1.1. License: MIT.
 
+## Hosted validation and backed Seurat comparison
+
+Commit 343d644 passed all five jobs in hosted run 37087349484. Receipt:
+artifacts/implementation/retrieval-0.1.1-hosted-ci.json. Package 0.1.1 now has
+both local full-check and hosted-matrix validation; full readiness remains open.
+
+New private backed-workflow comparison found concrete numerical/selection limits:
+- BPCells Log1pSIMD uses single precision internally (verified in pinned source),
+  although the normalized matrix reports double. Maximum normalization error was
+  6.4458e-7. The backed diagnostic uses scaled error < 8 * 2^-23; in-memory retains
+  its 1e-10 absolute check. The original failed comparison is retained.
+- Native VST selected 198 of the same 200 features; gene428/gene600 were replaced
+  by gene396/gene576. Native PCA distances differ by up to 3.6769. This is not
+  evidence that either method is wrong, but they are not identical pipelines.
+- With an explicit common feature set, PCA distance discrepancy is 8.3695e-5,
+  exceeding the existing 1e-5 comparison threshold. Marker log2 fold changes differ
+  by 7.3537e-8 (threshold 1e-8); p-value difference is 2.1860e-23. Those thresholds
+  were not loosened. The comparison script deliberately exits with a failed check
+  after writing the measurements; do not report it as a passing workflow.
+- Counts and normalized layers remain backed, file hashes remain unchanged,
+  and the planted cluster partition is preserved. Each backend's PCA variance
+  passes its own bounded dense-SVD reference. The full backed pipeline is still
+  not qualified; memory guarantees and cross-platform behavior are untested.
+
+Run admin/verify_seurat_backed_workflow.R to reproduce. Receipts under
+artifacts/implementation: seurat-backed-workflow.json, seurat-backed-pca-diagnostic.json,
+seurat-backed-controlled-pca-diagnostic.json, seurat-backed-normalization-diagnostic.json,
+seurat-backed-feature-diagnostic.log and seurat-backed-followup-provenance.json.
+Synthetic comparison objects are retained as seurat-backed-comparison.rds and
+seurat-backed-controlled-comparison.rds. G12/G26 remain open, timer stays active,
+and no COMPLETE/STOP marker or submission was made.
+
 ## Retrieval follow-up 0.1.1
 
 Recognize additional English/German base-R descriptive summary requests and
