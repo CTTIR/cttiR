@@ -453,10 +453,7 @@
         "Seurat",
         "SeuratObject"
       ],
-      "adapter": {
-        "id": "interop.seurat_v5",
-        "version": "1.0.0"
-      },
+      "adapter": null,
       "applies": {
         "modality": [
           "single_cell"
@@ -493,7 +490,7 @@
         "Integration must not erase the biological contrast of interest; differential analysis uses unintegrated counts.",
         "No automatic dataset or reference download."
       ],
-      "status": "adapter_tested"
+      "status": "candidate"
     },
     {
       "id": "seurat.interop.sce_conversion",

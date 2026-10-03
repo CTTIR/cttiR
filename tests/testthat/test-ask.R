@@ -81,7 +81,7 @@ test_that("a named absent or unapproved function returns no code for the request
   expect_length(seurat$approved_capabilities, 0L)
   expect_equal(seurat$code, "")
   expect_false(startsWith(seurat$answer, "Supported"))
-  expect_true(any(grepl("^seurat[.]single_cell[.]exploration .*approval_pending.*Seurat::FindClusters", unlist(seurat$gaps))))
+  expect_true(any(grepl("^seurat[.]single_cell[.]exploration .*candidate", unlist(seurat$gaps))))
   expect_contains(unlist(seurat$gaps), "Seurat::FindClusters: not_workflow_approved_for_revision")
   donors <- ask("Single-cell RNA-seq clustering across donors")
   expect_false("seurat.single_cell.exploration" %in% unlist(donors$approved_capabilities))
@@ -198,4 +198,54 @@ test_that("bare Unicode function calls are not truncated into another identifier
     expect_true(any(grepl(symbol, unlist(answer$gaps), fixed = TRUE)))
     expect_identical(answer$code, "")
   }
+})
+
+test_that("mixed-model answers select registered fixed-effects dispatch", {
+  skip_if_not_installed("nlme")
+  skip_if_not_installed("broom.mixed")
+  withr::local_options(cttiR.catalog_dir = tempfile())
+  answer <- ask("Patients are nested within 12 hospitals; fit a random effect for hospital on length of stay")
+  expect_match(answer$code, "broom.mixed::tidy(fit, effects = \"fixed\"", fixed = TRUE)
+  expect_false(any(grepl("dispatch_unverified", unlist(answer$limitations))))
+  set.seed(3103)
+  group <- rep(seq_len(12), each = 8)
+  env <- new.env(parent = baseenv())
+  env$tidy_data <- data.frame(response = rep(stats::rnorm(12), each = 8) + stats::rnorm(96),
+    x1 = stats::rnorm(96), subject = factor(group))
+  result <- eval(parse(text = answer$code), env)
+  expect_setequal(result$term, c("(Intercept)", "x1"))
+  expect_true(all(is.finite(result$estimate)))
+  expect_equal(result$estimate, unname(nlme::fixef(env$fit)), tolerance = 1e-12)
+})
+
+test_that("effects validation checks known fitted classes and unresolved arguments", {
+  withr::local_options(cttiR.catalog_dir = tempfile())
+  wrong <- validate_generated_code("fit <- nlme::lme(y ~ x, data = d, random = ~1|g); broom::tidy(fit)")
+  expect_contains(wrong$reason, "dispatch_unverified:tidy.lme")
+  correct <- validate_generated_code("fit <- nlme::lme(y ~ x, data = d, random = ~1|g); broom.mixed::tidy(fit, effects = 'fixed')")
+  expect_false(any(grepl("dispatch_unverified", correct$reason)))
+  for (constructor in c("stats::lm(y ~ x, data = d)", "stats::glm(y ~ x, data = d)",
+      "survival::coxph(survival::Surv(t, e) ~ x, data = d)")) {
+    result <- validate_generated_code(paste0("fit <- ", constructor, "; broom::tidy(fit)"))
+    expect_false(any(grepl("dispatch_unverified", result$reason)), info = constructor)
+  }
+  expect_contains(validate_generated_code("broom::tidy(fit, ...)")$reason, "unresolved_dots")
+  expect_false("unresolved_dots" %in% validate_generated_code("f <- function(...) broom::tidy(fit, ...)")$reason)
+  reassigned <- validate_generated_code("fit <- stats::lm(y ~ x); fit <- unknown; broom::tidy(fit)")
+  expect_contains(reassigned$reason, "dispatch_unverified:tidy.unknown")
+})
+
+
+test_that("effects dispatch does not assume classes after conditional writes or constructor mode changes", {
+  withr::local_options(cttiR.catalog_dir = tempfile())
+  for (code in c("fit <- stats::lm(y ~ x); if (flag) fit <- nlme::lme(y ~ x); broom::tidy(fit)",
+      "fit <- stats::lm(y ~ x, method = 'model.frame'); broom::tidy(fit)")) {
+    expect_contains(validate_generated_code(code)$reason, "dispatch_unverified:tidy.unknown")
+  }
+})
+
+
+test_that("an explicitly missing fitted object leaves dispatch unverified", {
+  out <- validate_generated_code("broom::tidy(x = )")
+  expect_true(any(grepl("dispatch_unverified:tidy.unknown", out$reason, fixed = TRUE)))
 })

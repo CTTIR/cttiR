@@ -181,6 +181,9 @@ test_that("Audit jobs can be cancelled and duplicate submissions are refused", {
 })
 
 test_that("Runtime setup plans without side effects and reports an unavailable runtime", {
+  local_mocked_bindings(runtime_select_model = function(manifest, root)
+    list(model = manifest$model, digest = manifest$model_digest, blockers = character(),
+      requirements = list(available_memory_bytes = 1)))
   skip_if_not_installed("shiny")
   root <- file.path(new_parent(), "runtime")
   withr::local_options(cttiR.runtime_dir = root)
@@ -251,4 +254,22 @@ test_that("view renderers tolerate unknown and missing result fields", {
   expect_equal(app_status_kind("conflict"), "fail")
   checks <- data.frame(id = c("PRJ-002:a", "PRJ-002:b", "PRJ-007", "KB-001"), status = c("fail", "warning", "fail", "fail"))
   expect_equal(app_repair_candidates(checks)$id, c("PRJ-002:a", "PRJ-007"))
+})
+
+test_that("Runtime shows an automatic qualification blocker without acquisition", {
+  skip_if_not_installed("shiny")
+  root <- file.path(new_parent(), "runtime")
+  withr::local_options(cttiR.runtime_dir = root)
+  local_mocked_bindings(runtime_request = function(...) stop("unexpected HTTP"),
+    acquire_runtime = function(...) stop("unexpected acquisition"))
+  shiny::testServer(app_runtime_server, args = app_test_args(), {
+    session$setInputs(model = "auto", install = TRUE, offline = TRUE)
+    session$setInputs(plan = 1)
+    expect_length(state$result$actions, 0L)
+    expect_length(state$result$blockers, 1L)
+    session$setInputs(run = 1)
+    expect_equal(state$result$state, "blocked")
+    expect_match(as.character(output$result$html), "qualified", fixed = TRUE)
+    expect_false(dir.exists(root))
+  })
 })

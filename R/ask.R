@@ -428,14 +428,18 @@ ask <- function(question, path = NULL, verified_only = TRUE) {
   evidence <- ask_evidence(data.frame(package = character(), status = character(), stringsAsFactors = FALSE), catalog)
   limitations <- c("Snippets are illustrative and use placeholders; review mappings, assumptions and diagnostics before use.",
     "Approval covers the pinned package revisions and adapter, not a scientific conclusion.",
-    "No local model is used: the tested local models did not qualify for planning (see setup()).")
+    "ask() is deterministic and calls no local model; planner qualification is reported by setup().")
   for (stage in if (blocked) list() else approved) {
     snippet <- snippets[[stage$capability]]
     if (is.null(snippet)) next
-    validation <- validate_generated_code(snippet$code, catalog, approved_only = verified_only)
+    if (identical(stage$capability, "std.effects.broom") && "std.model.lme" %in% ids) snippet$code <- snippet$code_lme
+    validation <- validate_generated_code(c(code_blocks, snippet$code), catalog, approved_only = verified_only)
+    warnings <- validation$reason[validation$status == "warning"]
+    limitations <- c(limitations, warnings)
     if (isTRUE(attr(validation, "valid"))) {
       code_blocks <- c(code_blocks, snippet$code)
-      evidence <- rbind(evidence, ask_evidence(validation, catalog, registry$capabilities[[stage$capability]]$adapter$id))
+      snippet_validation <- validate_generated_code(snippet$code, catalog, approved_only = verified_only)
+      evidence <- rbind(evidence, ask_evidence(snippet_validation, catalog, registry$capabilities[[stage$capability]]$adapter$id))
     } else {
       limitations <- c(limitations, paste0("The snippet for ", stage$capability, " did not validate against this revision and was withheld."))
     }

@@ -75,14 +75,12 @@ restores an earlier one. Project pins never change implicitly.
   read-only subset. Readiness levels (`scaffold_ready` to `analysis_ready`)
   come from local evidence such as receipts and pinned versions.
 * `setup()` prepares an owned, cloud-disabled Ollama runtime on Linux x86_64.
-  The deterministic planner is the default. Explicitly selected `qwen2.5:7b`
-  is qualified for advisory planning at its recorded digest and tested Linux
-  CPU settings (16 threads); other settings fall back. Automatic setup selects
-  the smallest qualified model that fits its recorded resource budgets; the
-  current profile requires 16 physical CPU cores and 16 GiB each of available
-  RAM and disk. Unknown or insufficient resources block acquisition. `options(cttiR.planner = "local_llm")` enables
-  qualified local planning; trying an unqualified model needs
-  `options(cttiR.planner_allow_unqualified = TRUE)` and is labelled as such.
+  The deterministic planner is the default. The recorded 7B CPU results are
+  development evidence, pending fresh independent qualification on the shipped
+  artifact. Automatic selection therefore blocks acquisition while no qualified
+  model is available. Its conservative resource policy remains tested separately.
+  Experimental explicit model use requires the unqualified-model acknowledgement;
+  no model result approves a scientific analysis.
 * `setup_app()` and `configure()` open the local Shiny application (Fast and
   Detailed creation with a bilingual questionnaire, Ask, Knowledge, Resources,
   Audit and Runtime views).
@@ -96,11 +94,12 @@ in [CURRENT_STATE.md](https://github.com/CTTIR/cttiR/blob/main/CURRENT_STATE.md)
 Approvals cover pinned package revisions and adapters, not scientific
 conclusions. Prediction, causal, count, Bayesian and specialist CTTIR analyses
 have no reviewed adapter yet and are reported as gaps. `ask()` matches keywords
-and phrase patterns rather than a language model. A fresh 20-question English/German
-follow-up after the retrieval fixes answered 11 of 12 supported requests; one
-German missing-values request was unmatched. Citation and code checks, unsupported
-request abstention and injection resistance passed their fixed thresholds. These
-are single-author test labels, not independent scientific review.
+and phrase patterns rather than a language model. The independent held-out v5
+release measurement answered 11 of 14 supported requests (0.786), below the
+pre-registered 0.9 threshold. Later same-author follow-ups include a 20-question
+set with 11 of 12 supported capabilities approved; that approval-only score does
+not establish executable-code validity or replace independent qualification.
+The v5 failure remains an open readiness gate.
 
 The opt-in local planner shows registered packages and aliases and removes
 capability proposals without keyword evidence in the goal. Retained and omitted

@@ -1,6 +1,14 @@
+qualified_selection_manifest <- function() {
+  manifest <- read_document(resource_file("runtime", "manifest.json"))
+  idx <- which(vapply(manifest$tested_models, function(x) identical(x$tag, "qwen2.5:7b"), logical(1)))
+  manifest$tested_models[[idx]]$qualification <- "qualified_for_planning"
+  manifest$tested_models[[idx]]$qualification_context <- planner_qualification_context(manifest)
+  manifest
+}
+
 test_that("automatic selection requires qualified settings and conservative available resources", {
   withr::local_options(cttiR.planner_processor = "cpu", cttiR.planner_threads = 16L)
-  manifest <- read_document(resource_file("runtime", "manifest.json"))
+  manifest <- qualified_selection_manifest()
   resources <- list(platform = "Linux", arch = "x86_64", physical_cores = 16,
     available_memory_bytes = 16 * 1024^3, available_disk_bytes = 16 * 1024^3)
   idx <- which(vapply(manifest$tested_models, function(x) identical(x$tag, "qwen2.5:7b"), logical(1)))
@@ -25,6 +33,15 @@ test_that("automatic selection requires qualified settings and conservative avai
 })
 
 test_that("blocked automatic setup performs no network or filesystem mutations", {
+  original_read <- read_document
+  local_mocked_bindings(read_document = function(file) {
+    if (!identical(file, resource_file("runtime", "manifest.json"))) return(original_read(file))
+    manifest <- original_read(file)
+    idx <- which(vapply(manifest$tested_models, function(x) identical(x$tag, "qwen2.5:7b"), logical(1)))
+    manifest$tested_models[[idx]]$qualification <- "qualified_for_planning"
+    manifest$tested_models[[idx]]$qualification_context <- planner_qualification_context(manifest)
+    manifest
+  })
   root <- file.path(new_parent(), "absent")
   withr::local_options(cttiR.runtime_dir = root, cttiR.planner_processor = "cpu", cttiR.planner_threads = 16L)
   local_mocked_bindings(runtime_resources = function(...) list(platform = "Linux", arch = "x86_64",
@@ -43,6 +60,15 @@ test_that("blocked automatic setup performs no network or filesystem mutations",
 })
 
 test_that("automatic setup rechecks resources before acquisition", {
+  original_read <- read_document
+  local_mocked_bindings(read_document = function(file) {
+    if (!identical(file, resource_file("runtime", "manifest.json"))) return(original_read(file))
+    manifest <- original_read(file)
+    idx <- which(vapply(manifest$tested_models, function(x) identical(x$tag, "qwen2.5:7b"), logical(1)))
+    manifest$tested_models[[idx]]$qualification <- "qualified_for_planning"
+    manifest$tested_models[[idx]]$qualification_context <- planner_qualification_context(manifest)
+    manifest
+  })
   root <- file.path(new_parent(), "absent")
   withr::local_options(cttiR.runtime_dir = root, cttiR.planner_processor = "cpu", cttiR.planner_threads = 16L)
   reads <- 0L
@@ -59,7 +85,7 @@ test_that("automatic setup rechecks resources before acquisition", {
 
 test_that("automatic selection orders qualified candidates by model bytes", {
   withr::local_options(cttiR.planner_processor = "cpu", cttiR.planner_threads = 16L)
-  manifest <- read_document(resource_file("runtime", "manifest.json"))
+  manifest <- qualified_selection_manifest()
   candidate <- Filter(function(x) identical(x$tag, "qwen2.5:7b"), manifest$tested_models)[[1]]
   candidate$tag <- "fixture:small"
   candidate$size_bytes <- candidate$size_bytes - 1
@@ -70,9 +96,18 @@ test_that("automatic selection orders qualified candidates by model bytes", {
 })
 
 test_that("memory pressure before inference preserves an existing runtime state", {
+  original_read <- read_document
+  local_mocked_bindings(read_document = function(file) {
+    if (!identical(file, resource_file("runtime", "manifest.json"))) return(original_read(file))
+    manifest <- original_read(file)
+    idx <- which(vapply(manifest$tested_models, function(x) identical(x$tag, "qwen2.5:7b"), logical(1)))
+    manifest$tested_models[[idx]]$qualification <- "qualified_for_planning"
+    manifest$tested_models[[idx]]$qualification_context <- planner_qualification_context(manifest)
+    manifest
+  })
   root <- new_parent()
   withr::local_options(cttiR.runtime_dir = root, cttiR.planner_processor = "cpu", cttiR.planner_threads = 16L)
-  manifest <- read_document(resource_file("runtime", "manifest.json"))
+  manifest <- qualified_selection_manifest()
   candidate <- Filter(function(x) identical(x$tag, "qwen2.5:7b"), manifest$tested_models)[[1]]
   writeLines("preserved owner", file.path(root, "runtime-state.json"))
   before <- tree_hashes(root)

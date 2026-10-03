@@ -75,7 +75,8 @@
     {
       "capability": "std.effects.broom",
       "columns": [],
-      "code": "# Tidy estimates with confidence intervals for a fitted model.\nbroom::tidy(fit, conf.int = TRUE)"
+      "code": "# Tidy estimates with confidence intervals for a fitted model.\nbroom::tidy(fit, conf.int = TRUE)",
+      "code_lme": "# Fixed-effect estimates for a fitted nlme model; cell/group units must be reviewed.\nbroom.mixed::tidy(fit, effects = \"fixed\", conf.int = TRUE)"
     },
     {
       "capability": "std.report.render",

@@ -22,7 +22,42 @@ The P1 items are `ask()` emitting `broom::tidy()` for `nlme` fits, which fails
 at run time, and the conversion-loss report missing graphs and loadings. Fix
 these first.
 
-## Current continuation point
+## Current continuation point: owner review corrections
+
+The mixed-model effects snippet now uses broom.mixed::tidy with fixed effects.
+A synthetic executed regression agrees with nlme::fixef. Static validation tracks
+reviewed fitted-model constructors, checks method approval for tidy/glance/augment,
+and reports unknown dispatch, unresolved dots and omitted no-default arguments.
+Targeted ask, approvals, interop, planner, router, runtime and app tests pass;
+the live model test is explicitly skipped. The latest UI-only rerun also passes.
+Logs: artifacts/implementation/review-r02-verified-tests.log and
+review-runtime-ui-tests.log. These targeted results are not a full package check.
+
+Seurat exploration is now a candidate with no approved adapter. The old 7B
+qualification context is retained as development evidence; the production label
+is not_qualified_for_planning. Automatic setup therefore blocks until independent
+qualification is completed. Tests use synthetic qualification only to exercise
+resource selection independently. README retains the independent ask v5 failure;
+the later approval-only evaluation does not establish executable-code validity.
+
+The a7fc3f8 full local check completed: 5611 assertions, 13 skips, no errors or
+warnings and one incoming NOTE; vignettes and manuals passed. All five hosted
+jobs in 37119790157 failed the same hardware-dependent UI expectation. The
+current regression isolates acquisition from selection and separately verifies
+the actual automatic qualification blocker. Receipt:
+artifacts/implementation/automatic-selection-full-validation.json.
+
+R18 conversion-loss reporting remains the next P1 task. Then close the remaining
+owner review items, including G26 versioned ecosystem policy, enforced pins,
+backed-layer suite fixture and non-skipped platform evidence. Batch registry
+changes before fresh independent qualification. The private Seurat exploration
+entry point is optional future work, not a required G26 deliverable.
+Review progress: artifacts/implementation/review-2026-10-03-progress.json.
+No CRAN or external-builder submission has occurred. Readiness remains open;
+COMPLETE and STOP are absent and the hourly retry timer remains active.
+
+## Historical validation evidence (source-specific; superseded labels)
+
 
 Planner metadata and keyword filtering are integrated and pushed as 834dcd9.
 Prompt version is planner-3. Proposals retain only keyword-supported capability
@@ -69,7 +104,7 @@ The 234-member archive excludes private material and matches the changed source;
 isolated installation passed. SHA-256:
 494e2ea9b9657cf858e3bdeb16e691bea43023328383cb64869a78b7bffb31bd.
 
-Milestone 80ea857 qualified qwen2.5:7b at its recorded digest for the tested
+Milestone 80ea857 recorded development qualification of qwen2.5:7b for the tested
 Linux CPU 16-thread planner-3 profile. Prior failed benchmarks remain in
 benchmark_history, and repeat/annotation limitations remain explicit. Its full
 check passed: 5568 assertions, 13 documented skips, 0 errors/warnings, 1 incoming
@@ -95,17 +130,15 @@ two 4.68 GB model-size copies plus headroom. This bounded observation is not a
 universal memory guarantee. Owned runtime stopped; receipts:
 automatic-selection-review.json, automatic-profile-final-live-smoke.json,
 automatic-profile-final-resource-observation.json, automatic-profile-cleanup.json.
-This source milestone is a7fc3f8, pushed to main. Its full check is running in
-cttir-automatic-selection-check-a7fc3f8.service; inspect
-artifacts/automatic-selection-check-a7fc3f8/status.json and check.log before
-starting another check. Review its hosted jobs too. The preceding profile check
-does not validate these additional resource guards. G26 remains unfinished.
+This source milestone is a7fc3f8, pushed to main. Its completed local check and
+failed hosted jobs are recorded above. The production qualification label has
+since been removed under the owner review decision.
 
 Historical admin/planner_metadata_prompt.R and planner_grounded_candidate.R
 monkeypatch pre-integration code: do not source them into planner-3 or their
 policies will be applied twice. The new live runner uses production code directly.
-G26 remains unfinished; admin/seurat-workflow-integration-notes.md identifies
-the missing generated analysis entry point and distinct role-approval work. A private static
+Historical admin/seurat-workflow-integration-notes.md describes an optional
+generated analysis entry point and distinct role-approval work. A private static
 entry point now passes 17 refusal cases plus repeated synthetic clustering/UMAP;
 a separate FindAllMarkers fixture passes direct fold-change/adjustment references.
 See seurat-static-candidate-review.json and the integration notes. This entry point
@@ -142,8 +175,8 @@ the ask suite and lint pass.
 
 A subsequent NEW 20-question corpus (10 English, 10 German), frozen after those
 fixes and before evaluation, passes all five unchanged thresholds: supported
-retrieval 11/12 = 0.9167, citations/code validity/abstention/injection resistance
-all 1.0. BF06, a German missing-values request, remains unmatched. The original
+retrieval 11/12 = 0.9167, citation/approval-only code checks/abstention/injection resistance
+all 1.0. The approval-only scorer does not prove executable-code validity. BF06, a German missing-values request, remains unmatched. The original
 24- and 30-question failures are preserved; the latter passes only as a development
 replay after repair. These are single-author labels, not independent scientific
 annotation. Evidence: artifacts/implementation/ask-german-unicode-review.json,
@@ -155,7 +188,7 @@ The preceding benchmark revision a05a2d7 has completed full local validation:
 PDF/HTML manuals passed. All five jobs in GitHub run 37103479376 passed. Receipt:
 artifacts/implementation/repeat-evidence-full-validation.json. Tarball SHA-256:
 9f833e915245df27e15a3e046ffaf1cd1c734c5ddeb609f08990677a94c4ba29.
-The subsequent retrieval check also passed, as recorded above; qualification safeguards have a separate active check.
+The subsequent retrieval check also passed, as recorded above; subsequent qualification checks are recorded above.
 The hourly retry timer remains active; COMPLETE and STOP remain absent.
 
 ## Fresh planner validation and repeat evidence

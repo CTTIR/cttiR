@@ -154,6 +154,23 @@ validate_generated_code <- function(text, catalog = NULL, approved_only = TRUE) 
     if (is.null(cache[[package$name]])) assign(package$name, approved_export_index(package), envir = cache)
     cache[[package$name]]
   }
+  acc$classes <- list()
+  constructors <- c("stats::lm" = "lm", "stats::glm" = "glm", "nlme::lme" = "lme", "survival::coxph" = "coxph")
+  fitted_class <- function(value) {
+    if (is.symbol(value)) return(acc$classes[[as.character(value)]])
+    if (is.call(value) && namespaced(value[[1]])) {
+      key <- paste(static_atom(value[[1]][[2]]), static_atom(value[[1]][[3]]), sep = "::")
+      args <- as.list(value)[-1]
+      if ("method" %in% names(args)) {
+        if (empty_argument(args, match("method", names(args)))) return(NULL)
+        method <- static_literal(args[["method"]])
+        allowed <- switch(key, "stats::lm" = "qr", "stats::glm" = "glm.fit", "nlme::lme" = c("ML", "REML"))
+        if (is.null(method) || !method %in% allowed) return(NULL)
+      }
+      return(unname(constructors[key]))
+    }
+    NULL
+  }
   acc$local <- character()
   collect <- function(expr, depth = 0L) {
     if (!is.call(expr) || depth > 256L) return(invisible(NULL))
@@ -174,7 +191,7 @@ validate_generated_code <- function(text, catalog = NULL, approved_only = TRUE) 
   namespaced <- function(x) {
     is.call(x) && length(x) == 3L && (identical(x[[1]], as.name("::")) || identical(x[[1]], as.name(":::")))
   }
-  check_namespaced <- function(ref, call = NULL) {
+  check_namespaced <- function(ref, call = NULL, in_function = FALSE) {
     expr <- if (is.null(call)) ref else call
     package <- static_atom(ref[[2]])
     export <- static_atom(ref[[3]])
@@ -192,6 +209,7 @@ validate_generated_code <- function(text, catalog = NULL, approved_only = TRUE) 
     entry <- Filter(function(x) identical(x$name, export), p$exports)
     if (!length(entry)) return(add(expr, package, export, "rejected", "export_absent_from_catalog_revision"))
     entry <- entry[[1]]
+    chain <- list(p)
     reason <- if (approved_only) "workflow_approved_export" else "static_api_verified_export"
     if (identical(entry$kind, "reexport")) {
       # A reexport is accepted only through its owner's verified (and approved)
@@ -252,7 +270,26 @@ validate_generated_code <- function(text, catalog = NULL, approved_only = TRUE) 
       # `FUN` (also abbreviated inside `...`, as a method may match it later)
       # takes a function by base R convention in every package.
       check_arguments(call, shape$formals, export, paste0(package, "::", export), c("FUN", "FU"),
-        required = shape$defaults)
+        required = shape$defaults, outside_dots = !in_function)
+      if (export %in% c("tidy", "glance", "augment")) {
+        matched <- static_match_call(call, shape$formals)
+        cls <- if ("x" %in% names(matched) && !empty_argument(matched, match("x", names(matched)))) fitted_class(matched[["x"]]) else NULL
+        known <- length(cls) == 1L && !is.na(cls)
+        covered <- known && any(vapply(chain, function(provider) {
+          methods <- Filter(function(m) {
+            identical(sub("^.*::", "", m$generic), export) && identical(m$class, cls) &&
+              identical(m$verification, "static_method_verified")
+          }, provider$s3_methods)
+          any(vapply(methods, function(m) {
+            !approved_only || any(vapply(provider$approvals, function(a) {
+              identical(a$status, "approved") && identical(approval_coverage(provider, a)$state, "complete") &&
+                m$implementation %in% approval_text(a$required_methods)
+            }, logical(1)))
+          }, logical(1)))
+        }, logical(1)))
+        if (!covered) add(expr, NA_character_, paste0(package, "::", export), "warning",
+          paste0("dispatch_unverified:", export, ".", if (known) cls else "unknown"))
+      }
       if (identical(package, "yaml")) check_yaml_eval(call, shape$formals, export)
     }
     add(expr, package, export, "ok", reason)
@@ -282,10 +319,11 @@ validate_generated_code <- function(text, catalog = NULL, approved_only = TRUE) 
   # the callee's formals, so abbreviations such as `F =` or `FU =` cannot slip a
   # function name past the function-value checks. `...` in the call is unknown
   # and is left out; it also suspends the missing-argument report.
-  check_arguments <- function(call, formals, name, label, strict, required = FALSE) {
+  check_arguments <- function(call, formals, name, label, strict, required = FALSE, outside_dots = TRUE) {
     if (is.null(formals)) return(invisible(NULL))
     parts <- as.list(call)[-1]
     dots <- vapply(seq_along(parts), function(i) !empty_argument(parts, i) && identical(parts[[i]], quote(...)), logical(1))
+    if (any(dots) && outside_dots) add(call, NA_character_, label, "warning", "unresolved_dots")
     matched <- static_match_call(if (any(dots)) call[c(TRUE, !dots)] else call, formals)
     if (is.null(matched)) return(add(call, NA_character_, name, "rejected", "argument_match_error"))
     keys <- names(matched)
@@ -298,10 +336,13 @@ validate_generated_code <- function(text, catalog = NULL, approved_only = TRUE) 
         check_argument_value(matched[[i]], keys[[i]], call, name, FALSE, strict)
       }
     }
-    first <- names(formals)[1]
-    if (required && !any(dots) && length(formals) && !identical(first, "...") && no_default(formals[[1]]) &&
-        !first %in% keys) {
-      add(call, NA_character_, label, "warning", paste0("missing_required_argument:", first))
+    if (required && !any(dots)) {
+      for (i in seq_along(formals)) {
+        field <- names(formals)[[i]]
+        if (field != "..." && no_default(formals[[i]]) && !field %in% keys) {
+          add(call, NA_character_, label, "warning", paste0(if (i == 1L) "missing_required_argument:" else "omitted_argument_without_default:", field))
+        }
+      }
     }
     invisible(NULL)
   }
@@ -319,7 +360,7 @@ validate_generated_code <- function(text, catalog = NULL, approved_only = TRUE) 
     }
     invisible(NULL)
   }
-  walk <- function(expr, depth = 0L, formula = FALSE) {
+  walk <- function(expr, depth = 0L, formula = FALSE, in_function = FALSE) {
     if (depth > 256L) return(add(quote(nesting), NA_character_, NA_character_, "rejected", "nesting_exceeds_bound"))
     if (is.symbol(expr)) {
       name <- as.character(expr)
@@ -328,7 +369,7 @@ validate_generated_code <- function(text, catalog = NULL, approved_only = TRUE) 
     }
     if (is.pairlist(expr)) {
       parts <- as.list(expr)
-      for (i in seq_along(parts)) if (!empty_argument(parts, i)) walk(parts[[i]], depth + 1L, formula)
+      for (i in seq_along(parts)) if (!empty_argument(parts, i)) walk(parts[[i]], depth + 1L, formula, in_function)
       return(invisible(NULL))
     }
     if (!is.call(expr)) return(invisible(NULL))
@@ -337,7 +378,7 @@ validate_generated_code <- function(text, catalog = NULL, approved_only = TRUE) 
     if (namespaced(expr)) return(check_namespaced(expr))
     name <- if (is.symbol(head)) as.character(head) else NULL
     if (namespaced(head)) {
-      check_namespaced(head, expr)
+      check_namespaced(head, expr, in_function)
       if (identical(static_atom(head[[2]]), "base")) name <- static_atom(head[[3]])
     } else if (is.symbol(head)) {
       if (name %in% forbidden_calls) {
@@ -346,6 +387,7 @@ validate_generated_code <- function(text, catalog = NULL, approved_only = TRUE) 
         if (name == "$") args <- args[1]
         if (name %in% c("<-", "=") && is.symbol(args[[1]])) args <- args[-1]
         if (name == "~") formula <- TRUE
+        if (name == "function") in_function <- TRUE
       } else if (formula && name %in% formula_terms) {
         add(expr, NA_character_, name, "ok", "formula_term")
       } else if (name %in% local_functions) {
@@ -357,18 +399,35 @@ validate_generated_code <- function(text, catalog = NULL, approved_only = TRUE) 
       }
     } else {
       add(expr, NA_character_, NA_character_, "rejected", "computed_function_call")
-      walk(head, depth + 1L, formula)
+      walk(head, depth + 1L, formula, in_function)
     }
     base_call <- !is.null(name) && name %in% safe_base_calls && !name %in% local_functions &&
       (is.symbol(head) || identical(static_atom(head[[2]]), "base"))
     if (base_call) {
       positions <- higher_order_formals[[name]]
       strict <- if (length(positions)) positions[[length(positions)]] else character()
-      check_arguments(expr, base_formals(name), name, paste0("base::", name), strict)
+      check_arguments(expr, base_formals(name), name, paste0("base::", name), strict, outside_dots = !in_function)
     }
-    for (i in seq_along(args)) if (!empty_argument(args, i)) walk(args[[i]], depth + 1L, formula)
+    for (i in seq_along(args)) if (!empty_argument(args, i)) walk(args[[i]], depth + 1L, formula, in_function)
     invisible(NULL)
   }
-  for (expr in expressions) walk(expr)
+  assigned_names <- function(expr, depth = 0L) {
+    if (depth > 256L || !is.call(expr) || identical(expr[[1]], as.name("function"))) return(character())
+    name <- if (is.symbol(expr[[1]])) as.character(expr[[1]]) else ""
+    written <- if (name %in% c("<-", "=", "for") && is.symbol(expr[[2]])) as.character(expr[[2]]) else character()
+    parts <- as.list(expr)[-1]
+    for (i in seq_along(parts)) if (!empty_argument(parts, i)) written <- c(written, assigned_names(parts[[i]], depth + 1L))
+    unique(written)
+  }
+  for (expr in expressions) {
+    # Conditional or nested assignments invalidate previous class knowledge.
+    # Only a direct, reviewed constructor below establishes a replacement.
+    writes <- assigned_names(expr)
+    for (name in writes) acc$classes[name] <- list(NULL)
+    walk(expr)
+    if (is.call(expr) && is.symbol(expr[[1]]) && as.character(expr[[1]]) %in% c("<-", "=") && length(expr) == 3L && is.symbol(expr[[2]])) {
+      acc$classes[[as.character(expr[[2]])]] <- fitted_class(expr[[3]])
+    }
+  }
   finish(acc$rows)
 }

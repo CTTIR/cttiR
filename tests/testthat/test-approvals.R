@@ -330,8 +330,9 @@ test_that("the validator resolves function arguments and refuses process and env
   lm <- check("stats::lm()")
   expect_true(attr(lm, "valid"))
   expect_equal(lm$status[lm$reason == "missing_required_argument:formula"], "warning")
-  expect_equal(lm$export[lm$status == "warning"], "stats::lm")
-  expect_false(any(check("stats::lm(y ~ x, data = d)")$status == "warning"))
+  expect_equal(unique(lm$export[lm$status == "warning"]), "stats::lm")
+  expect_false(any(startsWith(check("stats::lm(y ~ x, data = d)")$reason, "missing_required_argument:")))
+  expect_contains(check("stats::lm(y ~ x, data = d)")$reason, "omitted_argument_without_default:subset")
   expect_false(any(check("f <- function(...) stats::lm(...)")$status == "warning"))
   expect_true(attr(check("ggplot2::stat_summary(fun = mean)"), "valid"))
   # Formals that merely share a name with function arguments are data.

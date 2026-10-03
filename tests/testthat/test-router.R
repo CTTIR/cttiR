@@ -54,7 +54,11 @@ test_that("capability approval requires every declared callable to be approved",
   catalog <- resolve_catalog()
   tested <- Filter(function(x) identical(x$status, "adapter_tested") && length(setdiff(x$packages, "base")), registry$capabilities)
   expect_true(all(vapply(tested, function(x) length(x$callables) > 0L, logical(1))))
-  seurat <- capability_approval(registry$capabilities$seurat.single_cell.exploration, catalog)
+  candidate <- registry$capabilities$seurat.single_cell.exploration
+  expect_equal(capability_approval(candidate, catalog)$status, "approval_pending")
+  candidate$status <- "adapter_tested"
+  candidate$adapter <- list(id = "interop.seurat_v5", version = "1.0.0")
+  seurat <- capability_approval(candidate, catalog)
   expect_equal(seurat$status, "approval_pending")
   expect_contains(seurat$missing, c("Seurat::FindClusters", "Seurat::RunUMAP"))
   expect_equal(capability_approval(registry$capabilities$std.model.coxph, catalog)$status, "approved")
@@ -69,7 +73,7 @@ test_that("capability approval requires every declared callable to be approved",
   sc <- project("Seurat", "primary_research", "Single-cell RNA-seq clustering of immune cells", tempdir(), dry_run = TRUE)
   route <- route_workflow(sc$spec, "standard_reflowR")
   exploration <- Filter(function(x) identical(x$capability, "seurat.single_cell.exploration"), route$ecosystem)[[1]]
-  expect_equal(exploration$status, "approval_pending")
+  expect_equal(exploration$status, "candidate_gap")
 })
 
 test_that("dependencies pin re-export owners and optional interop packages", {

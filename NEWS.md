@@ -1,8 +1,11 @@
 # cttiR development
 
+- Use broom.mixed fixed-effect tidiers for nlme answers, check known fitted-class dispatch, and surface unresolved argument warnings.
+- Relabel Seurat exploration as a candidate; conversion helpers do not establish an exploration workflow.
+
 - Automatically select the smallest qualified CPU model only when its recorded settings and conservative available-resource budgets fit; block before acquisition otherwise.
 
-- Qualify explicitly selected qwen2.5:7b for advisory planning only at its tested Linux CPU profile; preserve earlier failed benchmarks and repeat limitations.
+- Retain the qwen2.5:7b CPU results as development evidence only; independent qualification remains pending.
 
 * Bind positive model qualifications to the prompt, grounding policy, registry,
   schema, runtime binary and inference settings; recheck the acquired model
@@ -10,7 +13,7 @@
 
 * Include registered package/alias metadata in planner prompts, filter proposed
   capabilities against keyword evidence, and persist omissions in decisions.
-  Re-bound escaped inputs as valid JSON. Model qualification remains unchanged.
+  Re-bound escaped inputs as valid JSON.
 
 * Recognize German data-recoding and report-rendering requests, and retain full
   Unicode function names when reporting absent or unapproved APIs in `ask()`.

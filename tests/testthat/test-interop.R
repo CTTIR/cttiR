@@ -564,7 +564,7 @@ test_that("the bioc/seurat capability registry is valid and truthful about testi
       "seurat.acceleration.bpcells", "seurat.markers.presto", "seurat.count_models.glmgampoi"))
   status <- stats::setNames(vapply(caps, function(x) x$status, character(1)), ids)
   expect_equal(status[["bioc.se.tidy_view"]], "adapter_tested")
-  expect_equal(status[["seurat.single_cell.exploration"]], "adapter_tested")
+  expect_equal(status[["seurat.single_cell.exploration"]], "candidate")
   tested_packages <- c("SummarizedExperiment", "S4Vectors", "SingleCellExperiment", "Matrix", "Seurat", "SeuratObject", "methods")
   adapters <- interop_adapters()
   env <- interop_template()
@@ -648,10 +648,13 @@ test_that("invalid capability registries are rejected", {
       x
     },
     tested_without_adapter = function(x) {
+      x$capabilities[[seurat]]$status <- "adapter_tested"
       x$capabilities[[seurat]]$adapter <- NULL
       x
     },
     unreviewed_adapter = function(x) {
+      x$capabilities[[seurat]]$status <- "adapter_tested"
+      x$capabilities[[seurat]]$adapter <- list(id = "interop.seurat_v5", version = "1.0.0")
       x$capabilities[[seurat]]$adapter$version <- "9.9.9"
       x
     },
