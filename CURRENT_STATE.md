@@ -2,6 +2,26 @@
 
 Updated: 2026-10-03. Version: 0.1.1. License: MIT.
 
+## Read first: owner-requested review and decisions (2026-10-03)
+
+Before continuing, read `admin/review-2026-10-03.md` (git-ignored, local). It
+is an independent review of G12 and G26 at 18ba8eb with 41 adversarially
+verified items (2 P1, 22 P2, 17 P3) and an ordered plan. The owner decided:
+
+- **G12 keeps the strict bar.** It passes only after a local model qualifies
+  on a fresh, independent planner corpus that meets spec 18's minimum counts,
+  frozen beforehand and scored on the shipped artifact with unchanged
+  thresholds, and is then selected automatically from measured hardware.
+  Until then, describe the 80ea857 qualification as development evidence.
+- **G26: downgrade now.** Relabel `seurat.single_cell.exploration` as a
+  candidate, then close the honest G26 gaps (conversion-loss report, ecosystem
+  policy, enforced pins, backed-layer fixture, non-skipped CI evidence). A
+  reviewed Seurat exploration adapter is later, optional work.
+
+The P1 items are `ask()` emitting `broom::tidy()` for `nlme` fits, which fails
+at run time, and the conversion-loss report missing graphs and loadings. Fix
+these first.
+
 ## Current continuation point
 
 Planner metadata and keyword filtering are integrated and pushed as 834dcd9.
