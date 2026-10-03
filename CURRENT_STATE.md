@@ -22,44 +22,41 @@ The P1 items are `ask()` emitting `broom::tidy()` for `nlme` fits, which fails
 at run time, and the conversion-loss report missing graphs and loadings. Fix
 these first.
 
-## Current continuation point: strict scoring and historical catalog regression
+## Current continuation point: requested ecosystem gap routing
 
-The 9c7a0e8 and 7c6cd22 full checks FAILED (two assertions, zero local test warnings),
-although manuals and rebuilt vignettes passed. Both failures were in a historical
-catalog test that assumed every archived snapshot predates approvals. The newly
-archived b726a5f snapshot legitimately contains 164 approved callables. The test
-now explicitly covers the three legacy snapshots and separately verifies that
-the later snapshot preserves its own approvals. Failed logs remain intact.
-All five hosted jobs for those milestones failed the same assertions. Linux with
-all Suggests also emitted an upstream namespace-load warning involving
-SummarizedExperiment 1.42.0 and DelayedArray 0.38.2. The test harness retains that
-exact message as visible output while allowing only this specific load warning;
-other warnings still fail, and production namespace loading is unchanged.
+Milestone 409ad25 passed the complete source-isolated local check: 5796 assertions,
+13 skips, zero errors/warnings and one NOTE (new submission and Title prefix).
+PDF/HTML manuals and rebuilt vignettes passed. The tarball hash is
+42a4e8c39590ae4d7f086cf7efb83560a369c7139577ca1e60e46a4ab1be678e;
+its 237 members exclude admin/artifacts. All five hosted jobs in run 37129779215
+passed. Linux all-Suggests ran 5847 assertions with nine skips, none in interop;
+Seurat 5.5.1 and SeuratObject 5.4.0 were installed. The exact known upstream
+SummarizedExperiment namespace warning is retained as visible test output.
+Evidence: artifacts/implementation/strict-ask-full-validation.json,
+strict-ask-hosted-ci.json and strict-ask-linux-all-suggests.log.
+Earlier 9c7a0e8/7c6cd22 failed checks remain retained, not reclassified.
 
-R03 strict scoring is integrated: approval alone no longer passes a supported
-case; nonempty, validated code is also required. Added missingness/exclusion
-snippets execute against a mapped fixture, and a self-contained synthetic targets
-definition runs in an isolated process. Plain regression recognizes numeric and
-Unicode variable names, and explicit yes/no coding selects the binary model.
-Ask/catalog-evidence/app-question tests, interop tests and source lint pass.
-The unchanged 51-case DEVELOPMENT benchmark now has supported recall 25/26 =
-0.9615385; citation correctness, code validity, abstention and injection resistance
-are 1.0. S12 remains a recorded miss: explicitly named tar_make is not role-approved,
-so code remains withheld. The plain targets-definition request is supported.
-No scheduler approval or benchmark threshold was relaxed to erase that miss.
-This is previously examined development evidence, NOT independent qualification.
-Evidence: artifacts/implementation/strict-ask-integrated-development.json/.log,
-strict-ask-final-tests.log, interop-dependency-warning-tests.log and
-answer-contract-hosted-failures.log. Full validation of the corrected source is
-running for committed/pushed milestone 409ad25 in
-cttir-strict-ask-check-409ad25.service, with logs/status under
-artifacts/strict-ask-check-409ad25. No old failed check should be described as passing.
+R14 now selects ecosystem advice by requested keyword evidence and detected
+modality. Signac, plain scRNA, Azimuth and donor-pseudobulk requests have positive
+and negative regressions, including negation. Only approved, enabled CTTIR
+specialists suppress covered stages. Ecosystem candidates stay disabled, and
+clinical/tabular requests remain excluded. Router/planner/standard-workflow tests
+and source lint pass (one opt-in live planner skip). Full validation of this new
+source is still required. Logs: requested-routing-tests-final.log and
+requested-routing-integration-tests.log under artifacts/implementation.
 
-Next: review the new source-isolated full check and hosted results, then complete
-R15's versioned ecosystem schema migration, R16's default pin enforcement, R14's
-requested-capability routing and the remaining owner review items. Batch registry
-changes before independently authored held-out evaluations and manual usefulness
-review. G12/G26 remain open; COMPLETE/STOP remain absent and the retry timer active.
+R03 strict scoring/data contracts pass the full check above. The previously seen
+51-case DEVELOPMENT benchmark has supported recall 25/26; S12 remains a recorded
+miss because explicitly named tar_make is not role-approved. Thresholds and
+scheduler approval were not relaxed. This is not independent qualification.
+
+Next: R15 versioned ecosystem schema migration (preserve original files and show
+sync diff), R16 default exact-pin enforcement and remaining owner review items.
+Existing read_project hashes accepted specs before sync; do not silently migrate
+on read and invalidate control hashes. Batch registry changes before independent
+held-out evaluations/manual usefulness review. Asked who will author the fresh
+independent corpus; no reviewer agent has been authorized or started yet.
+G12/G26 remain open. COMPLETE/STOP absent; retry timer active. No submission.
 
 ## Preceding explicit answer data requirements
 

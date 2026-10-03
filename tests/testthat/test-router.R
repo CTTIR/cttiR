@@ -300,7 +300,8 @@ test_that("biological modalities route to ecosystem candidates, never clinical t
   sc <- route_goal("Single-cell RNA-seq clustering of immune cells from three donors")
   expect_equal(sc$modality, "single_cell")
   ids <- vapply(sc$route$ecosystem, function(x) x$capability, character(1))
-  expect_contains(ids, c("seurat.single_cell.exploration", "bioc.single_cell.donor_pseudobulk"))
+  expect_contains(ids, "seurat.single_cell.exploration")
+  expect_false("bioc.single_cell.donor_pseudobulk" %in% ids)
   expect_equal(sc$route$profile, "standard_reflowR")
   expect_false(any(grepl("specialist_adapter_pending:seurat", unlist(sc$route$gaps))))
   expect_equal(route_goal("Integrate multi-omics proteomics and transcriptomics")$modality, "multiomics")
@@ -313,4 +314,52 @@ test_that("biological modalities route to ecosystem candidates, never clinical t
     options = list(ecosystem = list(seurat_for_relevant_gaps = FALSE)))
   off_ids <- vapply(route_workflow(off$spec, "standard_reflowR")$ecosystem, function(x) x$capability, character(1))
   expect_false(any(startsWith(off_ids, "seurat.")))
+})
+
+test_that("ecosystem advice selects requested gaps rather than all modality candidates", {
+  cases <- list(
+    list(goal = "scATAC-seq chromatin accessibility with Signac and fragment files",
+      yes = "seurat.chromatin.signac", no = c("seurat.normalization.sctransform", "seurat.annotation.azimuth", "seurat.markers.presto")),
+    list(goal = "Single-cell RNA-seq clustering of immune cells",
+      yes = "seurat.single_cell.exploration", no = c("seurat.chromatin.signac", "seurat.annotation.azimuth", "seurat.normalization.sctransform")),
+    list(goal = "Single-cell RNA-seq cell type annotation with Azimuth",
+      yes = "seurat.annotation.azimuth", no = c("seurat.chromatin.signac", "seurat.markers.presto")),
+    list(goal = "Single-cell donor-level pseudobulk aggregate counts",
+      yes = "bioc.single_cell.donor_pseudobulk", no = c("seurat.chromatin.signac", "seurat.annotation.azimuth")),
+    list(goal = "Single-cell RNA-seq without Signac and without Azimuth",
+      yes = "seurat.single_cell.exploration", no = c("seurat.chromatin.signac", "seurat.annotation.azimuth"))
+  )
+  for (case in cases) {
+    route <- route_workflow(route_for(case$goal)$project$spec, "standard_reflowR")
+    ids <- vapply(route$ecosystem, function(x) x$capability, character(1))
+    expect_true(case$yes %in% ids, info = case$goal)
+    expect_equal(length(intersect(case$no, ids)), 0L, info = case$goal)
+    expect_false(any(vapply(route$ecosystem, function(x) isTRUE(x$enabled), logical(1))))
+  }
+  expect_length(route_workflow(route_for("Clinical cohort blood pressure comparison")$project$spec)$ecosystem, 0L)
+})
+
+test_that("only approved enabled CTTIR specialists suppress ecosystem stages", {
+  registry <- capability_registry()
+  cap <- registry$capabilities[["seurat.chromatin.signac"]]
+  specialist <- cap
+  specialist$id <- "cttir.test.chromatin"
+  specialist$family <- "cttir"
+  specialist$specialist <- TRUE
+  registry$capabilities[[specialist$id]] <- specialist
+  stage <- list(capability = specialist$id, stage = cap$stage, enabled = TRUE, status = "approved")
+  candidates <- function(stage, modality = "single_cell") {
+    vapply(ecosystem_gap_candidates(registry, modality, "scATAC-seq Signac", TRUE, list(stage)),
+      function(x) x$id, character(1))
+  }
+  expect_false(cap$id %in% candidates(stage))
+  stage$enabled <- FALSE
+  expect_true(cap$id %in% candidates(stage))
+  stage$enabled <- TRUE
+  stage$status <- "approval_pending"
+  expect_true(cap$id %in% candidates(stage))
+  stage$status <- "approved"
+  stage$capability <- cap$id
+  expect_true(cap$id %in% candidates(stage))
+  expect_length(candidates(stage, "tabular"), 0L)
 })

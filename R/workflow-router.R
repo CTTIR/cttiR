@@ -218,6 +218,22 @@ describe_capability <- function(backend) {
 engine_capability <- c("stats::lm" = "std.model.lm", "stats::glm" = "std.model.glm_binomial",
   "nlme::lme" = "std.model.lme", "survival::coxph" = "std.model.coxph")
 
+# Ecosystem advice fills a requested gap only. Shared modality alone does not
+# request every container, normalization method or annotation service.
+ecosystem_gap_candidates <- function(registry, modality, goal, allow_seurat, stages) {
+  if (modality %in% c("unknown", "tabular")) return(list())
+  covered <- vapply(Filter(function(stage) {
+    cap <- registry$capabilities[[stage$capability]]
+    isTRUE(stage$enabled) && identical(stage$status, "approved") && is_cttir_specialist(cap)
+  }, stages), function(stage) stage$stage, character(1))
+  text <- tolower(enc2utf8(goal))
+  Filter(function(cap) {
+    cap$family %in% c("bioconductor", "seurat") && modality %in% cap$applies$modality &&
+      (allow_seurat || !identical(cap$family, "seurat")) && !cap$stage %in% covered &&
+      keyword_hit(text, cap$keywords)
+  }, registry$capabilities)
+}
+
 # Deterministic profile and stage routing. Specialist evidence requires an
 # adapter-tested capability with approvals; infrastructure never counts.
 route_workflow <- function(spec, requested = "auto", catalog = catalog_snapshot(spec$provenance$catalog_id)) {
@@ -267,14 +283,7 @@ route_workflow <- function(spec, requested = "auto", catalog = catalog_snapshot(
   if (identical(spec$workflow$pipeline, "targets")) {
     stages <- c(stages, list(route_stage(registry, catalog, "pipeline", "std.pipeline.targets")))
   }
-  ecosystem <- list()
   if (!modality %in% c("unknown", "tabular")) {
-    allow_seurat <- isTRUE(spec$ecosystem$seurat_for_relevant_gaps)
-    relevant <- Filter(function(cap) {
-      modality %in% cap$applies$modality && !cap$family %in% c("cttir", "standard") &&
-        (allow_seurat || !identical(cap$family, "seurat"))
-    }, registry$capabilities)
-    ecosystem <- lapply(relevant, function(cap) route_stage(registry, catalog, cap$stage, cap$id, enabled = FALSE))
     gaps <- c(gaps, paste0("modality_workflow_requires_review:", modality))
   }
   by_keyword <- Filter(function(id) is_cttir_specialist(registry$capabilities[[id]]), signals$keyword_capabilities)
@@ -296,6 +305,9 @@ route_workflow <- function(spec, requested = "auto", catalog = catalog_snapshot(
     stage$enabled <- TRUE
     stages <- c(stages, list(stage))
   }
+  relevant <- ecosystem_gap_candidates(registry, modality, spec$project$goal,
+    isTRUE(spec$ecosystem$seurat_for_relevant_gaps), stages)
+  ecosystem <- lapply(relevant, function(cap) route_stage(registry, catalog, cap$stage, cap$id, enabled = FALSE))
   reason <- if (length(available)) {
     "Approved CTTIR specialist stages cover part of the workflow; standard stages cover the rest."
   } else if (length(specialist)) {

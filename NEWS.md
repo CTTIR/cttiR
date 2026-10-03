@@ -1,5 +1,7 @@
 # cttiR 0.1.1.9000
 
+* Route ecosystem advice only for requested capabilities in the detected modality, excluding stages already covered by an approved, enabled CTTIR specialist. Ecosystem candidates remain disabled.
+
 * Require nonempty validated code when scoring supported answers. Add executable missingness and synthetic targets examples, recognize digits/Unicode in regression requests, and respect explicit binary coding. Preserve abstention for unapproved scheduler calls.
 * Distinguish legacy catalog snapshots from later archived approval evidence in compatibility tests.
 
