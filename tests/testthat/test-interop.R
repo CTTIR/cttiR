@@ -674,7 +674,7 @@ test_that("invalid capability registries are rejected", {
       x
     },
     candidate_with_adapter = function(x) {
-      x$capabilities[[candidate]]$adapter <- list(id = "interop.bioc_s4", version = "1.2.0")
+      x$capabilities[[candidate]]$adapter <- list(id = "interop.bioc_s4", version = "1.2.1")
       x
     },
     tested_without_adapter = function(x) {
@@ -684,7 +684,7 @@ test_that("invalid capability registries are rejected", {
     },
     unreviewed_adapter = function(x) {
       x$capabilities[[seurat]]$status <- "adapter_tested"
-      x$capabilities[[seurat]]$adapter <- list(id = "interop.seurat_v5", version = "1.2.0")
+      x$capabilities[[seurat]]$adapter <- list(id = "interop.seurat_v5", version = "1.2.1")
       x$capabilities[[seurat]]$adapter$version <- "9.9.9"
       x
     },
@@ -853,4 +853,29 @@ test_that("Seurat interop checks already loaded class namespaces against default
   expect_error(env$ci_conversion_report(se, se), "SummarizedExperiment.*pins 0.0.1")
   expect_error(env$ci_se_tidy_view(se), "SummarizedExperiment.*pins 0.0.1")
   expect_error(env$ci_validate_s4(se), "SummarizedExperiment.*pins 0.0.1")
+})
+
+test_that("Seurat realization budgets refuse oversized columns before reading values", {
+  skip_if_not_installed("SingleCellExperiment")
+  skip_if_not_installed("DelayedArray")
+  env <- interop_template()
+  expect_equal(env$ci_block_values, 1e6)
+  expect_error(env$ci_col_blocks(1000001, 1), "One assay column exceeds")
+  expect_equal(env$ci_col_blocks(1000000, 2), list(`1` = 1L, `2` = 2L))
+  for (budget in list(NA_real_, Inf, 0, -1, 1.5, "24", c(24, 48))) {
+    expect_error(env$ci_col_blocks(8, 60, budget), "realization budget")
+  }
+  delayed <- counting_delayed(matrix(1, 8, 60,
+    dimnames = list(paste0("gene", 1:8), paste0("cell", 1:60))))
+  sce <- SingleCellExperiment::SingleCellExperiment(assays = list(counts = delayed$array),
+    colData = S4Vectors::DataFrame(donor = rep(paste0("d", 1:4), each = 15), group = rep(c("A", "B"), each = 30)))
+  env$ci_block_values <- 7L
+  reset_log(delayed$log)
+  expect_error(env$ci_pseudobulk(sce, "donor", "group"), "One assay column exceeds")
+  expect_equal(delayed$log$total, 0)
+  env$ci_block_values <- 8L
+  result <- env$ci_pseudobulk(sce, "donor", "group")
+  expect_equal(dim(result$counts), c(8L, 4L))
+  expect_lte(delayed$log$max, 8L)
+  expect_equal(unname(result$counts), matrix(15, 8, 4))
 })

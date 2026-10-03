@@ -1,7 +1,7 @@
 # Reviewed static interoperability helpers for Bioconductor and Seurat objects.
 #
-# Adapters: interop.bioc_s4 1.2.0 (ci_validate_s4, ci_conversion_report),
-# interop.se_tidy_view 1.2.0 (ci_se_tidy_view) and interop.seurat_v5 1.2.0
+# Adapters: interop.bioc_s4 1.2.1 (ci_validate_s4, ci_conversion_report),
+# interop.se_tidy_view 1.2.1 (ci_se_tidy_view) and interop.seurat_v5 1.2.1
 # (ci_seurat_layers, ci_pseudobulk, ci_convert).
 #
 # Rules followed by every function in this file:
@@ -114,7 +114,12 @@ ci_storage <- function(m) {
 }
 
 ci_col_blocks <- function(nr, nc, block_values = ci_block_values) {
+  if (!is.numeric(block_values) || length(block_values) != 1L || !is.finite(block_values) ||
+      block_values < 1 || block_values > .Machine$integer.max || block_values != floor(block_values)) {
+    ci_stop("The realization budget must be a positive integer within the supported range.")
+  }
   if (nc < 1L) return(list())
+  if (nr > block_values) ci_stop("One assay column exceeds the realization budget; review the block budget before reading values.")
   per <- max(1L, as.integer(floor(block_values / max(1L, nr))))
   split(seq_len(nc), ceiling(seq_len(nc) / per))
 }
@@ -703,7 +708,7 @@ ci_se_tidy_view <- function(se, assay = 1L, features = NULL, samples = NULL, max
     if (length(fi) < nrow(se)) paste0("features outside slice: ", nrow(se) - length(fi)),
     if (length(si) < ncol(se)) paste0("samples outside slice: ", ncol(se) - length(si)),
     paste0("storage: ", ci_storage(a), " ", class(a)[[1L]], " representation (values copied for the slice only)"))
-  attr(out, "ci_view") <- list(adapter = "interop.se_tidy_view", adapter_version = "1.2.0",
+  attr(out, "ci_view") <- list(adapter = "interop.se_tidy_view", adapter_version = "1.2.1",
     source_class = ci_class_label(se), assay = nm[[i]], assay_class = class(a)[[1L]], storage = ci_storage(a),
     source_dim = as.integer(dim(se)), slice_dim = c(length(fi), length(si)), realized_values = n_values,
     max_cells = max_cells, order = "original object order; samples outer, features inner",
@@ -748,7 +753,7 @@ ci_conversion_report <- function(from, to, pins = ci_project_pins()) {
   out <- do.call(rbind, rows)
   rownames(out) <- NULL
   attr(out, "lossless") <- all(out$status == "preserved")
-  attr(out, "adapter") <- c(id = "interop.bioc_s4", version = "1.2.0")
+  attr(out, "adapter") <- c(id = "interop.bioc_s4", version = "1.2.1")
   out
 }
 
@@ -945,7 +950,7 @@ ci_pseudobulk <- function(obj_or_sce, donor, group, allow_single_cell_samples = 
   }
   dimnames(res) <- list(rownames(counts), ids)
   samples <- data.frame(pseudobulk_id = ids, donor = pairs$donor, group = pairs$group, n_cells = n_cells, stringsAsFactors = FALSE)
-  list(counts = res, samples = samples, design = list(adapter = "interop.seurat_v5", adapter_version = "1.2.0",
+  list(counts = res, samples = samples, design = list(adapter = "interop.seurat_v5", adapter_version = "1.2.1",
       source = source, donor_column = donor, group_column = group, n_cells = length(cells),
       donors_per_group = per_group, single_cell_samples = length(single),
       allow_single_cell_samples = allow_single_cell_samples, unit = "donor x group pseudobulk sample",

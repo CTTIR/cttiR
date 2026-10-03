@@ -82,6 +82,14 @@ scientific validation of results.
 
 ## Local runtime and planner
 
+The opt-in live audit (`INT-003`) checks both structured output and a fixed
+synthetic linear-regression planning task. It requires an accepted local proposal,
+the expected grounded capability and current bundled workflow approval evidence.
+It can diagnose an unqualified model without promoting it. These probes use no
+project goal or study data and are not an independent usefulness benchmark.
+The audit budget accommodates the initial probe and at most two planner requests
+under the supported timeout settings.
+
 `setup()` prepares an owned, cloud-disabled Ollama runtime on Linux x86_64 from
 a pinned publisher archive and verifies a local model with a bounded structured
 probe. A dry run is read-only:

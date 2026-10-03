@@ -1,5 +1,8 @@
 # cttiR 0.1.1.9000
 
+* Interoperability adapters 1.2.1 refuse a single assay column larger than the realization budget before reading values. Record the per-block budget, dense pseudobulk output dimensions and instrumented fixture size without claiming a peak-RSS bound.
+* The opt-in INT-003 live audit now checks a fixed synthetic planner task against the planner schema, keyword grounding and bundled workflow approvals, in addition to the structured-output smoke. Passing these probes does not qualify a model.
+
 * Report capability claims before and after keyword grounding, removed IDs and first-attempt rejection rate. Diagnostic raw replies expose unsupported claims even in rejected attempts, with explicit coverage for missing or malformed replies. Preserve unchanged qualification thresholds and publish historical comparison results with unavailable metrics marked as such.
 
 * Preserve deterministic inference for ambiguous instruction phrases, with a review note; hard instruction markers still block inference. Local model requests keep the full screen. Screened goals no longer supply workflow candidates, and withheld answers report a specific gap.

@@ -22,90 +22,60 @@ The P1 items are `ask()` emitting `broom::tidy()` for `nlme` fits, which fails
 at run time, and the conversion-loss report missing graphs and loadings. Fix
 these first.
 
-## Current continuation point: planner benchmark diagnostics
+## Current continuation point: interoperability budget and live audit probe
 
-Runtime-pin milestone fa68f0d passed the complete source-isolated check:
-5910 assertions, 13 documented skips (none in interop), zero errors/warnings,
-one incoming NOTE (new submission, development version, Title prefix).
-PDF/HTML manuals and rebuilt vignettes passed. All five hosted jobs in run
-37144741327 passed. Its 243-member archive excludes admin/artifacts and its
-changed bundled source files match the commit. SHA-256:
-c84d12df386cc906ae208bc3072f0c9975d5ebc90514448902a109dbb1940d03.
-Receipt: artifacts/implementation/runtime-pins-full-validation.json.
+Both queued source milestones passed complete local checks and all five hosted
+jobs. a368b47: 6014 assertions, 13 skips, 0 errors/warnings, 1 NOTE; source archive
+SHA-256 ec8c5fc5de4167441b88b586cacfd744c80f42a9230987304e0cd5ce6ae746ed
+(243 members), hosted run 37148803041. 95740cd: 6028 assertions, 13 skips, 0 errors/
+warnings, 1 NOTE; archive SHA-256
+216675164be978c30a6565c2fe831e92c4f33ca1dd8731b6965b91deb54cff80
+(245 members), hosted run 37151293030. Both rebuilt vignettes and PDF/HTML manuals
+passed. Archives exclude admin/artifacts and changed bundled files match their
+source commits. Notes concern new submission, development version and Title
+prefix. Receipts: artifacts/implementation/instruction-lock-full-validation.json
+and planner-metrics-full-validation.json. No interop tests were skipped.
 
-Interoperability adapters 1.2.0 enforce project-lock pins by default, including
-already-loaded namespaces. The catalog scanner now includes formal-argument
-default expressions: 63 passing fixtures, 67/67 complete approvals and 192
-approved callables. Current catalog:
-3e1983fd7f81b618d8cf614d33775068d8ad5628fa96723c515d331122e1501a.
-Previous catalog retained under inst/extdata/history. No model was promoted.
+The new R20 correction makes interoperability adapters 1.2.1 refuse a single
+column larger than the realization budget before extracting values. Invalid
+budgets are refused. Existing delayed Seurat fixtures cover inventory,
+pseudobulk and conversion at 24 values per block. New SCE boundary tests verify
+zero reads at cap 7 for 8-row columns and correct aggregation at cap 8. Registry
+requirements record the default 1000000-value block cap (8000000 double payload
+bytes), features-by-donor/sample dense result dimensions and 8x60 fixture/8x4
+result sizes. None is a peak-RSS guarantee. The private candidate's refusal
+wording now calls its estimate a dense-workspace screen; historical measured
+receipts retain their original source hashes.
 
-Milestone ce13fe8 addresses R34/R35/R36/R38: rendered-size truncation keeps the
-longest fitting prefix; prompt-token accounting reserves output space on initial
-and repair replies; invalid/missing counts fall back without another request.
-This checks reported counts, not independent tokenization. Policy planner-4 is
-not qualified by historical runs. Base R/report website matching excludes
-incidental substrings, and the bare-association conservative miss is pinned.
-The full ce13fe8 source check passed: 5958 assertions, 13 documented skips,
-zero errors/warnings and one NOTE (new submission, development version, Title
-prefix). PDF/HTML manuals and rebuilt vignettes passed. All five jobs in hosted
-run 37148037476 passed. Its archive has 243 members and excludes admin/artifacts.
-SHA-256: b2cfb0fb95899164fb98a5d0533c41301c455c67fe15a2d8de6b3eb3764c6c3a.
-Receipt: artifacts/implementation/planner-context-full-validation.json.
+Offline catalog rebuild passed 64 recorded fixtures and 67/67 approval decisions,
+with 192 approved callables. Catalog:
+83517d03188928d54a7f15f0f3866a027046617f400e6b3d6e44022e39e54a99.
+Previous 3e1983fd snapshot is archived under inst/extdata/history. Evidence:
+interop-budget-catalog-build.log and standard-catalog-build.json.
 
-Milestone a368b47 then addresses R28/R29 and R09 provenance: deterministic
-screening distinguishes hard instructions from ambiguous research phrases;
-soft phrases retain inference plus review notes. Local model requests retain
-the full screen. Schema 2 records fallback reasons, and screened goals cannot
-reenter keyword-based specialist/design/ecosystem routing. Hard-screen policy
-changes invalidate qualification. Accepted model identity, digest, qualification,
-prompt version and actual request settings are recorded in specs/locks; replay
-never substitutes current settings. Schema 1 remains unchanged.
+R07 probe portion: opt-in INT-003 now additionally sends a fixed synthetic
+planner task through plan_goal, requires schema validity, the expected grounded
+linear-model capability and bundled workflow approval. A deterministic fallback
+cannot pass. It may diagnose an unqualified model but never promotes it, sends
+no user goal, and is not independent qualification. The declared 1500-second
+budget accommodates supported request timeouts. Isolated mocked probe and
+metadata/applicability tests pass. Audit-registry, catalog-evidence, interop,
+planner-probe and router suites all pass; changed audit source lint is clean.
+An initial test exposed a missing catalog_snapshot argument; the corrected
+probe reads the bundled catalog. Failed logs are retained. Evidence:
+planner-probe-final-tests.log, planner-probe-metadata.log,
+budget-probe-final-tests.log and interop-budget-planner-probe-review.json.
 
-R26/R32/R40 evidence hygiene: examined holdout metrics are labelled accordingly,
-H01-H12 tuning contamination is explicit, two omitted failed runs are restored
-with metrics/source hashes, historical RSS is recorded, and planner options and
-reference-hardware limits are documented. Thresholds remain unchanged; no model
-promotion. Ask/planner/project/router/runtime/selection/spec/sync and separate
-config/ecosystem-policy suites passed (one opt-in live planner skip). Hard-policy
-binding regression passed. Changed planner/ask/router files have no lint findings;
-project.R retains its pre-existing unused saved variable diagnostic. Evidence:
-artifacts/implementation/instruction-lock-final-source-tests.log,
-instruction-lock-schema-tests.log, instruction-hard-binding-test.log and
-instruction-lock-review.json. Earlier failed attempts remain retained.
-
-Full check a368b47 is now running in cttir-instruction-lock-check-a368b47.service,
-under artifacts/instruction-lock-check-a368b47. Hosted run 37148803041 remains
-in progress at this checkpoint. Preserve its queue receipt and inspect results
-before claiming full validation.
-
-Milestone 95740cd implements R10/R31 diagnostic reporting: benchmark rows and
-compact exports preserve pre-grounding capability IDs/scores and removed IDs.
-Summaries include pre/post-filter capability metrics, unsupported-claim share,
-and first-attempt rejection rate. With keep_raw=TRUE, parseable diagnostic
-capability arrays are scored even for rejected replies; coverage identifies
-missing/malformed/truncated unscored attempts. These are separate from validated
-pre-grounding proposals. Deterministic baseline metrics remain alongside model
-results; no threshold was replaced or relaxed. Historical planner-3 comparison
-and representative failures are shipped in inst/benchmarks/planner-review-history.json;
-missing historical pre-grounding aggregates are null, not reconstructed or zero.
-
-The planner and new metrics suites passed (one opt-in live skip), changed-file
-lint passed, and compact export JSON roundtrip passed. Evidence:
-artifacts/implementation/planner-metrics-final-tests.log and
-planner-metrics-export-test.log. Initial lint findings were fixed; the initial
-log is retained. Full source-isolated check 95740cd is queued behind a368b47 in
-cttir-planner-metrics-check-95740cd.service; queue receipt:
-artifacts/planner-metrics-check-95740cd-queue.json. Review both pending exact-source
-checks and hosted jobs before duplicating work.
-Next: finish owner-review R07 readiness/probe behavior, R20 explicit adapter
-memory-budget evidence, R21 maintainer
-provenance, and R22/R39 consolidated current gate/requirements evidence. Reconcile
-other review items individually; do not infer whole-gate completion from tests.
-G12 still needs a fresh independently authored frozen corpus and shipped-artifact
-evaluation; no reviewer agent has been authorized or started. G26 needs its
-consolidated evidence reviewed. Full readiness remains open. COMPLETE/STOP
-absent; retry timer active. No CRAN/external-builder submission.
+Next: finish this milestone's full checks; finish R07 setup/project readiness
+reporting and actual live probe evidence; R21 maintainer provenance; R22/R39
+current consolidated gate/requirements evidence. Reconcile every other owner
+review item individually. R10/R31 diagnostics now expose pre-grounding and raw
+claim coverage without changing thresholds; historical missing metrics remain
+unavailable. G12 still needs a fresh independently authored frozen corpus and
+shipped-artifact evaluation. A separate-author request is pending; no reviewer
+agent has been authorized or started. No production model was promoted.
+G26 and full readiness remain open. COMPLETE/STOP absent; retry timer active.
+No CRAN/external-builder submission.
 
 ## Preceding explicit answer data requirements
 

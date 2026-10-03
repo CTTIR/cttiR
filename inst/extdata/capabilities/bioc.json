@@ -17,7 +17,7 @@
       ],
       "adapter": {
         "id": "interop.bioc_s4",
-        "version": "1.2.0"
+        "version": "1.2.1"
       },
       "applies": {
         "modality": [
@@ -76,7 +76,7 @@
       ],
       "adapter": {
         "id": "interop.bioc_s4",
-        "version": "1.2.0"
+        "version": "1.2.1"
       },
       "applies": {
         "modality": [
@@ -296,7 +296,7 @@
       ],
       "adapter": {
         "id": "interop.se_tidy_view",
-        "version": "1.2.0"
+        "version": "1.2.1"
       },
       "applies": {
         "modality": [
@@ -424,7 +424,7 @@
       ],
       "adapter": {
         "id": "interop.seurat_v5",
-        "version": "1.2.0"
+        "version": "1.2.1"
       },
       "applies": {
         "modality": [
@@ -455,7 +455,10 @@
         "Cells are not biological replicates; donor/sample-level inference only.",
         "Input is a SingleCellExperiment counts assay or a Seurat default-assay counts layer with nonnegative integer counts.",
         "At least 2 donors per group; missing donor or group labels are refused, not dropped silently.",
-        "Split Seurat layers must be joined explicitly before aggregation."
+        "Split Seurat layers must be joined explicitly before aggregation.",
+        "Realization budget: at most 1000000 values per column block (8000000 payload bytes for doubles). Refuse an assay with more rows than this budget before reading values. This is a per-block bound, not a peak-RSS guarantee.",
+        "Pseudobulk output is a dense features-by-donor/group-samples matrix (8 * features * samples payload bytes for doubles); allow for multiplication temporaries and existing object storage separately.",
+        "Counting delayed fixture: 8 features by 60 cells, 4 donor samples; block budget lowered to 24 values, dense pseudobulk result 8 by 4 (256 payload bytes for doubles). Inventory, pseudobulk and Seurat-to-SCE conversion are checked against the cap; reverse backed conversion is refused before realization."
       ],
       "status": "adapter_tested"
     },
@@ -523,7 +526,7 @@
       ],
       "adapter": {
         "id": "interop.seurat_v5",
-        "version": "1.2.0"
+        "version": "1.2.1"
       },
       "applies": {
         "modality": [
@@ -553,7 +556,10 @@
         "A successful coercion is not a lossless conversion; review the preserved/transformed/lost report.",
         "Observed with Seurat 5.5.1: as.Seurat() renames features with underscores, drops metadata, creates v3 Assay objects and may change the default assay.",
         "Observed with Seurat 5.5.1: as.SingleCellExperiment() drops feature-level metadata (rowData).",
-        "Values are compared block-wise after key alignment; no dense realization of whole assays."
+        "Values are compared block-wise after key alignment; no dense realization of whole assays.",
+        "Realization budget: at most 1000000 values per column block (8000000 payload bytes for doubles). Refuse an assay with more rows than this budget before reading values. This is a per-block bound, not a peak-RSS guarantee.",
+        "Pseudobulk output is a dense features-by-donor/group-samples matrix (8 * features * samples payload bytes for doubles); allow for multiplication temporaries and existing object storage separately.",
+        "Counting delayed fixture: 8 features by 60 cells, 4 donor samples; block budget lowered to 24 values, dense pseudobulk result 8 by 4 (256 payload bytes for doubles). Inventory, pseudobulk and Seurat-to-SCE conversion are checked against the cap; reverse backed conversion is refused before realization."
       ],
       "status": "adapter_tested"
     },

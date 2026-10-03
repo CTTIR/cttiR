@@ -918,11 +918,11 @@ audit_checks_integration <- function() {
       "Update, export removal and rollback on a synthetic package in an isolated temporary catalog store.",
       audit_int_update, required = TRUE, read_effects = c("writes_temp_files", "reads_installation"),
       timeout_seconds = 300, evidence_schema = c("first", "second", "removed_exports")),
-    audit_check("INT-003", "integration", "Bounded live structured-output probe of an owned local model.",
+    audit_check("INT-003", "integration", "Bounded live structured-output and grounded planner probes of an owned local model.",
       audit_int_live, required = function(context) isTRUE(context$live),
       applies = function(context) if (isTRUE(context$live)) TRUE else "Live probe not requested (live = FALSE).",
-      read_effects = c("reads_runtime_metadata", "local_http_metadata", "local_model_inference"),
-      timeout_seconds = 180)
+      read_effects = c("reads_installation", "reads_runtime_metadata", "local_http_metadata", "local_model_inference"),
+      timeout_seconds = 1500)
   )
 }
 
@@ -986,5 +986,24 @@ audit_int_live <- function(context) {
     abort_cttir("The configured model identity has changed.", "cttir_runtime_unavailable")
   }
   probe <- runtime_probe(runtime_endpoint(), owner$model)
-  audit_result("pass", "Bounded structured-output probe passed on the owned local model.", probe)
+  plan <- plan_goal("Synthetic planner probe", "methods",
+    "Fit linear regression of blood pressure on age in independent adults.",
+    mode = "local_llm", endpoint = runtime_endpoint(), model = owner$model, allow_unqualified = TRUE)
+  checked <- planner_validate(planner_proposal_json(plan$proposal))
+  ids <- plan$proposal$capability_ids
+  if (!identical(plan$provenance$planner_mode, "local_llm") || !isTRUE(checked$ok) ||
+      !"std.model.lm" %in% ids ||
+      !identical(plan$provenance$capability_grounding$policy, planner_grounding_policy)) {
+    abort_cttir("The model did not pass the synthetic grounded planner probe.", "cttir_runtime_unavailable", "planner_probe_failed")
+  }
+  registry <- capability_registry()
+  catalog <- read_catalog(resource_file("extdata", "api-catalog.json.gz"))
+  approved <- vapply(ids, function(id) identical(capability_approval(registry$capabilities[[id]], catalog)$status, "approved"), logical(1))
+  if (!all(approved)) {
+    abort_cttir("The planner probe lacks current workflow approval evidence.", "cttir_runtime_unavailable", "planner_probe_unapproved")
+  }
+  audit_result("pass", "Structured-output and synthetic grounded planner probes passed; this is not model qualification.",
+    list(structured_output = probe, planner = list(scope = "synthetic_planner_smoke_only",
+        prompt_version = plan$provenance$prompt_version, catalog_id = catalog$content_id,
+        model_digest = owner$model_digest, options = plan$provenance$options, capabilities = as.list(ids))))
 }
