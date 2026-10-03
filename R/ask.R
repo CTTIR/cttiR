@@ -29,7 +29,7 @@ injection_patterns <- c(
   "\\bnew\\s+(instructions?|rules?|system\\s+prompt)\\b", "\\bneue\\s+(anweisung|regel)",
   "(^|\\s)#{1,6}\\s*(system|admin|developer|override|instructions?)\\b",
   "\\b(system|admin|developer|safety|security)\\s+(override|mode)\\b",
-  "(^|\\n)\\s*(system|assistant|developer)\\s*:", "\\[/?(inst|system)\\]", "<\\|?(system|im_start|im_end|endoftext)\\|?>",
+  "(^|[\\n.!?])\\s*(system|assistant|developer)\\s*:", "\\[/?(inst|system)\\]", "<\\|?(system|im_start|im_end|endoftext)\\|?>",
   "<<\\s*/?sys\\s*>>",
   "\\b(reveal|show|print|repeat|output|leak|change|replace)\\s+((the|your|this)\\s+)*system\\s+prompt\\b",
   "\\bjailbreak", "\\bdan\\s+mode\\b",
@@ -62,8 +62,7 @@ fold_confusables <- function(x) {
   intToUtf8(codes)
 }
 
-# Shared by ask() and the local planner, which screens goals before any model
-# sees them.
+# Shared by ask() and both planner modes, before deriving any decisions.
 instruction_like <- function(text) {
   text <- tolower(fold_confusables(text))
   any(vapply(injection_patterns, function(p) grepl(p, text, perl = TRUE), logical(1)))

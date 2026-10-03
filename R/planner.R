@@ -395,12 +395,12 @@ plan_goal <- function(name, type, goal, mode = c("deterministic", "local_llm"), 
     )
   }
   fallback <- function(reason, tried = NULL) result(deterministic_proposal(goal, registry), "deterministic", reason = reason, tried = tried)
-  if (identical(mode, "deterministic")) return(result(deterministic_proposal(goal, registry), "deterministic"))
   # Instruction-shaped inputs never reach a model; the keyword rules would read
   # the same instructions, so every field stays unknown.
   if (instruction_like(paste(name, type, goal, sep = "\n"))) {
     return(result(planner_abstention("goal"), "deterministic", reason = "goal_injection_suspected"))
   }
+  if (identical(mode, "deterministic")) return(result(deterministic_proposal(goal, registry), "deterministic"))
   if (is.null(endpoint)) endpoint <- tryCatch(runtime_endpoint(), error = function(e) NA_character_)
   if (!planner_valid_endpoint(endpoint)) return(fallback("endpoint_rejected"))
   owner <- tryCatch(runtime_owner(runtime_directory(), endpoint), error = function(e) NULL)
@@ -475,8 +475,11 @@ planner_signals <- function(name, type, goal, needed, replay = FALSE) {
   if (!is.character(policy) || length(policy) != 1L || !policy %in% c("deterministic", "local_llm")) {
     abort_cttir("The planner policy must be 'deterministic' or 'local_llm'.", field = "cttiR.planner")
   }
-  if (!identical(policy, "local_llm") || !needed || replay) return(list(signals = infer_goal(goal), plan = NULL))
-  plan <- plan_goal(name, type, goal, "local_llm")
+  if (!needed || replay) return(list(signals = infer_goal(goal), plan = NULL))
+  if (identical(policy, "deterministic") && !instruction_like(paste(name, type, goal, sep = "\n"))) {
+    return(list(signals = infer_goal(goal), plan = NULL))
+  }
+  plan <- plan_goal(name, type, goal, policy)
   list(signals = plan$proposal, plan = plan)
 }
 
@@ -514,7 +517,7 @@ planner_apply <- function(planned, spec, decisions) {
       "reviewed deterministic rules filled unset fields."
     }
     decisions[[length(decisions) + 1L]] <- list(field = "/provenance/planner_mode", origin = "default",
-      reason = paste0("The local planner proposal was not used (", reason, "); ", outcome),
+      reason = paste0("The planner proposal was not used (", reason, "); ", outcome),
       evidence_ids = list(paste0("fallback:", reason)))
   }
   list(spec = spec, decisions = decisions)

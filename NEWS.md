@@ -1,3 +1,8 @@
+# cttiR development
+
+* Screen instruction-shaped inputs before deterministic planning, matching the
+  local-model path and leaving inferred fields unknown on suspected injection.
+
 # cttiR 0.1.1
 
 * Recognize additional English and German requests for base-R descriptive

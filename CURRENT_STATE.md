@@ -2,6 +2,65 @@
 
 Updated: 2026-10-03. Version: 0.1.1. License: MIT.
 
+## Planner screening follow-up (development)
+
+The current-tree CPU benchmark of qwen2.5:7b at 9d4f551 still fails qualification:
+capability precision 0.6667 < 0.80, recall 0.50, field accuracy 0.9171 overall /
+0.9211 on the previously examined held-out subset, no injection violations,
+12/12 identical repeats, warm p95 6.357 s. Nine of ten frozen thresholds pass.
+This is a refresh on the existing corpus, not new independent qualification.
+The owned offline runtime was stopped after verifying its executable, process
+identity and cloud-disabled loopback configuration. No model approval changed.
+Receipts: planner-current-0.1.1.json/.log and runtime-cleanup.json under
+artifacts/implementation (cleanup shares the planner-current-0.1.1 prefix).
+
+The same run exposed three injection violations in the deterministic planner.
+Its early return bypassed screening. Screening now runs before either planner
+mode, and project-spec resolution applies it under the default policy too.
+Inline role markers following sentence punctuation are also recognized. Explicit
+specification values and replay behavior retain their existing rules.
+
+Regression checks cover injected name/type/goal inputs, project-spec inference,
+invalid project-type rejection, benign requests and no runtime contact. Planner
+suite: 965 passed, 1 opt-in live skip, zero failures/errors/warnings. The ask suite
+also passed. The frozen deterministic benchmark now has 0/6 injection violations;
+changed R sources pass lint. Evidence: planner-injection-followup-*.
+These are development regressions informed by known cases, not an independent
+security or usefulness qualification. G12 and G26 remain partial.
+
+The previous full local and hosted checks below apply to 343d644, not this new
+source change. A fresh full check is required before calling this revision a
+validated CRAN candidate. The continuation must inspect the dedicated
+artifacts/injection-followup-check run before starting any duplicate check.
+No COMPLETE/STOP marker, CRAN submission or external-builder submission.
+
+## Seurat numerical ablation
+
+Private diagnostic admin/diagnose_seurat_precision.R isolates the controlled-feature
+comparison differences without relaxing either original tolerance. With default
+settings, the in-memory PCA distance error against its own dense-SVD reference is
+8.4937e-5; the backed solver error is 3.3424e-6. An explicit irlba tolerance of
+1e-10 reduces the memory reference error to 6.6421e-10 and the memory/backed
+comparison to 3.8697e-6, below the existing 1e-5 threshold. This fixture therefore
+does not support blaming the backed solver for the original discrepancy.
+Seurat dispatches memory PCA to irlba and backed PCA to BPCells::svds; the latter
+wrapper does not forward the tol argument.
+
+BPCells::log1p_slow reduces normalization error to 8.8818e-16, but alone does not
+remove marker fold-change differences. Combining it with a mean function using
+BPCells::expm1_slow reduces log2 fold-change differences to 8.8818e-16, below the
+existing 1e-8 threshold. The calculation retains Seurat's pseudocount placement.
+Extending the comparison to all 600 genes retains the 8.8818e-16 fold-change
+error; maximum raw/adjusted p-value differences are 2.2204e-16/3.3307e-16.
+Backing-file hashes are unchanged. These are explicit experimental settings on
+the bounded synthetic fixture, not approval of the default backed workflow.
+Native VST selection differences, generated workflow review, memory/deployment
+qualification and platform coverage remain open.
+
+Receipts: artifacts/implementation/seurat-precision-ablation.json and .log,
+seurat-pca-default-source.log, seurat-foldchange-source.log and
+seurat-precision-provenance.json. Earlier failed comparisons remain retained.
+
 ## Hosted validation and backed Seurat comparison
 
 Commit 343d644 passed all five jobs in hosted run 37087349484. Receipt:
