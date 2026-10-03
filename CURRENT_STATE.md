@@ -4,16 +4,51 @@ Updated: 2026-10-03. Version: 0.1.1. License: MIT.
 
 ## Current continuation point
 
-Retrieval fixes are committed/pushed as d2c0ee4. A full R CMD check --as-cran
-for that exact source is active in user service cttir-retrieval-check-d2c0ee4.service.
-Build/vignettes passed; testthat is running. Status/logs:
-artifacts/retrieval-check-d2c0ee4/status.json and check.log. Review before starting
-another full check. GitHub CI run 37106373036 targets the same revision.
-Isolated tarball installation and public ask() smoke passed; receipt:
-artifacts/implementation/ask-german-unicode-installed-smoke.json. Tarball SHA-256:
-11f38f925a9d1f7f86aa6fe9338b0f7d5e7b2a6b9812441bf8fd6c3893e8e5ac.
-Full readiness remains open; the fresh retrieval follow-up meets its thresholds,
-but planner integration/model approval and G26 generated workflow are unfinished.
+Planner metadata and keyword filtering are integrated and pushed as 834dcd9.
+Prompt version is planner-3. Proposals retain only keyword-supported capability
+IDs, bounded omission notes are revalidated, and retained/omitted IDs persist in
+spec decision evidence. Escaped inputs are shortened before JSON re-encoding
+when needed to keep the complete prompt within its fixed budget. Regression
+checks and lint pass; ordinary prompt content matches the private candidate
+apart from the version label.
+
+Live runs of the integrated source pass all ten unchanged thresholds on both
+frozen, previously examined corpora (not new holdouts): 66-case development
+precision 0.8667/recall 0.8125, field accuracy 0.8976, 0/6 injection violations,
+12/12 identical repeats; 30-case validation precision 1.0/recall 0.75, field
+accuracy 0.9216, 0/2 injection violations, 6/6 repeated decisions identical but
+5/6 complete proposals identical (F12 wording). Prior decision variation is
+preserved; no guarantee of model determinism is claimed. Review:
+artifacts/implementation/planner-integrated-review.json. Source/corpus hashes,
+raw results, repeat rows and CPU/runtime provenance are retained alongside it.
+Later cases overlapped the full check; timing is not an isolated performance claim.
+
+An isolated installed tarball created an actual project through the public API
+with the retained local model, preserving planner-3 and grounding decisions and
+leaving analysis unapproved. Receipt: planner-integrated-installed-smoke.json;
+project: artifacts/examples/planner3-installed-project/. The initial smoke had a
+missing parent directory; the corrected harness creates it first. Owned runtime
+stopped, with cleanup receipt. No model manifest/default promotion occurred.
+
+Full R CMD check --as-cran for 834dcd9 is running in independent user service
+cttir-planner-integration-check-834dcd9.service; build/vignettes passed and tests
+are underway. Inspect artifacts/planner-integration-check-834dcd9/status.json and
+check.log before starting another full check. GitHub run 37109873337 targets the
+same source. Tarball SHA-256:
+c1e9270b5afe2589beb9cd74e66655ae507283385f9c8f34dda58135d64fe156.
+
+Next review full checks, then bind future qualification to tested prompt/policy
+and exact model digest before promoting any model. Current qualification lookup
+uses model tag/digest only, so do not add a positive approval without that guard.
+Historical admin/planner_metadata_prompt.R and planner_grounded_candidate.R
+monkeypatch pre-integration code: do not source them into planner-3 or their
+policies will be applied twice. The new live runner uses production code directly.
+G26 remains unfinished; admin/seurat-workflow-integration-notes.md identifies
+the missing generated analysis entry point and distinct role-approval work.
+
+The preceding retrieval revision d2c0ee4 passed its full check: 5528 PASS, 13 SKIP,
+0 errors/warnings, 1 incoming NOTE; PDF/HTML manuals and rebuilt vignettes passed.
+All five CI jobs passed. Receipt: artifacts/implementation/retrieval-full-validation.json.
 
 Two newly frozen BPCells resource fixtures use 1,000 genes by 40,000 cells at
 2% sparsity, 500 explicit synthetic features and 20 PCs. Preprocessing/PCA peaked
@@ -52,7 +87,7 @@ The preceding benchmark revision a05a2d7 has completed full local validation:
 PDF/HTML manuals passed. All five jobs in GitHub run 37103479376 passed. Receipt:
 artifacts/implementation/repeat-evidence-full-validation.json. Tarball SHA-256:
 9f833e915245df27e15a3e046ffaf1cd1c734c5ddeb609f08990677a94c4ba29.
-This does not validate the subsequent retrieval edits; their full check is active above.
+The subsequent retrieval check also passed, as recorded above; planner-3 has a separate active check.
 The hourly retry timer remains active; COMPLETE and STOP remain absent.
 
 ## Fresh planner validation and repeat evidence
@@ -75,7 +110,7 @@ wording change, decision change, unchanged response and absent repeat request.
 The full package check for this benchmark-only source change (a05a2d7) passed;
 the later retrieval follow-up has its own validation boundary above.
 
-No public planner prompt, model qualification or default has changed. The fresh
+At that stage no public planner prompt, model qualification or default had changed. The fresh
 threshold pass does not close production integration, repeatability assessment,
 independent retrieval qualification or G26. The owned local runtime was stopped.
 Frozen inputs, review, results and cleanup: ignored
