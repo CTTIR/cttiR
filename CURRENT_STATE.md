@@ -53,7 +53,9 @@ catalog-evidence and router integration suites pass with the new catalog.
 Logs: artifacts/implementation/runtime-pins-final-tests.log,
 runtime-pins-default-closure.log, runtime-pins-catalog-build-final.log,
 runtime-pins-catalog-integration.log and standard-catalog-build.json.
-Full source-isolated check and hosted validation of this milestone are pending.
+Committed/pushed as fa68f0d. Full source-isolated validation runs in
+cttir-runtime-pins-check-fa68f0d.service, with status/logs under
+artifacts/runtime-pins-check-fa68f0d. Hosted validation is also pending.
 
 Next: review the new full-check/CI results, reconcile R16/G26 evidence, then close
 remaining owner-review items before independent held-out qualification/manual
