@@ -40,24 +40,50 @@ approved callables. Current catalog:
 3e1983fd7f81b618d8cf614d33775068d8ad5628fa96723c515d331122e1501a.
 Previous catalog retained under inst/extdata/history. No model was promoted.
 
-Current changes address R34/R35/R36/R38: rendered-size truncation preserves the
-longest fitting input prefix; reported prompt token counts must leave room for
-the output reserve on initial and repair responses; invalid/missing counts
-fall back without another request. This checks reported counts, not independent
-tokenization. Policy version is planner-4; historical runs do not qualify it.
-Base R/report website patterns exclude database records, study sites and
-composite endpoints. A regression preserves the documented bare-association
-conservative grounding miss. Targeted validation is in progress; failed lint,
-old-version expectations and the initially incorrect answer-test accessor are
-retained in artifacts/implementation/planner-context* and ask-phrase* logs.
+Milestone ce13fe8 addresses R34/R35/R36/R38: rendered-size truncation keeps the
+longest fitting prefix; prompt-token accounting reserves output space on initial
+and repair replies; invalid/missing counts fall back without another request.
+This checks reported counts, not independent tokenization. Policy planner-4 is
+not qualified by historical runs. Base R/report website matching excludes
+incidental substrings, and the bare-association conservative miss is pinned.
+Targeted ask/planner tests and changed-file lint passed. Full source-isolated
+check remains active in cttir-planner-context-check-ce13fe8.service; directory
+artifacts/planner-context-check-ce13fe8. Hosted run: 37148037476.
 
-Next: finish this milestone's validation, then address remaining owner-review
-items (instruction screening/routing, lock options, readiness probes, benchmark
-metrics and evidence reconciliation). G12 still requires a fresh independently
-authored frozen corpus and shipped-artifact evaluation; no reviewer agent has
-been authorized or started. G26 needs its consolidated gate evidence reviewed.
-Full readiness remains open. COMPLETE/STOP absent; retry timer active.
-No CRAN/external-builder submission.
+Milestone a368b47 then addresses R28/R29 and R09 provenance: deterministic
+screening distinguishes hard instructions from ambiguous research phrases;
+soft phrases retain inference plus review notes. Local model requests retain
+the full screen. Schema 2 records fallback reasons, and screened goals cannot
+reenter keyword-based specialist/design/ecosystem routing. Hard-screen policy
+changes invalidate qualification. Accepted model identity, digest, qualification,
+prompt version and actual request settings are recorded in specs/locks; replay
+never substitutes current settings. Schema 1 remains unchanged.
+
+R26/R32/R40 evidence hygiene: examined holdout metrics are labelled accordingly,
+H01-H12 tuning contamination is explicit, two omitted failed runs are restored
+with metrics/source hashes, historical RSS is recorded, and planner options and
+reference-hardware limits are documented. Thresholds remain unchanged; no model
+promotion. Ask/planner/project/router/runtime/selection/spec/sync and separate
+config/ecosystem-policy suites passed (one opt-in live planner skip). Hard-policy
+binding regression passed. Changed planner/ask/router files have no lint findings;
+project.R retains its pre-existing unused saved variable diagnostic. Evidence:
+artifacts/implementation/instruction-lock-final-source-tests.log,
+instruction-lock-schema-tests.log, instruction-hard-binding-test.log and
+instruction-lock-review.json. Earlier failed attempts remain retained.
+
+Full check a368b47 is queued behind ce13fe8 in
+cttir-instruction-lock-check-a368b47.service. Queue receipt:
+artifacts/instruction-lock-check-a368b47-queue.json. Review both exact-source
+results and hosted jobs before claiming full validation or duplicating checks.
+
+Next: finish owner-review R07 readiness/probe behavior, R10/R31 raw and grounded
+benchmark metrics, R20 explicit adapter memory-budget evidence, R21 maintainer
+provenance, and R22/R39 consolidated current gate/requirements evidence. Reconcile
+other review items individually; do not infer whole-gate completion from tests.
+G12 still needs a fresh independently authored frozen corpus and shipped-artifact
+evaluation; no reviewer agent has been authorized or started. G26 needs its
+consolidated evidence reviewed. Full readiness remains open. COMPLETE/STOP
+absent; retry timer active. No CRAN/external-builder submission.
 
 ## Preceding explicit answer data requirements
 
