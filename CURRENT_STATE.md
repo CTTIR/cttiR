@@ -66,6 +66,10 @@ probe reads the bundled catalog. Failed logs are retained. Evidence:
 planner-probe-final-tests.log, planner-probe-metadata.log,
 budget-probe-final-tests.log and interop-budget-planner-probe-review.json.
 
+Committed/pushed as f2caddb. Full source-isolated check is running in
+cttir-budget-probe-check-f2caddb.service, with logs/status under
+artifacts/budget-probe-check-f2caddb. Hosted validation is pending.
+
 Next: finish this milestone's full checks; finish R07 setup/project readiness
 reporting and actual live probe evidence; R21 maintainer provenance; R22/R39
 current consolidated gate/requirements evidence. Reconcile every other owner
