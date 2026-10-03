@@ -51,7 +51,9 @@ This is previously examined development evidence, NOT independent qualification.
 Evidence: artifacts/implementation/strict-ask-integrated-development.json/.log,
 strict-ask-final-tests.log, interop-dependency-warning-tests.log and
 answer-contract-hosted-failures.log. Full validation of the corrected source is
-still required. No old failed check should be described as passing.
+running for committed/pushed milestone 409ad25 in
+cttir-strict-ask-check-409ad25.service, with logs/status under
+artifacts/strict-ask-check-409ad25. No old failed check should be described as passing.
 
 Next: review the new source-isolated full check and hosted results, then complete
 R15's versioned ecosystem schema migration, R16's default pin enforcement, R14's
