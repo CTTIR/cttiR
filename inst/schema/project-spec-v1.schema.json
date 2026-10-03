@@ -1,10 +1,10 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "cttir customization input v1",
+  "title": "cttir resolved ProjectSpec core contract v1",
   "type": "object",
   "properties": {
     "schema_version": {
-      "const": 2
+      "const": 1
     },
     "project": {
       "type": "object",
@@ -49,7 +49,15 @@
           "format": "date-time"
         }
       },
-      "required": [],
+      "required": [
+        "id",
+        "name",
+        "slug",
+        "type",
+        "goal",
+        "language",
+        "created_at"
+      ],
       "additionalProperties": false
     },
     "research": {
@@ -106,7 +114,15 @@
           "type": "string"
         }
       },
-      "required": [],
+      "required": [
+        "design",
+        "domain",
+        "data_types",
+        "ethics_status",
+        "analysis_role",
+        "data_origin",
+        "notes"
+      ],
       "additionalProperties": false
     },
     "publications": {
@@ -179,7 +195,15 @@
             "uniqueItems": true
           }
         },
-        "required": [],
+        "required": [
+          "id",
+          "title",
+          "slug",
+          "research_class",
+          "type",
+          "analysis_role",
+          "data_origin"
+        ],
         "additionalProperties": false
       }
     },
@@ -236,7 +260,6 @@
         "profile": {
           "type": "string",
           "enum": [
-            "auto",
             "cttir_specialist",
             "hybrid",
             "standard_reflowR"
@@ -259,7 +282,18 @@
           ]
         }
       },
-      "required": [],
+      "required": [
+        "pipeline",
+        "environment",
+        "git",
+        "prepare_environment",
+        "network",
+        "reporting",
+        "readiness",
+        "profile",
+        "project_backend",
+        "table_backend"
+      ],
       "additionalProperties": false
     },
     "data_sources": {
@@ -316,7 +350,16 @@
             ]
           }
         },
-        "required": [],
+        "required": [
+          "id",
+          "label",
+          "logical_uri",
+          "format",
+          "access_class",
+          "checksum",
+          "checksum_status",
+          "schema_ref"
+        ],
         "additionalProperties": false
       }
     },
@@ -354,18 +397,99 @@
             "type": "boolean"
           }
         },
-        "required": [],
+        "required": [
+          "name",
+          "version",
+          "revision",
+          "source",
+          "evidence_ids",
+          "required"
+        ],
         "additionalProperties": false
       }
     },
-    "knowledge": {
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "field": {
+            "type": "string",
+            "pattern": "^/"
+          },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "explicit",
+              "config",
+              "inferred",
+              "default"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "required": [
+          "field",
+          "origin",
+          "reason",
+          "evidence_ids"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "provenance": {
       "type": "object",
       "properties": {
-        "refresh": {
-          "type": "boolean"
+        "catalog_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "template_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "prompt_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "planner_mode": {
+          "type": "string",
+          "enum": [
+            "deterministic",
+            "local_llm"
+          ]
+        },
+        "model_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "model_digest": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       },
-      "required": [],
+      "required": [
+        "catalog_id",
+        "template_version",
+        "prompt_version",
+        "planner_mode",
+        "model_id",
+        "model_digest"
+      ],
       "additionalProperties": false
     },
     "extensions": {
@@ -570,7 +694,13 @@
           }
         }
       },
-      "required": [],
+      "required": [
+        "aim",
+        "outcome_family",
+        "unit_structure",
+        "engine",
+        "approved"
+      ],
       "additionalProperties": false
     },
     "figures": {
@@ -653,36 +783,53 @@
           "default": true
         },
         "modality": {
-          "type": "string",
-          "enum": [
-            "single_cell",
-            "bulk_rna",
-            "cytometry",
-            "spatial",
-            "proteomics",
-            "multiomics",
-            "microbiome",
-            "imaging",
-            "tabular",
-            "unknown"
-          ]
-        },
-        "policy_version": {
-          "const": 1
-        },
-        "allowed_providers": {
-          "type": "array",
-          "uniqueItems": true,
-          "items": {
-            "enum": [
-              "bioconductor",
-              "seurat"
-            ]
-          }
+          "type": "string"
         }
       }
     }
   },
-  "required": [],
-  "additionalProperties": false
+  "required": [
+    "schema_version",
+    "project",
+    "research",
+    "publications",
+    "workflow",
+    "data_sources",
+    "packages",
+    "decisions",
+    "provenance"
+  ],
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "workflow": {
+            "properties": {
+              "profile": {
+                "const": "standard_reflowR"
+              }
+            },
+            "required": [
+              "profile"
+            ]
+          }
+        },
+        "required": [
+          "workflow"
+        ]
+      },
+      "then": {
+        "properties": {
+          "workflow": {
+            "properties": {
+              "project_backend": {
+                "const": "reflowR"
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
 }

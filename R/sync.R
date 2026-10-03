@@ -50,6 +50,9 @@ apply_hand_edit <- function(saved, hand) {
 # Precedence for existing projects (file 04): explicit options > config > a
 # reviewed hand edit of cttir-project.yml > the accepted spec.
 sync_spec <- function(saved, config, options, edited = NULL, root = ".") {
+  if (!is.null(edited)) hand_edit_changes(root, saved, edited)
+  saved <- migrate_spec(saved)$spec
+  if (!is.null(edited)) edited <- migrate_spec(edited)$spec
   config <- validate_config(if (is.null(config)) list() else config)
   options <- validate_config(options)
   hand <- if (is.null(edited)) list() else hand_edit_changes(root, saved, edited)
@@ -199,6 +202,10 @@ proposal_path <- function(path) file.path(".cttir", "proposed", path)
 #'   stay as recorded; entries are not removed; publication paths are stable).
 #'   `sync(path, dry_run = FALSE)` accepts it; `config` and `options` passed in
 #'   the same call take precedence over the hand edit.
+#'   Schema 1 projects remain readable. Synchronization previews their migration
+#'   to schema 2; applying it preserves the original specification under
+#'   `.cttir/migrations/` and retains the selected catalog and dependency pins.
+#'   The `migration` result records before/after hashes and changed JSON pointers.
 #' @return A `cttir_sync` with actions (with a `reason` per file), conflicts,
 #'   changed files, `preserved` edited files, `pending_updates` (kept user files
 #'   with a proposed update), `spec_edit` (a reviewed hand edit and its changed
@@ -215,8 +222,19 @@ sync_impl <- function(path = ".", config = NULL, options = list(), dry_run = TRU
   scalar_flag(dry_run, "dry_run")
   options <- utf8_input(options)
   p <- read_project(path, edited = TRUE)
+  migration <- migrate_spec(p$spec)
   spec <- sync_spec(p$spec, config, options, p$edited_spec, p$path)
   bundle <- carry_user_records(project_bundle(spec, p$lock), p, refresh = TRUE)
+  if (length(migration$steps)) {
+    original_path <- file.path(p$path, "cttir-project.yml")
+    original <- readChar(original_path, file.info(original_path)$size, useBytes = TRUE)
+    original_hash <- file_hash(original_path)
+    if (!identical(content_hash(enc2utf8(original)), original_hash)) {
+      abort_cttir("The original specification could not be preserved byte for byte.", "cttir_schema_error")
+    }
+    backup <- paste0(".cttir/migrations/spec-v", p$spec$schema_version, "-", original_hash, ".yml")
+    bundle$files[[backup]] <- original
+  }
   plan <- sync_plan(p, bundle, if (is.null(p$edited_spec)) character() else "cttir-project.yml")
   pending <- plan[plan$reason == "pending_update", , drop = FALSE]
   files <- bundle$files
@@ -258,6 +276,7 @@ sync_impl <- function(path = ".", config = NULL, options = list(), dry_run = TRU
       list(state = if (dry_run || length(conflicts)) "previewed" else "accepted",
         changes = spec_changes(p$spec[setdiff(names(p$spec), "decisions")], spec[setdiff(names(spec), "decisions")]))
     },
+    migration = if (length(migration$steps)) list(steps = migration$steps, original = backup),
     recovered = recovered,
     writer_lock = if (!identical(writer$state, "absent")) writer[c("state", "reason")],
     journal = journal, readiness = readiness$level, blockers = readiness$blockers,
@@ -277,6 +296,9 @@ print.cttir_sync <- function(x, ...) {
   }
   if (!is.null(x$spec_edit)) {
     cat("Hand edit of cttir-project.yml: ", x$spec_edit$state, " (", nrow(x$spec_edit$changes), " fields)\n", sep = "")
+  }
+  if (!is.null(x$migration)) {
+    cat("Schema migration: review migration$steps; original backup path: ", x$migration$original, "\n", sep = "")
   }
   if (length(x$recovered)) cat("Released a stale writer lock left by a stopped process.\n")
   invisible(x)

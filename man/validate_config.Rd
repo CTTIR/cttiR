@@ -16,6 +16,8 @@ Invisibly, the normalized configuration list. Invalid input raises a
 \description{
 Validates a named list or a local JSON/YAML file without executing expressions,
 making network requests or creating files. Unknown keys are rejected.
+Version 1 configuration is normalized to version 2 in memory; the input file
+is not rewritten. Explicit interoperability pins must match the active catalog.
 }
 \examples{
 validate_config(list(research = list(data_origin = "existing_dataset")))

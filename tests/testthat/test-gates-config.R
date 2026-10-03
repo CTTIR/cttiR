@@ -249,6 +249,9 @@ test_that("G06 specs and configs round trip through YAML and JSON with unicode",
 
 test_that("G06 migration applies pure steps one version at a time and preserves the original", {
   current <- project("Migrate", "methods", "Goal", tempdir(), dry_run = TRUE)$spec
+  current$schema_version <- 1L
+  current$ecosystem$policy_version <- NULL
+  current$ecosystem$allowed_providers <- NULL
   legacy <- current
   legacy$schema_version <- 0L
   legacy$research$remarks <- "legacy notes"
@@ -261,7 +264,7 @@ test_that("G06 migration applies pure steps one version at a time and preserves 
     spec$schema_version <- 1L
     spec
   }
-  local_mocked_bindings(spec_migrations = function() list("0" = rename_notes))
+  local_mocked_bindings(spec_schema_version = function() 1L, spec_migrations = function() list("0" = rename_notes))
   result <- migrate_spec(legacy)
   expect_identical(result$original, legacy)
   expect_length(result$steps, 1L)
@@ -312,8 +315,8 @@ test_that("G06 newer schema versions are refused read-only with a typed error", 
   p <- project("Future", "methods", "Goal", parent)
   file <- file.path(p$path, "cttir-project.yml")
   lines <- readLines(file)
-  expect_true("schema_version: 1" %in% lines)
-  writeLines(sub("^schema_version: 1$", "schema_version: 3", lines), file)
+  expect_true("schema_version: 2" %in% lines)
+  writeLines(sub("^schema_version: 2$", "schema_version: 3", lines), file)
   before <- tree_state(p$path)
   code <- function(expr) tryCatch(expr, error = function(e) c(class(e)[[1]], e$code))
   unsupported <- c("cttir_schema_error", "unsupported_schema_version")
@@ -323,7 +326,7 @@ test_that("G06 newer schema versions are refused read-only with a typed error", 
   expect_equal(code(sync(p$path)), unsupported)
   expect_equal(code(sync(p$path, options = list(project = list(goal = "x")), dry_run = FALSE)), unsupported)
   expect_equal(code(project("Future", "methods", "Goal", parent)), unsupported)
-  expect_equal(code(validate_config(list(schema_version = 2L))), unsupported)
+  expect_equal(code(validate_config(list(schema_version = 3L))), unsupported)
   report <- audit(p$path, scope = "project", repair = TRUE)
   expect_equal(report$checks$status[report$checks$id == "PRJ-001"], "fail")
   expect_match(report$checks$message[report$checks$id == "PRJ-001"], "newer than the supported version", fixed = TRUE)

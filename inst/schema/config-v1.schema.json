@@ -4,7 +4,7 @@
   "type": "object",
   "properties": {
     "schema_version": {
-      "const": 2
+      "const": 1
     },
     "project": {
       "type": "object",
@@ -653,32 +653,7 @@
           "default": true
         },
         "modality": {
-          "type": "string",
-          "enum": [
-            "single_cell",
-            "bulk_rna",
-            "cytometry",
-            "spatial",
-            "proteomics",
-            "multiomics",
-            "microbiome",
-            "imaging",
-            "tabular",
-            "unknown"
-          ]
-        },
-        "policy_version": {
-          "const": 1
-        },
-        "allowed_providers": {
-          "type": "array",
-          "uniqueItems": true,
-          "items": {
-            "enum": [
-              "bioconductor",
-              "seurat"
-            ]
-          }
+          "type": "string"
         }
       }
     }

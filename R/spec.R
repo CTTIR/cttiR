@@ -190,6 +190,9 @@ validate_spec <- function(spec) {
       (spec$analysis$aim == "unknown" || spec$analysis$unit_structure == "unknown")) {
     abort_cttir("Analysis approval requires a known aim and unit structure.", "cttir_schema_error")
   }
+  if (isTRUE(spec$schema_version == 2L) && length(spec$packages)) {
+    validate_extension_pins(spec$packages, catalog_snapshot(spec$provenance$catalog_id))
+  }
   validate_analysis_mapping(spec)
   if (!is.null(spec$figures)) validate_figure_policy(spec$figures)
   invisible(spec)
@@ -206,7 +209,7 @@ default_spec <- function(name, type, goal, slug, provenance = NULL) {
     "unknown"
   }
   list(
-    schema_version = 1L,
+    schema_version = spec_schema_version(),
     project = list(
       id = uuid::UUIDgenerate(), name = name, slug = slug, type = type,
       goal = goal, language = "en", created_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%SZ", tz = "UTC")
@@ -239,7 +242,7 @@ default_spec <- function(name, type, goal, slug, provenance = NULL) {
       redundant_encoding_required = TRUE, panel_composer = "patchwork",
       checks = as.list(c("protanopia", "deuteranopia", "tritanopia", "grayscale")), na_colour = "#2B2B2B"
     ),
-    ecosystem = list(seurat_for_relevant_gaps = TRUE, require_role_approval = TRUE, modality = "unknown")
+    ecosystem = ecosystem_policy()
   )
 }
 

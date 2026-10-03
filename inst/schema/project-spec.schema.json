@@ -4,7 +4,7 @@
   "type": "object",
   "properties": {
     "schema_version": {
-      "const": 1
+      "const": 2
     },
     "project": {
       "type": "object",
@@ -783,9 +783,41 @@
           "default": true
         },
         "modality": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "single_cell",
+            "bulk_rna",
+            "cytometry",
+            "spatial",
+            "proteomics",
+            "multiomics",
+            "microbiome",
+            "imaging",
+            "tabular",
+            "unknown"
+          ]
+        },
+        "policy_version": {
+          "const": 1
+        },
+        "allowed_providers": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "bioconductor",
+              "seurat"
+            ]
+          }
         }
-      }
+      },
+      "required": [
+        "policy_version",
+        "allowed_providers",
+        "modality",
+        "seurat_for_relevant_gaps",
+        "require_role_approval"
+      ]
     }
   },
   "required": [
@@ -797,7 +829,8 @@
     "data_sources",
     "packages",
     "decisions",
-    "provenance"
+    "provenance",
+    "ecosystem"
   ],
   "additionalProperties": false,
   "allOf": [

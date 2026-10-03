@@ -35,7 +35,8 @@ json_schema_validate <- function(...) {
 
 validate_document <- function(x, kind) {
   check_tree(x)
-  schema_path <- resource_file("schema", paste0(kind, ".schema.json"))
+  suffix <- if (is.list(x) && isTRUE(x$schema_version == 1L) && kind %in% c("config", "project-spec")) "-v1" else ""
+  schema_path <- resource_file("schema", paste0(kind, suffix, ".schema.json"))
   schema <- jsonlite::fromJSON(schema_path, simplifyVector = FALSE)
   normalized <- normalize_schema_value(x, schema)
   encoded <- json_text(normalized)
@@ -56,6 +57,8 @@ validate_document <- function(x, kind) {
 #'
 #' Validates a named list or a local JSON/YAML file without executing expressions,
 #' making network requests or creating files. Unknown keys are rejected.
+#' Version 1 configuration is normalized to version 2 in memory; the input file
+#' is not rewritten. Explicit interoperability pins must match the active catalog.
 #' @param config A named list or path to a JSON/YAML file.
 #' @return Invisibly, the normalized configuration list. Invalid input raises a
 #'   `cttir_schema_error` or `cttir_input_error` condition.
@@ -66,6 +69,10 @@ validate_config <- function(config) {
   if (is.character(config)) config <- read_document(config)
   check_schema_version(config, "configuration")
   config <- validate_document(config, "config")
+  if (isTRUE(config$schema_version == 1L)) {
+    config$schema_version <- 2L
+    config <- validate_document(config, "config")
+  }
   check_empty_strings(config)
   for (key in c("publications", "data_sources", "packages")) {
     field <- if (key == "packages") "name" else "id"
@@ -75,6 +82,7 @@ validate_config <- function(config) {
     }, character(1))
     if (anyDuplicated(tolower(ids))) abort_cttir(paste("Duplicate", key, "identities."), "cttir_schema_error")
   }
+  validate_extension_pins(config$packages)
   invisible(config)
 }
 
@@ -99,4 +107,28 @@ merge_config <- function(base, incoming) {
     }
   }
   base
+}
+
+# Requested interoperability versions must agree with the selected immutable
+# catalog. This checks evidence only and never checks or installs local packages.
+validate_extension_pins <- function(packages, catalog = NULL) {
+  if (!length(packages)) return(invisible(TRUE))
+  extension_names <- unique(unlist(lapply(interop_capabilities()$capabilities, function(x) x$packages)))
+  requested <- Filter(function(x) {
+    x$name %in% extension_names && (!is.null(x$version) || !is.null(x$revision))
+  }, packages)
+  if (!length(requested)) return(invisible(TRUE))
+  if (is.null(catalog)) catalog <- resolve_catalog()
+  index <- stats::setNames(catalog$packages, vapply(catalog$packages, function(x) x$name, character(1)))
+  for (pin in requested) {
+    record <- index[[pin$name]]
+    for (field in c("version", "revision")) {
+      if (!is.null(pin[[field]]) && (is.null(record) || !identical(pin[[field]], record[[field]]))) {
+        abort_cttir(paste0("The requested ", pin$name, " ", field, " does not match the selected catalog pin."),
+          "cttir_schema_error", "incompatible_extension_pin", paste0("/packages/", pin$name, "/", field),
+          remediation = "Use the selected catalog revision; update and review catalog evidence separately before changing pins.")
+      }
+    }
+  }
+  invisible(TRUE)
 }

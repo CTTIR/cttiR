@@ -1,21 +1,19 @@
-# ProjectSpec schema migration framework.
-#
-# Schema revisions are versioned independently of package releases. A migration
-# step is a pure, deterministic function registered in spec_migrations() under
-# its source version (as a string); it receives a spec at version `n` and must
-# return the spec at version `n + 1` without side effects. migrate_spec()
-# applies steps one version at a time and never writes files. No migration is
-# needed yet: the current and only supported ProjectSpec schema is version 1.
-#
-# migrate_spec() is therefore not reachable from project(), sync() or audit():
-# validate_spec() and validate_config() refuse any other schema version with a
-# typed `unsupported_schema_version` error before generic schema validation.
-# Registering the first step must also route older project files through a
-# sync() preview that shows the migration diff and keeps the original file.
+# Schema 1 remains readable without changing its content hash. Synchronization
+# previews the pure migration and preserves the original before applying it.
+spec_schema_version <- function() 2L
 
-spec_schema_version <- function() 1L
+ecosystem_policy <- function() {
+  list(seurat_for_relevant_gaps = TRUE, require_role_approval = TRUE, modality = "unknown",
+    policy_version = 1L, allowed_providers = list("bioconductor", "seurat"))
+}
 
-spec_migrations <- function() list()
+spec_migrations <- function() {
+  list("1" = function(spec) {
+    spec$schema_version <- 2L
+    spec$ecosystem <- merge_config(ecosystem_policy(), spec$ecosystem)
+    spec
+  })
+}
 
 spec_version_of <- function(spec) {
   version <- spec$schema_version
@@ -27,9 +25,8 @@ spec_version_of <- function(spec) {
   as.integer(version)
 }
 
-# Other schema versions are refused with a typed error before generic schema
-# validation, so callers can tell what is needed. Nothing is written. Only
-# migrate_spec() accepts older versions, which it migrates step by step.
+# Schema 1 remains readable under its retained contract; version 0 and future
+# versions are refused. Only migrate_spec() transforms a resolved specification.
 check_schema_version <- function(x, kind = "project specification", supported = spec_schema_version(),
   allow_older = FALSE) {
   if (!is.list(x) || is.null(x$schema_version)) return(invisible(x))
@@ -49,7 +46,7 @@ check_schema_version <- function(x, kind = "project specification", supported = 
       remediation = "Install a cttiR release that supports this schema version. No files were changed."
     )
   }
-  if (version < supported && !allow_older) {
+  if (version < supported && !allow_older && version != 1L) {
     abort_cttir(
       paste0("This ", kind, " uses schema version ", format(version), ", older than the supported version ",
         supported, "; no migration from version ", format(version), " is defined."),

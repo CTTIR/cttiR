@@ -53,4 +53,8 @@ configuration input (schema version, identity, provenance and decisions
 stay as recorded; entries are not removed; publication paths are stable).
 \code{sync(path, dry_run = FALSE)} accepts it; \code{config} and \code{options} passed in
 the same call take precedence over the hand edit.
+Schema 1 projects remain readable. Synchronization previews their migration
+to schema 2; applying it preserves the original specification under
+\verb{.cttir/migrations/} and retains the selected catalog and dependency pins.
+The \code{migration} result records before/after hashes and changed JSON pointers.
 }

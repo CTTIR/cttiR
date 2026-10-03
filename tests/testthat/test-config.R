@@ -64,7 +64,7 @@ test_that("unimplemented integrations are never silently claimed", {
   expect_true(all(vapply(p$readiness$workflow$stages, function(x) identical(x$status, "approved"), logical(1))))
   expect_equal(p$spec$workflow$table_backend, "DescrTab2")
   bad <- p$spec
-  bad$schema_version <- 2L
+  bad$schema_version <- 3L
   expect_error(validate_spec(bad), class = "cttir_schema_error")
   bad <- p$spec
   bad$publications <- rep(bad$publications, 2)
@@ -86,11 +86,11 @@ test_that("multiline goals and literal tag text round trip without evaluation", 
 test_that("schema versions other than the supported one get a precise typed error", {
   code <- function(expr) tryCatch(expr, error = function(e) c(class(e)[[1]], e$code, paste(e$field, collapse = "")))
   expect_equal(code(validate_config(list(schema_version = 0L))), c("cttir_schema_error", "unsupported_schema_version", "/schema_version"))
-  expect_match(tryCatch(validate_config(list(schema_version = 0L)), error = conditionMessage), "older than the supported version 1")
+  expect_match(tryCatch(validate_config(list(schema_version = 0L)), error = conditionMessage), "older than the supported version 2")
   expect_equal(code(validate_config(list(schema_version = 1.5)))[1:2], c("cttir_schema_error", "schema_validation"))
   p <- project("Versioned", "methods", "Goal", new_parent())
   file <- file.path(p$path, "cttir-project.yml")
-  writeLines(sub("^schema_version: 1$", "schema_version: 0", readLines(file)), file)
+  writeLines(sub("^schema_version: 2$", "schema_version: 0", readLines(file)), file)
   before <- tree_hashes(p$path)
   expect_equal(code(sync(p$path))[1:2], c("cttir_schema_error", "unsupported_schema_version"))
   expect_match(tryCatch(read_project(p$path), error = conditionMessage), "no migration from version 0 is defined")

@@ -22,41 +22,42 @@ The P1 items are `ask()` emitting `broom::tidy()` for `nlme` fits, which fails
 at run time, and the conversion-loss report missing graphs and loadings. Fix
 these first.
 
-## Current continuation point: requested ecosystem gap routing
+## Current continuation point: schema 2 ecosystem policy and migration
 
-Milestone 409ad25 passed the complete source-isolated local check: 5796 assertions,
+Milestone 9f041c7 passed the complete source-isolated local check: 5818 assertions,
 13 skips, zero errors/warnings and one NOTE (new submission and Title prefix).
-PDF/HTML manuals and rebuilt vignettes passed. The tarball hash is
-42a4e8c39590ae4d7f086cf7efb83560a369c7139577ca1e60e46a4ab1be678e;
-its 237 members exclude admin/artifacts. All five hosted jobs in run 37129779215
-passed. Linux all-Suggests ran 5847 assertions with nine skips, none in interop;
-Seurat 5.5.1 and SeuratObject 5.4.0 were installed. The exact known upstream
-SummarizedExperiment namespace warning is retained as visible test output.
-Evidence: artifacts/implementation/strict-ask-full-validation.json,
-strict-ask-hosted-ci.json and strict-ask-linux-all-suggests.log.
-Earlier 9c7a0e8/7c6cd22 failed checks remain retained, not reclassified.
+PDF/HTML manuals and rebuilt vignettes passed. Tarball SHA-256:
+f3811f9db2ae5b7707e0415bdf2e306f7b82fbfc91e095678834f07e03688eeb.
+Its 237 members exclude admin/artifacts. All five jobs in hosted run 37133168511
+passed. Receipt: artifacts/implementation/requested-routing-full-validation.json.
+This closes full validation of R14's requested-capability routing milestone.
 
-R14 now selects ecosystem advice by requested keyword evidence and detected
-modality. Signac, plain scRNA, Azimuth and donor-pseudobulk requests have positive
-and negative regressions, including negation. Only approved, enabled CTTIR
-specialists suppress covered stages. Ecosystem candidates stay disabled, and
-clinical/tabular requests remain excluded. Router/planner/standard-workflow tests
-and source lint pass (one opt-in live planner skip). Committed/pushed as 9f041c7. Its full check runs in
-cttir-requested-routing-check-9f041c7.service, with status/logs under
-artifacts/requested-routing-check-9f041c7. Logs: requested-routing-tests-final.log and
-requested-routing-integration-tests.log under artifacts/implementation.
+R15 implementation now introduces schema 2 and ecosystem policy version 1 with
+allowed providers and constrained modalities. The exact schema-1 contracts are
+retained; read_project does not transform old specs or invalidate their hashes.
+Sync previews one pure migration with before/after hashes and JSON pointers.
+Apply preserves the original specification byte-for-byte under .cttir/migrations,
+keeps identity/catalog/dependency pins, and refuses backup collisions. Failed
+writes roll back to the accepted project. Config files normalize in memory without
+rewriting their inputs. Explicit extension version/revision mismatches are rejected
+against catalog evidence. General explicit package-request generation remains
+unsupported (the pre-existing typed refusal is retained).
+Provider filtering limits ecosystem advice; all candidates remain disabled.
 
-R03 strict scoring/data contracts pass the full check above. The previously seen
-51-case DEVELOPMENT benchmark has supported recall 25/26; S12 remains a recorded
-miss because explicitly named tar_make is not role-approved. Thresholds and
-scheduler approval were not relaxed. This is not independent qualification.
+Config, ecosystem-policy, gates-config, router, sync and templates suites pass;
+source lint is clean. Tests include migration preview/apply/rollback, preserved
+Unicode YAML/JSON inputs, original hashes, catalog pins, future-version refusal,
+unknown modality/provider/policy rejection and incompatible extension pins.
+Logs: artifacts/implementation/ecosystem-schema-integration.log,
+ecosystem-schema-lint-final.log, ecosystem-schema-scalar-validation.log.
+Full validation of the new source is pending; do not equate targeted passes with
+complete readiness. Earlier failed logs are retained alongside corrected runs.
 
-Next: R15 versioned ecosystem schema migration (preserve original files and show
-sync diff), R16 default exact-pin enforcement and remaining owner review items.
-Existing read_project hashes accepted specs before sync; do not silently migrate
-on read and invalidate control hashes. Batch registry changes before independent
-held-out evaluations/manual usefulness review. Asked who will author the fresh
-independent corpus; no reviewer agent has been authorized or started yet.
+Next: review the source-isolated schema milestone check and hosted results, then
+R16 default exact-pin enforcement (including optional pins in renv/project audits)
+and remaining owner-review items. Batch registry/adapter changes before independent
+held-out evaluations/manual usefulness review. The fresh independent corpus still
+needs a separate author; no reviewer agent has been authorized or started.
 G12/G26 remain open. COMPLETE/STOP absent; retry timer active. No submission.
 
 ## Preceding explicit answer data requirements

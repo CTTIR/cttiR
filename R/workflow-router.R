@@ -220,7 +220,8 @@ engine_capability <- c("stats::lm" = "std.model.lm", "stats::glm" = "std.model.g
 
 # Ecosystem advice fills a requested gap only. Shared modality alone does not
 # request every container, normalization method or annotation service.
-ecosystem_gap_candidates <- function(registry, modality, goal, allow_seurat, stages) {
+ecosystem_gap_candidates <- function(registry, modality, goal, allow_seurat, stages,
+  allowed_providers = c("bioconductor", "seurat")) {
   if (modality %in% c("unknown", "tabular")) return(list())
   covered <- vapply(Filter(function(stage) {
     cap <- registry$capabilities[[stage$capability]]
@@ -228,7 +229,7 @@ ecosystem_gap_candidates <- function(registry, modality, goal, allow_seurat, sta
   }, stages), function(stage) stage$stage, character(1))
   text <- tolower(enc2utf8(goal))
   Filter(function(cap) {
-    cap$family %in% c("bioconductor", "seurat") && modality %in% cap$applies$modality &&
+    cap$family %in% allowed_providers && modality %in% cap$applies$modality &&
       (allow_seurat || !identical(cap$family, "seurat")) && !cap$stage %in% covered &&
       keyword_hit(text, cap$keywords)
   }, registry$capabilities)
@@ -306,7 +307,8 @@ route_workflow <- function(spec, requested = "auto", catalog = catalog_snapshot(
     stages <- c(stages, list(stage))
   }
   relevant <- ecosystem_gap_candidates(registry, modality, spec$project$goal,
-    isTRUE(spec$ecosystem$seurat_for_relevant_gaps), stages)
+    isTRUE(spec$ecosystem$seurat_for_relevant_gaps), stages,
+    if (is.null(spec$ecosystem$allowed_providers)) c("bioconductor", "seurat") else unlist(spec$ecosystem$allowed_providers))
   ecosystem <- lapply(relevant, function(cap) route_stage(registry, catalog, cap$stage, cap$id, enabled = FALSE))
   reason <- if (length(available)) {
     "Approved CTTIR specialist stages cover part of the workflow; standard stages cover the rest."
