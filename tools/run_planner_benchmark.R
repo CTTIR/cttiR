@@ -68,10 +68,11 @@ progress <- function(label) {
 compact_rows <- function(rows) {
   lapply(rows, function(r) {
     r$proposal$capability_ids <- as.list(r$proposal$capability_ids)
+    r$proposal$unresolved <- as.list(r$proposal$unresolved)
     list(id = r$id, cold = r$cold, planner_mode = r$planner_mode, fallback_reason = r$fallback_reason,
       attempts = r$attempts, errors = as.list(r$errors), latency_seconds = round(r$latency_seconds, 3),
       load_seconds = round(r$load_seconds, 3), prompt_tokens = r$prompt_tokens, output_tokens = r$output_tokens,
-      proposal = r$proposal[c("aim", "outcome_family", "unit_structure", "modality", "capability_ids", "rationale")],
+      proposal = r$proposal[c("aim", "outcome_family", "unit_structure", "modality", "capability_ids", "rationale", "unresolved")],
       field_correct = r$score$field_correct, field_scored = r$score$field_scored,
       capability_fp = r$score$capability_fp, capability_fn = r$score$capability_fn,
       injection_violation = r$score$injection_violation)
@@ -143,7 +144,8 @@ for (tag in models) {
     general_license = info[["general.license"]], options = internal("planner_options")(),
     probe = prepared$steps[[3]]$evidence, memory = memory,
     summary = run$summary, checks = checks, qualified = all(vapply(checks, function(x) isTRUE(x$pass), logical(1))),
-    rows = compact_rows(run$rows), representative_failures = failures(run$rows, corpus$cases)
+    rows = compact_rows(run$rows), repeat_rows = compact_rows(run$repeat_rows),
+    repeat_comparisons = run$repeat_comparisons, representative_failures = failures(run$rows, corpus$cases)
   )
 }
 qualified <- Filter(function(x) isTRUE(x$qualified), candidates)

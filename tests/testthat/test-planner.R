@@ -554,3 +554,30 @@ test_that("setup labels planner qualification from the recorded benchmark", {
     expect_true(entry$qualification %in% c("qualified_for_planning", "not_qualified_for_planning"))
   }
 })
+
+test_that("benchmark repeats retain evidence and distinguish wording from decisions", {
+  cases <- planner_cases()$cases[1:3]
+  ids <- vapply(cases, function(x) x$id, character(1))
+  calls <- 0L
+  runner <- function(name, type, goal, mode, ...) {
+    calls <<- calls + 1L
+    proposal <- deterministic_proposal(goal)
+    if (calls == 4L) proposal$rationale <- "Different explanation of the same decisions."
+    if (calls == 5L) proposal$aim <- if (proposal$aim == "unknown") "descriptive" else "unknown"
+    list(proposal = proposal, provenance = list(planner_mode = mode), latency_seconds = 0, attempts = list())
+  }
+  result <- planner_benchmark(cases, runner = runner, repeats = ids)
+  expect_equal(calls, 6L)
+  expect_length(result$repeat_rows, 3L)
+  expect_equal(vapply(result$repeat_rows, function(x) x$id, character(1)), ids)
+  expect_equal(vapply(result$repeat_comparisons, function(x) x$identical, logical(1)), c(FALSE, FALSE, TRUE))
+  expect_equal(vapply(result$repeat_comparisons, function(x) x$identical_decisions, logical(1)), c(TRUE, FALSE, TRUE))
+  expect_equal(result$summary$determinism$identical, 1L)
+  expect_equal(result$summary$determinism$identical_decisions, 2L)
+  expect_equal(result$repeat_rows[[1]]$proposal$rationale, "Different explanation of the same decisions.")
+  expect_false(identical(result$rows[[2]]$proposal$aim, result$repeat_rows[[2]]$proposal$aim))
+  no_repeats <- planner_benchmark(cases)
+  expect_null(no_repeats$summary$determinism)
+  expect_length(no_repeats$repeat_rows, 0L)
+  expect_length(no_repeats$repeat_comparisons, 0L)
+})

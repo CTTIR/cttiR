@@ -126,7 +126,9 @@ planner_summary <- function(rows, mode) {
 #' @param repeats Case IDs re-run once to measure determinism.
 #' @param progress Optional function called with each finished row.
 #' @param ... Passed to the runner (for example `model`, `keep_raw`).
-#' @return A list with `summary` and per-case `rows`.
+#' @return A list with `summary`, per-case `rows`, `repeat_rows` and
+#'   `repeat_comparisons`. Repeat comparisons separate full proposal equality
+#'   from equality of the four decision fields and unordered capability IDs.
 #' @noRd
 planner_benchmark <- function(cases, mode = "deterministic", runner = plan_goal, cold = character(),
   unload = NULL, repeats = character(), progress = NULL, ...) {
@@ -159,17 +161,31 @@ planner_benchmark <- function(cases, mode = "deterministic", runner = plan_goal,
     if (is.function(progress)) progress(row)
   }
   determinism <- NULL
+  repeat_rows <- list()
+  repeat_comparisons <- list()
+  decisions <- function(row) {
+    list(mode = row$planner_mode, fields = row$proposal[planner_fields],
+      capabilities = sort(unique(as.character(row$proposal$capability_ids))))
+  }
+  for (case in Filter(function(case) case$id %in% repeats, cases)) {
+    again <- run_case(case, FALSE)
+    first <- rows[[match(case$id, vapply(rows, function(r) r$id, character(1)))]]
+    repeat_rows[[length(repeat_rows) + 1L]] <- again
+    repeat_comparisons[[length(repeat_comparisons) + 1L]] <- list(
+      id = case$id,
+      identical = identical(first$proposal, again$proposal) && identical(first$planner_mode, again$planner_mode),
+      identical_decisions = identical(decisions(first), decisions(again))
+    )
+  }
   if (length(repeats)) {
-    same <- vapply(Filter(function(case) case$id %in% repeats, cases), function(case) {
-      again <- run_case(case, FALSE)
-      first <- rows[[match(case$id, vapply(rows, function(r) r$id, character(1)))]]
-      identical(first$proposal, again$proposal) && identical(first$planner_mode, again$planner_mode)
-    }, logical(1))
-    determinism <- list(repeated = length(same), identical = sum(same), rate = if (length(same)) round(mean(same), 4) else NULL)
+    same <- vapply(repeat_comparisons, function(x) x$identical, logical(1))
+    same_decisions <- vapply(repeat_comparisons, function(x) x$identical_decisions, logical(1))
+    determinism <- list(repeated = length(same), identical = sum(same), rate = if (length(same)) round(mean(same), 4) else NULL,
+      identical_decisions = sum(same_decisions), decision_rate = if (length(same)) round(mean(same_decisions), 4) else NULL)
   }
   summary <- planner_summary(rows, mode)
   summary$determinism <- determinism
-  list(summary = summary, rows = rows)
+  list(summary = summary, rows = rows, repeat_rows = repeat_rows, repeat_comparisons = repeat_comparisons)
 }
 
 planner_threshold_checks <- function(summary, baseline, policy) {

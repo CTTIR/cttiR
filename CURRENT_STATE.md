@@ -2,6 +2,34 @@
 
 Updated: 2026-10-03. Version: 0.1.1. License: MIT.
 
+## Fresh planner validation and repeat evidence
+
+Thirty new cases (15 English, 15 German) were frozen and hashed before evaluating
+the unchanged private combined candidate. All ten preset thresholds pass:
+field accuracy 0.9216 versus deterministic 0.8529, capability precision 1.0,
+recall 0.70, abstention 1.0, no violations in two injection cases, warm p95 6.117 s.
+These are fresh single-author labels, not independent scientific annotation.
+Six required capabilities were omitted; the original labels remain unchanged.
+
+Only 4/6 complete proposals matched on repeat. A separate diagnostic retained
+both responses: F25 alternates between continuous and unknown outcome type at
+identical inference settings; F12 and F18 vary narrative text. The original
+benchmark discarded its repeat proposals, so its mismatches cannot be reconstructed.
+The benchmark now retains repeat rows and per-case comparisons and reports
+full-proposal equality separately from decision equality. The developer report
+also retains unresolved notes. Regression tests pass, including a simulated
+wording change, decision change, unchanged response and absent repeat request.
+A fresh full package check is pending for this benchmark-only source change;
+the full check below remains evidence for source 432fa34, not this new revision.
+
+No public planner prompt, model qualification or default has changed. The fresh
+threshold pass does not close production integration, repeatability assessment,
+independent retrieval qualification or G26. The owned local runtime was stopped.
+Frozen inputs, review, results and cleanup: ignored
+artifacts/implementation/planner-fresh-validation*.json/.log; detailed diagnostic:
+planner-fresh-repeat-diagnostic.json/.log. Scripts/corpus remain in ignored admin/.
+Do not tune from these results and continue describing this corpus as unseen.
+
 ## Live combined planner candidate
 
 The private metadata prompt plus post-validation keyword grounding now passes
@@ -13,9 +41,8 @@ The wrapper preserves fallback behavior, bounds explanatory notes and revalidate
 every modified proposal; its boundary tests pass. Owned runtime stopped.
 
 This is not production qualification: the 66-case corpus was already examined.
-No public prompt, model manifest or default changed. Next freeze genuinely unseen
-validation cases, then integrate and test the combined policy before considering
-promotion. The private candidate does not close independent retrieval or G26.
+No public prompt, model manifest or default changed. Fresh validation is now recorded above; integrate and test the combined
+policy and assess repeatability before considering promotion. The private candidate does not close independent retrieval or G26.
 Scripts: admin/planner_grounded_candidate.R and run_planner_grounded_benchmark.R.
 Evidence: artifacts/implementation/planner-grounded-live*.json/.log, especially
 planner-grounded-live-review.json and the grounding receipt. Do not mistake the
