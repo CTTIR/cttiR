@@ -183,3 +183,14 @@ runtime backends have not inherited that measured result.
 options(old_options)
 unlink(example_root, recursive = TRUE)
 ```
+
+
+Setup previews (`setup(dry_run = TRUE)`) report offline-known acquisition and
+planning blockers separately, published full download sizes, available disk
+space and recorded disk admission budgets. Sizes are not estimates of remaining
+incremental downloads, and an absent model profile has unknown size/budget.
+A verified owned process is reported with PID and host; file presence alone does
+not verify a runtime. Project summaries report the planning mode used and direct
+users to this preview without probing or starting an optional local runtime.
+Explicit model preparation remains available for diagnostics even when the
+model is unqualified; it does not grant planning qualification.

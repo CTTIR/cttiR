@@ -1,5 +1,9 @@
 # cttiR 0.1.1.9000
 
+* Setup previews expose offline acquisition and qualification blockers, published
+  download sizes, disk admission information and verified process ownership.
+  Preparing an explicit unqualified model does not grant planning qualification.
+
 * Interoperability adapters 1.2.1 refuse a single assay column larger than the realization budget before reading values. Record the per-block budget, dense pseudobulk output dimensions and instrumented fixture size without claiming a peak-RSS bound.
 * The opt-in INT-003 live audit now checks a fixed synthetic planner task against the planner schema, keyword grounding and bundled workflow approvals, in addition to the structured-output smoke. Passing these probes does not qualify a model.
 

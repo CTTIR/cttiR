@@ -499,7 +499,7 @@ project_impl <- function(name, type, goal, path = getwd(), config = NULL,
   git <- git_status(if (exists) target else NULL, spec$workflow$git, parent)
   readiness <- readiness_with(list(level = "scaffold_ready", materialized = exists || !dry_run), spec, bundle, environment, git)
   blockers <- readiness$blockers
-  warnings <- blockers
+  warnings <- unique(c(blockers, spec$provenance$fallback_reason))
   if (exists) {
     changed <- vapply(names(files), function(f) !identical(digest::digest(file = file.path(target, f), algo = "sha256"), content_hash(files[[f]])), logical(1))
     if (any(changed)) warnings <- c(warnings, "existing_edits_preserved")
@@ -509,6 +509,8 @@ project_impl <- function(name, type, goal, path = getwd(), config = NULL,
     readiness = list(
       level = readiness$level, materialized = exists || !dry_run,
       blockers = blockers, analysis = analysis_configuration(spec),
+      planning = list(mode = spec$provenance$planner_mode, fallback_reason = spec$provenance$fallback_reason,
+        local_runtime = "not_checked", guidance = "Use setup(dry_run = TRUE) to inspect optional local planning prerequisites."),
       workflow = if (is.null(bundle$route)) NULL else route_summary(bundle$route),
       environment = environment, git = git
     ), manifest = manifest,
@@ -589,6 +591,10 @@ environment_status <- function(dependencies, root = NULL, mode = "none") {
 print.cttir_project <- function(x, ...) {
   cat(if (x$dry_run) "Planned project: " else "Project: ", x$path, "\n", sep = "")
   cat("Readiness: ", x$readiness$level, "\n", sep = "")
+  if (!is.null(x$readiness$planning)) {
+    cat("Planning: ", x$readiness$planning$mode, "; optional local runtime not checked.\n", sep = "")
+    cat(x$readiness$planning$guidance, "\n")
+  }
   if (!is.null(x$readiness$workflow)) cat("Workflow: ", x$readiness$workflow$profile, "\n", sep = "")
   cat("Pending: ", paste(x$readiness$blockers, collapse = ", "), "\n", sep = "")
   if (length(x$recovered)) cat("Recovered: a creation lock left by a stopped process\n")

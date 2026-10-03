@@ -1,0 +1,40 @@
+test_that("offline setup previews expose known blockers and size provenance", {
+  root <- file.path(new_parent(), "absent")
+  withr::local_options(cttiR.runtime_dir = root)
+  local_mocked_bindings(runtime_request = function(...) stop("unexpected HTTP"))
+  manifest <- read_document(resource_file("runtime", "manifest.json"))
+  resources <- list(platform = "unsupported", arch = "unknown", available_disk_bytes = 100)
+  preflight <- runtime_preflight(root, runtime_endpoint(), manifest, manifest$model,
+    "not_qualified_for_planning", TRUE, FALSE, resources, c(tar = "", zstd = ""))
+  expect_setequal(preflight$acquisition_blockers, c("platform_unverified", "archive_tools_missing"))
+  expect_identical(preflight$planner_blockers, "workflow_model_not_qualified")
+  expect_equal(preflight$downloads$model_bytes, manifest$model_bytes)
+  expect_equal(preflight$downloads$runtime_archive_bytes, manifest$archive_bytes)
+  expect_equal(preflight$disk$available_bytes, 100)
+  expect_null(preflight$owner)
+  unknown <- runtime_preflight(root, runtime_endpoint(), manifest, "unknown:1b",
+    "not_qualified_for_planning", FALSE, TRUE, resources)
+  expect_null(unknown$downloads$model_bytes)
+  expect_null(unknown$disk$admission_required_bytes)
+  expect_identical(unknown$acquisition_blockers, "runtime_absent_acquisition_disabled")
+  preview <- setup(model = manifest$model, offline = TRUE, dry_run = TRUE)
+  expect_true(all(c("workflow_model_not_qualified", "runtime_absent_acquisition_disabled") %in% preview$blockers))
+  expect_length(preview$actions, 0)
+  expect_output(print(preview), "Full download sizes")
+  expect_output(print(preview), "admission screen")
+  expect_false(file.exists(root))
+})
+
+test_that("offline ownership and disk screens do not imply qualification", {
+  root <- new_parent()
+  local_mocked_bindings(runtime_owner = function(...) list(pid = 123L, host = "fixture", endpoint = "loopback"))
+  manifest <- read_document(resource_file("runtime", "manifest.json"))
+  result <- runtime_preflight(root, runtime_endpoint(), manifest, "qwen2.5:7b",
+    "not_qualified_for_planning", TRUE, FALSE,
+    resources = list(platform = "Linux", arch = "x86_64", available_disk_bytes = 100))
+  expect_identical(result$disk$admission_state, "insufficient")
+  expect_equal(result$owner$pid, 123L)
+  expect_equal(result$owner$host, "fixture")
+  expect_equal(result$disk$admission_required_bytes, 17179869184)
+  expect_identical(result$planner_blockers, "workflow_model_not_qualified")
+})

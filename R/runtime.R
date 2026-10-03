@@ -169,6 +169,12 @@ local_model <- function(endpoint, model) {
 #' @param offline Forbid acquisition and model downloads.
 #' @param dry_run Return the plan without persistent changes or HTTP requests.
 #' @return A `cttir_setup` with steps, runtime/model identity, actions and blockers.
+#'   The offline `preflight` reports acquisition and planning blockers separately,
+#'   published full download sizes (unknown for unrecorded models), available disk
+#'   space, recorded admission budgets and verified local process ownership when
+#'   available. File presence alone does not establish integrity or readiness.
+#'   Explicit unqualified model preparation remains possible; it does not qualify
+#'   that model for planning.
 #' @details Machine preferences may set `options(cttiR.runtime_dir = path)` and
 #'   `options(cttiR.ollama_endpoint = "http://127.0.0.1:11434")`. Other endpoints
 #'   are rejected. The local HTTP client disables proxies and redirects.
@@ -199,7 +205,14 @@ setup <- function(model = "auto", install_ollama = TRUE, offline = FALSE, dry_ru
     selection = selection
   ), class = "cttir_setup")
   if (length(result$blockers)) result$actions <- character()
-  if (dry_run) return(result)
+  result$preflight <- runtime_preflight(root, endpoint, manifest, model, validation, install_ollama, offline,
+    resources = if (!is.null(selection$resources)) selection$resources else runtime_resources(root))
+  if (dry_run) {
+    result$blockers <- unique(c(result$blockers, result$preflight$acquisition_blockers,
+        result$preflight$planner_blockers))
+    if (length(result$preflight$acquisition_blockers)) result$actions <- character()
+    return(result)
+  }
   if (length(result$blockers)) {
     result$state <- "blocked"
     return(result)
@@ -306,6 +319,8 @@ setup <- function(model = "auto", install_ollama = TRUE, offline = FALSE, dry_ru
       validation <- planner_qualification(model, entry$digest, manifest)
       result$model$validation <- validation
       result$model$digest <- entry$digest
+      result$runtime$pid <- owner$pid
+      result$runtime$host <- owner$host
       result$runtime$locality <- owner$locality
       result$steps <- list(
         list(id = "local_runtime", state = "verified"), list(id = "local_model", state = "verified"),
@@ -351,6 +366,15 @@ runtime_probe <- function(endpoint, model) {
 #' @export
 print.cttir_setup <- function(x, ...) {
   cat("Local runtime: ", x$state, "\n", sep = "")
+  if (!is.null(x$preflight)) {
+    bytes <- function(value) if (is.null(value) || length(value) != 1L || is.na(value)) "unknown" else format(value, scientific = FALSE)
+    cat("Full download sizes (bytes): runtime ", bytes(x$preflight$downloads$runtime_archive_bytes),
+      "; model ", bytes(x$preflight$downloads$model_bytes), "\n", sep = "")
+    cat("Disk (bytes): available ", bytes(x$preflight$disk$available_bytes),
+      "; admission screen ", bytes(x$preflight$disk$admission_required_bytes), "\n", sep = "")
+    owner <- if (!is.null(x$runtime$pid)) x$runtime else x$preflight$owner
+    if (!is.null(owner)) cat("Owned runtime: PID ", owner$pid, " on ", owner$host, "\n", sep = "")
+  }
   if (length(x$blockers)) cat(paste(x$blockers, collapse = "\n"), "\n")
   invisible(x)
 }

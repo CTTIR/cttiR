@@ -21,6 +21,12 @@ admission checks, not reserved resources or process memory limits.}
 }
 \value{
 A \code{cttir_setup} with steps, runtime/model identity, actions and blockers.
+The offline \code{preflight} reports acquisition and planning blockers separately,
+published full download sizes (unknown for unrecorded models), available disk
+space, recorded admission budgets and verified local process ownership when
+available. File presence alone does not establish integrity or readiness.
+Explicit unqualified model preparation remains possible; it does not qualify
+that model for planning.
 }
 \description{
 Acquisition uses a pinned publisher archive and checksum, currently for Linux

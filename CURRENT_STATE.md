@@ -1,6 +1,6 @@
 # cttiR development state
 
-Updated: 2026-10-03. Version: 0.1.1.9000. License: MIT.
+Updated: 2026-10-04. Version: 0.1.1.9000. License: MIT.
 
 ## Read first: owner-requested review and decisions (2026-10-03)
 
@@ -66,11 +66,29 @@ probe reads the bundled catalog. Failed logs are retained. Evidence:
 planner-probe-final-tests.log, planner-probe-metadata.log,
 budget-probe-final-tests.log and interop-budget-planner-probe-review.json.
 
-Committed/pushed as f2caddb. Full source-isolated check is running in
-cttir-budget-probe-check-f2caddb.service, with logs/status under
-artifacts/budget-probe-check-f2caddb. Hosted validation is pending.
+Committed/pushed as f2caddb. Full source-isolated check passed: 6056 assertions,
+13 skips, no errors/warnings and one NOTE (new submission, development version,
+Title prefix). PDF/HTML manuals and rebuilt vignettes passed. Archive SHA-256:
+c1c34f3cccbbb91a2c3083506ad23d55ac5d5fca1a14ba11a1bc14ed047ef812
+(247 members); private paths absent, changed shipped files match the source
+commit. All five hosted jobs passed in run 37155548131. Receipt:
+artifacts/implementation/budget-probe-full-validation.json.
 
-Next: finish this milestone's full checks; finish R07 setup/project readiness
+R07 follow-up now adds offline setup preflight: acquisition prerequisites,
+qualification blockers, published full archive/model bytes (unknown model sizes
+stay unknown), available disk and recorded admission screen comparison, and
+verified owner PID/host. Explicit unqualified preparation remains permitted but
+does not qualify planning. Automatic selection reuses its resource observation
+so the later acquisition/inference rechecks retain their timing. Project results
+and print show the actual planning mode, persisted fallback reason and the setup
+preview entry point; project creation does not probe optional runtime availability.
+This is partial R07 evidence: actual live grounded probe and incremental download
+accounting remain unverified. Runtime, project and offline suites pass: 256 assertions, no failures, warnings
+or skips. An initial resource-read regression was fixed; a concurrent-source
+print-test attempt is retained as superseded evidence. Final log:
+artifacts/implementation/runtime-readiness-verified-tests.log.
+
+Next: finish the new runtime-readiness milestone's full checks; finish R07 readiness
 reporting and actual live probe evidence; R21 maintainer provenance; R22/R39
 current consolidated gate/requirements evidence. Reconcile every other owner
 review item individually. R10/R31 diagnostics now expose pre-grounding and raw
