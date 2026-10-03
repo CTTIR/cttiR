@@ -41,6 +41,9 @@ test_that("runtime ownership needs the owned binary as the process image, not ju
 })
 
 test_that("offline setup never acquires and preserves another setup lock", {
+  local_mocked_bindings(runtime_select_model = function(manifest, root)
+    list(model = manifest$model, digest = manifest$model_digest, blockers = character(),
+      requirements = list(available_memory_bytes = 1)))
   root <- new_parent()
   withr::local_options(cttiR.runtime_dir = root)
   local_mocked_bindings(
@@ -59,6 +62,9 @@ test_that("offline setup never acquires and preserves another setup lock", {
 })
 
 test_that("setup refuses an unmanaged daemon without model requests", {
+  local_mocked_bindings(runtime_select_model = function(manifest, root)
+    list(model = manifest$model, digest = manifest$model_digest, blockers = character(),
+      requirements = list(available_memory_bytes = 1)))
   withr::local_options(cttiR.runtime_dir = new_parent())
   local_mocked_bindings(runtime_request = function(endpoint, route, ...) {
     expect_equal(route, "version")
@@ -104,6 +110,9 @@ test_that("structured probe validates output and never returns thinking", {
 })
 
 test_that("owned reuse probes locally and failed model verification preserves state", {
+  local_mocked_bindings(runtime_select_model = function(manifest, root)
+    list(model = manifest$model, digest = manifest$model_digest, blockers = character(),
+      requirements = list(available_memory_bytes = 1)))
   root <- new_parent()
   withr::local_options(cttiR.runtime_dir = root)
   manifest <- read_document(resource_file("runtime", "manifest.json"))

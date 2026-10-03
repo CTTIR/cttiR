@@ -608,7 +608,16 @@
           "num_gpu": 0
         }
       },
-      "qualification_scope": "Explicit model selection, Linux x86_64, CPU with 16 threads; advisory planning only, never analysis approval."
+      "qualification_scope": "Explicit model selection, Linux x86_64, CPU with 16 threads; advisory planning only, never analysis approval.",
+      "resource_requirements": {
+        "minimum_physical_cores": 16,
+        "available_memory_bytes": 17179869184,
+        "available_disk_bytes": 17179869184,
+        "context_tokens": 4096,
+        "parallel_requests": 1,
+        "processor": "cpu",
+        "scope": "Conservative admission screen with context/cache and concurrent system workload headroom; not a reservation or universal process limit."
+      }
     }
   ],
   "planner_benchmark": {

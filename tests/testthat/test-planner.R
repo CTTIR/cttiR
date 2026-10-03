@@ -545,6 +545,9 @@ test_that("setup labels planner qualification from the recorded benchmark", {
   expect_equal(override$state, "runtime_ready")
   expect_equal(override$model$validation, "unvalidated_user_override")
   expect_equal(override$blockers, "workflow_model_not_qualified")
+  local_mocked_bindings(runtime_select_model = function(manifest, root)
+    list(model = manifest$model, digest = manifest$model_digest, blockers = character(),
+      requirements = list(available_memory_bytes = 1)))
   automatic <- setup(offline = TRUE)
   expect_equal(automatic$model$validation, manifest$model_validation)
   qualified <- identical(manifest$model_validation, "qualified_for_planning")

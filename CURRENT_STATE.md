@@ -49,18 +49,34 @@ The 234-member archive excludes private material and matches the changed source;
 isolated installation passed. SHA-256:
 494e2ea9b9657cf858e3bdeb16e691bea43023328383cb64869a78b7bffb31bd.
 
-Milestone 80ea857 qualifies explicitly selected qwen2.5:7b at its recorded digest
-for the tested Linux CPU 16-thread planner-3 profile. Prior failed benchmarks
-remain in benchmark_history; current replay summaries, source/result hashes and
-limitations are in the manifest. Other inference settings fail closed. The
-automatic setup model remains unchanged and unqualified; resource-based automatic
-selection remains unfinished. The public setup/project smoke passed without the
-unqualified override, persisted qualified decision evidence and left analysis
-unapproved. Owned runtime stopped. Review: qualified-profile-review.json.
-The separate full check is running in user service
-cttir-qualified-profile-check-80ea857.service. Inspect
-artifacts/qualified-profile-check-80ea857/status.json and check.log before
-starting another check. This milestone is pushed; review its hosted jobs too.
+Milestone 80ea857 qualified qwen2.5:7b at its recorded digest for the tested
+Linux CPU 16-thread planner-3 profile. Prior failed benchmarks remain in
+benchmark_history, and repeat/annotation limitations remain explicit. Its full
+check passed: 5568 assertions, 13 documented skips, 0 errors/warnings, 1 incoming
+NOTE; rebuilt vignettes and PDF/HTML manuals passed. All five hosted jobs in
+37116376908 passed. Receipt: qualified-profile-full-validation.json. Tarball SHA:
+2286d1e556548470d50fef3222a79de23298fbd75360df520f1a0bc29c628e9d.
+
+Automatic setup now selects the smallest qualified model matching its tested
+settings and platform only when recorded resource budgets fit. The current
+profile requires 16 physical CPU cores and 16 GiB each of available RAM and disk.
+Unknown/insufficient resources block before any HTTP or filesystem mutation.
+Headroom is rechecked before startup/acquisition and memory again before inference.
+The selected digest is enforced, and policy/resource evidence persists with the
+owned runtime state. Explicit model selection remains a deliberate override.
+These are conservative admission screens, not reservations or universal limits.
+
+Targeted runtime/planner/offline tests and lint pass. Actual automatic setup and
+public project creation pass without unqualified override, persist qualified
+decisions, and leave analysis unapproved. Sampled owned runtime/runner RSS peaked
+at 5035.02 MiB; commands verify CPU-only 16 threads, context 4096 and one request.
+The 16 GiB disk screen covers the measured 2.24 GB runtime, 1.43 GB archive and
+two 4.68 GB model-size copies plus headroom. This bounded observation is not a
+universal memory guarantee. Owned runtime stopped; receipts:
+automatic-selection-review.json, automatic-profile-final-live-smoke.json,
+automatic-profile-final-resource-observation.json, automatic-profile-cleanup.json.
+This source milestone requires its own full check; do not use the preceding
+profile check to claim these additional resource guards are fully validated.
 
 Historical admin/planner_metadata_prompt.R and planner_grounded_candidate.R
 monkeypatch pre-integration code: do not source them into planner-3 or their

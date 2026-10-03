@@ -80,8 +80,13 @@ plan$model$name
 The default project planner is deterministic. Tested local models are listed
 with their benchmark results in the runtime manifest. Explicitly selected
 `qwen2.5:7b` is qualified for advisory planning at the recorded digest with
-the tested Linux CPU profile (16 threads). The automatic setup model remains
-unqualified; no automatic resource-based selection is claimed. With `options(cttiR.planner = "local_llm")`
+the tested Linux CPU profile (16 threads). Automatic setup selects the smallest
+qualified model matching the current inference settings and platform, with at
+least 16 physical CPU cores and 16 GiB each of available RAM and disk for this
+profile. These conservative checks allow context/cache and system-workload
+headroom but do not reserve resources or guarantee a process memory limit.
+Unknown or insufficient availability blocks startup/acquisition; an explicit
+model tag remains a deliberate override of automatic resource selection. With `options(cttiR.planner = "local_llm")`
 and a verified owned runtime, a model plans only if the manifest marks it
 qualified at its exact digest and the tested prompt, grounding policy, registry,
 schema, runtime binary and inference settings still match; otherwise the deterministic planner is used and

@@ -77,8 +77,10 @@ restores an earlier one. Project pins never change implicitly.
 * `setup()` prepares an owned, cloud-disabled Ollama runtime on Linux x86_64.
   The deterministic planner is the default. Explicitly selected `qwen2.5:7b`
   is qualified for advisory planning at its recorded digest and tested Linux
-  CPU settings (16 threads); other settings fall back. The automatic setup
-  model remains unqualified. `options(cttiR.planner = "local_llm")` enables
+  CPU settings (16 threads); other settings fall back. Automatic setup selects
+  the smallest qualified model that fits its recorded resource budgets; the
+  current profile requires 16 physical CPU cores and 16 GiB each of available
+  RAM and disk. Unknown or insufficient resources block acquisition. `options(cttiR.planner = "local_llm")` enables
   qualified local planning; trying an unqualified model needs
   `options(cttiR.planner_allow_unqualified = TRUE)` and is labelled as such.
 * `setup_app()` and `configure()` open the local Shiny application (Fast and

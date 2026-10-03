@@ -65,7 +65,7 @@ test_that("core workflows complete offline with zero network attempts", {
   expect_false(report$overall_status %in% c("fail", "not_tested"))
   expect_s3_class(doctor(p$path), "cttir_audit")
   expect_equal(setup(dry_run = TRUE)$state, "planned")
-  blocked <- setup(offline = TRUE)
+  blocked <- setup(model = "qwen2.5-coder:1.5b", offline = TRUE)
   expect_equal(blocked$state, "blocked")
   expect_match(blocked$blockers, "acquisition is disabled", fixed = TRUE)
   expect_identical(attempts$calls, character())

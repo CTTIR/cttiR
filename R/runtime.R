@@ -161,8 +161,10 @@ local_model <- function(endpoint, model) {
 #' Dry runs never create directories or contact a daemon. Offline mode reuses
 #' verified local artifacts and never pulls a model.
 #' @param model Plain local model tag (`name` or `name:tag`, no registry host,
-#'   namespace or URL), or `auto` for the recorded candidate. The candidate is
-#'   not yet qualified for workflow planning; runtime readiness is a separate gate.
+#'   namespace or URL), or `auto` for the smallest qualified model whose tested
+#'   settings and recorded CPU, available RAM and disk budgets fit. Unknown or
+#'   insufficient resources block automatic acquisition. Budgets are conservative
+#'   admission checks, not reserved resources or process memory limits.
 #' @param install_ollama Allow portable acquisition when the runtime is absent.
 #' @param offline Forbid acquisition and model downloads.
 #' @param dry_run Return the plan without persistent changes or HTTP requests.
@@ -179,27 +181,39 @@ setup <- function(model = "auto", install_ollama = TRUE, offline = FALSE, dry_ru
   }
   manifest <- read_document(resource_file("runtime", "manifest.json"))
   automatic <- model == "auto"
-  if (automatic) model <- manifest$model
+  root <- runtime_directory()
+  selection <- if (automatic) runtime_select_model(manifest, root) else NULL
+  if (automatic) model <- selection$model
   # Planner qualification comes from the recorded benchmark; overrides that
   # were never benchmarked are labelled unvalidated.
   tested <- Filter(function(x) identical(x$tag, model), manifest$tested_models)
-  expected_digest <- if (automatic) manifest$model_digest else if (length(tested)) tested[[1]]$digest else NULL
+  expected_digest <- if (automatic) selection$digest else if (length(tested)) tested[[1]]$digest else NULL
   validation <- planner_qualification(model, expected_digest, manifest)
-  root <- runtime_directory()
   endpoint <- runtime_endpoint()
   result <- structure(list(
     state = "planned", steps = list(),
     runtime = list(version = manifest$runtime_version, endpoint = endpoint),
     model = list(name = model, validation = validation),
     actions = c("verify runtime", "start owned local daemon if absent", "verify or acquire local model"),
-    blockers = character()
+    blockers = if (automatic) selection$blockers else character(),
+    selection = selection
   ), class = "cttir_setup")
-  if (dry_run) {
+  if (length(result$blockers)) result$actions <- character()
+  if (dry_run) return(result)
+  if (length(result$blockers)) {
+    result$state <- "blocked"
     return(result)
   }
   process <- NULL
   tryCatch(
     {
+      if (automatic) {
+        fresh <- runtime_select_model(manifest, root)
+        if (length(fresh$blockers) || !identical(fresh$model, model)) {
+          abort_cttir("Automatic model resource headroom changed; retry setup after reviewing available resources.", "cttir_runtime_unavailable")
+        }
+        result$selection <- fresh
+      }
       dir.create(root, recursive = TRUE, showWarnings = FALSE)
       lock <- file.path(root, "setup-lock")
       assert_plain_path(lock)
@@ -268,10 +282,20 @@ setup <- function(model = "auto", install_ollama = TRUE, offline = FALSE, dry_ru
         entry <- local_model(endpoint, model)
       }
       if (is.null(entry)) abort_cttir("The downloaded model could not be verified.", "cttir_runtime_unavailable")
-      if (automatic && !identical(entry$digest, manifest$model_digest)) {
+      if (automatic && !identical(entry$digest, expected_digest)) {
         abort_cttir("The automatic model tag changed digest; review is required.", "cttir_runtime_unavailable", "model_digest_mismatch")
       }
+      if (automatic) {
+        available <- runtime_resources(root)$available_memory_bytes
+        required <- result$selection$requirements$available_memory_bytes
+        if (!is.numeric(available) || length(available) != 1L || !is.finite(available) ||
+            !is.numeric(required) || length(required) != 1L || !is.finite(required) || available < required) {
+          abort_cttir("Automatic model memory headroom changed before inference; retry after reviewing available resources.",
+            "cttir_runtime_unavailable")
+        }
+      }
       probe <- runtime_probe(endpoint, model)
+      owner$selection <- result$selection
       owner$model <- model
       owner$model_digest <- entry$digest
       owner$probe <- probe

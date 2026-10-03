@@ -1,5 +1,7 @@
 # cttiR development
 
+- Automatically select the smallest qualified CPU model only when its recorded settings and conservative available-resource budgets fit; block before acquisition otherwise.
+
 - Qualify explicitly selected qwen2.5:7b for advisory planning only at its tested Linux CPU profile; preserve earlier failed benchmarks and repeat limitations.
 
 * Bind positive model qualifications to the prompt, grounding policy, registry,
