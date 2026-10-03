@@ -2,6 +2,31 @@
 
 Updated: 2026-10-03. Version: 0.1.1. License: MIT.
 
+## Current continuation point
+
+Retrieval fixes are committed/pushed as d2c0ee4. A full R CMD check --as-cran
+for that exact source is active in user service cttir-retrieval-check-d2c0ee4.service.
+Build/vignettes passed; testthat is running. Status/logs:
+artifacts/retrieval-check-d2c0ee4/status.json and check.log. Review before starting
+another full check. GitHub CI run 37106373036 targets the same revision.
+Isolated tarball installation and public ask() smoke passed; receipt:
+artifacts/implementation/ask-german-unicode-installed-smoke.json. Tarball SHA-256:
+11f38f925a9d1f7f86aa6fe9338b0f7d5e7b2a6b9812441bf8fd6c3893e8e5ac.
+Full readiness remains open; the fresh retrieval follow-up meets its thresholds,
+but planner integration/model approval and G26 generated workflow are unfinished.
+
+Two newly frozen BPCells resource fixtures use 1,000 genes by 40,000 cells at
+2% sparsity, 500 explicit synthetic features and 20 PCs. Preprocessing/PCA peaked
+at 685.31 MiB; the additional neighbors/clustering/UMAP run peaked at 1453.64 MiB,
+both below the preregistered 2 GiB limit. Counts/normalized layers remain backed;
+backing hashes and cell order are preserved, sampled raw counts match exactly,
+and embeddings are finite. This is bounded Linux CPU resource evidence, not
+native-VST equivalence, biological validation, an arbitrary-size memory guarantee,
+or public generated-workflow approval. Source and frozen registrations remain
+in ignored admin/ and artifacts/implementation/seurat-backed-memory*.json/.log.
+Consolidated receipt: seurat-backed-memory-review.json. Preserve the backing
+fixtures under artifacts/examples/ for inspection; they contain synthetic counts.
+
 ## German retrieval and Unicode identifier follow-up
 
 The German data preparation/report-rendering phrase candidate is now integrated
@@ -27,7 +52,7 @@ The preceding benchmark revision a05a2d7 has completed full local validation:
 PDF/HTML manuals passed. All five jobs in GitHub run 37103479376 passed. Receipt:
 artifacts/implementation/repeat-evidence-full-validation.json. Tarball SHA-256:
 9f833e915245df27e15a3e046ffaf1cd1c734c5ddeb609f08990677a94c4ba29.
-This does not validate the subsequent retrieval edits; their full check is next.
+This does not validate the subsequent retrieval edits; their full check is active above.
 The hourly retry timer remains active; COMPLETE and STOP remain absent.
 
 ## Fresh planner validation and repeat evidence
