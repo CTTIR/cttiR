@@ -38,6 +38,13 @@ network. The `integration` scope opts into temporary synthetic projects and an
 isolated catalog fixture; `live = TRUE` additionally allows a bounded probe of an
 already running owned local model.
 
+`RES-008` compares every required and optional dependency pin with installed
+version metadata, including CRAN interoperability packages. In renv mode it reads
+the project library; a matching global installation does not substitute for a
+missing project package. Unresolved pins warn for a scaffold and fail an
+`analysis_ready` claim. Matching version numbers alone do not establish matching
+source hashes or scientific suitability. Nothing is installed by this check.
+
 Repairs are an explicit allowlist: restore a missing managed file whose
 baseline is known, roll back an interrupted write whose writer has stopped, and
 repoint a corrupt catalog pointer to the last verified snapshot. Edited files

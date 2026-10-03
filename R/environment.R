@@ -525,3 +525,46 @@ readiness_with <- function(readiness, spec, bundle, environment, git) {
   readiness$level <- if (identical(environment$state, "environment_ready")) "environment_ready" else "scaffold_ready"
   readiness
 }
+
+# Audit all pins, including optional packages. In renv mode the project library
+# is authoritative: a matching global installation cannot stand in for it.
+# Base packages come from this R installation in either mode. No namespace is
+# loaded, no package is installed and no project code is sourced.
+project_pin_versions <- function(dependencies, root, mode) {
+  library <- NULL
+  if (identical(mode, "renv")) {
+    record <- read_environment_record(root)
+    library <- project_renv_library(root, record[["library"]])
+  }
+  rows <- lapply(dependencies, function(dep) {
+    package <- dep$package
+    valid_package <- is.character(package) && length(package) == 1L && !is.na(package) &&
+      grepl("^[A-Za-z][A-Za-z0-9.]*$", package)
+    installed <- NA_character_
+    if (valid_package) {
+      installed <- if (identical(mode, "renv") && !package %in% base_r_packages) {
+        library_version(library, package)
+      } else {
+        tryCatch(as.character(utils::packageVersion(package)), error = function(e) NA_character_)
+      }
+    }
+    pinned <- dep$version
+    valid_pin <- is.character(pinned) && length(pinned) == 1L && !is.na(pinned) && nzchar(pinned)
+    parsed <- if (valid_pin) tryCatch(package_version(pinned), error = function(e) NULL) else NULL
+    same <- !is.null(parsed) && !is.na(installed) &&
+      isTRUE(tryCatch(package_version(installed) == parsed, error = function(e) FALSE))
+    state <- if (!valid_package || is.null(parsed)) {
+      "invalid_pin"
+    } else if (is.na(installed)) {
+      "not_installed"
+    } else if (same) {
+      "match"
+    } else {
+      "version_mismatch"
+    }
+    list(package = package, pinned = pinned, installed = if (is.na(installed)) NULL else installed,
+      required = !identical(dep$required, FALSE), status = state)
+  })
+  list(mode = mode, library = library, pins = rows,
+    limitation = "Version metadata only; matching versions do not verify source hashes or scientific suitability.")
+}

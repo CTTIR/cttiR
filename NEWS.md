@@ -1,5 +1,7 @@
 # cttiR 0.1.1.9000
 
+* Audit every project dependency pin, including optional CRAN interoperability packages and the renv project library. Unresolved pins warn for scaffolds and fail an analysis-ready claim.
+
 * Introduce schema 2 with a versioned ecosystem policy, constrained modalities and allowed providers. Keep schema 1 readable and migrate through sync previews, preserving the original specification and catalog pins. Reject incompatible requested interoperability pins before generation.
 
 * Route ecosystem advice only for requested capabilities in the detected modality, excluding stages already covered by an approved, enabled CTTIR specialist. Ecosystem candidates remain disabled.

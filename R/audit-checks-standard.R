@@ -633,6 +633,25 @@ audit_res_bioc_pins <- function(context) {
   })
 }
 
+# Every project pin is checked, including CRAN and optional interoperability
+# packages. Missing optional packages warn at scaffold level and block a claim
+# that the full pinned project is analysis ready.
+audit_res_all_pins <- function(context) {
+  audit_with_project(context, function(p) {
+    evidence <- project_pin_versions(p$lock$dependencies, p$path, p$spec$workflow$environment)
+    if (!length(evidence$pins)) return(audit_result("not_applicable", "The project has no dependency pins.", evidence))
+    unresolved <- Filter(function(x) !identical(x$status, "match"), evidence$pins)
+    if (length(unresolved)) {
+      status <- if (audit_readiness_at_least(context, "analysis_ready")) "fail" else "warning"
+      details <- vapply(unresolved, function(x) paste0(x$package, " (", x$status, ")"), character(1))
+      message <- paste0("Project dependency pins are unresolved: ", paste(details, collapse = "; "),
+        ". Optional packages are included; no packages were installed.")
+      return(audit_result(status, message, evidence))
+    }
+    audit_result("pass", "All required and optional project dependency versions match their pins.", evidence)
+  })
+}
+
 audit_res_pins <- function(context) {
   audit_with_project(context, function(p) {
     snapshot <- tryCatch(resource_snapshot(p$path), error = function(e) e)
@@ -694,6 +713,10 @@ audit_checks_standard <- function() {
       audit_res_bioc_pins, required = TRUE, applies = audit_has_path,
       read_effects = c("reads_project_metadata", "reads_installation"),
       evidence_schema = c("releases", "r_minor", "running_r", "version_mismatches")),
+    audit_check("RES-008", "project", "Every required and optional dependency version matches its project pin.",
+      audit_res_all_pins, required = function(context) audit_readiness_at_least(context, "analysis_ready"),
+      applies = audit_has_path, read_effects = c("reads_project_metadata", "reads_installation"),
+      evidence_schema = c("mode", "library", "pins", "limitation")),
     audit_check("RES-005", "project", "The project's pinned resource snapshot is retained.",
       audit_res_pins, required = TRUE, applies = audit_has_path, read_effects = c("reads_project_metadata", "reads_catalog_store"),
       evidence_schema = "resource_id"),

@@ -22,45 +22,41 @@ The P1 items are `ask()` emitting `broom::tidy()` for `nlme` fits, which fails
 at run time, and the conversion-loss report missing graphs and loadings. Fix
 these first.
 
-## Current continuation point: schema 2 ecosystem policy and migration
+## Current continuation point: audit all dependency pins
 
-Milestone 9f041c7 passed the complete source-isolated local check: 5818 assertions,
+Milestone e5ec69f passed the complete source-isolated local check: 5861 assertions,
 13 skips, zero errors/warnings and one NOTE (new submission and Title prefix).
 PDF/HTML manuals and rebuilt vignettes passed. Tarball SHA-256:
-f3811f9db2ae5b7707e0415bdf2e306f7b82fbfc91e095678834f07e03688eeb.
-Its 237 members exclude admin/artifacts. All five jobs in hosted run 37133168511
-passed. Receipt: artifacts/implementation/requested-routing-full-validation.json.
-This closes full validation of R14's requested-capability routing milestone.
+8fa3c05b74e03a632214f7c2c31e48e7857a5396c93109135c70741de46252e2.
+Its 240 members exclude admin/artifacts. All five jobs in hosted run 37136966203
+passed. Evidence: artifacts/implementation/ecosystem-schema-full-validation.json
+and ecosystem-schema-hosted-ci.json. R15 schema migration retains the exact v1
+contracts and project hashes on read; sync preserves originals and pins, with
+preview/conflict/rollback tests. General explicit package-request generation is
+still unsupported; that existing typed refusal is retained.
 
-R15 implementation now introduces schema 2 and ecosystem policy version 1 with
-allowed providers and constrained modalities. The exact schema-1 contracts are
-retained; read_project does not transform old specs or invalidate their hashes.
-Sync previews one pure migration with before/after hashes and JSON pointers.
-Apply preserves the original specification byte-for-byte under .cttir/migrations,
-keeps identity/catalog/dependency pins, and refuses backup collisions. Failed
-writes roll back to the accepted project. Config files normalize in memory without
-rewriting their inputs. Explicit extension version/revision mismatches are rejected
-against catalog evidence. General explicit package-request generation remains
-unsupported (the pre-existing typed refusal is retained).
-Provider filtering limits ecosystem advice; all candidates remain disabled.
+R16 audit portion: new RES-008 checks every required and optional dependency pin,
+including CRAN packages. In renv mode it reads the recorded/discovered project
+library rather than substituting a global installation. Missing, mismatched or
+invalid pins warn at scaffold level and fail an analysis_ready claim. No package
+is installed, namespace loaded, or project code executed. Metadata version matches
+do not prove source hashes or scientific suitability. Focused tests and the audit-registry/environment integration suites pass, with
+two opt-in install/restore skips.
+Logs: artifacts/implementation/all-pins-tests.log and all-pins-verified-tests.log.
+New source lint passes; existing lintr object_usage diagnostics at unchanged
+R/environment.R:213 (renv::paths$library) are retained in diagnostic logs.
+The old environment implementation is byte-identical; only the inventory helper
+was appended. No current-source full-check claim is made yet.
 
-Config, ecosystem-policy, gates-config, router, sync and templates suites pass;
-source lint is clean. Tests include migration preview/apply/rollback, preserved
-Unicode YAML/JSON inputs, original hashes, catalog pins, future-version refusal,
-unknown modality/provider/policy rejection and incompatible extension pins.
-Logs: artifacts/implementation/ecosystem-schema-integration.log,
-ecosystem-schema-lint-final.log, ecosystem-schema-scalar-validation.log.
-Committed/pushed as e5ec69f. Full validation runs in
-cttir-ecosystem-schema-check-e5ec69f.service, with status/logs under
-artifacts/ecosystem-schema-check-e5ec69f. Do not equate targeted passes with
-complete readiness. Earlier failed logs are retained alongside corrected runs.
-
-Next: review the source-isolated schema milestone check and hosted results, then
-R16 default exact-pin enforcement (including optional pins in renv/project audits)
-and remaining owner-review items. Batch registry/adapter changes before independent
-held-out evaluations/manual usefulness review. The fresh independent corpus still
-needs a separate author; no reviewer agent has been authorized or started.
-G12/G26 remain open. COMPLETE/STOP absent; retry timer active. No submission.
+R16 remains OPEN: standalone ci_* interop helpers still default to pins = NULL.
+Next implement a static project-pin reader, missing-pin refusal and default
+runtime enforcement, including the already-loaded class-namespace path. Review
+adapter version/evidence and regenerate the template manifest/catalog approvals
+as necessary; do not treat this audit-only milestone as runtime enforcement.
+Then close remaining owner review items and independently authored held-out
+qualification/manual usefulness checks. The corpus still needs a separate author;
+no reviewer agent has been authorized or started. G12/G26 remain open.
+COMPLETE/STOP absent; retry timer active. No CRAN/external-builder submission.
 
 ## Preceding explicit answer data requirements
 
