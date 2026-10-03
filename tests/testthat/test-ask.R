@@ -249,3 +249,48 @@ test_that("an explicitly missing fitted object leaves dispatch unverified", {
   out <- validate_generated_code("broom::tidy(x = )")
   expect_true(any(grepl("dispatch_unverified:tidy.unknown", out$reason, fixed = TRUE)))
 })
+
+test_that("returned snippets declare typed inputs, aliases and earlier producers", {
+  a <- ask("Import a CSV, select tidy roles, fit a linear regression and report confidence intervals")
+  req <- a$data_requirements
+  expect_s3_class(req, "data.frame")
+  expect_true(all(nzchar(req$expected_class)))
+  expect_true(all(nzchar(req$capability)))
+  inputs <- req[req$role == "input", ]
+  for (i in seq_len(nrow(inputs))) {
+    row <- inputs[i, ]
+    if (row$provided_by == "user placeholder") {
+      expect_match(row$placeholder, "<[^>]+>")
+    } else {
+      producer <- req[req$role == "output" & req$object == row$object & req$capability == row$provided_by, ]
+      expect_true(any(producer$block < row$block))
+    }
+  }
+  model <- req[req$capability == "std.model.lm" & req$role == "input", ]
+  expect_true(all(model$object == "tidy_data"))
+  expect_true(all(model$provided_by == "user placeholder"))
+  expect_contains(model$column, c("response", "x1"))
+  expect_match(model$expected_class[model$column == "response"], "numeric continuous")
+  effects <- req[req$capability == "std.effects.broom" & req$role == "input", ]
+  expect_equal(effects$provided_by, "std.model.lm")
+  expect_match(a$code, "supply tidy_data", fixed = TRUE)
+  expect_match(paste(capture.output(print(a)), collapse = "\n"), "Data requirements", fixed = TRUE)
+})
+
+test_that("every reviewed snippet has an explicit data contract and withheld code has none", {
+  for (s in ask_snippets()) {
+    expect_true(nzchar(s$object_in), info = s$capability)
+    expect_true(nzchar(s$input_class), info = s$capability)
+    expect_setequal(as.character(names(s$classes)), as.character(unlist(s$columns)))
+    expect_setequal(as.character(names(s$placeholders)), as.character(unlist(s$columns)))
+    expect_equal(unique(ask_data_requirements(list(s))$block), 1L)
+  }
+  glm <- ask("Fit logistic regression for a binary outcome")$data_requirements
+  response <- glm[glm$capability == "std.model.glm_binomial" & glm$column == "response", ]
+  expect_match(response$expected_class, "1 = event, 0 = non-event", fixed = TRUE)
+  cox <- ask("Fit Cox regression for survival time")$data_requirements
+  event <- cox[cox$capability == "std.model.coxph" & cox$column == "event", ]
+  expect_match(event$expected_class, "1 = event, 0 = censored", fixed = TRUE)
+  expect_equal(nrow(ask("Run a Bayesian model with brms")$data_requirements), 0L)
+  expect_equal(nrow(ask("Use stats:::lm.fit")$data_requirements), 0L)
+})

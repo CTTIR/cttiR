@@ -368,7 +368,8 @@ ask_prerequisites <- function(id) {
 #'   statically verified but unapproved APIs and candidate capabilities may be
 #'   listed, clearly labelled; nonexistent exports are never presented as real.
 #' @return A `cttir_answer` with `answer`, `steps`, `prerequisites`, `packages`,
-#'   `code`, `citations`, `verification_levels`, `evidence`, `symbols`, `gaps`,
+#'   `data_requirements` (per-block inputs, outputs, column aliases, expected classes,
+#'   placeholders and preceding producers), `code`, `citations`, `verification_levels`, `evidence`, `symbols`, `gaps`,
 #'   `alternatives` (approved capabilities offered only as context when a named
 #'   function does not exist or the method family is unsupported) and
 #'   `limitations`. Citations name the pinned
@@ -425,8 +426,10 @@ ask <- function(question, path = NULL, verified_only = TRUE) {
   if (withheld) approved <- list()
   snippets <- ask_snippets()
   code_blocks <- character()
+  returned_snippets <- list()
   evidence <- ask_evidence(data.frame(package = character(), status = character(), stringsAsFactors = FALSE), catalog)
   limitations <- c("Snippets are illustrative and use placeholders; review mappings, assumptions and diagnostics before use.",
+    "Import returns character columns; role selection preserves their classes. Explicitly convert and code mapped columns before statistical use, and supply the separate typed tidy_data model input.",
     "Approval covers the pinned package revisions and adapter, not a scientific conclusion.",
     "ask() is deterministic and calls no local model; planner qualification is reported by setup().")
   for (stage in if (blocked) list() else approved) {
@@ -438,6 +441,7 @@ ask <- function(question, path = NULL, verified_only = TRUE) {
     limitations <- c(limitations, warnings)
     if (isTRUE(attr(validation, "valid"))) {
       code_blocks <- c(code_blocks, snippet$code)
+      returned_snippets[[length(returned_snippets) + 1L]] <- snippet
       snippet_validation <- validate_generated_code(snippet$code, catalog, approved_only = verified_only)
       evidence <- rbind(evidence, ask_evidence(snippet_validation, catalog, registry$capabilities[[stage$capability]]$adapter$id))
     } else {
@@ -451,6 +455,7 @@ ask <- function(question, path = NULL, verified_only = TRUE) {
       validation <- validate_generated_code(snippet$code, catalog, approved_only = FALSE)
       if (isTRUE(attr(validation, "valid"))) {
         code_blocks <- c(code_blocks, paste0("# UNAPPROVED (statically verified only)\n", snippet$code))
+        returned_snippets[[length(returned_snippets) + 1L]] <- snippet
         evidence <- rbind(evidence, ask_evidence(validation, catalog))
       }
     }
@@ -543,12 +548,37 @@ ask <- function(question, path = NULL, verified_only = TRUE) {
   if (length(palette) > 1L) answer <- paste(answer, palette[[2]])
   structure(list(
     answer = answer, steps = as.list(steps), prerequisites = as.list(prerequisites), packages = packages,
+    data_requirements = ask_data_requirements(returned_snippets),
     code = paste(code_blocks, collapse = "\n\n"), citations = as.list(unique(stats::na.omit(evidence$citation))),
     verification_levels = unique(evidence$verification), evidence = evidence,
     symbols = symbol_rows, gaps = as.list(gaps), capabilities = as.list(ids),
     approved_capabilities = as.list(vapply(approved, function(x) x$capability, character(1))),
     alternatives = as.list(alternatives), limitations = limitations, catalog_id = catalog$content_id
   ), class = "cttir_answer")
+}
+
+# Inputs and outputs of each returned code block, in execution order. A
+# declared user input is a placeholder, never an inference that data exist.
+ask_data_requirements <- function(snippets) {
+  out <- data.frame(block = integer(), capability = character(), role = character(), object = character(),
+    column = character(), expected_class = character(), placeholder = character(), provided_by = character(),
+    stringsAsFactors = FALSE)
+  produced <- list()
+  for (i in seq_along(snippets)) {
+    s <- snippets[[i]]
+    provider <- produced[[s$object_in]]
+    if (is.null(provider)) provider <- "user placeholder"
+    out[nrow(out) + 1L, ] <- list(i, s$capability, "input", s$object_in, "", s$input_class, s$object_placeholder, provider)
+    for (column in unlist(s$columns)) {
+      out[nrow(out) + 1L, ] <- list(i, s$capability, "input", s$object_in, column,
+        s$classes[[column]], s$placeholders[[column]], provider)
+    }
+    for (object in names(s$object_out)) {
+      out[nrow(out) + 1L, ] <- list(i, s$capability, "output", object, "", s$object_out[[object]], "", s$capability)
+      produced[[object]] <- s$capability
+    }
+  }
+  out
 }
 
 # Qualitative palette capacity from the pinned RColorBrewer table, stated with
@@ -574,6 +604,10 @@ print.cttir_answer <- function(x, ...) {
   cat(x$answer, "\n")
   if (length(x$steps)) cat(paste0("- ", unlist(x$steps), collapse = "\n"), "\n")
   if (length(x$gaps)) cat("Gaps:\n", paste0("- ", unlist(x$gaps), collapse = "\n"), "\n")
+  if (!is.null(x$data_requirements) && nrow(x$data_requirements)) {
+    cat("Data requirements (supply user placeholders before execution):\n")
+    print(x$data_requirements, row.names = FALSE)
+  }
   if (nzchar(x$code)) cat("\n", x$code, "\n", sep = "")
   if (length(x$citations)) cat(length(x$citations), "citations; see $evidence\n")
   invisible(x)

@@ -18,7 +18,8 @@ listed, clearly labelled; nonexistent exports are never presented as real.}
 }
 \value{
 A \code{cttir_answer} with \code{answer}, \code{steps}, \code{prerequisites}, \code{packages},
-\code{code}, \code{citations}, \code{verification_levels}, \code{evidence}, \code{symbols}, \code{gaps},
+\code{data_requirements} (per-block inputs, outputs, column aliases, expected classes,
+placeholders and preceding producers), \code{code}, \code{citations}, \code{verification_levels}, \code{evidence}, \code{symbols}, \code{gaps},
 \code{alternatives} (approved capabilities offered only as context when a named
 function does not exist or the method family is unsupported) and
 \code{limitations}. Citations name the pinned

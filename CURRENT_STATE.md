@@ -22,7 +22,34 @@ The P1 items are `ask()` emitting `broom::tidy()` for `nlme` fits, which fails
 at run time, and the conversion-loss report missing graphs and loadings. Fix
 these first.
 
-## Current continuation point: planner evidence safeguards
+## Current continuation point: explicit answer data requirements
+
+Review R01 is implemented. Each returned ask() block now has data_requirements:
+input/output object, column alias, expected class/coding, placeholder and prior
+producer. Model snippets explicitly require user-supplied typed/aliased tidy_data;
+import produces character columns and role selection does not silently convert
+them or produce model data. Printed answers and API documentation expose the
+contract. Ask/app-question regression tests and R/ask.R lint pass. Evidence:
+artifacts/implementation/ask-contract-final-tests.log and ask-contract-docs.log.
+Full current-source validation remains required.
+
+A diagnostic strict scorer (private candidate, not yet integrated) on the already
+seen 51-case development benchmark scores supported answers only when code exists
+and validates: 23/26 = 0.8846154, below unchanged 0.9. S08/S15 (structural checks)
+and S12 (targets pipeline) have approved capability labels but no returned code.
+Fix the scorer and these answer gaps before a NEW independent evaluation; do not
+relabel this development replay as independent. Retained evidence:
+strict-ask-scorer-development.json/.log and admin/check_strict_ask_scorer.R.
+Plain-regression misses and the remaining review items are also still open.
+
+The mixed-model milestone 9ac5360 completed full local validation: 5629 assertions,
+13 documented skips, zero errors/warnings, one incoming NOTE; vignettes and PDF/
+HTML manuals passed. All five hosted jobs in 37123686589 passed. Receipt:
+artifacts/implementation/review-r02-full-validation.json. Archive SHA-256:
+68e5f575589e09dc9312d65c6e0c4c229b94de0474715955783a3ce61a1af164.
+This validates 9ac5360 only, not the later interoperability/planner/answer changes.
+
+## Planner evidence safeguards
 
 Review R00 and R37 are implemented: persisted local-planner decision reasons use
 fixed text naming field, value and provenance, never the model's rationale.
@@ -39,7 +66,7 @@ validation of this additional source change is still required.
 The conversion milestone below is committed and pushed as 9c7a0e8. Its full check
 runs independently in cttir-interop-loss-check-9c7a0e8.service; logs are under
 artifacts/interop-loss-check-9c7a0e8 and hosted run is 37124734694. The preceding
-9ac5360 check also remains source-specific; inspect both before duplicating work.
+9ac5360 check passed as recorded above; inspect active jobs before duplicating work.
 
 ## Conversion losses and backed layers
 
@@ -66,8 +93,8 @@ hash-verified standard-0.3.0; interoperability adapter versions are 1.1.0.
 Historical cran-comments.md explicitly describes 432fa34, not current readiness.
 
 The preceding mixed-model milestone 9ac5360 was pushed. Its full source-isolated
-check runs in cttir-review-r02-check-9ac5360.service, with logs under
-artifacts/review-r02-check-9ac5360; hosted run 37123686589 is separate evidence.
+check and hosted run 37123686589 passed as recorded above; logs remain under
+artifacts/review-r02-check-9ac5360.
 Do not attribute those results to the later conversion changes.
 
 Remaining review work includes versioned ecosystem schema/policy and enforced
