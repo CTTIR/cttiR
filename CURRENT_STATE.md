@@ -49,7 +49,7 @@ The 234-member archive excludes private material and matches the changed source;
 isolated installation passed. SHA-256:
 494e2ea9b9657cf858e3bdeb16e691bea43023328383cb64869a78b7bffb31bd.
 
-The next milestone qualifies explicitly selected qwen2.5:7b at its recorded digest
+Milestone 80ea857 qualifies explicitly selected qwen2.5:7b at its recorded digest
 for the tested Linux CPU 16-thread planner-3 profile. Prior failed benchmarks
 remain in benchmark_history; current replay summaries, source/result hashes and
 limitations are in the manifest. Other inference settings fail closed. The
@@ -57,7 +57,10 @@ automatic setup model remains unchanged and unqualified; resource-based automati
 selection remains unfinished. The public setup/project smoke passed without the
 unqualified override, persisted qualified decision evidence and left analysis
 unapproved. Owned runtime stopped. Review: qualified-profile-review.json.
-A separate full check is required for this manifest/documentation/test milestone.
+The separate full check is running in user service
+cttir-qualified-profile-check-80ea857.service. Inspect
+artifacts/qualified-profile-check-80ea857/status.json and check.log before
+starting another check. This milestone is pushed; review its hosted jobs too.
 
 Historical admin/planner_metadata_prompt.R and planner_grounded_candidate.R
 monkeypatch pre-integration code: do not source them into planner-3 or their
