@@ -294,3 +294,72 @@ test_that("every reviewed snippet has an explicit data contract and withheld cod
   expect_equal(nrow(ask("Run a Bayesian model with brms")$data_requirements), 0L)
   expect_equal(nrow(ask("Use stats:::lm.fit")$data_requirements), 0L)
 })
+
+test_that("strict supported-answer scoring rejects missing and invalid code", {
+  cases <- list(cases = list(list(id = "fixture", lang = "en", kind = "supported",
+    question = "Fit linear regression", expect = list("std.model.lm"))),
+    thresholds = list(supported_recall = 0.9, code_validity = 1))
+  answer <- ask(cases$cases[[1]]$question)
+  expect_contains(unlist(answer$approved_capabilities), "std.model.lm")
+  check <- function(code) {
+    answer$code <- code
+    local_mocked_bindings(ask = function(...) answer)
+    ask_benchmark(cases)
+  }
+  empty <- check("")
+  expect_false(empty$passed)
+  expect_equal(empty$metrics$supported_recall, 0)
+  invalid <- check("stats::nonexistent_cttir_function()")
+  expect_false(invalid$passed)
+  expect_equal(invalid$metrics$supported_recall, 0)
+  expect_equal(invalid$metrics$code_validity, 0)
+  expect_true(check(answer$code)$passed)
+})
+
+test_that("plain regression supports digits and Unicode and respects binary coding", {
+  for (question in c("Regress HbA1c on age and sex", "Regress score_2 on age", "Regress Größe on age")) {
+    a <- ask(question)
+    expect_true("std.model.lm" %in% unlist(a$approved_capabilities), info = question)
+    expect_match(a$code, "stats::lm", fixed = TRUE)
+  }
+  a <- ask("Regress readmission yes/no on age")
+  expect_contains(unlist(a$approved_capabilities), "std.model.glm_binomial")
+  expect_false("std.model.lm" %in% unlist(a$approved_capabilities))
+})
+
+test_that("missingness answers execute explicit exclusions on mapped fixture data", {
+  a <- ask("Check the data for missing values before modelling")
+  expect_contains(unlist(a$approved_capabilities), "std.check.mapped")
+  code <- gsub("<variable-1>", "a", a$code, fixed = TRUE)
+  code <- gsub("<variable-2>", "b", code, fixed = TRUE)
+  env <- new.env(parent = baseenv())
+  env$data <- data.frame(a = c(1, NA, 3), b = c(NA, 5, 6))
+  eval(parse(text = code), env)
+  expect_equal(env$missing_by_column, c(a = 1, b = 1))
+  expect_identical(env$excluded_rows, 1:2)
+  expect_equal(env$complete_data, env$data[3, , drop = FALSE])
+  expect_match(a$code, "review its assumptions", fixed = TRUE)
+})
+
+test_that("the returned synthetic targets definition executes without study inputs", {
+  skip_if_not_installed("targets")
+  skip_if_not_installed("callr")
+  a <- ask("Set up a targets pipeline")
+  expect_contains(unlist(a$approved_capabilities), "std.pipeline.targets")
+  expect_true(nzchar(a$code))
+  root <- new_parent()
+  writeLines(a$code, file.path(root, "_targets.R"))
+  result <- callr::r(function(root) {
+    setwd(root)
+    targets::tar_make(callr_function = NULL, reporter = "silent")
+    targets::tar_read(missing_values)
+  }, args = list(root))
+  expect_equal(result, 1L)
+})
+
+
+test_that("an unapproved scheduler name still blocks pipeline code", {
+  a <- ask("Set up a targets pipeline with tar_make")
+  expect_identical(a$code, "")
+  expect_true(any(grepl("not_workflow_approved_for_revision", unlist(a$gaps), fixed = TRUE)))
+})

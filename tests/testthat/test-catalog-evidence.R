@@ -162,8 +162,12 @@ test_that("oversize rendered vignettes and binary assets are inventoried but not
 
 test_that("historical snapshots without approval or object evidence remain readable", {
   withr::local_options(cttiR.catalog_dir = file.path(new_parent(), "store"))
-  history <- list.files(resource_file("extdata", "history"), "[.]json[.]gz$")
-  for (id in sub("[.]json[.]gz$", "", history)) {
+  # These immutable snapshots predate workflow approvals and object evidence.
+  # Later history entries deliberately retain their own approved revisions.
+  legacy <- c("5fc141ceb69a995a4e10fd91c7a6e29748ab17a8d3a9f7e97d25a2e7964c0464",
+    "8e5a591daa5b55552bc7ca52a659fe422ec369aeab19f87adf9de60f94971788",
+    "b0012136be1f85f1104ab1ecb1c87ad644b28e3b19a40c43bc4e043e53b04f5a")
+  for (id in legacy) {
     catalog <- catalog_snapshot(id)
     expect_true(all(vapply(catalog$packages, function(x) is.null(x$approvals) && is.null(x$s4), logical(1))))
     expect_equal(nrow(approved_callables(catalog)), 0L)
@@ -173,4 +177,18 @@ test_that("historical snapshots without approval or object evidence remain reada
   expect_gt(nrow(approved_callables(current)), 0L)
   expect_true(any(nzchar(packages()$approved_roles)))
   expect_identical(search("reflowR::reflow_init")$verification, "static_api_verified")
+})
+
+
+test_that("archived approved catalogs keep their own approval evidence", {
+  id <- "b726a5f47357c4c3e362edba018afe3e5e72b3cfeec53b0ca5653b8fceac2bb9"
+  withr::local_options(cttiR.catalog_dir = file.path(new_parent(), "store"))
+  old <- catalog_snapshot(id)
+  expect_identical(old$content_id, id)
+  expect_equal(nrow(approved_callables(old)), 164L)
+  expect_equal(nrow(approval_diff(old, old)), 0L)
+  # Resolving current approvals must not rewrite the immutable historical record.
+  current <- resolve_catalog()
+  expect_false(identical(current$content_id, id))
+  expect_identical(catalog_snapshot(id)$packages, old$packages)
 })

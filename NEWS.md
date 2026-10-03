@@ -1,5 +1,8 @@
 # cttiR 0.1.1.9000
 
+* Require nonempty validated code when scoring supported answers. Add executable missingness and synthetic targets examples, recognize digits/Unicode in regression requests, and respect explicit binary coding. Preserve abstention for unapproved scheduler calls.
+* Distinguish legacy catalog snapshots from later archived approval evidence in compatibility tests.
+
 * Expose each answer block's input/output objects, aliases, classes, coding and placeholders through `data_requirements`; explicitly declare typed model data as a user-supplied input.
 
 * Persist fixed planner decision explanations with keyword evidence only when the rules agree; never copy the model rationale into accepted decision reasons. Bind qualification to user and repair prompts, limits and screening patterns as well as the existing context.

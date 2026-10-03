@@ -1,6 +1,20 @@
 # Synthetic, nonclinical fixtures only. No datasets are downloaded and
 # SeuratData is never used.
 
+# DelayedArray 0.38.2 and SummarizedExperiment 1.42.0 in the hosted
+# dependency set report this duplicate import on first namespace load. Keep
+# that upstream warning visible without mistaking it for an adapter warning;
+# every other warning remains a test failure. Production loading is unchanged.
+interop_skip_if_not_installed <- function(package) {
+  known <- "replacing previous import 'S4Arrays::makeNindexFromArrayViewport' by 'DelayedArray::makeNindexFromArrayViewport' when loading 'SummarizedExperiment'"
+  withCallingHandlers(skip_if_not_installed(package), warning = function(w) {
+    if (identical(package, "SummarizedExperiment") && identical(conditionMessage(w), known)) {
+      cat("Known upstream namespace-load warning: ", conditionMessage(w), "\n", sep = "")
+      invokeRestart("muffleWarning")
+    }
+  })
+}
+
 interop_template_path <- function() {
   system.file("templates", "standard-0.3.0", "code", "R", "cttir_interop.R", package = "cttiR")
 }
@@ -135,7 +149,7 @@ test_that("package requirements can enforce exact pinned versions", {
   expect_error(env$ci_pinned_version(data.frame(name = "Seurat"), "Seurat"), "'package' and 'version'")
   expect_error(env$ci_pinned_version("5.5.1", "Seurat"), "dependency list")
 
-  skip_if_not_installed("SummarizedExperiment")
+  interop_skip_if_not_installed("SummarizedExperiment")
   skip_if_not_installed("S4Vectors")
   skip_if_not_installed("Matrix")
   skip_if_not_installed("DelayedArray")
@@ -147,7 +161,7 @@ test_that("package requirements can enforce exact pinned versions", {
 })
 
 test_that("a bounded tidy view keeps keys and order without realizing the full assay", {
-  skip_if_not_installed("SummarizedExperiment")
+  interop_skip_if_not_installed("SummarizedExperiment")
   skip_if_not_installed("S4Vectors")
   skip_if_not_installed("Matrix")
   skip_if_not_installed("DelayedArray")
@@ -195,7 +209,7 @@ test_that("a bounded tidy view keeps keys and order without realizing the full a
 })
 
 test_that("deliberately lossy SummarizedExperiment conversions are flagged field by field", {
-  skip_if_not_installed("SummarizedExperiment")
+  interop_skip_if_not_installed("SummarizedExperiment")
   skip_if_not_installed("S4Vectors")
   skip_if_not_installed("Matrix")
   skip_if_not_installed("DelayedArray")
@@ -235,7 +249,7 @@ test_that("deliberately lossy SummarizedExperiment conversions are flagged field
 })
 
 test_that("equal dimensions never make a conversion lossless", {
-  skip_if_not_installed("SummarizedExperiment")
+  interop_skip_if_not_installed("SummarizedExperiment")
   skip_if_not_installed("S4Vectors")
   skip_if_not_installed("Matrix")
   skip_if_not_installed("DelayedArray")
@@ -264,7 +278,7 @@ test_that("equal dimensions never make a conversion lossless", {
 
 test_that("SingleCellExperiment to Seurat conversion reports altExps, reductions and losses", {
   skip_if_not_installed("SingleCellExperiment")
-  skip_if_not_installed("SummarizedExperiment")
+  interop_skip_if_not_installed("SummarizedExperiment")
   skip_if_not_installed("S4Vectors")
   skip_if_not_installed("Matrix")
   skip_if_not_installed("Seurat")
@@ -303,7 +317,7 @@ test_that("SingleCellExperiment to Seurat conversion reports altExps, reductions
 
 test_that("reductions filed under an alternative experiment are reported where they went", {
   skip_if_not_installed("SingleCellExperiment")
-  skip_if_not_installed("SummarizedExperiment")
+  interop_skip_if_not_installed("SummarizedExperiment")
   skip_if_not_installed("Matrix")
   skip_if_not_installed("Seurat")
   skip_if_not_installed("SeuratObject")
@@ -342,7 +356,7 @@ test_that("reductions filed under an alternative experiment are reported where t
 
 test_that("altExps without the requested data assay are reported, not fatal", {
   skip_if_not_installed("SingleCellExperiment")
-  skip_if_not_installed("SummarizedExperiment")
+  interop_skip_if_not_installed("SummarizedExperiment")
   skip_if_not_installed("S4Vectors")
   skip_if_not_installed("Matrix")
   skip_if_not_installed("Seurat")
@@ -456,7 +470,7 @@ test_that("Seurat v5 Assay5 layers are inventoried with counts and data semantic
 
 test_that("donor-level pseudobulk sums raw counts and refuses too few donors", {
   skip_if_not_installed("SingleCellExperiment")
-  skip_if_not_installed("SummarizedExperiment")
+  interop_skip_if_not_installed("SummarizedExperiment")
   skip_if_not_installed("S4Vectors")
   skip_if_not_installed("Matrix")
   skip_if_not_installed("DelayedArray")

@@ -21,7 +21,7 @@ ask_benchmark <- function(cases = read_document(resource_file("benchmarks", "ask
     code_ok <- !nzchar(a$code) || isTRUE(attr(validate_generated_code(a$code, catalog), "valid"))
     expected <- unlist(case$expect)
     outcome <- switch(case$kind,
-      supported = , cross = all(expected %in% approved),
+      supported = , cross = all(expected %in% approved) && nzchar(a$code) && code_ok,
       negative = {
         absent <- if (is.null(case$symbol_absent)) NULL else case$symbol_absent
         reported <- !is.null(absent) && any(grepl(absent, unlist(a$gaps), fixed = TRUE))

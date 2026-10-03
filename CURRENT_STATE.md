@@ -22,7 +22,44 @@ The P1 items are `ask()` emitting `broom::tidy()` for `nlme` fits, which fails
 at run time, and the conversion-loss report missing graphs and loadings. Fix
 these first.
 
-## Current continuation point: explicit answer data requirements
+## Current continuation point: strict scoring and historical catalog regression
+
+The 9c7a0e8 and 7c6cd22 full checks FAILED (two assertions, zero local test warnings),
+although manuals and rebuilt vignettes passed. Both failures were in a historical
+catalog test that assumed every archived snapshot predates approvals. The newly
+archived b726a5f snapshot legitimately contains 164 approved callables. The test
+now explicitly covers the three legacy snapshots and separately verifies that
+the later snapshot preserves its own approvals. Failed logs remain intact.
+All five hosted jobs for those milestones failed the same assertions. Linux with
+all Suggests also emitted an upstream namespace-load warning involving
+SummarizedExperiment 1.42.0 and DelayedArray 0.38.2. The test harness retains that
+exact message as visible output while allowing only this specific load warning;
+other warnings still fail, and production namespace loading is unchanged.
+
+R03 strict scoring is integrated: approval alone no longer passes a supported
+case; nonempty, validated code is also required. Added missingness/exclusion
+snippets execute against a mapped fixture, and a self-contained synthetic targets
+definition runs in an isolated process. Plain regression recognizes numeric and
+Unicode variable names, and explicit yes/no coding selects the binary model.
+Ask/catalog-evidence/app-question tests, interop tests and source lint pass.
+The unchanged 51-case DEVELOPMENT benchmark now has supported recall 25/26 =
+0.9615385; citation correctness, code validity, abstention and injection resistance
+are 1.0. S12 remains a recorded miss: explicitly named tar_make is not role-approved,
+so code remains withheld. The plain targets-definition request is supported.
+No scheduler approval or benchmark threshold was relaxed to erase that miss.
+This is previously examined development evidence, NOT independent qualification.
+Evidence: artifacts/implementation/strict-ask-integrated-development.json/.log,
+strict-ask-final-tests.log, interop-dependency-warning-tests.log and
+answer-contract-hosted-failures.log. Full validation of the corrected source is
+still required. No old failed check should be described as passing.
+
+Next: review the new source-isolated full check and hosted results, then complete
+R15's versioned ecosystem schema migration, R16's default pin enforcement, R14's
+requested-capability routing and the remaining owner review items. Batch registry
+changes before independently authored held-out evaluations and manual usefulness
+review. G12/G26 remain open; COMPLETE/STOP remain absent and the retry timer active.
+
+## Preceding explicit answer data requirements
 
 Review R01 is implemented. Each returned ask() block now has data_requirements:
 input/output object, column alias, expected class/coding, placeholder and prior
@@ -31,11 +68,11 @@ import produces character columns and role selection does not silently convert
 them or produce model data. Printed answers and API documentation expose the
 contract. Ask/app-question regression tests and R/ask.R lint pass. Evidence:
 artifacts/implementation/ask-contract-final-tests.log and ask-contract-docs.log.
-Milestone 7c6cd22 is committed and pushed. Its source-pinned full check is queued
-in cttir-answer-contract-check-7c6cd22.service behind the running 9c7a0e8 check;
+Milestone 7c6cd22 is committed and pushed. Its source-pinned full check subsequently failed the historical-catalog assertions
+described above;
 queue receipt: artifacts/answer-contract-check-7c6cd22-queue.json. It includes the
 planner safeguards from 189fdba, so that earlier queued check was superseded
-before starting (receipt retained). Hosted run 37125575122 is in progress.
+before starting (receipt retained). Hosted run 37125575122 also failed as described above.
 Inspect these services/receipts before launching another check. No readiness
 claim, completion marker or CRAN/external-builder submission has been made.
 
@@ -70,7 +107,7 @@ R/planner.R lint passes. Log: review-planner-evidence-final-tests.log. Full
 validation of this additional source change is still required.
 
 The conversion milestone below is committed and pushed as 9c7a0e8. Its full check
-runs independently in cttir-interop-loss-check-9c7a0e8.service; logs are under
+failed the historical-catalog assertions in cttir-interop-loss-check-9c7a0e8.service; logs are under
 artifacts/interop-loss-check-9c7a0e8 and hosted run is 37124734694. The preceding
 9ac5360 check passed as recorded above; inspect active jobs before duplicating work.
 

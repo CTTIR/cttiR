@@ -77,7 +77,7 @@ ask_patterns <- list(
       "lost to follow", "censor", "zeit bis (zum|zur)", "zensiert"),
     binary = c("yes( or |/| vs\\.? )no", "\\bwhether\\b", "readmi", "dichotom", "ja( oder |/)nein",
       "eingetreten ist oder nicht", "occurred or not"),
-    continuous = c("regress [a-z ]+ on ", "blood pressure", "glucose", "laborwert", "continuous")
+    continuous = c("regress [\\p{L}\\p{N}_. ]+ on ", "blood pressure", "glucose", "laborwert", "continuous")
   ),
   unit_structure = list(
     longitudinal = c("repeatedly", "each (participant|patient|subject)", "per (participant|patient|subject)",
@@ -111,6 +111,10 @@ ask_signals <- function(text, registry) {
   for (field in c("outcome_family", "unit_structure")) {
     if (!identical(signals[[field]], "unknown")) next
     hits <- names(Filter(function(patterns) ask_pattern_hit(text, patterns), ask_patterns[[field]]))
+    # A plain "regress Y on X" pattern is only a continuous fallback. Explicit
+    # binary coding wins over that generic syntax, not over a continuous signal.
+    if (identical(field, "outcome_family") && all(c("binary", "continuous") %in% hits) &&
+        !ask_pattern_hit(text, ask_patterns$outcome_family$continuous[-1L])) hits <- setdiff(hits, "continuous")
     if (length(hits) == 1L) signals[[field]] <- hits
   }
   if (event_outcome_veto(text, registry, signals$outcome_family)) signals$outcome_family <- "unknown"

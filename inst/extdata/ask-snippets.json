@@ -217,6 +217,41 @@
       "object_out": {},
       "classes": {},
       "placeholders": {}
+    },
+    {
+      "capability": "std.check.mapped",
+      "columns": [
+        "<variable-1>",
+        "<variable-2>"
+      ],
+      "code": "# Inspect missingness in explicitly mapped columns before deciding exclusions.\n# Complete-case filtering is shown explicitly; review its assumptions and record excluded rows.\nroles <- data[c(\"<variable-1>\", \"<variable-2>\")]\nmissing_by_column <- colSums(is.na(roles))\nkeep <- stats::complete.cases(roles)\nexcluded_rows <- which(!keep)\ncomplete_data <- roles[keep, , drop = FALSE]",
+      "object_in": "data",
+      "input_class": "data.frame with reviewed column names, types and missing-value codes",
+      "object_placeholder": "<data>",
+      "object_out": {
+        "missing_by_column": "named numeric counts of missing values",
+        "excluded_rows": "integer original row positions excluded by complete-case selection",
+        "complete_data": "data.frame restricted to selected columns and complete rows"
+      },
+      "classes": {
+        "<variable-1>": "reviewed source class; NA represents missingness",
+        "<variable-2>": "reviewed source class; NA represents missingness"
+      },
+      "placeholders": {
+        "<variable-1>": "<variable-1>",
+        "<variable-2>": "<variable-2>"
+      }
+    },
+    {
+      "capability": "std.pipeline.targets",
+      "columns": [],
+      "code": "# Self-contained synthetic example: save this definition as _targets.R in a project directory.\n# This block defines targets only; use a separately reviewed scheduler to execute it. No study data are read.\nlist(\n  targets::tar_target(example_data, data.frame(value = c(1, NA_real_, 3))),\n  targets::tar_target(missing_values, sum(is.na(example_data$value)))\n)",
+      "object_in": "project_root",
+      "input_class": "project directory where the synthetic definition will be saved as _targets.R",
+      "object_placeholder": "<project-root>",
+      "object_out": {},
+      "classes": {},
+      "placeholders": {}
     }
   ]
 }
