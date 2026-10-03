@@ -75,9 +75,11 @@ restores an earlier one. Project pins never change implicitly.
   read-only subset. Readiness levels (`scaffold_ready` to `analysis_ready`)
   come from local evidence such as receipts and pinned versions.
 * `setup()` prepares an owned, cloud-disabled Ollama runtime on Linux x86_64.
-  No model is currently qualified in the released manifest; the
-  deterministic planner is the default. `options(cttiR.planner = "local_llm")`
-  uses a local model only once it is qualified; trying an unqualified one needs
+  The deterministic planner is the default. Explicitly selected `qwen2.5:7b`
+  is qualified for advisory planning at its recorded digest and tested Linux
+  CPU settings (16 threads); other settings fall back. The automatic setup
+  model remains unqualified. `options(cttiR.planner = "local_llm")` enables
+  qualified local planning; trying an unqualified model needs
   `options(cttiR.planner_allow_unqualified = TRUE)` and is labelled as such.
 * `setup_app()` and `configure()` open the local Shiny application (Fast and
   Detailed creation with a bilingual questionnaire, Ask, Knowledge, Resources,

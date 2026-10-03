@@ -37,18 +37,28 @@ artifacts/implementation/planner-integration-full-validation.json. Tarball SHA-2
 c1e9270b5afe2589beb9cd74e66655ae507283385f9c8f34dda58135d64fe156.
 
 Qualification safeguards are committed and pushed as 91e69fc. A positive approval
-now requires the tested prompt, grounding policy, capability registry, response
+requires the tested prompt, grounding policy, capability registry, response
 schema, runtime binary and inference options to match. Setup rechecks the acquired
-model digest, preventing mutable tags from inheriting stale approval. Targeted
-planner/runtime tests and lint pass, including JSON round-trip and stale-context
-refusals. No actual model approval or automatic default was changed.
+model digest, preventing mutable tags from inheriting stale approval.
 
-A separate full check is running in independent user service
-cttir-qualification-check-91e69fc.service. Inspect
-artifacts/qualification-check-91e69fc/status.json and check.log before starting
-another check. The prior source's full check does not validate these new changes.
-Next review this check and its hosted jobs, then evaluate an explicit qualified
-model profile and conservative resource-selection policy before default promotion.
+The full qualification check for 91e69fc passed: 5563 assertions, 13 documented
+skips, 0 errors, 0 warnings, and 1 incoming NOTE (new submission / Title prefix).
+Rebuilt vignettes and PDF/HTML manuals passed. All five jobs in GitHub run
+37113064913 passed. Receipt: artifacts/implementation/qualification-full-validation.json.
+The 234-member archive excludes private material and matches the changed source;
+isolated installation passed. SHA-256:
+494e2ea9b9657cf858e3bdeb16e691bea43023328383cb64869a78b7bffb31bd.
+
+The next milestone qualifies explicitly selected qwen2.5:7b at its recorded digest
+for the tested Linux CPU 16-thread planner-3 profile. Prior failed benchmarks
+remain in benchmark_history; current replay summaries, source/result hashes and
+limitations are in the manifest. Other inference settings fail closed. The
+automatic setup model remains unchanged and unqualified; resource-based automatic
+selection remains unfinished. The public setup/project smoke passed without the
+unqualified override, persisted qualified decision evidence and left analysis
+unapproved. Owned runtime stopped. Review: qualified-profile-review.json.
+A separate full check is required for this manifest/documentation/test milestone.
+
 Historical admin/planner_metadata_prompt.R and planner_grounded_candidate.R
 monkeypatch pre-integration code: do not source them into planner-3 or their
 policies will be applied twice. The new live runner uses production code directly.

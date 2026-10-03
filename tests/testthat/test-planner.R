@@ -675,3 +675,16 @@ test_that("setup checks actual digest instead of inheriting a mutable tag approv
   expect_identical(prepared$model$validation, "unvalidated_user_override")
   expect_identical(prepared$blockers, "workflow_model_not_qualified")
 })
+
+test_that("the shipped 7B qualification is limited to the recorded CPU profile", {
+  withr::local_options(cttiR.planner_processor = "cpu", cttiR.planner_threads = 16L)
+  manifest <- read_document(resource_file("runtime", "manifest.json"))
+  entry <- Filter(function(x) identical(x$tag, "qwen2.5:7b"), manifest$tested_models)[[1]]
+  expect_identical(planner_qualification(entry$tag, entry$digest), "qualified_for_planning")
+  expect_identical(planner_qualification(manifest$model, manifest$model_digest), "not_qualified_for_planning")
+  expect_identical(planner_qualification(entry$tag, paste(rep("0", 64), collapse = "")), "unvalidated_user_override")
+  withr::local_options(cttiR.planner_threads = 8L)
+  expect_identical(planner_qualification(entry$tag, entry$digest), "not_qualified_for_planning")
+  withr::local_options(cttiR.planner_threads = 16L, cttiR.planner_processor = "auto")
+  expect_identical(planner_qualification(entry$tag, entry$digest), "not_qualified_for_planning")
+})

@@ -396,7 +396,7 @@ planner_attempt_log <- function(response, errors, elapsed, keep_raw) {
 #'
 #' A model may drive planning only when the runtime manifest records it as
 #' `qualified_for_planning` at that digest. Models labelled
-#' `not_qualified_for_planning` (all tested models so far) or never benchmarked
+#' `not_qualified_for_planning` or never benchmarked
 #' (`unvalidated_user_override`) are used only with the separate opt-in
 #' `options(cttiR.planner_allow_unqualified = TRUE)`; the label is then kept in
 #' `provenance$model_qualification` and in the spec decisions.
