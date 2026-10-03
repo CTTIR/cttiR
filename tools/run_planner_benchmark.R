@@ -75,6 +75,8 @@ compact_rows <- function(rows) {
       proposal = r$proposal[c("aim", "outcome_family", "unit_structure", "modality", "capability_ids", "rationale", "unresolved")],
       field_correct = r$score$field_correct, field_scored = r$score$field_scored,
       capability_fp = r$score$capability_fp, capability_fn = r$score$capability_fn,
+      pre_grounding_ids = as.list(r$pre_grounding_ids), pre_grounding_score = r$pre_grounding_score,
+      grounding_removed = as.list(r$grounding_removed), pre_validation_claims = r$pre_validation_claims,
       injection_violation = r$score$injection_violation)
   })
 }

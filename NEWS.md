@@ -1,5 +1,7 @@
 # cttiR 0.1.1.9000
 
+* Report capability claims before and after keyword grounding, removed IDs and first-attempt rejection rate. Diagnostic raw replies expose unsupported claims even in rejected attempts, with explicit coverage for missing or malformed replies. Preserve unchanged qualification thresholds and publish historical comparison results with unavailable metrics marked as such.
+
 * Preserve deterministic inference for ambiguous instruction phrases, with a review note; hard instruction markers still block inference. Local model requests keep the full screen. Screened goals no longer supply workflow candidates, and withheld answers report a specific gap.
 * Retain the accepted model identity, digest, qualification, prompt version and actual inference options in project provenance and locks; replay never substitutes current runtime settings.
 

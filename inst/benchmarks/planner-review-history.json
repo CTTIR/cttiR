@@ -1,0 +1,199 @@
+{
+  "status": "historical_development_only",
+  "prompt_version": "planner-3",
+  "current_policy": "planner-4 is not qualified by these results",
+  "missing_metrics": "Original compact rows omitted pre-grounding IDs; full aggregate pre-grounding and pre-validation metrics cannot be reconstructed from these artifacts. Null means unavailable, not zero. Future benchmarks record coverage explicitly.",
+  "threshold_policy": "Original thresholds unchanged; no replacement or relaxed gate.",
+  "results": {
+    "development": {
+      "source_commit": "834dcd9e2142743a803968b05feb0a815c95301f",
+      "evidence_sha256": "863a971d109b9b3c5af4ffcfccd7b35b02344481977f3100fddf6e3d79fd1d43",
+      "corpus_sha256": "bba007e33ce12c0693896ea29ad34e81bdbc831442344534c7b7b183d822afef",
+      "post_grounding_capability": {
+        "true_positive": 26,
+        "false_positive": 4,
+        "false_negative": 6,
+        "precision": 0.8667,
+        "recall": 0.8125,
+        "f1": 0.8387
+      },
+      "deterministic_capability": {
+        "true_positive": 28,
+        "false_positive": 6,
+        "false_negative": 4,
+        "precision": 0.8235,
+        "recall": 0.875,
+        "f1": 0.8485
+      },
+      "pre_grounding_capability": null,
+      "pre_validation_claims": null,
+      "representative_failures": [
+        {
+          "id": "S06",
+          "wrong_fields": {
+            "aim": {
+              "gold": "explanatory",
+              "predicted": "predictive"
+            }
+          },
+          "proposed_capabilities": [],
+          "required_capabilities": [
+            "std.model.glm_count"
+          ],
+          "planner_mode": "local_llm",
+          "errors": []
+        },
+        {
+          "id": "X02",
+          "wrong_fields": {
+            "aim": {
+              "gold": "explanatory",
+              "predicted": "predictive"
+            }
+          },
+          "proposed_capabilities": [
+            "cttir.imaging.segmentation",
+            "cttir.imaging.phenotyping",
+            "std.model.coxph"
+          ],
+          "required_capabilities": [
+            "cttir.imaging.segmentation",
+            "cttir.imaging.phenotyping",
+            "std.model.coxph"
+          ],
+          "planner_mode": "local_llm",
+          "errors": []
+        },
+        {
+          "id": "X06",
+          "wrong_fields": {
+            "aim": {
+              "gold": "explanatory",
+              "predicted": "descriptive"
+            }
+          },
+          "proposed_capabilities": [],
+          "required_capabilities": [
+            "cttir.pressure.mapping"
+          ],
+          "planner_mode": "local_llm",
+          "errors": []
+        },
+        {
+          "id": "P01",
+          "wrong_fields": {
+            "aim": {
+              "gold": "explanatory",
+              "predicted": "descriptive"
+            }
+          },
+          "proposed_capabilities": [
+            "std.describe.descrtab2",
+            "std.model.glm_binomial"
+          ],
+          "required_capabilities": [
+            "std.describe.descrtab2",
+            "std.model.glm_binomial"
+          ],
+          "planner_mode": "local_llm",
+          "errors": []
+        }
+      ]
+    },
+    "validation": {
+      "source_commit": "834dcd9e2142743a803968b05feb0a815c95301f",
+      "evidence_sha256": "81d60dc02f7aba0ff9205b999b9b7721d1b2387c1937d987a3e185a0ac4157a6",
+      "corpus_sha256": "b0ad8ff9f7ed5ef178b0c7a8f5922b884e9bef4a2f348638af8118be2a275135",
+      "post_grounding_capability": {
+        "true_positive": 15,
+        "false_positive": 0,
+        "false_negative": 5,
+        "precision": 1,
+        "recall": 0.75,
+        "f1": 0.8571
+      },
+      "deterministic_capability": {
+        "true_positive": 18,
+        "false_positive": 3,
+        "false_negative": 2,
+        "precision": 0.8571,
+        "recall": 0.9,
+        "f1": 0.878
+      },
+      "pre_grounding_capability": null,
+      "pre_validation_claims": null,
+      "representative_failures": [
+        {
+          "id": "F01",
+          "wrong_fields": {
+            "aim": {
+              "gold": "explanatory",
+              "predicted": "descriptive"
+            }
+          },
+          "proposed_capabilities": [
+            "std.model.lm"
+          ],
+          "required_capabilities": [
+            "std.model.lm"
+          ],
+          "planner_mode": "local_llm",
+          "errors": []
+        },
+        {
+          "id": "F12",
+          "wrong_fields": {
+            "aim": {
+              "gold": "explanatory",
+              "predicted": "predictive"
+            }
+          },
+          "proposed_capabilities": [],
+          "required_capabilities": [
+            "std.model.glm_count"
+          ],
+          "planner_mode": "local_llm",
+          "errors": []
+        },
+        {
+          "id": "F13",
+          "wrong_fields": {
+            "aim": {
+              "gold": "descriptive",
+              "predicted": "explanatory"
+            }
+          },
+          "proposed_capabilities": [
+            "seurat.single_cell.exploration"
+          ],
+          "required_capabilities": [
+            "seurat.single_cell.exploration"
+          ],
+          "planner_mode": "local_llm",
+          "errors": []
+        },
+        {
+          "id": "F15",
+          "wrong_fields": {
+            "unit_structure": {
+              "gold": "unknown",
+              "predicted": "independent"
+            },
+            "modality": {
+              "gold": "single_cell",
+              "predicted": "tabular"
+            }
+          },
+          "proposed_capabilities": [
+            "seurat.normalization.sctransform"
+          ],
+          "required_capabilities": [
+            "seurat.normalization.sctransform"
+          ],
+          "planner_mode": "local_llm",
+          "errors": []
+        }
+      ]
+    }
+  }
+}

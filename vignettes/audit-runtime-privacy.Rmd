@@ -126,6 +126,18 @@ runtime's reported count; it is not an independent tokenizer or proof that the
 runtime preserved every input token. Earlier planner evaluations remain
 historical development evidence and do not qualify the new policy.
 
+Planner benchmark reports separate post-grounding scores from the capability
+claims present before keyword filtering, and retain the removed IDs in exported
+rows. With diagnostic `keep_raw = TRUE`, parseable raw capability arrays are
+also scored against the case's gold capabilities, including rejected attempts.
+Missing, malformed or truncated raw replies remain unscored; the report gives
+the number of scored attempts so absent diagnostics cannot masquerade as a
+zero unsupported-claim rate. The first-attempt rejection rate excludes cases
+where no model request was made. These additional diagnostics do not replace
+or relax any pre-registered threshold. Historical comparison results and
+representative failures are bundled in `benchmarks/planner-review-history.json`;
+the old compact reports cannot recover all pre-grounding claims.
+
 Accepted local planning stores the model identity, digest, qualification, prompt
 version and request options in the specification and project lock. Replay uses
 these recorded values; older specifications with no recorded settings keep them

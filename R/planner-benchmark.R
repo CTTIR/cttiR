@@ -59,6 +59,31 @@ planner_quantiles <- function(x) {
   list(n = length(x), p50 = round(q[[1]], 3), p95 = round(q[[2]], 3), max = round(max(x), 3))
 }
 
+planner_raw_claims <- function(attempts, case) {
+  scored <- 0L
+  proposed <- 0L
+  unsupported <- 0L
+  gold <- unlist(case$expected$capabilities[c("required", "optional")])
+  for (attempt in attempts) {
+    raw <- attempt$raw
+    parsed <- if (is.character(raw) && length(raw) == 1L && !is.na(raw)) {
+      tryCatch(jsonlite::parse_json(raw, simplifyVector = FALSE), error = function(e) NULL)
+    } else {
+      NULL
+    }
+    if (!is.list(parsed) || is.null(names(parsed)) || anyDuplicated(names(parsed)) ||
+        !"capability_ids" %in% names(parsed) || !is.list(parsed$capability_ids) ||
+        !is.null(names(parsed$capability_ids))) next
+    ids <- parsed$capability_ids
+    if (!all(vapply(ids, function(id) is.character(id) && length(id) == 1L && !is.na(id), logical(1)))) next
+    ids <- unique(as.character(unlist(ids)))
+    scored <- scored + 1L
+    proposed <- proposed + length(ids)
+    unsupported <- unsupported + length(setdiff(ids, gold))
+  }
+  list(attempts = length(attempts), scored_attempts = scored, proposed_ids = proposed, unsupported_claims = unsupported)
+}
+
 planner_summary <- function(rows, mode) {
   share <- function(x) if (length(x)) round(mean(x), 4) else NULL
   accuracy <- function(subset) {
@@ -82,14 +107,43 @@ planner_summary <- function(rows, mode) {
   pick <- function(name) unlist(lapply(rows, function(r) r$score[[name]]))
   llm <- identical(mode, "local_llm")
   first <- unlist(lapply(rows, function(r) r$first_attempt_accepted))
+  before <- Filter(function(r) !is.null(r$pre_grounding_score), rows)
+  pre <- if (length(before)) {
+    totals <- vapply(c("capability_tp", "capability_fp", "capability_fn"), function(key) {
+      sum(vapply(before, function(r) r$pre_grounding_score[[key]], integer(1)))
+    }, integer(1))
+    proposed <- sum(vapply(before, function(r) length(r$pre_grounding_ids), integer(1)))
+    precision_before <- if (sum(totals[1:2])) totals[[1]] / sum(totals[1:2]) else 1
+    recall_before <- if (sum(totals[c(1, 3)])) totals[[1]] / sum(totals[c(1, 3)]) else 1
+    list(cases = length(before), true_positive = totals[[1]], false_positive = totals[[2]], false_negative = totals[[3]],
+      precision = round(precision_before, 4), recall = round(recall_before, 4),
+      unsupported_claims = totals[[2]], proposed_ids = proposed,
+      unsupported_share = if (proposed) round(totals[[2]] / proposed, 4) else 0)
+  } else {
+    NULL
+  }
   injection <- Filter(function(r) !is.na(r$score$injection_violation), rows)
   latency <- function(cold) vapply(Filter(function(r) identical(r$cold, cold), rows), function(r) r$latency_seconds, numeric(1))
   categories <- sort(unique(vapply(rows, function(r) r$category, character(1))))
+  raw_totals <- stats::setNames(lapply(c("attempts", "scored_attempts", "proposed_ids", "unsupported_claims"), function(key) {
+    sum(vapply(rows, function(r) if (is.null(r$pre_validation_claims[[key]])) 0L else r$pre_validation_claims[[key]], integer(1)))
+  }), c("attempts", "scored_attempts", "proposed_ids", "unsupported_claims"))
+  raw_totals$unsupported_share <- if (raw_totals$proposed_ids) {
+    round(raw_totals$unsupported_claims / raw_totals$proposed_ids, 4)
+  } else {
+    NULL
+  }
+  raw_totals$scope <- "Diagnostic raw replies with a parseable capability array, including rejected attempts; missing, malformed or truncated replies remain unscored. Requires keep_raw = TRUE."
   list(
     mode = mode, cases = length(rows), heldout_cases = length(heldout),
     schema_validity_after_validation = share(vapply(rows, function(r) r$valid_after_validation, logical(1))),
     llm_acceptance_rate = if (llm) share(vapply(rows, function(r) identical(r$planner_mode, "local_llm"), logical(1))) else NULL,
     first_attempt_acceptance_rate = if (llm) share(stats::na.omit(first)) else NULL,
+    rejection_rate = if (llm) share(!stats::na.omit(first)) else NULL,
+    pre_grounding_capability = pre,
+    pre_validation_claims = raw_totals,
+    grounding_removed = sum(vapply(rows, function(r) length(r$grounding_removed), integer(1))),
+    pre_grounding_scope = "Validated proposals with recorded pre-grounding IDs; rejected or unrecorded model output is not scored here.",
     repair_rate = if (llm) share(vapply(rows, function(r) r$attempts > 1L, logical(1))) else NULL,
     fallback_rate = if (llm) share(vapply(rows, function(r) identical(r$planner_mode, "deterministic"), logical(1))) else NULL,
     fallback_reasons = if (llm) as.list(table(unlist(lapply(rows, function(r) r$fallback_reason)))) else NULL,
@@ -138,6 +192,16 @@ planner_benchmark <- function(cases, mode = "deterministic", runner = plan_goal,
     if (is_cold && is.function(unload)) unload()
     output <- runner(case$inputs$name, case$inputs$type, case$inputs$goal, mode = mode, ...)
     proposal <- output$proposal
+    grounding <- output$provenance$capability_grounding
+    pre_ids <- if (!is.null(grounding)) {
+      unique(as.character(c(unlist(grounding$retained), unlist(grounding$removed))))
+    } else if (identical(mode, "deterministic")) {
+      as.character(proposal$capability_ids)
+    } else {
+      NULL
+    }
+    pre_proposal <- proposal
+    pre_proposal$capability_ids <- pre_ids
     errors <- unlist(lapply(output$attempts, function(a) unlist(a$errors)))
     first <- if (length(output$attempts)) isTRUE(output$attempts[[1]]$accepted) else NA
     list(
@@ -151,6 +215,10 @@ planner_benchmark <- function(cases, mode = "deterministic", runner = plan_goal,
       output_tokens = sum(vapply(output$attempts, function(a) if (is.numeric(a$output_tokens)) as.numeric(a$output_tokens) else 0, numeric(1)), na.rm = TRUE),
       valid_after_validation = isTRUE(planner_validate(planner_proposal_json(proposal), schema, registry)$ok),
       proposal = proposal, score = planner_score_case(case, proposal),
+      pre_grounding_ids = pre_ids,
+      pre_grounding_score = if (!is.null(pre_ids)) planner_score_case(case, pre_proposal) else NULL,
+      grounding_removed = as.character(unlist(grounding$removed)),
+      pre_validation_claims = planner_raw_claims(output$attempts, case),
       raw = unlist(lapply(output$attempts, function(a) a$raw))
     )
   }
