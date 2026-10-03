@@ -2,6 +2,29 @@
 
 Updated: 2026-10-03. Version: 0.1.1. License: MIT.
 
+## Active verification and retrieval follow-up
+
+Commit a05a2d7 is pushed to main. Its full R CMD check --as-cran is running in
+independent user service cttir-repeat-evidence-check-a05a2d7.service.
+Build/vignettes succeeded; the full check reached testthat. Inspect
+artifacts/repeat-evidence-check-a05a2d7/status.json and check.log before starting
+another check. GitHub CI run 37103479376 also targets this source and is pending.
+The previous 432fa34 full check is still the latest completed local validation.
+
+A separate 24-question ask() corpus (12 English, 12 German), frozen before
+results, FAILED supported retrieval: 10/12 = 0.8333 against the unchanged 0.90
+threshold. Citations, code validity, negative abstention and injection resistance
+all passed. QF09 (German variable recoding/data preparation) and QF11 (German
+project report rendering) were missed. Preserve this failure and its gold labels.
+A private phrase-pattern candidate passes both examined corpora and four unrelated
+phrase controls. It is not integrated; these 24 cases are now development evidence
+for that candidate and cannot serve as independent validation of its repair.
+Next integrate/test the candidate and freeze another evaluation before viewing
+results. Source: admin/evaluate_ask_german_candidate.R; evidence:
+artifacts/implementation/ask-fresh-validation-review.json and ask-german-candidate.json.
+
+The hourly retry timer is enabled/active; COMPLETE and STOP remain absent.
+
 ## Fresh planner validation and repeat evidence
 
 Thirty new cases (15 English, 15 German) were frozen and hashed before evaluating
