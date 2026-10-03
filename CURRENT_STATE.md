@@ -1,6 +1,56 @@
 # cttiR development state
 
-Updated: 2026-10-03. Version: 0.1.0. License: MIT.
+Updated: 2026-10-03. Version: 0.1.1. License: MIT.
+
+## Retrieval follow-up 0.1.1
+
+Recognize additional English/German base-R descriptive summary requests and
+report-website rebuild requests. Regression cases include ordinary version/URL
+questions that must not trigger those roles. Tests and fresh installed checks
+pass; the authored 51-case benchmark retains all metrics at 1. The changed R source
+is lint-clean. The broad package lint invocation reports existing cross-file lookup
+and template/vignette findings; its log is retained and is not a clean lint claim.
+
+Evidence is under artifacts/implementation/retrieval-0.1.1-* and
+ask-language-followup.log. Full R CMD check --as-cran passed with 0 errors,
+0 warnings and 1 incoming NOTE (new submission and Title prefix), including
+rebuilt vignettes and PDF/HTML manuals. Tests: 5381 passed, 13 skipped, 0 failed.
+Skipped live/browser/renv/optional-package checks are recorded in the test log;
+the prior live evidence is not a new run of those checks. Archive SHA-256:
+290c8d2b45696a8e3d599bbff5baca430aecda6ddc468f7c520f1ca3dea42e7e.
+The archive has 234 members and excludes admin and artifacts.
+
+These changes were informed by examined held-out failures and are development
+regressions, not a fresh independent holdout. G12 model qualification and G26
+Seurat/BPCells remain open. No COMPLETE marker or submission; retry remains active.
+
+## Seurat and backed-data candidate evidence
+
+Private script admin/verify_seurat_candidate_workflow.R passes on Seurat 5.5.1 /
+SeuratObject 5.4.0: 600 synthetic genes and 120 cells, normalization checked against
+an explicit formula, PCA standard deviations against dense SVD, repeatable clustering
+and UMAP, recovered planted partition, positive/negative marker directions and
+unchanged sparse counts. Cell-level marker ranks do not establish donor inference.
+
+BPCells 0.3.1 commit 841559adcdc7df764d825f4fde364f65911779b9 was built locally
+with HDF5 1.14.6 and hexbin in artifacts/bpcells-0.3.1-library. Frozen source is in
+admin/bpcells-candidate; compilation used a separate artifact copy. Its configure
+script attempted upstream install-count requests; use ENABLE_INSTALL_COUNTING=no
+on future rebuilds. No study data were used or submitted. The first install lacked
+hexbin; the second lacked executable configure permissions in the copy; both logs
+are retained. Archive modes were restored only in the build copy.
+
+admin/verify_bpcells_candidate.R passes the current interoperability helpers on a
+small uint32 disk-backed count matrix. Layer inventory preserves backed storage;
+donor sums equal an in-memory reference; hashes of backing files remain unchanged.
+Instrumented realization is at most 80 values per block. Missing backing files
+are refused and the fixture directory is restored. The upstream generic dense
+conversion warning is retained; bounded blocks are explicitly measured.
+
+Receipts: seurat-candidate-workflow.json, bpcells-candidate.json and
+seurat-bpcells-provenance.json under artifacts/implementation. G26 remains partial:
+these are local candidates, not a reviewed generated Seurat workflow, cross-platform
+qualification or a full backed analysis pipeline. G12 also remains partial.
 
 ## Release 0.1.0: implemented with blockers
 

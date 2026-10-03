@@ -87,6 +87,13 @@ ask_patterns <- list(
   capability = list(
     std.describe.descrtab2 = c("overview table", "demographic", "characteristics", "summary of the (sample|population|patients|cohort)",
       "\u00fcbersichtstabelle", "uebersichtstabelle", "patientenmerkmale", "merkmale der"),
+    std.describe.base = c(
+      "(base[- ]?r|basis[- ]?r).*(means?|averages?|standard deviations?|sds|counts?|percentages?|mittelwert|standardabweichung|h(\u00e4|ae)ufigkeit)",
+      "(means?|averages?|standard deviations?|counts?|percentages?|mittelwert|standardabweichung).*(base[- ]?r|basis[- ]?r)"),
+    std.report.render = c(
+      "(bericht|report).*(website|webseite).*(neu|aktuali|render)",
+      "(neu|aktuali|render).*(bericht|report).*(website|webseite)",
+      "(rebuild|render|refresh).*(report|project).*(website|site)"),
     std.import.delimited = c("(read|load|import)( in)? [a-z ]*(csv|tsv|delimited|text file)", "(csv|tsv)",
       "einlesen", "importieren"),
     std.figures.accessible = c("greyscale", "grayscale", "\\bchart\\b", "\\bplot", "visuali[sz]", "graustufen")

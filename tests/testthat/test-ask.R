@@ -131,3 +131,29 @@ test_that("a question naming an unsupported method family returns no snippet for
   expect_identical(answer$code, "")
   expect_length(unlist(answer$approved_capabilities), 0L)
 })
+
+test_that("base summaries and report rebuild requests retrieve approved roles", {
+  summaries <- c(
+    "Using base R, give means, SDs and counts/percentages for cohort variables.",
+    "Summarize counts and percentages with base R.",
+    "Mit Basis R Mittelwerte und Standardabweichungen beschreiben.")
+  for (question in summaries) {
+    answer <- ask(question)
+    expect_contains(unlist(answer$approved_capabilities), "std.describe.base")
+    expect_true(nzchar(answer$code))
+    expect_true(isTRUE(attr(validate_generated_code(answer$code, resolve_catalog()), "valid")))
+  }
+  reports <- c(
+    "Wie baue ich die Bericht-Website neu, damit aktuelle Ergebnisse erscheinen?",
+    "Rebuild my project website with the current results.")
+  for (question in reports) {
+    answer <- ask(question)
+    expect_contains(unlist(answer$approved_capabilities), "std.report.render")
+    expect_true(nzchar(answer$code))
+  }
+  for (question in c("Which base R version is installed?", "What is my report website URL?")) {
+    answer <- ask(question)
+    expect_false("std.describe.base" %in% unlist(answer$approved_capabilities))
+    expect_false("std.report.render" %in% unlist(answer$approved_capabilities))
+  }
+})

@@ -1,3 +1,9 @@
+# cttiR 0.1.1
+
+* Recognize additional English and German requests for base-R descriptive
+  summaries and rebuilding report websites. Retrieval remains restricted to
+  approved pinned roles; planner qualification is unchanged.
+
 # cttiR 0.1.0
 
 * Route every project through a deterministic capability router: the standard

@@ -1,6 +1,6 @@
 Package: cttiR
 Title: CTTIR Project Builder
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: person("R.", "Heller", email = "raban.heller@uni-ulm.de", role = c("aut", "cre"))
 Description: Creates deterministic research projects from a name, research type
     and goal, routes them to a reviewed standard or specialist workflow, and
