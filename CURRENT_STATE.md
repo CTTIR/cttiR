@@ -46,7 +46,9 @@ Logs: artifacts/implementation/all-pins-tests.log and all-pins-verified-tests.lo
 New source lint passes; existing lintr object_usage diagnostics at unchanged
 R/environment.R:213 (renv::paths$library) are retained in diagnostic logs.
 The old environment implementation is byte-identical; only the inventory helper
-was appended. No current-source full-check claim is made yet.
+was appended. Committed/pushed as becdb38; full validation runs in
+cttir-all-pins-check-becdb38.service, with status/logs under
+artifacts/all-pins-check-becdb38. No current-source full-check claim is made yet.
 
 R16 remains OPEN: standalone ci_* interop helpers still default to pins = NULL.
 Next implement a static project-pin reader, missing-pin refusal and default
