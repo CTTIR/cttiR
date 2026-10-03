@@ -298,7 +298,9 @@ dispatch <- list(tidy = c("lm", "glm", "coxph", "lme"), print = "DescrList", fil
   mutate = "data.frame", arrange = "data.frame", lme = "formula", fixef = "lme", getVarCov = "lme",
   logLik = "lme", coef = "default", residuals = c("lm", "glm"), fitted = "default",
   cooks.distance = c("lm", "glm"), model.matrix = c("default", "lm"), quantile = "default",
-  na.fail = "default", survfit = "formula")
+  na.fail = "default", survfit = "formula", Command = "Seurat", Images = "Seurat",
+  Loadings = "DimReduc", Stdev = "DimReduc", Key = "DimReduc", Idents = "Seurat",
+  GetTissueCoordinates = "FOV", Misc = c("Seurat", "DimReduc"))
 
 # One decision per adapter-tested capability and package, scoped to the calls that
 # role's template code makes and to the fixtures that execute them.

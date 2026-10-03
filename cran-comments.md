@@ -1,8 +1,10 @@
-# Draft submission notes — not submitted
+# Historical check notes for 432fa34 — not current submission evidence
 
 Package: cttiR 0.1.1. These notes describe validated source 432fa34; they are
 not an instruction to submit. Full product qualification remains open for the
-optional planner and Seurat analysis workflow.
+independent planner qualification and reviewed interoperability requirements.
+The Seurat exploration workflow is optional future work. Current development
+version is 0.1.1.9000; these historical counts do not validate that source.
 
 ## Check results
 

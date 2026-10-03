@@ -1,7 +1,7 @@
 # Reviewed static interoperability helpers for Bioconductor and Seurat objects.
 #
-# Adapters: interop.bioc_s4 1.0.0 (ci_validate_s4, ci_conversion_report),
-# interop.se_tidy_view 1.0.0 (ci_se_tidy_view) and interop.seurat_v5 1.0.0
+# Adapters: interop.bioc_s4 1.1.0 (ci_validate_s4, ci_conversion_report),
+# interop.se_tidy_view 1.1.0 (ci_se_tidy_view) and interop.seurat_v5 1.1.0
 # (ci_seurat_layers, ci_pseudobulk, ci_convert).
 #
 # Rules followed by every function in this file:
@@ -219,8 +219,45 @@ ci_experiment_seurat <- function(x, a) {
 # the name of the altExp holding them. Seurat reductions also record the assay
 # they were computed on, which decides where Seurat places them in a
 # SingleCellExperiment.
-ci_reduction <- function(name, value, where = NA_character_, assay = NULL) {
-  list(name = name, value = value, where = where, assay = assay)
+ci_reduction <- function(name, value, where = NA_character_, assay = NULL, components = list()) {
+  attrs <- attributes(value)
+  attrs <- attrs[setdiff(names(attrs), c("dim", "dimnames"))]
+  for (n in names(attrs)) components[paste0("attributes/", n)] <- attrs[n]
+  list(name = name, value = value, where = where, assay = assay, components = components)
+}
+
+# Compare accessor-returned components exactly, including their class and
+# attributes. Sparse graphs remain sparse; no component is coerced to dense.
+# A representation change is conservatively transformed rather than lossless.
+ci_compare_components <- function(src, tgt, prefix = "") {
+  rows <- lapply(names(src), function(n) {
+    present <- n %in% names(tgt)
+    same <- present && identical(src[[n]], tgt[[n]])
+    ci_row(paste0(prefix, n), if (same) "preserved" else if (present) "transformed" else "lost",
+      if (same) "identical component including attributes" else if (present) "component or attributes differ" else "component absent in target")
+  })
+  c(rows, lapply(setdiff(names(tgt), names(src)), function(n) {
+    ci_row(paste0(prefix, n), "transformed", "added in target; no source counterpart")
+  }))
+}
+
+ci_sce_components <- function(x, prefix = "") {
+  out <- list()
+  for (n in SingleCellExperiment::colPairNames(x)) out[paste0(prefix, "colPair:", n)] <- list(SingleCellExperiment::colPair(x, n))
+  for (n in SingleCellExperiment::rowPairNames(x)) out[paste0(prefix, "rowPair:", n)] <- list(SingleCellExperiment::rowPair(x, n))
+  out
+}
+
+ci_seurat_components <- function(x) {
+  out <- list(idents = SeuratObject::Idents(x))
+  for (n in SeuratObject::Graphs(x)) out[paste0("graph:", n)] <- list(x[[n]])
+  for (n in SeuratObject::Neighbors(x)) out[paste0("neighbors:", n)] <- list(x[[n]])
+  for (n in SeuratObject::Images(x)) {
+    out[paste0("image:", n)] <- list(x[[n]])
+    out[paste0("image:", n, "/coordinates")] <- list(SeuratObject::GetTissueCoordinates(x[[n]]))
+  }
+  for (n in SeuratObject::Command(x)) out[paste0("command:", n)] <- list(SeuratObject::Command(x, command = n))
+  out
 }
 
 ci_profile <- function(x, pins = NULL) {
@@ -231,11 +268,15 @@ ci_profile <- function(x, pins = NULL) {
     exps <- lapply(SeuratObject::Assays(x), function(a) ci_experiment_seurat(x, a))
     names(exps) <- SeuratObject::Assays(x)
     reduced <- lapply(SeuratObject::Reductions(x), function(r) {
-      ci_reduction(r, SeuratObject::Embeddings(x, reduction = r), assay = SeuratObject::DefaultAssay(x[[r]]))
+      ci_reduction(r, SeuratObject::Embeddings(x, reduction = r), assay = SeuratObject::DefaultAssay(x[[r]]),
+        components = list(loadings = SeuratObject::Loadings(x[[r]]),
+          projected_loadings = SeuratObject::Loadings(x[[r]], projected = TRUE),
+          stdev = SeuratObject::Stdev(x[[r]]), key = SeuratObject::Key(x[[r]]),
+          misc = SeuratObject::Misc(x[[r]]), object = x[[r]]))
     })
     return(list(kind = "Seurat", class = ci_class_label(x), dim = dim(x), samples = SeuratObject::Cells(x),
         main_name = def, main = exps[[def]], alts = exps[setdiff(names(exps), def)], reduced = reduced,
-        col_data = ci_columns(x[[]]), metadata = ci_meta(SeuratObject::Misc(x)),
+        col_data = ci_columns(x[[]]), metadata = ci_meta(SeuratObject::Misc(x)), components = ci_seurat_components(x),
         vocabulary = list(experiment = "assay", assay = "layer", col_data = "meta.data", alt = "assay")))
   }
   if (methods::is(x, "SummarizedExperiment")) {
@@ -243,7 +284,9 @@ ci_profile <- function(x, pins = NULL) {
     alts <- list()
     reduced <- list()
     main_name <- NA_character_
+    components <- list()
     if (sce) {
+      components <- ci_sce_components(x)
       for (n in SingleCellExperiment::reducedDimNames(x)) {
         reduced[[length(reduced) + 1L]] <- ci_reduction(n, SingleCellExperiment::reducedDim(x, n))
       }
@@ -251,6 +294,7 @@ ci_profile <- function(x, pins = NULL) {
         alt <- SingleCellExperiment::altExp(x, n)
         alts[[n]] <- ci_experiment_se(alt)
         if (!methods::is(alt, "SingleCellExperiment")) next
+        components <- c(components, ci_sce_components(alt, paste0("altExp:", n, "/")))
         for (r in SingleCellExperiment::reducedDimNames(alt)) {
           reduced[[length(reduced) + 1L]] <- ci_reduction(r, SingleCellExperiment::reducedDim(alt, r), where = n)
         }
@@ -260,7 +304,7 @@ ci_profile <- function(x, pins = NULL) {
     }
     return(list(kind = if (sce) "SingleCellExperiment" else "SummarizedExperiment", class = ci_class_label(x),
         dim = dim(x), samples = colnames(x), main_name = main_name, main = ci_experiment_se(x), alts = alts,
-        reduced = reduced, col_data = ci_columns(SummarizedExperiment::colData(x)), metadata = ci_meta(S4Vectors::metadata(x)),
+        reduced = reduced, components = components, col_data = ci_columns(SummarizedExperiment::colData(x)), metadata = ci_meta(S4Vectors::metadata(x)),
         vocabulary = list(experiment = "experiment", assay = "assay", col_data = "colData", alt = "altExp")))
   }
   ci_stop("Unsupported object of class '", class(x)[[1L]], "'. Supported: SummarizedExperiment, SingleCellExperiment, Seurat.")
@@ -420,10 +464,12 @@ ci_report_objects <- function(src, tgt) {
     if (is.na(k)) {
       rows[[length(rows) + 1L]] <- ci_row(ci_reduction_field(r), "lost",
         "no target reduction with this name in the main experiment or any alternative experiment")
+      rows <- c(rows, ci_compare_components(r$components, list(), paste0(ci_reduction_field(r), "/")))
       next
     }
     used <- c(used, k)
     t <- tgt$reduced[[k]]
+    rows <- c(rows, ci_compare_components(r$components, t$components, paste0(ci_reduction_field(r), "/")))
     s_m <- as.matrix(r$value)
     t_m <- as.matrix(t$value)
     rk <- ci_align_keys(rownames(s_m), rownames(t_m), "sample")
@@ -445,8 +491,9 @@ ci_report_objects <- function(src, tgt) {
   }
   for (k in setdiff(seq_along(tgt$reduced), used)) {
     rows[[length(rows) + 1L]] <- ci_row(ci_reduction_field(tgt$reduced[[k]]), "transformed", "added in target; no source counterpart")
+    rows <- c(rows, ci_compare_components(list(), tgt$reduced[[k]]$components, paste0(ci_reduction_field(tgt$reduced[[k]]), "/")))
   }
-  rows <- c(rows, ci_compare_metadata(src$metadata, tgt$metadata))
+  rows <- c(rows, ci_compare_metadata(src$metadata, tgt$metadata), ci_compare_components(src$components, tgt$components))
   rows
 }
 
@@ -552,6 +599,8 @@ ci_report_data_frame <- function(src, df) {
   }
   rows <- c(rows, lapply(names(src$alts), function(n) ci_row(paste0("altExp:", n), "lost", "alternative experiments are not represented in a data.frame")),
     lapply(src$reduced, function(r) ci_row(ci_reduction_field(r), "lost", "reduced dimensions are not represented in a data.frame")))
+  rows <- c(rows, ci_compare_components(src$components, list()))
+  for (r in src$reduced) rows <- c(rows, ci_compare_components(r$components, list(), paste0(ci_reduction_field(r), "/")))
   md <- ci_compare_metadata(src$metadata, list())
   if (length(src$metadata)) md <- lapply(md, function(r) {
     r$detail <- "object metadata is not represented in a data.frame"
@@ -627,7 +676,7 @@ ci_se_tidy_view <- function(se, assay = 1L, features = NULL, samples = NULL, max
     if (length(fi) < nrow(se)) paste0("features outside slice: ", nrow(se) - length(fi)),
     if (length(si) < ncol(se)) paste0("samples outside slice: ", ncol(se) - length(si)),
     paste0("storage: ", ci_storage(a), " ", class(a)[[1L]], " representation (values copied for the slice only)"))
-  attr(out, "ci_view") <- list(adapter = "interop.se_tidy_view", adapter_version = "1.0.0",
+  attr(out, "ci_view") <- list(adapter = "interop.se_tidy_view", adapter_version = "1.1.0",
     source_class = ci_class_label(se), assay = nm[[i]], assay_class = class(a)[[1L]], storage = ci_storage(a),
     source_dim = as.integer(dim(se)), slice_dim = c(length(fi), length(si)), realized_values = n_values,
     max_cells = max_cells, order = "original object order; samples outer, features inner",
@@ -672,7 +721,7 @@ ci_conversion_report <- function(from, to, pins = NULL) {
   out <- do.call(rbind, rows)
   rownames(out) <- NULL
   attr(out, "lossless") <- all(out$status == "preserved")
-  attr(out, "adapter") <- c(id = "interop.bioc_s4", version = "1.0.0")
+  attr(out, "adapter") <- c(id = "interop.bioc_s4", version = "1.1.0")
   out
 }
 
@@ -708,6 +757,17 @@ ci_convert <- function(x, to = c("Seurat", "SingleCellExperiment"), counts = "co
       reason <- paste0("altExp '", n, "' was not converted: it has no assay ", paste0("'", lacking, "'", collapse = ", "),
         " and Seurat::as.Seurat() needs the same counts/data assays in every experiment")
       limitations <- c(limitations, reason)
+    }
+    # The upstream coercion does not preserve delayed/backed SCE assays.
+    # Refuse before invoking it or reading any values, including selected altExps.
+    experiments <- c(list(main = x), lapply(setdiff(alts, skipped), function(n) SingleCellExperiment::altExp(x, n)))
+    names(experiments) <- c("main", setdiff(alts, skipped))
+    for (n in names(experiments)) for (a in required) {
+      storage <- ci_storage(SummarizedExperiment::assay(experiments[[n]], a, withDimnames = FALSE))
+      if (storage %in% c("delayed", "disk_backed")) {
+        ci_stop("Cannot convert ", storage, " assay '", n, "/", a,
+          "' to Seurat: backing-preserving coercion is not supported; no values were realized. Keep the source object.")
+      }
     }
     obj <- Seurat::as.Seurat(x, counts = counts, data = data, assay = if (length(skipped)) setdiff(alts, skipped) else NULL)
   } else {
@@ -856,7 +916,7 @@ ci_pseudobulk <- function(obj_or_sce, donor, group, allow_single_cell_samples = 
   }
   dimnames(res) <- list(rownames(counts), ids)
   samples <- data.frame(pseudobulk_id = ids, donor = pairs$donor, group = pairs$group, n_cells = n_cells, stringsAsFactors = FALSE)
-  list(counts = res, samples = samples, design = list(adapter = "interop.seurat_v5", adapter_version = "1.0.0",
+  list(counts = res, samples = samples, design = list(adapter = "interop.seurat_v5", adapter_version = "1.1.0",
       source = source, donor_column = donor, group_column = group, n_cells = length(cells),
       donors_per_group = per_group, single_cell_samples = length(single),
       allow_single_cell_samples = allow_single_cell_samples, unit = "donor x group pseudobulk sample",

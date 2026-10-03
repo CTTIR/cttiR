@@ -325,7 +325,8 @@ test_that("reductions filed under an alternative experiment are reported where t
   expect_equal(field_status(r, "reducedDim:pca"), "transformed")
   expect_match(r$detail[r$field == "reducedDim:pca"],
     "embedding values identical \\(computed on assay 'RNA'\\); moved to target altExp 'RNA', not the main experiment")
-  expect_false(any(r$status[startsWith(r$field, "reducedDim:")] == "lost"))
+  expect_false(any(r$status[r$field == "reducedDim:pca"] == "lost"))
+  expect_equal(field_status(r, "reducedDim:pca/key"), "lost")
   # The SingleCellExperiment side profiles altExp reductions under their location.
   same <- env$ci_conversion_report(sce, sce)
   expect_equal(field_status(same, "reducedDim:RNA/PCA"), "preserved")
@@ -644,7 +645,7 @@ test_that("invalid capability registries are rejected", {
       x
     },
     candidate_with_adapter = function(x) {
-      x$capabilities[[candidate]]$adapter <- list(id = "interop.bioc_s4", version = "1.0.0")
+      x$capabilities[[candidate]]$adapter <- list(id = "interop.bioc_s4", version = "1.1.0")
       x
     },
     tested_without_adapter = function(x) {
@@ -654,7 +655,7 @@ test_that("invalid capability registries are rejected", {
     },
     unreviewed_adapter = function(x) {
       x$capabilities[[seurat]]$status <- "adapter_tested"
-      x$capabilities[[seurat]]$adapter <- list(id = "interop.seurat_v5", version = "1.0.0")
+      x$capabilities[[seurat]]$adapter <- list(id = "interop.seurat_v5", version = "1.1.0")
       x$capabilities[[seurat]]$adapter$version <- "9.9.9"
       x
     },
@@ -676,4 +677,115 @@ test_that("invalid capability registries are rejected", {
     if (name == "tested_without_adapter") x$capabilities[[seurat]]["adapter"] <- list(NULL)
     expect_error(interop_capabilities(write_registry(x)), class = "cttir_schema_error", label = name)
   }
+})
+
+
+test_that("Seurat and SingleCellExperiment conversion reports retain component loss evidence", {
+  skip_if_not_installed("Seurat")
+  skip_if_not_installed("SingleCellExperiment")
+    env <- interop_template()
+    ci_conversion_report <- env$ci_conversion_report
+    ci_convert <- env$ci_convert
+  set.seed(20261003)
+  m <- matrix(rpois(80 * 60, 3), 80, 60, dimnames=list(paste0('g',1:80), paste0('cell',1:60)))
+  x <- SeuratObject::CreateSeuratObject(Matrix::Matrix(m, sparse=TRUE))
+  x <- Seurat::NormalizeData(x, verbose=FALSE)
+  x <- Seurat::FindVariableFeatures(x, nfeatures=50, verbose=FALSE)
+  x <- Seurat::ScaleData(x, verbose=FALSE)
+  x <- Seurat::RunPCA(x, npcs=5, verbose=FALSE)
+  x <- Seurat::FindNeighbors(x, dims=1:5, k.param=10, verbose=FALSE)
+  x <- Seurat::FindClusters(x, resolution=0.4, verbose=FALSE, random.seed=123)
+  x <- Seurat::FindNeighbors(x, dims=1:5, k.param=10, return.neighbor=TRUE, graph.name='RNA_neighbor', verbose=FALSE)
+  x[['synthetic']] <- SeuratObject::CreateFOV(data.frame(x=1:60,y=rep(1:6,10),cell=colnames(x)), type='centroids', assay='RNA')
+  assert <- function(ok, label) expect_true(ok, info = label)
+  status <- function(report, field) report$status[report$field==field]
+  report <- ci_conversion_report(x,x)
+  assert(attr(report,'lossless'), 'identical Seurat object remains lossless')
+  assert(identical(status(report,'graph:RNA_snn'),'preserved'),'graph present')
+  assert(identical(status(report,'neighbors:RNA_neighbor'),'preserved'),'neighbor present')
+  assert(identical(status(report,'image:synthetic/coordinates'),'preserved'),'image coordinates present')
+  assert(identical(status(report,'reducedDim:pca/loadings'),'preserved'),'loadings present')
+  assert(identical(status(report,'reducedDim:pca/stdev'),'preserved'),'stdev present')
+  assert(identical(status(report,'reducedDim:pca/key'),'preserved'),'reduction key present')
+  assert(any(startsWith(report$field,'command:')), 'commands present')
+  y <- x; y[['RNA_snn']] <- NULL
+  r <- ci_conversion_report(x,y)
+  assert(identical(status(r,'graph:RNA_snn'),'lost') && !attr(r,'lossless'),'same class lost graph is not lossless')
+  y <- x; g <- y[['RNA_nn']]; g[1,2] <- g[1,2] + 1; y[['RNA_nn']] <- SeuratObject::as.Graph(g)
+  r <- ci_conversion_report(x,y)
+  assert(identical(status(r,'graph:RNA_nn'),'transformed') && !attr(r,'lossless'),'graph value change is not lossless')
+  y <- x; y[['RNA_neighbor']] <- NULL; y[['synthetic']] <- NULL
+  r <- ci_conversion_report(x,y)
+  assert(identical(status(r,'neighbors:RNA_neighbor'),'lost'),'neighbor deletion is lost')
+  assert(identical(status(r,'image:synthetic'),'lost') && identical(status(r,'image:synthetic/coordinates'),'lost'),'image and coordinates deletion is lost')
+  y <- x; SeuratObject::Idents(y) <- rep('changed',ncol(y))
+  r <- ci_conversion_report(x,y)
+  assert(identical(status(r,'idents'),'transformed') && !attr(r,'lossless'),'identity change is not lossless')
+  y <- x; SeuratObject::Loadings(y[['pca']], projected=FALSE)[1,1] <- 999
+  r <- ci_conversion_report(x,y)
+  assert(identical(status(r,'reducedDim:pca/loadings'),'transformed') && !attr(r,'lossless'),'loading change is not lossless')
+  converted <- ci_convert(x, to='SingleCellExperiment')
+  r <- converted$report
+  assert(identical(status(r,'graph:RNA_snn'),'lost'),'Seurat to SCE loses graph')
+  assert(identical(status(r,'reducedDim:pca/loadings'),'lost'),'Seurat to SCE reports loading loss')
+  sce <- converted$object
+  rd <- SingleCellExperiment::reducedDim(sce,'PCA'); attr(rd,'rotation') <- matrix(1:15,5,3); attr(rd,'percentVar') <- c(.5,.3,.2)
+  SingleCellExperiment::reducedDim(sce,'PCA') <- rd
+  SingleCellExperiment::colPair(sce,'knn') <- S4Vectors::SelfHits(1:3,2:4,nnode=ncol(sce),weight=c(.1,.2,.3))
+  SingleCellExperiment::rowPair(sce,'gene_links') <- S4Vectors::SelfHits(1:3,2:4,nnode=nrow(sce))
+  alt <- SingleCellExperiment::SingleCellExperiment(assays=list(counts=Matrix::Matrix(m[1:5,],sparse=TRUE)))
+  SingleCellExperiment::colPair(alt,'knn') <- S4Vectors::SelfHits(1:3,2:4,nnode=ncol(alt))
+  SingleCellExperiment::altExp(sce,'alternative') <- alt
+  r <- ci_conversion_report(sce,sce)
+  assert(attr(r,'lossless'), 'identical SCE remains lossless with pairs and reduction attributes')
+  y <- sce; rd <- SingleCellExperiment::reducedDim(y,'PCA'); attr(rd,'rotation') <- NULL; SingleCellExperiment::reducedDim(y,'PCA') <- rd
+  r <- ci_conversion_report(sce,y)
+  assert(identical(status(r,'reducedDim:PCA/attributes/rotation'),'lost') && !attr(r,'lossless'),'same-class rotation removal is not lossless')
+  y <- sce; SingleCellExperiment::colPair(y,'knn') <- NULL; SingleCellExperiment::rowPair(y,'gene_links') <- NULL
+  r <- ci_conversion_report(sce,y)
+  assert(identical(status(r,'colPair:knn'),'lost') && identical(status(r,'rowPair:gene_links'),'lost'),'pair removal reported')
+  y <- sce; a <- SingleCellExperiment::altExp(y,'alternative'); SingleCellExperiment::colPair(a,'knn') <- NULL; SingleCellExperiment::altExp(y,'alternative') <- a
+  r <- ci_conversion_report(sce,y)
+  assert(identical(status(r,'altExp:alternative/colPair:knn'),'lost') && !attr(r,'lossless'),'alternative experiment pair loss reported')
+  r <- ci_conversion_report(sce,as.data.frame(as.matrix(SummarizedExperiment::assay(sce,'counts'))))
+  assert(identical(status(r,'colPair:knn'),'lost') && identical(status(r,'reducedDim:PCA/attributes/rotation'),'lost'),'data frame loss includes pairs and reduction attributes')
+})
+
+
+test_that("Seurat delayed layers preserve backing and bounded pseudobulk while reverse conversion refuses", {
+  skip_if_not_installed("Seurat")
+  skip_if_not_installed("SingleCellExperiment")
+  skip_if_not_installed("DelayedArray")
+  env <- interop_template()
+  env$ci_block_values <- 24L
+  m <- matrix(rep(0:5, 80), 8, 60, dimnames = list(paste0("gene", 1:8), paste0("cell", 1:60)))
+  delayed <- counting_delayed(m)
+  s <- SeuratObject::CreateSeuratObject(counts = SeuratObject::CreateAssay5Object(counts = delayed$array))
+  s$donor <- rep(paste0("d", 1:4), each = 15)
+  s$group <- rep(c("A", "B"), each = 30)
+  reset_log(delayed$log)
+  layers <- env$ci_seurat_layers(s)
+  expect_equal(layers$storage, "delayed")
+  expect_gt(delayed$log$total, 0)
+  expect_lte(delayed$log$max, env$ci_block_values)
+  reset_log(delayed$log)
+  bulk <- env$ci_pseudobulk(s, "donor", "group")
+  expected <- sapply(paste0("d", 1:4), function(d) rowSums(m[, s$donor == d, drop = FALSE]))
+  expect_equal(unname(as.matrix(bulk$counts)), unname(expected))
+  expect_lte(delayed$log$max, env$ci_block_values)
+  expect_gt(delayed$log$total, 0)
+  reset_log(delayed$log)
+  converted <- suppressWarnings(env$ci_convert(s, "SingleCellExperiment"))
+  expect_equal(field_status(converted$report, "storage:counts"), "preserved")
+  expect_s4_class(SummarizedExperiment::assay(converted$object, "counts"), "DelayedMatrix")
+  expect_lte(delayed$log$max, env$ci_block_values)
+  expect_s4_class(SeuratObject::LayerData(s, layer = "counts"), "DelayedMatrix")
+  reset_log(delayed$log)
+  expect_error(env$ci_convert(converted$object, "Seurat", data = NULL), "backing-preserving coercion is not supported")
+  expect_equal(delayed$log$total, 0)
+  # A backed alternative experiment must be rejected before upstream conversion.
+  plain <- SingleCellExperiment::SingleCellExperiment(assays = list(counts = Matrix::Matrix(m, sparse = TRUE)))
+  SingleCellExperiment::altExp(plain, "backed") <- converted$object
+  expect_error(env$ci_convert(plain, "Seurat", data = NULL), "backed/counts")
+  expect_equal(delayed$log$total, 0)
 })

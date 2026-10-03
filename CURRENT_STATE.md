@@ -1,6 +1,6 @@
 # cttiR development state
 
-Updated: 2026-10-03. Version: 0.1.1. License: MIT.
+Updated: 2026-10-03. Version: 0.1.1.9000. License: MIT.
 
 ## Read first: owner-requested review and decisions (2026-10-03)
 
@@ -22,7 +22,41 @@ The P1 items are `ask()` emitting `broom::tidy()` for `nlme` fits, which fails
 at run time, and the conversion-loss report missing graphs and loadings. Fix
 these first.
 
-## Current continuation point: owner review corrections
+## Current continuation point: conversion losses and backed layers
+
+Interoperability adapters 1.1.0 now compare Seurat graphs, neighbors, images and
+coordinates, commands and identities; reduction loadings, projected loadings,
+stdev, key, misc and full reduction objects; SCE reducedDim attributes and main/
+alternative experiment rowPairs/colPairs. Comparisons retain sparse graph storage
+and conservatively report representation changes. Same-class removal no longer
+passes as lossless. The clustered synthetic conversion fixture passes, along with
+additional command/stdev/key/whole-reduction/pair-metadata deletion/change checks.
+
+An instrumented Seurat delayed-layer fixture passes inventory, exact pseudobulk
+and backing-preserving Seurat-to-SCE conversion within a 24-value extraction
+bound. Reverse conversion refuses delayed/backed selected SCE assays (including
+altExps) before value realization. BPCells remains separate opt-in evidence.
+These implement review R18 and R17; full release validation remains required.
+
+Catalog approvals were rebuilt from 61 passing, non-skipped fixtures and reviewed
+accessor dispatch: 56 complete decisions, no pending coverage. The stable-catalog
+regression suite (approvals, ask, interop, planner, router, standard workflow)
+passes with only the explicit live-model skip; lint also passes. Logs and source
+hashes are in artifacts/implementation/interop-loss-review.json. Development version is now 0.1.1.9000. The template bundle remains
+hash-verified standard-0.3.0; interoperability adapter versions are 1.1.0.
+Historical cran-comments.md explicitly describes 432fa34, not current readiness.
+
+The preceding mixed-model milestone 9ac5360 was pushed. Its full source-isolated
+check runs in cttir-review-r02-check-9ac5360.service, with logs under
+artifacts/review-r02-check-9ac5360; hosted run 37123686589 is separate evidence.
+Do not attribute those results to the later conversion changes.
+
+Remaining review work includes versioned ecosystem schema/policy and enforced
+pins, targeted ecosystem routing, planner evidence and asset binding, strict ask
+scoring, independent qualification and final current-source checks. G12 and G26
+remain open. COMPLETE and STOP remain absent; preserve the active retry timer.
+
+## Preceding owner review corrections
 
 The mixed-model effects snippet now uses broom.mixed::tidy with fixed effects.
 A synthetic executed regression agrees with nlme::fixef. Static validation tracks
@@ -47,9 +81,9 @@ current regression isolates acquisition from selection and separately verifies
 the actual automatic qualification blocker. Receipt:
 artifacts/implementation/automatic-selection-full-validation.json.
 
-R18 conversion-loss reporting remains the next P1 task. Then close the remaining
-owner review items, including G26 versioned ecosystem policy, enforced pins,
-backed-layer suite fixture and non-skipped platform evidence. Batch registry
+R18 and the backed-layer suite changes are described above. Close the remaining
+owner review items, including G26 versioned ecosystem policy, enforced pins
+and non-skipped platform evidence. Batch registry
 changes before fresh independent qualification. The private Seurat exploration
 entry point is optional future work, not a required G26 deliverable.
 Review progress: artifacts/implementation/review-2026-10-03-progress.json.

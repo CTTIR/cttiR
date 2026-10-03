@@ -26,7 +26,7 @@ interop_seurat_packages <- function() {
 interop_adapters <- function() {
   data.frame(
     id = c("interop.bioc_s4", "interop.se_tidy_view", "interop.seurat_v5"),
-    version = c("1.0.0", "1.0.0", "1.0.0"),
+    version = c("1.1.0", "1.1.0", "1.1.0"),
     template = "standard-0.3.0/code/R/cttir_interop.R",
     functions = c("ci_validate_s4,ci_conversion_report", "ci_se_tidy_view",
       "ci_seurat_layers,ci_pseudobulk,ci_convert,ci_conversion_report"),

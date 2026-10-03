@@ -1,4 +1,6 @@
-# cttiR development
+# cttiR 0.1.1.9000
+
+* Interoperability adapters 1.1.0 report graph, neighbor, image, coordinate, command, identity, reduction component and SCE pairing losses, including same-class comparisons. Sparse graph comparison preserves sparse storage. Instrumented delayed-layer tests verify bounded inventory, pseudobulk and Seurat-to-SCE conversion; reverse coercion refuses backed assays before reading values.
 
 - Use broom.mixed fixed-effect tidiers for nlme answers, check known fitted-class dispatch, and surface unresolved argument warnings.
 - Relabel Seurat exploration as a candidate; conversion helpers do not establish an exploration workflow.
