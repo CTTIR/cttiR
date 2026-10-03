@@ -81,7 +81,8 @@ The default project planner is deterministic. Tested local models are listed
 with their benchmark results in the runtime manifest; no model is currently
 qualified in that manifest. With `options(cttiR.planner = "local_llm")`
 and a verified owned runtime, a model plans only if the manifest marks it
-qualified at its exact digest; otherwise the deterministic planner is used and
+qualified at its exact digest and the tested prompt, grounding policy, registry,
+schema, runtime binary and inference settings still match; otherwise the deterministic planner is used and
 the fallback reason `model_not_qualified` is recorded. Using an unqualified
 model needs the separate acknowledgement
 `options(cttiR.planner_allow_unqualified = TRUE)`, and its qualification label

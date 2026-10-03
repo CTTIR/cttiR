@@ -183,7 +183,8 @@ setup <- function(model = "auto", install_ollama = TRUE, offline = FALSE, dry_ru
   # Planner qualification comes from the recorded benchmark; overrides that
   # were never benchmarked are labelled unvalidated.
   tested <- Filter(function(x) identical(x$tag, model), manifest$tested_models)
-  validation <- if (automatic) manifest$model_validation else if (length(tested)) tested[[1]]$qualification else "unvalidated_user_override"
+  expected_digest <- if (automatic) manifest$model_digest else if (length(tested)) tested[[1]]$digest else NULL
+  validation <- planner_qualification(model, expected_digest, manifest)
   root <- runtime_directory()
   endpoint <- runtime_endpoint()
   result <- structure(list(
@@ -276,6 +277,10 @@ setup <- function(model = "auto", install_ollama = TRUE, offline = FALSE, dry_ru
       owner$probe <- probe
       write_bytes(paste0(json_text(owner, TRUE), "\n"), file.path(root, "runtime-state.json"))
       result$state <- "runtime_ready"
+      # Re-evaluate the actual acquired digest; a mutable explicit tag must not
+      # inherit an older digest's positive qualification.
+      validation <- planner_qualification(model, entry$digest, manifest)
+      result$model$validation <- validation
       result$model$digest <- entry$digest
       result$runtime$locality <- owner$locality
       result$steps <- list(

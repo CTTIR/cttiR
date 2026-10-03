@@ -1,5 +1,9 @@
 # cttiR development
 
+* Bind positive model qualifications to the prompt, grounding policy, registry,
+  schema, runtime binary and inference settings; recheck the acquired model
+  digest during setup so mutable tags cannot inherit stale approvals.
+
 * Include registered package/alias metadata in planner prompts, filter proposed
   capabilities against keyword evidence, and persist omissions in decisions.
   Re-bound escaped inputs as valid JSON. Model qualification remains unchanged.

@@ -623,3 +623,55 @@ test_that("metadata prompts remain valid JSON within budget for escaped inputs",
   expect_match(prompt$system, "registered aliases:", fixed = TRUE)
   expect_match(prompt$system, "packages:", fixed = TRUE)
 })
+
+test_that("positive qualification is bound to the tested planner context", {
+  manifest <- read_document(resource_file("runtime", "manifest.json"))
+  entry <- manifest$tested_models[[1]]
+  entry$qualification <- "qualified_for_planning"
+  entry$qualification_context <- planner_qualification_context(manifest)
+  manifest$tested_models <- list(entry)
+  manifest <- jsonlite::fromJSON(json_text(manifest), simplifyVector = FALSE)
+  expect_identical(planner_qualification(entry$tag, entry$digest, manifest), "qualified_for_planning")
+  for (field in names(entry$qualification_context)) {
+    changed <- manifest
+    changed$tested_models[[1]]$qualification_context[[field]] <- NULL
+    expect_identical(planner_qualification(entry$tag, entry$digest, changed), "not_qualified_for_planning", info = field)
+  }
+  manifest$tested_models[[1]]$qualification_context <- NULL
+  expect_identical(planner_qualification(entry$tag, entry$digest, manifest), "not_qualified_for_planning")
+  manifest$tested_models <- list()
+  manifest$model <- entry$tag
+  manifest$model_digest <- entry$digest
+  manifest$model_validation <- "qualified_for_planning"
+  expect_identical(planner_qualification(entry$tag, entry$digest, manifest), "not_qualified_for_planning")
+  manifest$model_qualification_context <- entry$qualification_context
+  expect_identical(planner_qualification(entry$tag, entry$digest, manifest), "qualified_for_planning")
+  expect_identical(planner_qualification(entry$tag, paste(rep("0", 64), collapse = ""), manifest), "unvalidated_user_override")
+})
+
+test_that("setup checks actual digest instead of inheriting a mutable tag approval", {
+  manifest <- read_document(resource_file("runtime", "manifest.json"))
+  entry <- manifest$tested_models[[1]]
+  entry$qualification <- "qualified_for_planning"
+  entry$qualification_context <- planner_qualification_context(manifest)
+  manifest$tested_models <- list(entry)
+  reader <- read_document
+  root <- new_parent()
+  withr::local_options(cttiR.runtime_dir = root)
+  owner <- list(pid = Sys.getpid(), host = Sys.info()[["nodename"]], locality = "managed_cloud_disabled")
+  local_mocked_bindings(
+    read_document = function(path, ...) {
+      if (identical(path, resource_file("runtime", "manifest.json"))) return(manifest)
+      reader(path, ...)
+    },
+    runtime_owner = function(...) owner,
+    local_model = function(...) list(digest = fake_digest),
+    runtime_request = function(...) stop("unexpected request"),
+    runtime_probe = function(...) list(state = "pass")
+  )
+  prepared <- setup(model = entry$tag, offline = TRUE)
+  expect_identical(prepared$state, "runtime_ready")
+  expect_identical(prepared$model$digest, fake_digest)
+  expect_identical(prepared$model$validation, "unvalidated_user_override")
+  expect_identical(prepared$blockers, "workflow_model_not_qualified")
+})

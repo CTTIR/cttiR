@@ -5,6 +5,7 @@
 # enumerated decisions plus a validated plain-text rationale can be accepted.
 
 planner_prompt_version <- "planner-3"
+planner_grounding_policy <- "registry-keywords-1"
 
 planner_limits <- list(
   name = 200L, type = 100L, goal = 2000L, prompt = 14000L, output_bytes = 4096L,
@@ -291,7 +292,7 @@ planner_ground <- function(plan, goal, registry = capability_registry()) {
     plan$proposal$unresolved <- c(utils::head(plan$proposal$unresolved, planner_limits$notes - 1L),
       "Some proposed capabilities lacked registered keyword evidence and were omitted.")
   }
-  plan$provenance$capability_grounding <- list(policy = "registry-keywords-1",
+  plan$provenance$capability_grounding <- list(policy = planner_grounding_policy,
     retained = as.list(kept), removed = as.list(removed))
   checked <- planner_validate(planner_proposal_json(plan$proposal), planner_schema(registry), registry)
   if (!checked$ok) abort_cttir("The grounded planner proposal is invalid.", "cttir_schema_error", "invalid_grounded_proposal")
@@ -314,14 +315,31 @@ planner_abstention <- function(source = c("reply", "goal")) {
 
 # Planner qualification of a model at its expected digest, from the recorded
 # benchmark in the runtime manifest; anything never benchmarked is unvalidated.
-planner_qualification <- function(model, digest) {
-  manifest <- read_document(resource_file("runtime", "manifest.json"))
+planner_qualification_context <- function(manifest = NULL) {
+  if (is.null(manifest)) manifest <- read_document(resource_file("runtime", "manifest.json"))
+  registry <- capability_registry()
+  list(prompt_version = planner_prompt_version, grounding_policy = planner_grounding_policy,
+    prompt_sha256 = content_hash(paste(planner_rules(registry), collapse = "\n")),
+    registry_sha256 = content_hash(json_text(registry)),
+    schema_sha256 = content_hash(json_text(planner_schema(registry))),
+    runtime_binary_sha256 = manifest$binary_sha256, options = planner_options())
+}
+
+planner_qualification <- function(model, digest, manifest = NULL) {
+  if (is.null(manifest)) manifest <- read_document(resource_file("runtime", "manifest.json"))
+  bound <- function(label, context) {
+    if (identical(label, "qualified_for_planning") &&
+        !identical(json_text(context), json_text(planner_qualification_context(manifest)))) return("not_qualified_for_planning")
+    label
+  }
   for (entry in manifest$tested_models) {
     if (identical(entry$tag, model) && identical(entry$digest, digest) && is.character(entry$qualification)) {
-      return(entry$qualification)
+      return(bound(entry$qualification, entry$qualification_context))
     }
   }
-  if (identical(model, manifest$model) && identical(digest, manifest$model_digest)) return(manifest$model_validation)
+  if (identical(model, manifest$model) && identical(digest, manifest$model_digest)) {
+    return(bound(manifest$model_validation, manifest$model_qualification_context))
+  }
   "unvalidated_user_override"
 }
 
