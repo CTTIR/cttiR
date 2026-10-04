@@ -4,6 +4,10 @@
     "sha256:122877f9677cfa5a42b3722301dc0c1d8a534847ca3746078d7db9ef165b5381": {
       "sha256": "5de268884db87bc04c5277dc7a2ce85aac16d0eade546805bef16e9a2d9de79a",
       "scope": "Original bundled resource snapshot, retained for project pins and rollback"
+    },
+    "sha256:278fba39a5ccfee5ddb0cbf30c1db057d788ea0015538298191b75f9e6a2b385": {
+      "sha256": "1572ca50bcc298f44cdee764024f39957ca5785d569e1bf9093b769dae502f91",
+      "scope": "Retained resource snapshot before supplemental DESCRIPTION observations"
     }
   }
 }

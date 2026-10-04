@@ -35,6 +35,10 @@ not verify ownership; an index-only refresh does not establish new author
 or maintainer evidence.
 The \code{authors_r_roles} list column parses literal \code{person()} declarations
 without evaluating R code; unsupported expressions remain unresolved.
+\code{supplemental_maintainer_evidence_json} contains separately observed,
+version-matched DESCRIPTION metadata with its own source URL and hash.
+Its \code{relation_to_seed} distinguishes matching hashes from independent
+observations; it never replaces the original observation's source hash.
 }
 \description{
 Metadata reflects the supplied 2026-09-26 research snapshot. Candidate status

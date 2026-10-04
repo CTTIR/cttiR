@@ -19,6 +19,10 @@
 #'   or maintainer evidence.
 #'   The `authors_r_roles` list column parses literal `person()` declarations
 #'   without evaluating R code; unsupported expressions remain unresolved.
+#'   `supplemental_maintainer_evidence_json` contains separately observed,
+#'   version-matched DESCRIPTION metadata with its own source URL and hash.
+#'   Its `relation_to_seed` distinguishes matching hashes from independent
+#'   observations; it never replaces the original observation's source hash.
 #' @export
 #' @examples
 #' resources("cytometry", limit = 3L)
@@ -52,6 +56,7 @@ resources <- function(query = NULL, domain = NULL, repository = NULL,
   # The bundled resource_search view predates the per-observation status columns;
   # the same join also returns them, so stale rows stay visible after an outage.
   provenance <- c("author", "authors_r_literal", "maintainer", "maintainer_description_sha256", "maintainer_evidence_status")
+  provenance <- c(provenance, "supplemental_maintainer_evidence_json")
   present <- DBI::dbListFields(con, "observations")
   columns <- vapply(provenance, function(field) {
     if (field %in% present) paste0("o.", field) else paste0("NULL AS ", field)

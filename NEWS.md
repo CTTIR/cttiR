@@ -1,5 +1,7 @@
 # cttiR 0.1.1.9000
 
+* Preserve separately retrieved companion DESCRIPTION evidence with source URLs, hashes and declared roles. New evidence never overwrites seed observation hashes, implies ownership or promotes candidate workflows; older resource pins retain their original bytes.
+
 * Parse literal Authors@R declarations without execution to expose source-bound author and maintainer roles. Unsupported expressions remain unresolved; companion approval requires explicit maintainer text or a literal creator contact. Declared roles do not establish ownership.
 
 * Setup distinguishes published full sizes from estimated acquisition bytes, with zero for reusable components and unknown model presence during offline previews. Totals support downloads larger than 2 GB.

@@ -122,6 +122,12 @@
               "string",
               "null"
             ]
+          },
+          "supplemental_maintainer_evidence": {
+            "type": [
+              "object",
+              "null"
+            ]
           }
         },
         "required": [
