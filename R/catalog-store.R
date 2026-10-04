@@ -35,8 +35,8 @@ resource_snapshot <- function(path = NULL) {
 }
 
 resource_history <- function() {
-  file <- resource_file("extdata", "resource-history", "index.json")
-  expected <- read_document(resource_file("extdata", "file-hashes.json"))[["resource-history/index.json"]]
+  file <- resource_file("extdata", "reshist", "index.json")
+  expected <- read_document(resource_file("extdata", "file-hashes.json"))[["reshist/index.json"]]
   if (!identical(file_hash(file), expected)) {
     abort_cttir("The retained resource index failed its integrity check.", "cttir_catalog_corrupt")
   }
@@ -63,7 +63,7 @@ resource_snapshot_by_id <- function(id) {
     if (!is.character(expected) || length(expected) != 1L || is.na(expected) || !grepl("^[a-f0-9]{64}$", expected)) {
       abort_cttir("Invalid retained resource identity.", "cttir_catalog_corrupt")
     }
-    file <- resource_file("extdata", "resource-history", paste0(expected, ".sqlite"))
+    file <- resource_file("extdata", "reshist", paste0(expected, ".sqlite"))
   } else {
     file <- file.path(catalog_store(), "resource-snapshots", id, "package-resources.sqlite")
     expected <- id

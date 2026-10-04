@@ -2,7 +2,7 @@
 
 Usage: python3 tools/build_resource_provenance.py INVENTORY.json
 The inventory supplies local paths only. No Authors@R expressions are evaluated.
-Run after retaining the current database in resource-history/index.json.
+Run after retaining the current database in reshist/index.json.
 """
 import gzip
 import hashlib
@@ -15,7 +15,7 @@ root = pathlib.Path('inst/extdata')
 inventory = json.loads(pathlib.Path(sys.argv[1]).read_text())
 database = root / 'package-resources.sqlite'
 prior_hash = hashlib.sha256(database.read_bytes()).hexdigest()
-history = json.loads((root / 'resource-history/index.json').read_text())['snapshots']
+history = json.loads((root / 'reshist/index.json').read_text())['snapshots']
 assert prior_hash in [x['sha256'] for x in history.values()], 'Retain the old snapshot first'
 mirror = json.loads(gzip.decompress((root / 'package-resources.json.gz').read_bytes()))
 fields = ['author', 'authors_r_literal', 'maintainer', 'maintainer_description_sha256', 'maintainer_evidence_status']
@@ -68,7 +68,7 @@ for field in fields:
 (root / 'mirror-hashes.json').write_text(json.dumps({'package-resources.json': hashlib.sha256(raw).hexdigest(),
     'note': 'SHA-256 of the decompressed current resource mirror.'}, indent=2) + '\n')
 hashes = json.loads((root / 'file-hashes.json').read_text())
-for path in [*hashes, 'resource-history/index.json', 'resource-history/' + prior_hash + '.sqlite']:
+for path in [*hashes, 'reshist/index.json', 'reshist/' + prior_hash + '.sqlite']:
     hashes[path] = hashlib.sha256((root / path).read_bytes()).hexdigest()
 (root / 'file-hashes.json').write_text(json.dumps(hashes, indent=2) + '\n')
 print(json.dumps({'matched_observations': matched, 'count': len(matched), 'content_id': mirror['manifest']['content_id']}))

@@ -4,7 +4,7 @@ test_that("retained resource identity mappings cannot be silently replaced", {
   writeLines('{"schema_version":1,"snapshots":{}}', corrupted)
   local_mocked_bindings(resource_file = function(...) {
     parts <- c(...)
-    if ("resource-history" %in% parts && "index.json" %in% parts) corrupted else original_file(...)
+    if ("reshist" %in% parts && "index.json" %in% parts) corrupted else original_file(...)
   })
   expect_error(resource_history(), class = "cttir_catalog_corrupt")
 })

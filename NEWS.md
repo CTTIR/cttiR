@@ -1,5 +1,7 @@
 # cttiR 0.1.1.9000
 
+- Shorten retained resource paths to fit portable source tarball limits while preserving snapshot hashes and project pins.
+
 * Resource queries now expose nullable author and maintainer metadata. Sixteen
   verified DESCRIPTION files match recorded observation hashes; other metadata
   remains unknown. Historical project resource pins retain their original

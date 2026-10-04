@@ -3,6 +3,6 @@
   "resource-manifest.json": "49c8ec987d09ba1689e3e252cec936b60aeacbf43553009dd87abc4c6b57d516",
   "resource-catalog.schema.json": "52a4a09fe5d4f2bd70fb9e7953a139379bb1c99fc7a1408a13ec3a68280f3491",
   "package-resources.json.gz": "4b98551cb52831f22bc2f81f631df1a17d9edf4dab9744b287ab6879a6219840",
-  "resource-history/index.json": "34c0b895b23e955a847f22d0c5beff5df631b603b25c9c6736eb4e72e5e07fcf",
-  "resource-history/5de268884db87bc04c5277dc7a2ce85aac16d0eade546805bef16e9a2d9de79a.sqlite": "5de268884db87bc04c5277dc7a2ce85aac16d0eade546805bef16e9a2d9de79a"
+  "reshist/index.json": "34c0b895b23e955a847f22d0c5beff5df631b603b25c9c6736eb4e72e5e07fcf",
+  "reshist/5de268884db87bc04c5277dc7a2ce85aac16d0eade546805bef16e9a2d9de79a.sqlite": "5de268884db87bc04c5277dc7a2ce85aac16d0eade546805bef16e9a2d9de79a"
 }

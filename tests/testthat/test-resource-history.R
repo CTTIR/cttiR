@@ -10,7 +10,7 @@ test_that("retained bundled resources resolve old project pins after a base chan
   retained <- resource_snapshot_by_id(old)
   expect_identical(retained$id, old)
   expect_identical(retained$sha256, original$sha256)
-  expect_match(retained$file, "resource-history", fixed = TRUE)
+  expect_match(retained$file, "reshist", fixed = TRUE)
   expect_identical(readBin(retained$file, "raw", file.info(retained$file)$size),
     readBin(original$file, "raw", file.info(original$file)$size))
   manifest <- snapshot_manifest(read_catalog(resource_file("extdata", "api-catalog.json.gz"))$content_id, old)
@@ -37,7 +37,7 @@ test_that("retained resources are verified before use", {
     value
   }, resource_file = function(...) {
     parts <- c(...)
-    if ("resource-history" %in% parts && any(grepl("[.]sqlite$", parts))) damaged else original_file(...)
+    if ("reshist" %in% parts && any(grepl("[.]sqlite$", parts))) damaged else original_file(...)
   })
   expect_error(resource_snapshot_by_id(old), class = "cttir_catalog_corrupt")
 })
