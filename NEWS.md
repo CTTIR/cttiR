@@ -1,5 +1,7 @@
 # cttiR 0.1.1.9000
 
+* Setup distinguishes published full sizes from estimated acquisition bytes, with zero for reusable components and unknown model presence during offline previews. Totals support downloads larger than 2 GB.
+
 - Shorten retained resource paths to fit portable source tarball limits while preserving snapshot hashes and project pins.
 
 * Resource queries now expose nullable author and maintainer metadata. Sixteen

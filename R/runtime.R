@@ -175,6 +175,11 @@ local_model <- function(endpoint, model) {
 #'   available. File presence alone does not establish integrity or readiness.
 #'   Explicit unqualified model preparation remains possible; it does not qualify
 #'   that model for planning.
+#'   `download_estimate` reports estimated acquisition bytes, with zero for
+#'   reusable components and unknown model bytes until the owned daemon is
+#'   queried. Dry runs never query it. Published sizes are estimates rather than
+#'   measured transfer: cached archives and shared model blobs can reduce bytes,
+#'   and mutable model tags can change size. Existing files still need verification.
 #' @details Machine preferences may set `options(cttiR.runtime_dir = path)` and
 #'   `options(cttiR.ollama_endpoint = "http://127.0.0.1:11434")`. Other endpoints
 #'   are rejected. The local HTTP client disables proxies and redirects.
@@ -207,6 +212,7 @@ setup <- function(model = "auto", install_ollama = TRUE, offline = FALSE, dry_ru
   if (length(result$blockers)) result$actions <- character()
   result$preflight <- runtime_preflight(root, endpoint, manifest, model, validation, install_ollama, offline,
     resources = if (!is.null(selection$resources)) selection$resources else runtime_resources(root))
+  result$download_estimate <- runtime_download_estimate(result$preflight)
   if (dry_run) {
     result$blockers <- unique(c(result$blockers, result$preflight$acquisition_blockers,
         result$preflight$planner_blockers))
@@ -289,6 +295,7 @@ setup <- function(model = "auto", install_ollama = TRUE, offline = FALSE, dry_ru
         if (!ready) abort_cttir("Owned runtime did not become ready.", "cttir_runtime_unavailable")
       }
       entry <- local_model(endpoint, model)
+      result$download_estimate <- runtime_download_estimate(result$preflight, !is.null(entry))
       if (is.null(entry)) {
         if (offline) abort_cttir("The requested model is absent in offline mode.", "cttir_runtime_unavailable")
         runtime_request(endpoint, "pull", list(model = model, stream = FALSE), timeout = 900)
@@ -370,6 +377,11 @@ print.cttir_setup <- function(x, ...) {
     bytes <- function(value) if (is.null(value) || length(value) != 1L || is.na(value)) "unknown" else format(value, scientific = FALSE)
     cat("Full download sizes (bytes): runtime ", bytes(x$preflight$downloads$runtime_archive_bytes),
       "; model ", bytes(x$preflight$downloads$model_bytes), "\n", sep = "")
+    if (!is.null(x$download_estimate)) {
+      cat("Estimated acquisition (bytes): runtime ", bytes(x$download_estimate$runtime_bytes),
+        "; model ", bytes(x$download_estimate$model_bytes),
+        "; total ", bytes(x$download_estimate$total_bytes), "\n", sep = "")
+    }
     cat("Disk (bytes): available ", bytes(x$preflight$disk$available_bytes),
       "; admission screen ", bytes(x$preflight$disk$admission_required_bytes), "\n", sep = "")
     owner <- if (!is.null(x$runtime$pid)) x$runtime else x$preflight$owner

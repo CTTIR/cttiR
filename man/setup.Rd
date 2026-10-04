@@ -27,6 +27,11 @@ space, recorded admission budgets and verified local process ownership when
 available. File presence alone does not establish integrity or readiness.
 Explicit unqualified model preparation remains possible; it does not qualify
 that model for planning.
+\code{download_estimate} reports estimated acquisition bytes, with zero for
+reusable components and unknown model bytes until the owned daemon is
+queried. Dry runs never query it. Published sizes are estimates rather than
+measured transfer: cached archives and shared model blobs can reduce bytes,
+and mutable model tags can change size. Existing files still need verification.
 }
 \description{
 Acquisition uses a pinned publisher archive and checksum, currently for Linux

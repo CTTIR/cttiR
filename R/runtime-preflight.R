@@ -43,3 +43,18 @@ runtime_preflight <- function(root, endpoint, manifest, model, validation,
     planner_blockers = if (qualified) character() else "workflow_model_not_qualified"
   )
 }
+
+# Keep unknown model presence explicit until the owned daemon has been queried.
+# Published model sizes cannot measure shared blobs or mutable tag downloads.
+runtime_download_estimate <- function(preflight, model_present = NULL) {
+  runtime <- if (isTRUE(preflight$executable_present) || !is.null(preflight$owner)) 0 else preflight$downloads$runtime_archive_bytes
+  model <- if (is.null(model_present)) NULL else if (isTRUE(model_present)) 0 else preflight$downloads$model_bytes
+  list(
+    runtime_bytes = runtime, model_bytes = model,
+    total_bytes = if (is.null(runtime) || is.null(model)) NULL else as.double(runtime) + as.double(model),
+    model_presence = if (is.null(model_present)) "not_queried" else if (model_present) "present" else "absent",
+    scope = paste("before_setup_acquisition; published_size_estimate_not_measured_transfer;",
+      "cached_archives_and_shared_blobs_may_reduce_transfer; mutable_tags_may_change_size;",
+      "existing_runtime_files_must_still_pass_verification")
+  )
+}

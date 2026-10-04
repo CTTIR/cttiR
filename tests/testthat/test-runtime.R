@@ -129,6 +129,8 @@ test_that("owned reuse probes locally and failed model verification preserves st
     })
   result <- setup(offline = TRUE)
   expect_equal(result$state, "runtime_ready")
+  expect_equal(result$download_estimate$total_bytes, 0)
+  expect_identical(result$download_estimate$model_presence, "present")
   expect_equal(probes$count, 1L)
   expect_equal(read_document(file.path(root, "runtime-state.json"))$model_digest, manifest$model_digest)
   before <- tree_hashes(root)
@@ -137,7 +139,10 @@ test_that("owned reuse probes locally and failed model verification preserves st
   expect_equal(probes$count, 1L)
   expect_equal(tree_hashes(root), before)
   entry <- NULL
-  expect_match(setup(offline = TRUE)$blockers, "absent in offline", fixed = TRUE)
+  missing <- setup(offline = TRUE)
+  expect_match(missing$blockers, "absent in offline", fixed = TRUE)
+  expect_identical(missing$download_estimate$model_presence, "absent")
+  expect_equal(missing$download_estimate$total_bytes, manifest$model_bytes)
   expect_equal(tree_hashes(root), before)
 })
 
