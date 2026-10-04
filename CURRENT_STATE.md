@@ -2,6 +2,29 @@
 
 Updated: 2026-10-04. Version: 0.1.1.9000. License: MIT.
 
+## Latest checkpoint: live browser and installed environment (2026-10-04)
+
+Installed standard/environment verification passed 311 assertions across 26 tests,
+zero skips/errors/warnings, including cached DescrTab2, local fixture installation
+and renv restore. Receipt: standard-environment-installed-current.json.
+
+Live browser verification found one stale offline-blocker expectation; the test
+now separately checks automatic selection refusal and explicit-model offline
+acquisition refusal. Implementation is unchanged from fully checked 703b25f.
+Corrected browser/message-catalog run: 645 assertions, 17 tests,
+zero skips/errors/warnings, 139.971 seconds. Receipts under
+artifacts/implementation: browser-current-failure.json, browser-followup.json,
+current-live-input-integrity.json, current-browser-visual-review.json and
+live-followup-scope.json. Original failing log is retained. Eight named desktop
+and mobile screenshots were inspected; this is not assistive-technology testing.
+
+The full-check 13 skips remain recorded; supplemental checks cover 12 cases,
+leaving the planner qualification case open. Full check/hosted evidence below
+belongs to 703b25f; this follow-up changes only a browser regression test and
+this checkpoint. Final release source/archive validation is still required.
+Independent corpus authorization remains pending. No COMPLETE/STOP or submission;
+retry remains active. Do not repeat implementation checks without a new reason.
+
 ## Latest checkpoint: installed G26 evidence (2026-10-04)
 
 Source **703b25f** passed the full build/check: 6281 assertions, 13 explicit skips,

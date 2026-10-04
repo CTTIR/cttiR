@@ -250,5 +250,13 @@ test_that("Knowledge previews an update, audit repairs, cancellation and an unav
   capture(app, "runtime", "#runtime-result")
   app$click("runtime-run", wait_ = FALSE)
   wait_text(app, "#runtime-status", "blocked")
+  wait_text(app, "#runtime-result", "No qualified model fits")
+  expect_false(dir.exists(file.path(live$parent, "runtime")))
+
+  # An explicit model bypasses automatic selection, but offline acquisition
+  # must still be refused before a runtime can be created or started.
+  app$set_inputs(`runtime-model` = "qwen2.5-coder:1.5b")
+  app$click("runtime-run", wait_ = FALSE)
+  wait_text(app, "#runtime-result", "acquisition is disabled")
   expect_match(app$get_text("#runtime-result"), "acquisition is disabled", fixed = TRUE)
 })
