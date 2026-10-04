@@ -2,6 +2,32 @@
 
 Updated: 2026-10-04. Version: 0.1.1.9000. License: MIT.
 
+## Latest checkpoint: full role check and 41-item evidence matrix (2026-10-04)
+
+Source **cfee6f6** passed the full build/check: 6205 assertions, 13 explicit skips,
+zero errors/warnings, one metadata NOTE; PDF/HTML manuals and vignettes passed.
+All five hosted jobs passed, run 37179841285. Archive SHA-256
+63e6d2e4044be8fb71d6606a56cb53c01882fb01aaacec5801d0d57485205ba8,
+259 members; private paths absent and changed source bytes match the commit.
+Receipt: artifacts/implementation/description-roles-full-validation.json.
+No full-check worker remains pending; do not repeat the same unchanged check.
+
+All 41 owner-review items now have a current matrix with source hashes,
+command/environment, whole-check timing scope, actual outcomes and evidence
+links: artifacts/implementation/owner-review-current.json and .md. Counts:
+22 implementation regressions verified, five optional, 14 acceptance/disclosure/
+evidence items still open. These are scoped regression findings, not fresh
+independent re-execution of every original reproduction or final acceptance.
+The ignored reconciliation script is admin/reconcile_owner_review.py.
+
+An explicit request for independent corpus authorship authorization is pending:
+separate reviewer blind to matching rules/prior cases, or user-supplied corpora.
+Do not spawn a reviewer without authorization or relabel same-author sets as
+independent. Original minimums/thresholds and shipped-artifact scoring remain.
+Also open: ownership/per-package provenance and glmGamPoi observation identity,
+historical evidence limitations and final release metadata/acceptance.
+No COMPLETE/STOP or CRAN/external-builder submission. Hourly retry remains active.
+
 ## Latest checkpoint: literal author/maintainer roles (2026-10-04)
 
 Source **cfee6f6** is pushed to main. A restricted Authors@R parser handles
