@@ -127,7 +127,14 @@ attached to an older observation or used to infer legal ownership.
 Review these before starting another full check. Receipt:
 artifacts/implementation/runtime-readiness-review.json.
 
-Next: finish the new runtime-readiness milestone's full checks; finish R07 readiness
+Companion correction committed/pushed as 86a9d68. Catalog-evidence and router
+suites pass 235 assertions with no failures, warnings or skips. Source-isolated
+full check runs in cttir-companion-provenance-check-86a9d68.service under
+artifacts/companion-provenance-check-86a9d68; hosted checks pending.
+Receipt: companion-provenance-review.json. Inspect this active check before
+launching another one.
+
+Next: review the companion milestone's full checks; finish R07 readiness
 incremental acquisition reporting; R21 maintainer provenance; R22/R39
 current consolidated gate/requirements evidence. Reconcile every other owner
 review item individually. R10/R31 diagnostics now expose pre-grounding and raw
