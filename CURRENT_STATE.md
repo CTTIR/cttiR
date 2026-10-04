@@ -2,6 +2,43 @@
 
 Updated: 2026-10-04. Version: 0.1.1.9000. License: MIT.
 
+## Latest checkpoint: literal author/maintainer roles (2026-10-04)
+
+Source **cfee6f6** is pushed to main. A restricted Authors@R parser handles
+literal person/c/utils::person declarations without evaluating expressions.
+Unsupported syntax remains unresolved; creator contacts can satisfy source-bound
+companion maintainer evidence. Cached parsed roles alone cannot bypass the
+literal check. Raw metadata remains unchanged, and ownership is not inferred.
+Source extraction stores parsed roles; resources() exposes an authors_r_roles
+list column derived from retained raw metadata, including unresolved historical
+records. Existing snapshot/database bytes and pins remain unchanged.
+
+Related tests: 509 assertions, zero failures/warnings/skips, 88 seconds; final
+focused run: 46 passing assertions and clean parser lint. Receipt:
+artifacts/implementation/description-roles-validation.json. Full build/check is
+running under cttir-description-roles-check.service; read
+artifacts/description-roles-check/status.json before launching another.
+
+The previous **537c1ef** milestone passed a complete local check: 6159 assertions,
+13 explicit skips, zero errors/warnings, one metadata NOTE; manuals/vignettes
+passed. All five hosted jobs passed (37176849163). Archive SHA-256
+4b1abf63f97f3c3181659c327a9bfdebe30d72364f9fa87821252c7318181682,
+257 members; no admin/artifacts and changed shipped source matches the commit.
+Receipt: artifacts/implementation/runtime-download-estimate-full-validation.json.
+
+Primary-source role review resolves the three previously hash-matched companion
+files. glmGamPoi 1.24.0 was retrieved from the GWDG Bioconductor mirror: archive
+faf17f91e8e84a6cb455c7588df352f24da2f5a07e7d4ab8a3b654889a1e7492;
+DESCRIPTION 1a7d65d79e7a9080c883b088342d556959e7bfcf15f0f745931ab6375da2816b.
+That DESCRIPTION differs from the old observation hash 80a9aec3..., so it is
+retained separately, not silently attached or substituted. See
+companion-literal-role-review.json and glmgampoi-source-reconciliation.json.
+
+Still open: independent fresh frozen ask/planner qualification, ownership
+provenance and glmGamPoi observation reconciliation, item-by-item acceptance
+closure and final release metadata/verification. No COMPLETE/STOP or submission;
+retry automation and ignored inputs are preserved.
+
 ## Latest checkpoint: runtime acquisition estimates (2026-10-04)
 
 Source **537c1ef** is pushed to main. `setup()` now reports acquisition estimates
