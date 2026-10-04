@@ -2,6 +2,40 @@
 
 Updated: 2026-10-04. Version: 0.1.1.9000. License: MIT.
 
+## Latest checkpoint: eleven ecosystem DESCRIPTION records (2026-10-04)
+
+Source **703b25f** is pushed to main. Supplemental evidence now covers Seurat,
+SeuratObject, sctransform, Signac, SeuratData, Azimuth, SeuratWrappers, SeuratDisk,
+BPCells, presto and glmGamPoi. All seven newly added files match original source
+hashes and versions. The live Seurat DESCRIPTION is already 5.6.0; the archived
+5.5.1 DESCRIPTION exactly matches the pinned observation and was used instead.
+Creator contacts parse without execution; ownership is still not inferred.
+
+The incremental importer preserves prior supplemental records, validates exact
+package/version targets before mutation, and retains prior snapshot bytes. A
+negative Seurat 5.6.0 import was refused with every extdata file unchanged.
+All 229 original observation fields and the four earlier supplemental records
+remain unchanged. New resource ID: sha256:1167ec0f4de5f75bc19b40364a3706c31c1bcaf7c0ea1006a9985ab50a80324f.
+Previous database SHA: 551d7b47510dc09dd1f9186b0234de43d20863f9cb34090636996d3cef71b474 (retained under reshist).
+
+Focused tests: 166 assertions, zero failures/warnings/skips, 8.2 seconds.
+Receipts: artifacts/implementation/ecosystem-provenance-validation.json,
+ecosystem-provenance-preservation.json and ecosystem-builder-refusal.json.
+Full check is running under cttir-ecosystem-provenance-check.service; inspect
+artifacts/ecosystem-provenance-check/status.json before any new run.
+
+Predecessor 2070c51 passed complete local validation: 6223 assertions, 13 explicit
+skips, zero errors/warnings, one metadata NOTE; manuals/vignettes passed. All five
+hosted jobs passed (37185722574). Archive SHA
+6eb3c77da81853652ea9423532e9b40cc677fc195866f0db6d70b3efdc37bb86,
+262 members, private paths absent, changed source verified. Receipt:
+artifacts/implementation/supplemental-provenance-full-validation.json.
+
+Next reconcile R21 using the full eleven-package evidence with explicit
+ownership limits. Independent fresh qualification still awaits authorization;
+remaining acceptance/evidence and release gates are open. No COMPLETE/STOP or
+submission; hourly timer and ignored source material remain preserved.
+
 ## Latest checkpoint: separate companion source evidence (2026-10-04)
 
 Source **2070c51** is pushed to main. Four companion DESCRIPTION records are now
