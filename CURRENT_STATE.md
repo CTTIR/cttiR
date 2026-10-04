@@ -150,6 +150,12 @@ source, provenance and router tests pass677 assertions with no failures, warning
 or skips (141.5 seconds); changed-source lint clean. Evidence:
 artifacts/implementation/maintainer-provenance-verified-tests.log.
 
+Maintainer-provenance milestone committed/pushed as 2f6dfc7. Full check runs
+in cttir-maintainer-provenance-check-2f6dfc7.service under
+artifacts/maintainer-provenance-check-2f6dfc7; hosted validation pending.
+Receipt: maintainer-provenance-review.json. Inspect this check before starting
+another full run.
+
 Next: review the maintainer-provenance milestone's full checks; finish R07 readiness
 incremental acquisition reporting; R21 maintainer provenance; R22/R39
 current consolidated gate/requirements evidence. Reconcile every other owner
