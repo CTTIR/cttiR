@@ -33,6 +33,8 @@ fields preserve literal DESCRIPTION text with its matching hash. Missing
 metadata, including historical snapshots, stays unknown. These fields do
 not verify ownership; an index-only refresh does not establish new author
 or maintainer evidence.
+The \code{authors_r_roles} list column parses literal \code{person()} declarations
+without evaluating R code; unsupported expressions remain unresolved.
 }
 \description{
 Metadata reflects the supplied 2026-09-26 research snapshot. Candidate status

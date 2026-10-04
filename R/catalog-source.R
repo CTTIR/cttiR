@@ -172,6 +172,7 @@ extract_source <- function(path, repository, revision, family = "local", documen
     maintainer_evidence = list(source_hash = revision_hash,
       description_sha256 = hashes[[description_file]], description_file = description_file,
       author = value("Author"), authors_r_literal = value("Authors@R"),
+      authors_r_roles = description_roles(value("Authors@R")),
       maintainer = value("Maintainer"), copyright = value("Copyright"),
       source_url = repository, extraction = "dcf_text_no_execution", ownership = "not_inferred"),
     exports = entries, methods = methods, s3_methods = s3_methods, source_files = hashes, documentation_corpus = corpus,

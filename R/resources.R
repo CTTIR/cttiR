@@ -17,6 +17,8 @@
 #'   metadata, including historical snapshots, stays unknown. These fields do
 #'   not verify ownership; an index-only refresh does not establish new author
 #'   or maintainer evidence.
+#'   The `authors_r_roles` list column parses literal `person()` declarations
+#'   without evaluating R code; unsupported expressions remain unresolved.
 #' @export
 #' @examples
 #' resources("cytometry", limit = 3L)
@@ -65,5 +67,7 @@ resources <- function(query = NULL, domain = NULL, repository = NULL,
     sql <- paste(sql, "ORDER BY name, repository LIMIT ?")
   }
   params <- append(params, list(as.integer(limit)))
-  DBI::dbGetQuery(con, sql, params = params)
+  result <- DBI::dbGetQuery(con, sql, params = params)
+  result$authors_r_roles <- lapply(result$authors_r_literal, description_roles)
+  result
 }

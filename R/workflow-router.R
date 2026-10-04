@@ -172,14 +172,16 @@ callable_approved <- function(index, callable, adapter) {
 # is not enough when the capability declares callables (for example clustering
 # functions): each of them must be approved for that adapter as well.
 # Companion approval needs explicit text records tied to the indexed revision.
-# Authors@R is retained as source text; it is never evaluated to fill missing fields.
+# Authors@R stays source text; only a literal grammar can establish cre roles.
 companion_provenance_valid <- function(record) {
   if (is.null(record)) return(FALSE)
   evidence <- record$maintainer_evidence
   text <- function(x) is.character(x) && length(x) == 1L && !is.na(x) && nzchar(trimws(x))
   if (is.null(evidence) || !text(evidence$source_hash) || !text(evidence$description_sha256) ||
-      !text(evidence$description_file) || !text(evidence$maintainer) ||
+      !text(evidence$description_file) ||
       !(text(evidence$author) || text(evidence$authors_r_literal))) return(FALSE)
+  if (!text(evidence$maintainer) &&
+      !description_has_maintainer(description_roles(evidence$authors_r_literal))) return(FALSE)
   identical(evidence$extraction, "dcf_text_no_execution") &&
     identical(evidence$source_hash, record$source_hash) &&
     identical(evidence$description_sha256, record$source_files[[evidence$description_file]])
