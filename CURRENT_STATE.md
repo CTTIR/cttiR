@@ -82,8 +82,8 @@ does not qualify planning. Automatic selection reuses its resource observation
 so the later acquisition/inference rechecks retain their timing. Project results
 and print show the actual planning mode, persisted fallback reason and the setup
 preview entry point; project creation does not probe optional runtime availability.
-This is partial R07 evidence: actual live grounded probe and incremental download
-accounting remain unverified. Runtime, project and offline suites pass: 256 assertions, no failures, warnings
+This is partial R07 evidence: incremental download accounting remains unverified;
+the actual live grounded probe passed as recorded below. Runtime, project and offline suites pass: 256 assertions, no failures, warnings
 or skips. An initial resource-read regression was fixed; a concurrent-source
 print-test attempt is retained as superseded evidence. Final log:
 artifacts/implementation/runtime-readiness-verified-tests.log.
@@ -103,9 +103,27 @@ Owned PID 1725382 was stopped and confirmed absent; no other daemon was changed.
 Evidence: grounded-runtime-probe.json/log and grounded-runtime-probe-review.json
 (command, script/archive hashes, expected/actual, runtime and cleanup).
 
-Correction 9afb6e5 is pushed. Full source-isolated check is running in
-cttir-runtime-preview-check-9afb6e5.service, under
-artifacts/runtime-preview-check-9afb6e5; hosted validation is pending.
+Correction 9afb6e5 passed the full source-isolated check: 6082 assertions,
+13 skips, 0 errors/warnings and one metadata NOTE. PDF/HTML manuals and rebuilt
+vignettes passed. All five hosted jobs passed in run 37161506344. Archive SHA-256:
+aae22cace19ff188ca0dc114218ad96f898a36bb0715d33d059a70a8c0325e6d
+(249 members). Private paths are absent and changed bundled source files match
+the source commit. Receipt: runtime-preview-full-validation.json.
+
+R21 immediate correction removes unsupported ownership assertions for SeuratDisk,
+BPCells, presto and glmGamPoi. Each now explicitly requires source-bound author
+and maintainer evidence before approval; candidate status is unchanged. This
+removes an unsupported claim but does not supply the missing provenance. The
+resource observation metadata/schema and evidence-backed approval gate remain
+open. The offline rebuild passed 64 recorded fixtures with 67/67 approval
+decisions and 192 approved callables. Catalog:
+92627577cce4722d0673e6c5a71773b0a8b35d6dbd9e38f6bd7b959972a9e67c.
+Previous 83517d snapshot is preserved in inst/extdata/history.
+Evidence: companion-provenance-catalog-build.log and standard-catalog-build.json.
+A private cached DESCRIPTION inventory records raw author/maintainer fields
+without executing Authors@R: 22 sources, 13 exact observation hash matches.
+Evidence: maintainer-source-inventory.json. Unmatched sources are not silently
+attached to an older observation or used to infer legal ownership.
 Review these before starting another full check. Receipt:
 artifacts/implementation/runtime-readiness-review.json.
 

@@ -856,7 +856,7 @@
       "infrastructure": true,
       "specialist": false,
       "requirements": [
-        "Community-maintained companion, not Satija Lab owned; verify exact version compatibility with SeuratObject.",
+        "Ownership is not established by this catalog; require source-bound author and maintainer evidence before approval, and verify exact version compatibility with SeuratObject.",
         "Demonstrated round-trip coverage with a field-level loss report is required before use.",
         "Not installed or adapter-tested in this release: catalog advice only."
       ],
@@ -897,7 +897,7 @@
       "infrastructure": true,
       "specialist": false,
       "requirements": [
-        "Externally maintained companion; record memory budget, backing-file location and deployment checks.",
+        "Ownership is not established by this catalog; require source-bound author and maintainer evidence before approval, and record memory budget, backing-file location and deployment checks.",
         "Never realize disk-backed matrices densely; keep backing files outside the project tree when large.",
         "Not installed or adapter-tested in this release: catalog advice only."
       ],
@@ -937,7 +937,7 @@
       "specialist": true,
       "requirements": [
         "Exploratory only: cell-level tests do not replace donor-level inference.",
-        "Externally maintained companion; verify the pinned version.",
+        "Ownership is not established by this catalog; require source-bound author and maintainer evidence before approval, and verify the pinned version.",
         "Not installed or adapter-tested in this release: catalog advice only."
       ],
       "status": "candidate"
@@ -977,7 +977,7 @@
       "infrastructure": false,
       "specialist": true,
       "requirements": [
-        "Externally maintained Bioconductor companion; count data and an explicit design matrix are required.",
+        "Bioconductor companion with ownership not established by this catalog; require source-bound author and maintainer evidence before approval. Count data and an explicit design matrix are required.",
         "Fit on raw counts with biological replicates (for example donor pseudobulk), not on normalized values or cells as replicates.",
         "Not installed or adapter-tested in this release: catalog advice only."
       ],
