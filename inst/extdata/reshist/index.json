@@ -8,6 +8,10 @@
     "sha256:278fba39a5ccfee5ddb0cbf30c1db057d788ea0015538298191b75f9e6a2b385": {
       "sha256": "1572ca50bcc298f44cdee764024f39957ca5785d569e1bf9093b769dae502f91",
       "scope": "Retained resource snapshot before supplemental DESCRIPTION observations"
+    },
+    "sha256:a642ac8b3d970d3f8e0961bf7d468f93760fd4d1cc6fd3f7e60e4ecbb609785c": {
+      "sha256": "551d7b47510dc09dd1f9186b0234de43d20863f9cb34090636996d3cef71b474",
+      "scope": "Retained resource snapshot before supplemental DESCRIPTION observations"
     }
   }
 }

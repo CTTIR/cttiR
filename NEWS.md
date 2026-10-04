@@ -1,5 +1,7 @@
 # cttiR 0.1.1.9000
 
+* Complete supplemental DESCRIPTION coverage for eleven Seurat ecosystem packages, using the pinned Seurat archive rather than the newer live release. Incremental provenance imports preserve earlier records and refuse unmatched versions before mutation.
+
 * Preserve separately retrieved companion DESCRIPTION evidence with source URLs, hashes and declared roles. New evidence never overwrites seed observation hashes, implies ownership or promotes candidate workflows; older resource pins retain their original bytes.
 
 * Parse literal Authors@R declarations without execution to expose source-bound author and maintainer roles. Unsupported expressions remain unresolved; companion approval requires explicit maintainer text or a literal creator contact. Declared roles do not establish ownership.

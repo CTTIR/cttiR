@@ -28,3 +28,23 @@ test_that("previous resource pins do not acquire later supplemental evidence", {
   expect_identical(resource_snapshot_by_id(old)$sha256,
     "1572ca50bcc298f44cdee764024f39957ca5785d569e1bf9093b769dae502f91")
 })
+
+
+test_that("the eleven ecosystem descriptions retain exact observed versions", {
+  names <- c("Seurat", "SeuratObject", "sctransform", "Signac", "SeuratData",
+    "Azimuth", "SeuratWrappers", "SeuratDisk", "BPCells", "presto", "glmGamPoi")
+  for (name in names) {
+    row <- resources(name, limit = 1L)
+    e <- jsonlite::fromJSON(row$supplemental_maintainer_evidence_json, simplifyVector = FALSE)
+    expect_identical(e$package, name)
+    expect_identical(e$version, row$observed_version)
+    expect_true(description_has_maintainer(description_roles(e$authors_r_literal)))
+    expect_identical(e$ownership, "not_inferred")
+    expect_false(any(grepl("admin/", unlist(e), fixed = TRUE)))
+  }
+  seurat <- resources("Seurat", limit = 1L)
+  e <- jsonlite::fromJSON(seurat$supplemental_maintainer_evidence_json)
+  expect_identical(e$version, "5.5.1")
+  expect_match(e$source_url, "/Archive/Seurat/Seurat_5.5.1.tar.gz", fixed = TRUE)
+  expect_identical(e$relation_to_seed, "description_hash_matches")
+})

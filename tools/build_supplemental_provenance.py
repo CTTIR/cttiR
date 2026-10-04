@@ -29,8 +29,16 @@ for record in records:
     item = {k: v for k, v in record.items() if k != 'path'}
     item.update(author=dcf.get('Author'), maintainer=dcf.get('Maintainer'),
                 authors_r_literal=dcf.get('Authors@R'))
-    verified[(record['package'], record['version'])] = item
+    identity = (record['package'], record['version'])
+    assert identity not in verified, 'Duplicate source identity'
+    verified[identity] = item
 mirror = json.loads(gzip.decompress((root / 'package-resources.json.gz').read_bytes()))
+names = {x['package_id']: x['name'] for x in mirror['packages']}
+targets = {(names[x['package_id']], x['observed_version']): x for x in mirror['observations']}
+for identity, item in verified.items():
+    assert identity in targets, 'No exact package/version observation'
+    same = item['description_sha256'] == targets[identity]['source_sha256']
+    assert same == (item['relation_to_seed'] == 'description_hash_matches')
 db = root / 'package-resources.sqlite'
 prior_hash = hashlib.sha256(db.read_bytes()).hexdigest()
 prior_id = mirror['manifest']['content_id']
@@ -43,14 +51,17 @@ else:
     retained.write_bytes(db.read_bytes())
 history['snapshots'][prior_id] = {'sha256': prior_hash, 'scope': 'Retained resource snapshot before supplemental DESCRIPTION observations'}
 history_file.write_text(json.dumps(history, indent=2) + '\n')
-names = {x['package_id']: x['name'] for x in mirror['packages']}
 field = 'supplemental_maintainer_evidence_json'
 con = sqlite3.connect(db)
 matched = []
 with con:
-    con.execute('ALTER TABLE observations ADD COLUMN ' + field + ' TEXT')
+    columns = [row[1] for row in con.execute('PRAGMA table_info(observations)')]
+    if field not in columns:
+        con.execute('ALTER TABLE observations ADD COLUMN ' + field + ' TEXT')
     for obs in mirror['observations']:
         item = verified.get((names[obs['package_id']], obs['observed_version']))
+        if item is None:
+            continue
         value = None
         if item:
             same = item['description_sha256'] == obs['source_sha256']
