@@ -2,6 +2,36 @@
 
 Updated: 2026-10-04. Version: 0.1.1.9000. License: MIT.
 
+## Latest checkpoint: installed G26 evidence (2026-10-04)
+
+Source **703b25f** passed the full build/check: 6281 assertions, 13 explicit skips,
+zero errors/warnings, one metadata NOTE; PDF/HTML manuals and vignettes passed.
+All five hosted jobs passed (37188767929). Archive SHA-256
+f500e0438643ca63702da34221f61dd42a353097e16dc9fa02c79f6534652e3b,
+263 members; private paths absent and changed shipped files match the source.
+Receipt: artifacts/implementation/ecosystem-provenance-full-validation.json.
+No full-check worker is pending; do not repeat this unchanged source check.
+
+A dedicated test of that installed package passed all 432 interop assertions
+across 19 tests, zero failures/errors/warnings/skips, 22.138 seconds. Exact R,
+Seurat 5.5.1, SeuratObject 5.4.0 and remaining dependency versions, archive and
+helper/test/template hashes are in artifacts/implementation/g26-installed-current.json.
+Harness: admin/verify_g26_installed.R; log: g26-installed-current.log. R22 now has
+fresh gate-specific evidence instead of relying on historical private candidate
+script hashes or whole-suite timing. Those historical records remain preserved.
+
+Eleven bundled source hashes and creator contacts were rechecked using the
+installed resources against retained primary DESCRIPTION bytes. The ownership
+review records three declared copyright holders for BPCells; the other ten
+DESCRIPTIONs do not establish ownership. No common ownership or new approval is
+inferred. Receipt: ecosystem-ownership-review.json; harness:
+admin/review_ecosystem_provenance.R. R21 ownership limits remain explicit.
+
+Requirements, owner-review matrix, command log and status now cite this installed
+G26 evidence. Independent corpus authorization is still pending; do not create
+same-author substitutes or delegate without authorization. Strict G12 and final
+release acceptance remain open. No COMPLETE/STOP or submission; retry active.
+
 ## Latest checkpoint: eleven ecosystem DESCRIPTION records (2026-10-04)
 
 Source **703b25f** is pushed to main. Supplemental evidence now covers Seurat,
