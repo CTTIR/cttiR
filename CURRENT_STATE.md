@@ -2,6 +2,36 @@
 
 Updated: 2026-10-04. Version: 0.1.1.9000. License: MIT.
 
+## Latest checkpoint: separate companion source evidence (2026-10-04)
+
+Source **2070c51** is pushed to main. Four companion DESCRIPTION records are now
+stored as supplemental metadata in SQLite and the JSON mirror, with explicit
+source URL, description hash, version, retrieval time, raw author/maintainer
+text and reviewed literal roles. resources() exposes the JSON field. The three
+matching original hashes are distinguished from glmGamPoi's separately retrieved
+same-version DESCRIPTION. Neither the old source identity nor ownership is
+inferred or rewritten; approvals/candidate status remain unchanged.
+
+All 229 prior observation rows are unchanged when the new column is excluded.
+The previous database (SHA 1572ca50bcc298f44cdee764024f39957ca5785d569e1bf9093b769dae502f91)
+is retained under reshist for existing pins. New resource content ID:
+sha256:a642ac8b3d970d3f8e0961bf7d468f93760fd4d1cc6fd3f7e60e4ecbb609785c.
+The oldest retained snapshot also remains intact. All history paths fit 100 bytes.
+
+Tests: 108 assertions, zero failures/warnings/skips, 7.7 seconds; source lint
+clean. Initial mirror-parity failure was fixed by honoring the existing nested
+JSON/_json SQLite convention; its log is retained. Receipts in
+artifacts/implementation: supplemental-provenance-validation.json,
+supplemental-provenance-preservation.json and supplemental-provenance-build.json.
+Full build/check is running under cttir-supplemental-provenance-check.service;
+inspect artifacts/supplemental-provenance-check/status.json before duplicating.
+
+This resolves representation of the distinct glmGamPoi source without pretending
+its hash matches the historical source. Complete per-package ownership/provenance,
+independent fresh qualification and final acceptance/release verification remain
+open. Corpus delegation authorization is still pending. No COMPLETE/STOP or
+submission; hourly retry remains active and ignored inputs are preserved.
+
 ## Latest checkpoint: full role check and 41-item evidence matrix (2026-10-04)
 
 Source **cfee6f6** passed the full build/check: 6205 assertions, 13 explicit skips,
