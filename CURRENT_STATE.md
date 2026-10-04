@@ -187,6 +187,12 @@ resource-provenance-tests.log, resource-provenance-final-tests.log and
 resource-provenance-lint.log. Companion maintainer-role resolution and glmGamPoi
 reconciliation remain open; candidate approvals remain closed.
 
+Resource-provenance migration committed/pushed as 637bdda. Full check runs
+in cttir-resource-provenance-check-637bdda.service under
+artifacts/resource-provenance-check-637bdda; hosted validation pending.
+Receipt: resource-provenance-review.json. Inspect it before launching another
+full check.
+
 Next: review the resource-provenance milestone's full checks; finish R07 readiness
 incremental acquisition reporting; R21 maintainer provenance; R22/R39
 current consolidated gate/requirements evidence. Reconcile every other owner
