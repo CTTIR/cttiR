@@ -129,12 +129,28 @@ artifacts/implementation/runtime-readiness-review.json.
 
 Companion correction committed/pushed as 86a9d68. Catalog-evidence and router
 suites pass 235 assertions with no failures, warnings or skips. Source-isolated
-full check runs in cttir-companion-provenance-check-86a9d68.service under
-artifacts/companion-provenance-check-86a9d68; hosted checks pending.
+full check passed: 6082 assertions, 13 skips, no errors/warnings and one metadata
+NOTE. Rebuilt vignettes and PDF/HTML manuals passed. All five hosted jobs passed
+in run 37164844083. Archive SHA-256:
+71ad514d5de1f0672b627852a39fca6d07665110062b39bd096bfd505b69e1b7
+(250 members); private paths absent, changed shipped files match the source.
+Receipt: companion-provenance-full-validation.json.
 Receipt: companion-provenance-review.json. Inspect this active check before
 launching another one.
 
-Next: review the companion milestone's full checks; finish R07 readiness
+R21 follow-up adds inert author/maintainer DESCRIPTION text to new source
+extractions, tied to source and DESCRIPTION hashes. Authors@R is not executed;
+missing explicit Maintainer remains unverified. The four companion packages
+cannot gain routing or decision approval without these records, and stale
+provenance turns effective approval pending. R-distribution extraction updates
+the provenance binding after its composite source hash is calculated. Existing
+resource SQLite/JSON observations and cached catalog entries are not relabelled
+as verified: their metadata reconciliation remains open. Approval, distribution,
+source, provenance and router tests pass677 assertions with no failures, warnings
+or skips (141.5 seconds); changed-source lint clean. Evidence:
+artifacts/implementation/maintainer-provenance-verified-tests.log.
+
+Next: review the maintainer-provenance milestone's full checks; finish R07 readiness
 incremental acquisition reporting; R21 maintainer provenance; R22/R39
 current consolidated gate/requirements evidence. Reconcile every other owner
 review item individually. R10/R31 diagnostics now expose pre-grounding and raw

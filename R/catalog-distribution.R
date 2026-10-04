@@ -27,5 +27,6 @@ r_distribution_source <- function(record) {
     provenance = "user_registered_local_source_not_canonical_authentication")
   entry$source_hash <- content_hash(json_text(list(files = entry$source_files,
         distribution = entry$distribution)))
+  entry$maintainer_evidence$source_hash <- entry$source_hash
   entry
 }

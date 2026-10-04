@@ -1,5 +1,10 @@
 # cttiR 0.1.1.9000
 
+* Source extraction retains author and maintainer metadata as inert DESCRIPTION
+  text bound to the source revision. Companion workflow approval now refuses
+  missing or stale maintainer evidence. Existing candidate metadata still needs
+  source reconciliation; author names do not establish ownership.
+
 * Setup previews expose offline acquisition and qualification blockers, published
   download sizes, disk admission information and verified process ownership.
   Preparing an explicit unqualified model does not grant planning qualification.

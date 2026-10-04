@@ -500,3 +500,21 @@ test_that("bundled decisions are role-specific and cite fixtures that exercise t
   }
   expect_identical(setdiff(cited, known), character())
 })
+
+test_that("companion decisions stay pending without revision-bound maintainer evidence", {
+  f <- approval_fixture()
+  entry <- extract_source(f$source, "fixture", "one", documentation_rights = fixture_rights)
+  entry$name <- "BPCells"
+  d <- decision(entry$source_hash)
+  d$package <- entry$name
+  pending <- attach_approvals(entry, list(d))
+  expect_identical(pending$approvals[[1]]$status, "pending")
+  expect_identical(pending$coverage$approved, 0L)
+  entry$maintainer_evidence$author <- "Fixture Author"
+  entry$maintainer_evidence$maintainer <- "Fixture Maintainer"
+  approved <- attach_approvals(entry, list(d))
+  expect_identical(approved$approvals[[1]]$status, "approved")
+  expect_equal(approved$coverage$approved, 2)
+  approved$maintainer_evidence$source_hash <- "stale"
+  expect_identical(effective_approvals(approved)[[d$approval_id]]$status, "pending")
+})

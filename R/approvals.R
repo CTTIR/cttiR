@@ -112,6 +112,8 @@ approval_coverage <- function(package_record, approval) {
   stored <- list()
   for (doc in corpus$documents) if (identical(doc$storage, "source_text")) stored[[doc$path]] <- doc
   conditions <- character()
+  if (package_record$name %in% c("SeuratDisk", "BPCells", "presto", "glmGamPoi") &&
+      !companion_provenance_valid(package_record)) conditions <- c(conditions, "maintainer_provenance_missing_or_stale")
   if (!identical(approval$package, package_record$name)) conditions <- c(conditions, "package_mismatch")
   if (!identical(approval$version, package_record$version)) conditions <- c(conditions, "version_mismatch")
   if (!identical(approval$source_hash, package_record$source_hash)) conditions <- c(conditions, "source_hash_mismatch")
@@ -287,7 +289,7 @@ effective_approvals <- function(package) {
   if (is.null(package)) return(result)
   for (approval in package$approvals) {
     complete <- identical(approval_coverage(package, approval)$state, "complete")
-    status <- if (identical(approval$status, "approved") && complete) "approved" else as.character(approval$status)
+    status <- if (identical(approval$status, "approved") && !complete) "pending" else as.character(approval$status)
     result[[approval$approval_id]] <- list(role = approval$role, status = status)
   }
   result

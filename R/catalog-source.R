@@ -169,6 +169,11 @@ extract_source <- function(path, repository, revision, family = "local", documen
     name = package, version = value("Version"), title = value("Title"),
     description = value("Description"), license = value("License"), repository = repository,
     family = family, revision = revision, source_hash = revision_hash,
+    maintainer_evidence = list(source_hash = revision_hash,
+      description_sha256 = hashes[[description_file]], description_file = description_file,
+      author = value("Author"), authors_r_literal = value("Authors@R"),
+      maintainer = value("Maintainer"), copyright = value("Copyright"),
+      source_url = repository, extraction = "dcf_text_no_execution", ownership = "not_inferred"),
     exports = entries, methods = methods, s3_methods = s3_methods, source_files = hashes, documentation_corpus = corpus,
     coverage = list(
       exports = length(entries), documented = sum(vapply(entries, function(x) !is.null(x$documentation), logical(1))),
