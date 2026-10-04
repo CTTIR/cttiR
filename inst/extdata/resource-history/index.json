@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "snapshots": {
+    "sha256:122877f9677cfa5a42b3722301dc0c1d8a534847ca3746078d7db9ef165b5381": {
+      "sha256": "5de268884db87bc04c5277dc7a2ce85aac16d0eade546805bef16e9a2d9de79a",
+      "scope": "Original bundled resource snapshot, retained for project pins and rollback"
+    }
+  }
+}

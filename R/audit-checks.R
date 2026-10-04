@@ -344,7 +344,6 @@ audit_kb_references <- function(context) {
   }
   root <- catalog_store()
   directory <- file.path(root, "manifests")
-  base_resource <- read_document(resource_file("extdata", "resource-manifest.json"))$content_id
   manifests <- if (dir.exists(directory)) list.files(directory, full.names = TRUE) else character()
   dangling <- 0L
   invalid <- 0L
@@ -363,8 +362,7 @@ audit_kb_references <- function(context) {
       next
     }
     content <- file.exists(file.path(root, "snapshots", manifest$content_id, "api-catalog.json.gz"))
-    resource <- identical(manifest$resource_id, base_resource) ||
-      file.exists(file.path(root, "resource-snapshots", manifest$resource_id, "package-resources.sqlite"))
+    resource <- !is.null(tryCatch(resource_snapshot_by_id(manifest$resource_id), error = function(e) NULL))
     if (!content || !resource) dangling <- dangling + 1L
   }
   evidence <- list(resources = found$resources, catalogs = found$catalogs,

@@ -1,20 +1,7 @@
 validate_snapshot_content <- function(manifest) {
   manifest <- validate_manifest(manifest)
   catalog_snapshot(manifest$content_id)
-  base <- read_document(resource_file("extdata", "resource-manifest.json"))$content_id
-  file <- if (identical(manifest$resource_id, base)) {
-    resource_file("extdata", "package-resources.sqlite")
-  } else {
-    file.path(catalog_store(), "resource-snapshots", manifest$resource_id, "package-resources.sqlite")
-  }
-  expected <- if (identical(manifest$resource_id, base)) {
-    read_document(resource_file("extdata", "file-hashes.json"))[["package-resources.sqlite"]]
-  } else {
-    manifest$resource_id
-  }
-  if (!identical(file_hash(file), expected)) {
-    abort_cttir("Recovery requires a complete verified resource snapshot.", "cttir_catalog_corrupt")
-  }
+  resource_snapshot_by_id(manifest$resource_id)
   invisible(manifest)
 }
 

@@ -28,7 +28,11 @@ A data frame with source, observed version, verification and maturity
 fields, plus each observation's recorded \code{freshness} and \code{fetch_status} in
 the selected snapshot (for example \code{source_unavailable} and
 \code{unavailable_observation} after an optional index outage). Filters combine
-with AND. Exact package names rank first.
+with AND. Exact package names rank first. Nullable author and maintainer
+fields preserve literal DESCRIPTION text with its matching hash. Missing
+metadata, including historical snapshots, stays unknown. These fields do
+not verify ownership; an index-only refresh does not establish new author
+or maintainer evidence.
 }
 \description{
 Metadata reflects the supplied 2026-09-26 research snapshot. Candidate status

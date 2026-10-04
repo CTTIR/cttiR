@@ -31,17 +31,44 @@ resource_snapshot <- function(path = NULL) {
     pointer <- catalog_pointer()
     if (!is.null(pointer$resource_id)) id <- pointer$resource_id
   }
-  if (!is.character(id) || length(id) != 1L || (!identical(id, base_id) && !grepl("^[a-f0-9]{64}$", id))) {
+  resource_snapshot_by_id(id)
+}
+
+resource_history <- function() {
+  file <- resource_file("extdata", "resource-history", "index.json")
+  expected <- read_document(resource_file("extdata", "file-hashes.json"))[["resource-history/index.json"]]
+  if (!identical(file_hash(file), expected)) {
+    abort_cttir("The retained resource index failed its integrity check.", "cttir_catalog_corrupt")
+  }
+  read_document(file)$snapshots
+}
+
+valid_resource_id <- function(id) {
+  is.character(id) && length(id) == 1L && !is.na(id) &&
+    (identical(id, read_document(resource_file("extdata", "resource-manifest.json"))$content_id) ||
+        grepl("^[a-f0-9]{64}$", id) || id %in% names(resource_history()))
+}
+
+resource_snapshot_by_id <- function(id) {
+  if (!valid_resource_id(id)) {
     abort_cttir("The pinned resource snapshot is unavailable.", "cttir_source_unavailable")
   }
-  bundled <- identical(id, base_id)
-  file <- if (bundled) {
-    resource_file("extdata", "package-resources.sqlite")
+  base_id <- read_document(resource_file("extdata", "resource-manifest.json"))$content_id
+  history <- resource_history()[[id]]
+  if (identical(id, base_id)) {
+    file <- resource_file("extdata", "package-resources.sqlite")
+    expected <- read_document(resource_file("extdata", "file-hashes.json"))[["package-resources.sqlite"]]
+  } else if (!is.null(history)) {
+    expected <- history$sha256
+    if (!is.character(expected) || length(expected) != 1L || is.na(expected) || !grepl("^[a-f0-9]{64}$", expected)) {
+      abort_cttir("Invalid retained resource identity.", "cttir_catalog_corrupt")
+    }
+    file <- resource_file("extdata", "resource-history", paste0(expected, ".sqlite"))
   } else {
-    file.path(catalog_store(), "resource-snapshots", id, "package-resources.sqlite")
+    file <- file.path(catalog_store(), "resource-snapshots", id, "package-resources.sqlite")
+    expected <- id
   }
   assert_plain_path(file)
-  expected <- if (bundled) read_document(resource_file("extdata", "file-hashes.json"))[["package-resources.sqlite"]] else id
   if (!file.exists(file)) abort_cttir("The pinned resource snapshot is unavailable.", "cttir_source_unavailable")
   if (!identical(digest::digest(file = file, algo = "sha256"), expected)) {
     abort_cttir("The resource database failed its integrity check.", "cttir_catalog_corrupt")
@@ -65,7 +92,7 @@ validate_manifest <- function(x) {
   release <- x$bioc_release
   if (!identical(x$schema_version, 1L) || !identical(content_hash(json_text(x)), id) ||
       !is.character(x$content_id) || length(x$content_id) != 1L || !grepl("^[a-f0-9]{64}$", x$content_id) ||
-      !is.character(x$resource_id) || length(x$resource_id) != 1L || (!identical(x$resource_id, read_document(resource_file("extdata", "resource-manifest.json"))$content_id) && !grepl("^[a-f0-9]{64}$", x$resource_id)) ||
+      !valid_resource_id(x$resource_id) ||
       (!is.null(release) && (!is.character(release) || length(release) != 1L || !release %in% bioc_release_table()$release))) {
     abort_cttir("Invalid composite catalog manifest.", "cttir_catalog_corrupt")
   }

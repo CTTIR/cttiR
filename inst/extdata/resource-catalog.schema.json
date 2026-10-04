@@ -92,6 +92,36 @@
           },
           "source_url": {
             "type": "string"
+          },
+          "author": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "authors_r_literal": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "maintainer": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "maintainer_description_sha256": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "maintainer_evidence_status": {
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
         "required": [

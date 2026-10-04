@@ -1,4 +1,4 @@
 {
-  "package-resources.json": "cd08c0bc4c4206966e89e6edc23dc207b6c5e000b92abf38683520d57e7a774c",
-  "note": "SHA-256 of the originally imported JSON mirror; package-resources.json.gz decompresses to exactly these bytes."
+  "package-resources.json": "99174922154da17b5de52e3afb17917fa3bb7fe4331bef86c8727813b875c9ef",
+  "note": "SHA-256 of the decompressed current resource mirror."
 }

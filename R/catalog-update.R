@@ -622,14 +622,7 @@ rollback_knowledge <- function(version, dry_run = TRUE) {
   # reported, never deleted, and its impact cannot be computed.
   active <- active_snapshot()
   before <- if (is.null(active$problem)) active$catalog else after
-  base_resource <- read_document(resource_file("extdata", "resource-manifest.json"))$content_id
-  if (!identical(target$resource_id, base_resource)) {
-    resource <- file.path(root, "resource-snapshots", target$resource_id, "package-resources.sqlite")
-    assert_plain_path(resource)
-    if (!file.exists(resource) || !identical(digest::digest(file = resource, algo = "sha256"), target$resource_id)) {
-      abort_cttir("Rollback resource snapshot is missing or corrupt.", "cttir_catalog_corrupt")
-    }
-  }
+  resource_snapshot_by_id(target$resource_id)
   changed <- !identical(previous, target)
   api_changes <- api_diff(before, after)
   doc_changes <- documentation_diff(before, after)

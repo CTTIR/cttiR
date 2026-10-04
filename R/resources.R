@@ -12,7 +12,11 @@
 #'   fields, plus each observation's recorded `freshness` and `fetch_status` in
 #'   the selected snapshot (for example `source_unavailable` and
 #'   `unavailable_observation` after an optional index outage). Filters combine
-#'   with AND. Exact package names rank first.
+#'   with AND. Exact package names rank first. Nullable author and maintainer
+#'   fields preserve literal DESCRIPTION text with its matching hash. Missing
+#'   metadata, including historical snapshots, stays unknown. These fields do
+#'   not verify ownership; an index-only refresh does not establish new author
+#'   or maintainer evidence.
 #' @export
 #' @examples
 #' resources("cytometry", limit = 3L)
@@ -45,8 +49,13 @@ resources <- function(query = NULL, domain = NULL, repository = NULL,
   }
   # The bundled resource_search view predates the per-observation status columns;
   # the same join also returns them, so stale rows stay visible after an outage.
+  provenance <- c("author", "authors_r_literal", "maintainer", "maintainer_description_sha256", "maintainer_evidence_status")
+  present <- DBI::dbListFields(con, "observations")
+  columns <- vapply(provenance, function(field) {
+    if (field %in% present) paste0("o.", field) else paste0("NULL AS ", field)
+  }, character(1))
   rows <- paste("SELECT p.*, o.repository, o.subrepository, o.bioconductor_release, o.observed_version, o.license,",
-    "o.r_dependency, o.observed_at, o.source_url, o.freshness, o.fetch_status",
+    "o.r_dependency, o.observed_at, o.source_url, o.freshness, o.fetch_status,", paste(columns, collapse = ", "),
     "FROM packages p JOIN observations o USING(package_id)")
   sql <- paste0("SELECT * FROM (", rows, ") WHERE ", where)
   if (!is.null(query)) {

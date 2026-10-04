@@ -1,5 +1,10 @@
 # cttiR 0.1.1.9000
 
+* Resource queries now expose nullable author and maintainer metadata. Sixteen
+  verified DESCRIPTION files match recorded observation hashes; other metadata
+  remains unknown. Historical project resource pins retain their original
+  database, with integrity checks during queries, recovery and rollback.
+
 * Source extraction retains author and maintainer metadata as inert DESCRIPTION
   text bound to the source revision. Companion workflow approval now refuses
   missing or stale maintainer evidence. Existing candidate metadata still needs

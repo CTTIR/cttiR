@@ -150,13 +150,44 @@ source, provenance and router tests pass677 assertions with no failures, warning
 or skips (141.5 seconds); changed-source lint clean. Evidence:
 artifacts/implementation/maintainer-provenance-verified-tests.log.
 
-Maintainer-provenance milestone committed/pushed as 2f6dfc7. Full check runs
-in cttir-maintainer-provenance-check-2f6dfc7.service under
-artifacts/maintainer-provenance-check-2f6dfc7; hosted validation pending.
+Maintainer-provenance milestone 2f6dfc7 passed full local validation: 6115
+assertions, 13 skips, no errors/warnings and one metadata NOTE. PDF/HTML manuals
+and rebuilt vignettes passed; all five hosted jobs passed in run 37167985009.
+Archive SHA-256 3667f4685815848a9caa7addbc3fa92428b50a59f53f41418191f9b969a257f3
+(251 members); private paths absent and changed source matches the commit.
+Receipt: maintainer-provenance-full-validation.json.
 Receipt: maintainer-provenance-review.json. Inspect this check before starting
 another full run.
 
-Next: review the maintainer-provenance milestone's full checks; finish R07 readiness
+R21 resource migration adds nullable author, Authors@R literal, maintainer,
+DESCRIPTION hash and evidence-status columns to both SQLite and JSON, exposing
+them through resources(). Only 16 exact package/version/DESCRIPTION-hash matches
+are populated; all others remain unknown. These include 13 cached sources and
+freshly retrieved BPCells, SeuratDisk and presto DESCRIPTION files matching
+the existing observation hashes. Their Authors@R text is retained; missing
+explicit Maintainer fields remain unknown. glmGamPoi source retrieval returned
+HTTP403; its metadata is not fabricated or substituted. No Authors@R code
+runs and no ownership claim is inferred. Index-only refreshes cannot establish
+new DESCRIPTION provenance. Builder: tools/build_resource_provenance.py;
+input: maintainer-combined-source-inventory.json; output: resource-provenance-build-final.json.
+Source receipts: maintainer-primary-source-reconciliation.json.
+
+The original bundled database is preserved in inst/extdata/resource-history with
+an identity-to-file-hash index. Project queries, composite validation, recovery,
+rollback and audit can resolve that old identity after the base changes. Both
+historical and current database bytes are hash-checked. New resource identity:
+sha256:278fba39a5ccfee5ddb0cbf30c1db057d788ea0015538298191b75f9e6a2b385.
+Tests cover old pins, corruption, unknown IDs, nullable metadata and JSON/SQLite
+parity. Broad regression checks passed841 assertions with no failures, warnings
+or skips (585.5 seconds), before adding the three matching upstream descriptions.
+The final resource/index/history tests passed45 assertions after that addition;
+source lint is clean. Initial13-record output is retained privately under
+artifacts/implementation/resource-provenance-first-build. Logs:
+resource-provenance-tests.log, resource-provenance-final-tests.log and
+resource-provenance-lint.log. Companion maintainer-role resolution and glmGamPoi
+reconciliation remain open; candidate approvals remain closed.
+
+Next: review the resource-provenance milestone's full checks; finish R07 readiness
 incremental acquisition reporting; R21 maintainer provenance; R22/R39
 current consolidated gate/requirements evidence. Reconcile every other owner
 review item individually. R10/R31 diagnostics now expose pre-grounding and raw
