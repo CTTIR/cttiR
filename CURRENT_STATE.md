@@ -2,6 +2,41 @@
 
 Updated: 2026-10-04. Version: 0.1.1.9000. License: MIT.
 
+## Latest checkpoint: portable resource history and current audit (2026-10-04)
+
+Source **89e15f8** is pushed to main. Full check of predecessor **637bdda**
+finished: 6138 assertions, 13 skips, zero errors/warnings, two NOTEs. All five
+hosted jobs passed (run 37171573980). Vignettes and PDF/HTML manuals passed.
+Archive SHA-256 df133852775daadd424db47d00937f9b6b3c9198e371eb5236ef7eb06b304672;
+257 members, no admin/artifacts, changed source verified against the commit.
+Receipt: artifacts/implementation/resource-provenance-full-validation.json.
+
+The extra NOTE was a retained resource path longer than 100 bytes. The fix
+renames extdata/resource-history to extdata/reshist, preserving database and
+index bytes and all pin identities. Updated consumers, integrity keys and
+builder paths; 45 focused tests pass. The longest retained tarball path is now
+98 bytes. Full replacement build/check is running under
+cttir-resource-portability-check-89e15f8.service; inspect
+artifacts/resource-portability-check-89e15f8/status.json before any new run.
+Its portable-filename check already reports OK; final test result is pending.
+
+The current final-audit.md, requirements-evidence.json (29 rows) and status.json
+under artifacts/implementation now separate historical acceptance from current
+automated regression. Original files are preserved in evidence-history-20261004.
+The 13 skips include CRAN exclusions, live tests, a local-source fixture and
+optional DescrTab2; they are not all live-only. Each requirement records the
+check command, environment, whole-check runtime scope, expected/actual outcome,
+artifact and available test hashes. Historical transitive-input provenance gaps
+are disclosed, not retroactively filled with current hashes.
+
+Still open: fresh independently authored/frozen ask and planner qualification,
+companion maintainer-role/ownership provenance and glmGamPoi source
+reconciliation, incremental runtime acquisition accounting, item-by-item review
+closure, release metadata and final complete release verification. G26 full
+exploration remains optional and candidate; earlier text below is historical.
+No CRAN or external-builder submission. COMPLETE/STOP absent; hourly retry
+timer verified active and enabled. Preserve the ignored source and all receipts.
+
 ## Read first: owner-requested review and decisions (2026-10-03)
 
 Before continuing, read `admin/review-2026-10-03.md` (git-ignored, local). It
