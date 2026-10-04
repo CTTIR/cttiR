@@ -2,6 +2,34 @@
 
 Updated: 2026-10-04. Version: 0.1.1.9000. License: MIT.
 
+## Latest checkpoint: runtime acquisition estimates (2026-10-04)
+
+Source **537c1ef** is pushed to main. `setup()` now reports acquisition estimates
+separately from published full sizes: zero for reusable components, unknown
+model bytes until the owned daemon is queried, and the before-pull estimate
+retained after acquisition. Dry runs make no HTTP requests. Cached archives and
+shared blobs may reduce transfers; mutable tags may change sizes. These are
+estimates, not measurements. Double arithmetic avoids totals overflowing above
+2 GB; the initial warning log is retained. Runtime tests: 143 passes, zero
+failures/warnings/skips (2.8 seconds); changed R source lint clean.
+
+Full build/check is running under cttir-download-estimate-check-537c1ef.service;
+read artifacts/download-estimate-check-537c1ef/status.json before launching more.
+Targeted receipt: artifacts/implementation/runtime-download-estimate-validation.json.
+
+Predecessor **89e15f8** passed the complete local check: 6138 assertions, 13 skips,
+zero errors/warnings, one release-metadata NOTE; portable filenames now pass.
+All five hosted jobs passed, run 37173876320. Archive SHA-256
+471d51d2dcabf1b2cf3bb618028fd21225bfcaeb0662c87ad6948357d4e3a765
+(257 members). Changed shipped source matches the commit; no admin/artifacts.
+Receipt: artifacts/implementation/resource-portability-full-validation.json.
+This replaces the pending portability status below, not historical evidence.
+
+Independent fresh frozen ask/planner qualification, companion maintainer-role
+and ownership provenance, glmGamPoi primary source reconciliation, item-by-item
+review closure and final release verification remain open. No completion or
+submission is claimed. Preserve the active hourly retry timer and ignored inputs.
+
 ## Latest checkpoint: portable resource history and current audit (2026-10-04)
 
 Source **89e15f8** is pushed to main. Full check of predecessor **637bdda**
