@@ -10,3 +10,5 @@
 ^\.github$
 ^\.lintr$
 ^\.gitattributes$
+^_pkgdown\.yml$
+^site$

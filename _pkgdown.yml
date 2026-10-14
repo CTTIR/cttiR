@@ -1,0 +1,36 @@
+template:
+  package: themakR
+development:
+  mode: auto
+destination: site
+reference:
+  - title: Projects and workflows
+    contents:
+      - project
+      - sync
+      - validate_config
+      - validate_spec
+      - check_analysis_data
+  - title: Knowledge and resources
+    contents:
+      - packages
+      - search
+      - ask
+      - resources
+      - update
+      - rollback_knowledge
+  - title: Audit and runtime
+    contents:
+      - audit
+      - doctor
+      - setup
+      - setup_app
+      - configure
+articles:
+  - title: Guides
+    navbar: ~
+    contents:
+      - getting-started
+      - standard-workflow
+      - knowledge-and-approvals
+      - audit-runtime-privacy
