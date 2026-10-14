@@ -119,10 +119,10 @@ remotes::install_github("CTTIR/cttiR", build_vignettes = TRUE)
 ```
 
 Start with `vignette("getting-started", package = "cttiR")`. The source guides
-cover [project creation](vignettes/getting-started.Rmd), the
-[standard workflow](vignettes/standard-workflow.Rmd),
-[knowledge and approvals](vignettes/knowledge-and-approvals.Rmd), and
-[audit, runtime and privacy](vignettes/audit-runtime-privacy.Rmd).
+cover [project creation](https://github.com/CTTIR/cttiR/blob/main/vignettes/getting-started.Rmd), the
+[standard workflow](https://github.com/CTTIR/cttiR/blob/main/vignettes/standard-workflow.Rmd),
+[knowledge and approvals](https://github.com/CTTIR/cttiR/blob/main/vignettes/knowledge-and-approvals.Rmd), and
+[audit, runtime and privacy](https://github.com/CTTIR/cttiR/blob/main/vignettes/audit-runtime-privacy.Rmd).
 Use `help(package = "cttiR")` for the function reference and
 `citation("cttiR")` for citation details. Report reproducible problems at
 <https://github.com/CTTIR/cttiR/issues>.
