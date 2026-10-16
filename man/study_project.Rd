@@ -9,9 +9,11 @@ study_project(directory, spec, data, dependency_lock, author, units, seed = 1L)
 \arguments{
 \item{directory}{New project directory whose parent already exists.}
 
-\item{spec}{A closed specification from \code{\link[=study_spec]{study_spec()}}.}
+\item{spec}{A closed specification from \code{\link[=study_spec]{study_spec()}} or \code{\link[=study_paired_spec]{study_paired_spec()}}.}
 
-\item{data}{Optional data frame. Every row must have a unique, nonmissing ID.}
+\item{data}{Optional data frame. Association observations need unique,
+nonmissing IDs. Paired observations need exactly one measurement per pair ID
+at each declared occasion.}
 
 \item{dependency_lock}{An externally prepared dependency lock, for example
 from \code{\link[=study_dependency_lock]{study_dependency_lock()}}. No packages are restored automatically.}
@@ -27,7 +29,8 @@ every continuous analysis column; these must equal the planned units.}
 A list with directory and an external trusted declaration. Retain the
 declaration outside the project and pass successive updated declarations to
 \code{\link[=study_run]{study_run()}}, \code{\link[=study_render]{study_render()}} and \code{\link[=study_validate_project]{study_validate_project()}}. Creation
-neither initializes Git nor commits, publishes or approves a real study.
+initializes a study-owned Git repository and stages only generated analysis
+Rmd files. It does not commit, publish or approve a real study.
 }
 \description{
 Compile a Synthetic Study into a Strict Workflow Project

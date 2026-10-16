@@ -76,14 +76,17 @@ study_spec <- function(study_id, name, question, population, observation_id, out
 }
 
 #' Validate a Study Contract and Optional Data
-#' @param spec A closed specification from [study_spec()].
-#' @param data Optional data frame. Every row must have a unique, nonmissing ID.
+#' @param spec A closed specification from [study_spec()] or [study_paired_spec()].
+#' @param data Optional data frame. Association observations need unique,
+#'   nonmissing IDs. Paired observations need exactly one measurement per pair ID
+#'   at each declared occasion.
 #' @param units Named character vector or list declaring the actual units of
 #'   every continuous analysis column; these must equal the planned units.
 #' @return Invisibly a list with valid, recipe_id, specification_sha256 and,
 #'   when data are supplied, n. Invalid or unsupported input raises an error.
 #' @export
 study_validate <- function(spec, data = NULL, units = NULL) {
+  if (study_is_paired(spec)) return(study_paired_validate(spec, data, units))
   keys <- c("schema_version", "recipe_id", "study_id", "name", "question", "population",
     "research", "observation_id", "outcome", "exposure", "covariates", "estimand",
     "dependence", "missingness", "causal", "confidence", "data_kind", "evidence")
@@ -147,13 +150,16 @@ study_validate <- function(spec, data = NULL, units = NULL) {
   invisible(result)
 }
 
-#' Execute the Synthetic Association Recipe
+#' Execute a Synthetic Study Recipe
 #' @inheritParams study_validate
-#' @return A list with coefficient table, sample size, rank, residual degrees of
-#'   freedom, residual standard deviation, diagnostics and explicit limitations.
+#' @return A list with coefficient table, sample size, residual degrees of
+#'   freedom, diagnostics and explicit limitations. Association results also
+#'   include rank and residual standard deviation; paired results include pair
+#'   count and within-pair differences.
 #'   Passing numerical computation does not grant scientific approval.
 #' @export
 study_analyze <- function(spec, data, units) {
+  if (study_is_paired(spec)) return(study_paired_analyze(spec, data, units))
   admission <- study_validate(spec, data, units)
   frame <- data.frame(.outcome = data[[spec$outcome$name]], .exposure = data[[spec$exposure$name]])
   predictors <- ".exposure"; contrasts <- list()

@@ -76,6 +76,11 @@ composition API, workflowr and their dependencies. `study_dependency_lock()`
 records the installed R and dependency versions; it does not install packages or
 prove their acquisition origins.
 
+Compilation creates a separate Git repository and stages only the generated
+analysis Rmd templates. It creates no commit and stages no study data or results.
+Reports therefore show these new sources as uncommitted. Rendering refuses
+ambiguous source status instead of borrowing an enclosing repository's history.
+
 Use a new project path below an existing physical directory. The strict profile
 rejects symbolic links in the path. For an intentional temporary demonstration,
 resolve the known temporary parent before choosing the new child path:
@@ -114,5 +119,5 @@ A copy operation that makes the raw directory writable fails strict validation.
 
 Inspect `docs/index.html` and the stage pages. A valid report demonstrates the
 checked synthetic workflow and its recorded artifacts. It does not authorize a
-real study, establish legal compliance, select a local model, initialize Git,
+real study, establish legal compliance, select a local model,
 commit files or publish the report.

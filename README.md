@@ -47,7 +47,11 @@ cttiR::study_validate_project(
 ```
 
 The compiler fixes all eleven stage locations, applicability reasons and the
-research-domain palette. Reports consume recorded results and verify input,
+research-domain palette. Each new study has its own Git repository so report
+provenance cannot come from an enclosing repository. Only generated analysis
+Rmd templates are staged, and no commit is created. Rendering rejects ambiguous
+Git status instead of treating untracked directories as committed source.
+Reports consume recorded results and verify input,
 configuration, installed-writer and output hashes. Rendering does not rerun the
 statistical fit. The dependency snapshot records installed versions; provision
 the external library separately. Passing checks does not approve a real study,
@@ -55,6 +59,15 @@ establish scientific validity, commit files or publish the site.
 
 The `strict-study-workflow` vignette gives a complete synthetic specification,
 data example and the explicit compile, analyze and render sequence.
+
+`study_paired_spec()` declares a separate synthetic paired mean-change recipe.
+It requires an explicit `independent_pairs = TRUE` declaration and long-form
+data with exactly one before and after measurement per pair ID. It matches by
+ID, fixes the difference direction as after minus before, rejects incomplete
+pairs and produces paired-specific reports through the same strict workflow.
+The independence declaration is an assumption requiring review, not proof of
+independence or a causal effect. This recipe does not extend the model's
+qualified planning scope.
 
 `evidence_search()` and `evidence_resolve()` retrieve local source passages from
 an externally pinned evidence registry. They preserve version and page/topic

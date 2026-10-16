@@ -2,23 +2,27 @@
 % Please edit documentation in R/study-spec.R
 \name{study_analyze}
 \alias{study_analyze}
-\title{Execute the Synthetic Association Recipe}
+\title{Execute a Synthetic Study Recipe}
 \usage{
 study_analyze(spec, data, units)
 }
 \arguments{
-\item{spec}{A closed specification from \code{\link[=study_spec]{study_spec()}}.}
+\item{spec}{A closed specification from \code{\link[=study_spec]{study_spec()}} or \code{\link[=study_paired_spec]{study_paired_spec()}}.}
 
-\item{data}{Optional data frame. Every row must have a unique, nonmissing ID.}
+\item{data}{Optional data frame. Association observations need unique,
+nonmissing IDs. Paired observations need exactly one measurement per pair ID
+at each declared occasion.}
 
 \item{units}{Named character vector or list declaring the actual units of
 every continuous analysis column; these must equal the planned units.}
 }
 \value{
-A list with coefficient table, sample size, rank, residual degrees of
-freedom, residual standard deviation, diagnostics and explicit limitations.
+A list with coefficient table, sample size, residual degrees of
+freedom, diagnostics and explicit limitations. Association results also
+include rank and residual standard deviation; paired results include pair
+count and within-pair differences.
 Passing numerical computation does not grant scientific approval.
 }
 \description{
-Execute the Synthetic Association Recipe
+Execute a Synthetic Study Recipe
 }

@@ -7,6 +7,17 @@
   graceful shutdown before locks, receipts or signals. No forced-kill fallback
   is used.
 
+- Strict studies now initialize their own Git repository and reject
+  missing or mismatched repository roots, preventing enclosing-repository
+  metadata from appearing as study report provenance. Only generated analysis
+  Rmd templates are staged; ambiguous report-source status is rejected and no
+  commit is created.
+
+* Add a separate synthetic paired mean-change contract with explicit pair
+  independence, ID-based matching, complete-pair and unit checks, and recorded
+  paired diagnostics in the strict study workflow. Existing association
+  specifications retain their behavior.
+
 * Add a closed synthetic association specification and installed-code study
   compiler using reflowR's strict composition. Analysis and rendering have
   separate externally pinned receipts; current raw inputs, dependency versions,
