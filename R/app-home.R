@@ -1,6 +1,6 @@
 # Home and Open project views.
 
-app_home_cards <- c(create = "create", open = "open", ask = "ask", knowledge = "knowledge",
+app_home_cards <- c(create = "create", study = "study", open = "open", ask = "ask", knowledge = "knowledge",
   resources = "resources", audit = "audit", runtime = "runtime")
 
 app_home_ui <- function(id) {

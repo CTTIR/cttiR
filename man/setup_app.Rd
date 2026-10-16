@@ -29,7 +29,20 @@ Every operation calls the same exported functions as the R API
 background R process; read-only work can be cancelled and duplicate
 submissions are refused. Creation and configuration require a reviewed
 preview of the current draft and catalog. Scientific analysis and returned
-code are never executed by the interface.
+code are never executed by the general project builder.
+
+The separate Strict synthetic examples view offers two fixed, noncausal
+examples: an independent continuous-outcome association and a paired mean
+change. Preview, compilation, synthetic analysis and rendering are separate
+explicit actions through \code{\link[=study_project]{study_project()}}, \code{\link[=study_run]{study_run()}} and
+\code{\link[=study_render]{study_render()}}. It accepts no data upload, arbitrary code or model plan,
+and installs no packages. The prepared external library must already exist.
+One compiled example is retained per application session. Each successful
+step retains its trusted external declaration in server-side session state;
+download it outside the project for continuation through the R API after
+session loss. The interface never recovers authority from project files and
+never marks scientific or real-study approval. General Open/Configure remains
+for projects created by \code{\link[=project]{project()}}, not strict example projects.
 }
 \details{
 Fast asks only for name, research type and goal (plus the parent directory)

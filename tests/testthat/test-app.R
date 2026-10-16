@@ -11,7 +11,7 @@ test_that("application construction never creates a project and stays on loopbac
   expect_error(app_config("{invalid}"), class = "cttir_input_error")
   expect_error(app_config('{"unknown":true}'), class = "cttir_schema_error")
   html <- as.character(app_ui())
-  for (id in c("home", "create", "open", "ask", "knowledge", "resources", "audit", "runtime")) {
+  for (id in c("home", "create", "study", "open", "ask", "knowledge", "resources", "audit", "runtime")) {
     expect_match(html, sprintf('data-value="%s"', id), fixed = TRUE)
   }
   expect_match(html, 'data-i18n="nav.create"', fixed = TRUE)
