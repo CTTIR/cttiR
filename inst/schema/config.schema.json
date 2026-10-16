@@ -213,6 +213,10 @@
             "allowed"
           ]
         },
+        "reporting_preset": {
+          "type": "string",
+          "enum": ["minimal", "standard"]
+        },
         "reporting": {
           "type": "string",
           "enum": [

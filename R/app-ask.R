@@ -6,9 +6,10 @@ app_answer_ui <- function(answer, lang, ns) {
   code <- value$code
   code <- if (is.character(code) && length(code) && any(nzchar(code))) paste(code, collapse = "\n") else NULL
   evidence <- value$evidence
+  if (length(value$gaps)) value$gaps <- as.list(app_answer_text(unlist(value$gaps), lang))
   shiny::tags$section(class = "cttir-review-panel", `aria-labelledby` = ns("answer_heading"),
     shiny::tags$h2(id = ns("answer_heading"), app_t("ask.answer", lang)),
-    shiny::tags$p(as.character(unlist(value$answer))[1] %||% ""),
+    shiny::tags$p(app_answer_text(as.character(unlist(value$answer))[1] %||% "", lang)),
     shiny::tags$p(app_t("ask.verification", lang), " ",
       if (length(value$verification_levels)) {
         lapply(unlist(value$verification_levels), function(level) shiny::tagList(app_badge(level, lang), " "))
@@ -34,8 +35,8 @@ app_answer_ui <- function(answer, lang, ns) {
       app_table(evidence, lang, columns = c("symbol", "package", "revision", "kind", "verification", "approved", "evidence"),
         badges = "verification", links = "evidence")),
     shiny::tags$h3(app_t("ask.limitations", lang)),
-    app_list_block(value$limitations, lang),
-    app_other_fields(answer, c("answer", "steps", "code", "citations", "verification_levels", "evidence", "limitations"), lang)
+    app_list_block(app_answer_text(unlist(value$limitations), lang), lang),
+    app_other_fields(value, c("answer", "steps", "code", "citations", "verification_levels", "evidence", "limitations"), lang)
   )
 }
 
@@ -48,7 +49,11 @@ app_ask_ui <- function(id) {
       choiceNames = list(app_tr("ask.action_ask"), app_tr("ask.action_search")), choiceValues = c("ask", "search")),
     shiny::textAreaInput(ns("question"), app_tr("ask.question"), rows = 3, width = "100%"),
     shiny::conditionalPanel(sprintf("input['%s'] === 'ask'", ns("action")),
-      shiny::checkboxInput(ns("verified_only"), app_tr("ask.verified_only"), value = TRUE)),
+      shiny::checkboxInput(ns("verified_only"), app_tr("ask.verified_only"), value = TRUE),
+      shiny::checkboxInput(ns("local_assistance"), app_tr("assistance.enable"), value = FALSE),
+      shiny::radioButtons(ns("assistance_kind"), app_tr("assistance.kind"),
+        choiceNames = list(app_tr("assistance.answer"), app_tr("assistance.suggestion")),
+        choiceValues = c("answer", "suggestion"), selected = "answer", inline = TRUE)),
     shiny::conditionalPanel(sprintf("input['%s'] === 'search'", ns("action")),
       shiny::numericInput(ns("limit"), app_tr("ask.limit"), value = 20, min = 1, max = 200, step = 1)),
     shiny::checkboxInput(ns("use_project"), app_tr("common.use_project"), value = FALSE),
@@ -63,9 +68,13 @@ app_ask_ui <- function(id) {
 app_ask_server <- function(id, pool, lang = shiny::reactive("en"), project = shiny::reactive(NULL)) {
   shiny::moduleServer(id, function(input, output, session) {
     slot <- app_job_slot(pool, session)
-    state <- shiny::reactiveValues(status = app_status("info", "ask.ready"), result = NULL, kind = NULL)
+    state <- shiny::reactiveValues(status = app_status("info", "ask.ready"), result = NULL, kind = NULL,
+      assistance_input = NULL, preview = NULL, applied = NULL)
     project_path <- function() if (isTRUE(input$use_project)) project() else NULL
+    assistance_input <- function() list(question = input$question, path = project_path(), language = lang(),
+      action = input$action, enabled = isTRUE(input$local_assistance), kind = input$assistance_kind %||% "answer")
     shiny::observeEvent(input$run, {
+      if (slot$busy()) return()
       question <- input$question %||% ""
       if (!nzchar(trimws(question))) {
         state$status <- app_status("error", "ask.empty")
@@ -79,15 +88,59 @@ app_ask_server <- function(id, pool, lang = shiny::reactive("en"), project = shi
       } else {
         list(query = question, path = project_path(), limit = if (is.na(limit)) 20L else limit)
       }
+      if (kind == "ask" && isTRUE(input$local_assistance)) {
+        kind <- "assistant_advice"
+        args <- list(question = question, path = project_path(), language = lang(), use_model = TRUE,
+          kind = if (identical(input$assistance_kind, "suggestion")) "suggestion" else "answer")
+      }
+      state$result <- NULL
+      state$preview <- NULL
+      state$applied <- NULL
+      submitted <- if (kind == "assistant_advice") assistance_input() else NULL
       state$status <- app_start_job(slot, kind, args, paste0("job.", kind), function(result) {
+        if (kind == "assistant_advice" && !identical(submitted, assistance_input())) {
+          state$status <- app_status("info", "assistance.stale")
+          return()
+        }
         if (!isTRUE(result$ok)) {
           state$status <- app_status_error(result)
           return()
         }
         state$result <- result$value
         state$kind <- kind
+        state$assistance_input <- submitted
         state$status <- app_status("success", "ask.done")
       })
+    })
+    current_suggestion <- function() identical(state$kind, "assistant_advice") &&
+      identical(state$assistance_input, assistance_input()) &&
+      identical(state$result$proposal$operation, "suggest") && !is.null(project_path())
+    shiny::observeEvent(input$preview_suggestion, {
+      if (slot$busy() || !current_suggestion()) return()
+      submitted <- assistance_input()
+      state$preview <- NULL
+      state$applied <- NULL
+      state$status <- app_start_job(slot, "assistant_suggestion_preview",
+        list(advice = state$result, path = project_path()), "job.assistant_suggestion_preview", function(result) {
+          if (!identical(submitted, assistance_input())) {
+            state$status <- app_status("info", "assistance.stale"); return()
+          }
+          if (!isTRUE(result$ok)) {state$status <- app_status_error(result); return()}
+          state$preview <- result$value
+          state$status <- app_status("success", "assistance.preview_ready")
+        })
+    })
+    shiny::observeEvent(input$apply_suggestion, {
+      if (slot$busy() || !current_suggestion() || is.null(state$preview) ||
+          isTRUE(state$preview$conflicts) || !is.null(state$applied)) return()
+      state$status <- app_start_job(slot, "assistant_suggestion_apply",
+        list(advice = state$result, path = project_path(), reviewed_preview_sha256 = state$preview$preview_sha256),
+        "job.assistant_suggestion_apply", function(result) {
+          state$preview <- NULL
+          if (!isTRUE(result$ok)) {state$status <- app_status_error(result); return()}
+          state$applied <- result$value
+          state$status <- app_status("success", "assistance.applied")
+        }, mutating = TRUE)
     })
     shiny::observeEvent(input$cancel, state$status <- app_cancel_status(slot))
     output$status <- shiny::renderUI(app_status_ui(state$status, lang()))
@@ -98,6 +151,13 @@ app_ask_server <- function(id, pool, lang = shiny::reactive("en"), project = shi
     output$result <- shiny::renderUI({
       value <- state$result
       if (is.null(value)) return(NULL)
+      if (identical(state$kind, "assistant_advice")) {
+        if (!identical(state$assistance_input, assistance_input())) {
+          return(shiny::tags$p(app_t("assistance.stale", lang())))
+        }
+        return(shiny::tagList(app_assistance_ui(value, lang(), session$ns),
+          if (current_suggestion()) app_suggestion_review_ui(state$preview, state$applied, lang(), session$ns)))
+      }
       if (is.data.frame(value)) {
         columns <- c("symbol", "package", "kind", "snippet", "verification", "approved", "evidence")
         table <- app_table(value, lang(), columns = columns, badges = "verification", links = "evidence")
@@ -110,7 +170,10 @@ app_ask_server <- function(id, pool, lang = shiny::reactive("en"), project = shi
       filename = function() "cttir-answer-code.R",
       contentType = "text/plain",
       content = function(file) {
-        code <- unclass(state$result)$code
+        if (identical(state$kind, "assistant_advice") &&
+            !identical(state$assistance_input, assistance_input())) abort_cttir("Request fresh guidance before downloading code.")
+        answer <- if (identical(state$kind, "assistant_advice")) state$result$deterministic else state$result
+        code <- unclass(answer)$code
         text <- if (is.character(code)) paste(code, collapse = "\n") else ""
         writeLines(c("# Code returned by cttiR::ask(); review before use. It was not executed.", text), file, useBytes = TRUE)
       }

@@ -41,3 +41,35 @@ test_that("environment readiness is derived consistently and never claimed by th
   expect_equal(seen$root, p$path)
   expect_equal(seen$mode, "none")
 })
+
+test_that("readiness requires current raw, configuration and output identities", {
+  p <- project("Freshness", "primary_research", "Describe outcomes", new_parent())
+  root <- p$path
+  parsed <- read_project(root)
+  dir.create(file.path(root, "output"), showWarnings = FALSE)
+  run <- list(check = list(state = "passed"), code_sha256 = list(
+    "code/R/cttir_workflow.R" = file_hash(file.path(root, "code/R/cttir_workflow.R")),
+    "code/R/cttir_figures.R" = file_hash(file.path(root, "code/R/cttir_figures.R"))))
+  write_bytes(json_text(run), file.path(root, "output/workflow-receipt.json"))
+  expect_false(project_readiness(root)$checks[[4]]$passed)
+  lib <- new.env(parent = baseenv())
+  sys.source(resource_file("templates", "workflowr-0.4.0", "code", "R", "report_integrity.R"), lib)
+  result <- file.path(root, "output/results.csv"); write_bytes("value\n1\n", result)
+  raw <- file.path(new_parent(), "source.csv"); write_bytes("value\n2\n", raw)
+  config <- file.path(root, ".cttir/local.yml")
+  write_bytes(yaml::as.yaml(list(bindings = list(list(id = "example", path = raw)))), config)
+  receipt <- lib$cr_snapshot(root, lib$cr_execution_inputs(root),
+    c("output/results.csv", "output/workflow-receipt.json"), c(example = raw))
+  write_bytes(json_text(receipt), file.path(root, ".cttir/report-receipt.json"))
+  expect_true(readiness_current_results(parsed))
+  expect_true(project_readiness(root)$checks[[4]]$passed)
+  for (path in c(raw, result, file.path(root, "config/workflow.yml"))) {
+    saved <- readBin(path, "raw", n = file.info(path)$size)
+    stamp <- file.info(path)$mtime
+    cat("changed", file = path, append = TRUE); Sys.setFileTime(path, stamp)
+    expect_false(readiness_current_results(parsed))
+    expect_false(project_readiness(root)$checks[[4]]$passed)
+    writeBin(saved, path)
+  }
+  expect_true(readiness_current_results(parsed))
+})

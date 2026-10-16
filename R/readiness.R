@@ -23,8 +23,23 @@ read_receipt <- function(p, relative) {
   tryCatch(read_document(file), error = function(e) NULL)
 }
 
+# Use compiled package helpers; readiness never sources a file at runtime.
+readiness_current_results <- function(p) {
+  tryCatch({
+    receipt <- read_receipt(p, ".cttir/report-receipt.json")
+    if (is.null(receipt)) return(FALSE)
+    outputs <- list.files(file.path(p$path, "output"), recursive = TRUE, all.files = TRUE, no.. = TRUE)
+    outputs <- if (length(outputs)) paste0("output/", outputs) else character()
+    ids <- vapply(receipt$external_inputs, function(x) x$dataset_id, character(1))
+    cr_assert_fresh(p$path, receipt, cr_execution_inputs(p$path), outputs,
+      cr_project_bindings(p$path, ids))
+    TRUE
+  }, error = function(e) FALSE)
+}
+
 # Readiness ladder from local evidence only: project metadata, installed package
-# metadata, demo and workflow receipts. Datasets are never opened.
+# metadata, demo and workflow receipts. Dataset bytes are hashed for freshness;
+# dataset values are never parsed or statistically analyzed by this check.
 project_readiness <- function(path) {
   p <- read_project(path)
   state <- new.env(parent = emptyenv())
@@ -55,9 +70,10 @@ project_readiness <- function(path) {
     "Run Rscript code/run_demo.R with the unmodified stage code."
   add("demo_verified", demo_ok, demo_reason)
   run <- read_receipt(p, "output/workflow-receipt.json")
-  data_ok <- !is.null(run) && identical(run$check$state, "passed") && receipt_matches_code(p, run)
-  data_reason <- if (data_ok) "The last study-data run passed the structural data checks." else
-    "No passing study-data run receipt from the reviewed stage code."
+  data_ok <- !is.null(run) && identical(run$check$state, "passed") && receipt_matches_code(p, run) &&
+    readiness_current_results(p)
+  data_reason <- if (data_ok) "The study-data run passed structural checks and its current inputs, configuration and outputs match the freshness receipt." else
+    "No passing study-data run with current input, configuration and output identities from the reviewed stage code."
   add("data_ready", data_ok, data_reason)
   analysis <- analysis_configuration(p$spec)
   route <- project_route(p$spec)

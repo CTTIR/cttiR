@@ -25,7 +25,8 @@ configuration assessment. Recording mappings does not approve or execute an
 analysis.
 }
 \description{
-Preserves identity, catalog pins and edits. A file changed both by its user
+Preserves identity, catalog pins and edits unless an explicit reporting migration
+requests the compatible local catalog refresh described below. A file changed both by its user
 and by the new rendering is never overwritten: a managed file yields a
 conflict, and no writes occur while any conflict is present; a user-owned
 file (protocol, metadata, publication and analysis text) is kept and the
@@ -36,6 +37,12 @@ like managed files. Applied changes have per-file backups and a journal. The
 operation is not a multi-file atomic filesystem transaction. Interrupted
 writers require review; a writer lock left by a stopped process that had not
 started its journal is released.
+Migration from \code{reporting = "generic"} to \code{"workflowr"} is supported for
+the current template with \code{git = TRUE}. Preview first, then apply with
+\code{dry_run = FALSE}. Edited site configuration conflicts; edited manuscripts
+remain user-owned. For older catalog pins, \code{knowledge = list(refresh = TRUE)}
+explicitly selects the active local catalog only if every existing dependency
+retains its source revision. This option performs no network update.
 }
 \details{
 For current standard projects, \code{workflow} options \code{pipeline},

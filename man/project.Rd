@@ -51,7 +51,7 @@ The foundation build uses deterministic templates, without package
 installation or execution of study code. It makes no network calls and no
 model inference unless the local planner policy enables one loopback
 exchange with an owned local model (see Details). The planned
-standard workflow is explicitly pending reflowR integration. Advanced workflow
+standard workflow uses the reviewed reflowR layout. Advanced workflow
 options that are not implemented raise a typed error instead of being ignored.
 }
 \details{
@@ -63,6 +63,11 @@ honoring \code{network} (\code{"offline"} by default). \code{git = TRUE} runs \v
 the new project root only, never inside another work tree, and never stages
 or commits. Failures of these steps keep the scaffold and are reported as
 readiness blockers with a recovery command.
+\code{reporting = "workflowr"} with \code{git = TRUE} creates one root workflowr site.
+\code{reporting_preset} selects \code{"minimal"} or \code{"standard"} (default). Rendering
+is explicit and checks current computation receipts. Use \code{\link[=sync]{sync()}} to preview
+migration from the current generic bundle. With workflowr, targets scheduling
+checks content identities and reuses fresh study results before explicit rendering.
 
 Creation stages the scaffold next to the target and publishes it with one
 rename while holding a creation lock that records its process. A lock left

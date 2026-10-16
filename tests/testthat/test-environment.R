@@ -325,7 +325,7 @@ test_that("the offline guard refuses every renv download loudly", {
     options(renv.consent = TRUE, renv.config.pak.enabled = FALSE, renv.config.ppm.enabled = FALSE,
       renv.download.override = override)
     tryCatch({
-      renv::install("cttirAbsentPackage", library = library, repos = c(CRAN = "https://cloud.r-project.org"),
+      renv::install("https://example.invalid/cttirAbsentPackage_0.0.0.tar.gz", library = library,
         prompt = FALSE)
       "installed"
     }, error = function(e) conditionMessage(e))
@@ -335,7 +335,7 @@ test_that("the offline guard refuses every renv download loudly", {
   expect_true(file.exists(guard), info = outcome)
   attempts <- readLines(guard)
   expect_true(length(attempts) > 0L)
-  expect_true(all(grepl("^https://", attempts)))
+  expect_contains(attempts, "https://example.invalid/cttirAbsentPackage_0.0.0.tar.gz")
   expect_error(renv_offline_override(guard)("https://example.org/x", tempfile()), "Network access is disabled")
 })
 

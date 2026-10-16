@@ -38,7 +38,7 @@ audit_ins_package <- function(context) {
   missing_exports <- setdiff(audit_contract_exports, exports)
   resources <- list(
     c("schema", "project-spec.schema.json"), c("schema", "config.schema.json"),
-    c("extdata", "api-catalog.json.gz"), c("extdata", "package-resources.sqlite"),
+    c("extdata", "catalog-archive", "manifest.json"), c("extdata", "catalog-archive", "catalogs.xz"), c("extdata", "package-resources.sqlite"),
     c("extdata", "resource-manifest.json"), c("extdata", "file-hashes.json"),
     c("runtime", "manifest.json"), c("templates", "reflowr-0.2.0", "manifest.json")
   )
@@ -239,21 +239,17 @@ audit_kb_hashes <- function(context) {
       }
     }
   })
-  evidence$bundled_catalog <- attempt("Bundled API catalog", read_catalog(resource_file("extdata", "api-catalog.json.gz"))$content_id)
+  evidence$bundled_catalog <- attempt("Bundled API catalog", read_bundled_catalog()$content_id)
   attempt("Schemas", for (kind in c("project-spec", "config", "figure-policy")) {
     jsonlite::fromJSON(resource_file("schema", paste0(kind, ".schema.json")), simplifyVector = FALSE)
   })
-  history <- system.file("extdata", "history", package = "cttiR")
   evidence$history <- character()
-  if (nzchar(history)) {
-    for (file in list.files(history, "^[a-f0-9]{64}[.]json[.]gz$", full.names = TRUE)) {
-      id <- attempt("Historical snapshot", read_catalog(file)$content_id)
-      if (!is.null(id) && !identical(paste0(id, ".json.gz"), basename(file))) {
-        problems <- c(problems, "A historical snapshot does not match its identity.")
-      }
-      evidence$history <- c(evidence$history, id)
+  attempt("Bundled catalog history", {
+    for (id in bundled_catalog_ids()) {
+      retained <- read_bundled_catalog(id)
+      evidence$history <- c(evidence$history, retained$content_id)
     }
-  }
+  })
   root <- catalog_store()
   pointer <- audit_pointer_problem(root)
   if (!is.null(pointer)) {
@@ -443,14 +439,10 @@ audit_kb_evidence <- function(context) {
   audit_result(if (length(mismatches)) "warning" else "pass", message, evidence)
 }
 
-audit_retained_catalog_files <- function(root) {
-  history <- system.file("extdata", "history", package = "cttiR")
-  files <- c(
-    if (nzchar(history)) list.files(history, "^[a-f0-9]{64}[.]json[.]gz$", full.names = TRUE),
-    Sys.glob(file.path(root, "snapshots", "*", "api-catalog.json.gz"))
-  )
+audit_retained_catalog_sources <- function(root) {
+  files <- Sys.glob(file.path(root, "snapshots", "*", "api-catalog.json.gz"))
   if (length(files) > 50L) files <- files[order(file.info(files)$mtime, decreasing = TRUE)][seq_len(50L)]
-  files
+  c(bundled_catalog_ids(), files)
 }
 
 audit_kb_tombstones <- function(context) {
@@ -472,9 +464,9 @@ audit_kb_tombstones <- function(context) {
   current <- stats::setNames(lapply(active$packages, function(x) vapply(x$exports, function(e) e$name, character(1))), names)
   revisions <- stats::setNames(lapply(active$packages, function(x) x$source_hash), names)
   tombstones <- list()
-  files <- audit_retained_catalog_files(root)
+  files <- audit_retained_catalog_sources(root)
   for (file in files) {
-    retained <- tryCatch(read_catalog(file), error = function(e) NULL)
+    retained <- tryCatch(if (grepl("^[a-f0-9]{64}$", file)) read_bundled_catalog(file) else read_catalog(file), error = function(e) NULL)
     if (is.null(retained)) next
     for (package in retained$packages) {
       if (!package$name %in% names || identical(package$source_hash, revisions[[package$name]])) next
@@ -995,7 +987,7 @@ audit_int_live <- function(context) {
     abort_cttir("The model did not pass the synthetic grounded planner probe.", "cttir_runtime_unavailable", "planner_probe_failed")
   }
   registry <- capability_registry()
-  catalog <- read_catalog(resource_file("extdata", "api-catalog.json.gz"))
+  catalog <- read_bundled_catalog()
   approved <- vapply(ids, function(id) identical(capability_approval(registry$capabilities[[id]], catalog)$status, "approved"), logical(1))
   if (!all(approved)) {
     abort_cttir("The planner probe lacks current workflow approval evidence.", "cttir_runtime_unavailable", "planner_probe_unapproved")

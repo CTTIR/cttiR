@@ -32,6 +32,12 @@ standard_bundle_files <- function(spec, route) {
     files[[path]] <- text
   }
   files[["metadata/workflow-template.json"]] <- paste0(json_text(manifest, TRUE), "\n")
+  if (identical(spec$workflow$reporting, "workflowr")) {
+    preset <- spec$workflow$reporting_preset
+    if (is.null(preset)) preset <- "standard"
+    overlay <- workflowr_profile_files(preset, spec$workflow$pipeline)
+    for (path in names(overlay)) files[[path]] <- overlay[[path]]
+  }
   files[["config/workflow.yml"]] <- workflow_config_text(spec, route)
   files
 }
@@ -39,7 +45,7 @@ standard_bundle_files <- function(spec, route) {
 workflow_config_text <- function(spec, route) {
   catalog <- catalog_snapshot(spec$provenance$catalog_id)
   yaml::as.yaml(list(
-    schema_version = 1L, bundle = standard_bundle_name, profile = route$profile,
+    schema_version = 1L, bundle = route_summary(route)$bundle, profile = route$profile,
     table_backend = spec$workflow$table_backend, pipeline = spec$workflow$pipeline,
     engine = route$engine, modality = route$modality,
     stages = lapply(route$stages, function(x) x[c("stage", "capability", "adapter", "packages", "enabled", "status")]),

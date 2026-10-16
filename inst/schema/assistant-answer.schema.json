@@ -1,0 +1,63 @@
+{
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "policy_id": {
+      "const": "cttir-code-1"
+    },
+    "catalog_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "language": {
+      "enum": [
+        "en",
+        "de"
+      ]
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4000
+    },
+    "citation_ids": {
+      "type": "array",
+      "maxItems": 16,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128,
+        "pattern": "^[A-Za-z0-9_.:-]+$"
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "maxItems": 16,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1000
+      }
+    },
+    "operation": {
+      "const": "explain"
+    }
+  },
+  "required": [
+    "schema_version",
+    "policy_id",
+    "catalog_id",
+    "language",
+    "summary",
+    "citation_ids",
+    "limitations",
+    "operation"
+  ],
+  "additionalProperties": false,
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CTTIR answer proposal version 1",
+  "description": "Untrusted proposal only. Schema validity does not authorize writes, execution or a validation claim."
+}

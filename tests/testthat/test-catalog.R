@@ -24,7 +24,17 @@ test_that("static extraction never executes code and preserves unresolved export
 test_that("the public catalog exposes revision-scoped evidence and approvals only where reviewed", {
   p <- packages()
   expect_gte(nrow(p), 28)
-  expect_true(all(p$approved[p$provider == "CTTIR"] == 0L))
+  reviewed <- p[p$provider == "CTTIR" & p$approved > 0L, ]
+  expect_setequal(reviewed$package, c("cellspecR", "gatekeepR"))
+  expect_equal(reviewed$approved[match(c("cellspecR", "gatekeepR"), reviewed$package)], c(2L, 1L))
+  for (package in Filter(function(x) x$name %in% reviewed$package, resolve_catalog()$packages)) {
+    decision <- Filter(function(x) identical(x$status, "approved"), package$approvals)
+    expect_length(decision, 1L)
+    expect_identical(decision[[1L]]$source_hash, package$source_hash)
+    expect_match(decision[[1L]]$rights_basis, "Technical construction and structural-validation scope only", fixed = TRUE)
+    expected <- if (package$name == "cellspecR") c("cs_new", "cs_validate") else "gk_cellspec"
+    expect_setequal(vapply(Filter(function(x) isTRUE(x$approved), package$exports), `[[`, "", "name"), expected)
+  }
   expect_true(any(p$approved > 0L))
   hit <- search("reflowR::reflow_init")
   expect_equal(nrow(hit), 1L)
@@ -81,7 +91,7 @@ test_that("reindexed bundled evidence retains the previous immutable snapshot", 
   hit <- search("delphyr::accept_panel_invitation")
   expect_match(hit$evidence, "/packages/delphyr/R/invitations.R", fixed = TRUE)
   cttir <- Filter(function(x) identical(x$family, "CTTIR"), current$packages)
-  expect_equal(sum(vapply(cttir, function(x) x$coverage$approved, numeric(1))), 0)
+  expect_equal(sum(vapply(cttir, function(x) x$coverage$approved, numeric(1))), 3)
   expect_equal(sum(vapply(previous$packages, function(x) x$coverage$approved, numeric(1))), 0)
 })
 
@@ -139,7 +149,7 @@ test_that("the bundled catalog verifies and serializes identically in a C locale
     options(cttiR.catalog_dir = store)
     plan <- cttiR::project("C locale", "methods", "Goal", parent, dry_run = TRUE)
     extracted <- ns$extract_source(source, "local-source:fixture", "local")
-    list(id = ns$read_catalog(ns$resource_file("extdata", "api-catalog.json.gz"))$content_id,
+    list(id = ns$read_bundled_catalog()$content_id,
       search = nrow(cttiR::search("reflowR::reflow_init")), packages = nrow(cttiR::packages()),
       resources = nrow(cttiR::resources("Seurat", limit = 5L)), plan = class(plan)[[1]],
       answer = class(cttiR::ask("reflowR::reflow_init"))[[1]],
@@ -149,7 +159,7 @@ test_that("the bundled catalog verifies and serializes identically in a C locale
   }, args = list(root = root, store = file.path(parent, "store"), source = source, parent = parent),
   env = c(callr::rcmd_safe_env(), LC_ALL = "C", LANG = "C"))
   skip_if(is.null(result), "The C locale is unavailable on this platform.")
-  expect_identical(result$id, read_catalog(resource_file("extdata", "api-catalog.json.gz"))$content_id)
+  expect_identical(result$id, read_bundled_catalog()$content_id)
   expect_equal(result$search, 1L)
   expect_gte(result$packages, 28L)
   expect_gte(result$resources, 1L)

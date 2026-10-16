@@ -1,0 +1,88 @@
+{
+  "schema_version": 1,
+  "family": "standard",
+  "capabilities": [
+    {
+      "id": "std.report.workflowr",
+      "family": "standard",
+      "stage": "report",
+      "title": "Explicit workflowr reporting with content freshness checks",
+      "packages": [
+        "workflowr",
+        "digest",
+        "jsonlite",
+        "yaml",
+        "knitr",
+        "utils",
+        "stats"
+      ],
+      "adapter": {
+        "id": "standard.workflowr_report",
+        "version": "0.4.0"
+      },
+      "applies": {
+        "modality": [],
+        "aim": [],
+        "outcome_family": [],
+        "unit_structure": []
+      },
+      "keywords": {
+        "en": [],
+        "de": []
+      },
+      "infrastructure": true,
+      "specialist": false,
+      "requirements": [
+        "Explicit rendering of allowlisted pages; exact dependency approvals and current content receipts required. No automatic commit or publication."
+      ],
+      "status": "adapter_tested"
+    },
+    {
+      "id": "std.pipeline.workflowr_targets",
+      "family": "standard",
+      "stage": "pipeline",
+      "title": "Workflowr study scheduling with content freshness checks",
+      "packages": [
+        "targets"
+      ],
+      "adapter": {
+        "id": "standard.workflowr_targets",
+        "version": "0.4.0"
+      },
+      "applies": {
+        "modality": [],
+        "aim": [],
+        "outcome_family": [],
+        "unit_structure": []
+      },
+      "keywords": {
+        "en": [],
+        "de": []
+      },
+      "infrastructure": true,
+      "specialist": false,
+      "requirements": [
+        "Explicit pipeline invocation; study prerequisites must be complete. Content identities control reuse and report freshness."
+      ],
+      "status": "adapter_tested"
+    }
+  ],
+  "required_callables": {
+    "std.report.workflowr": [
+      "workflowr::wflow_build",
+      "workflowr::wflow_html",
+      "digest::digest",
+      "jsonlite::read_json",
+      "jsonlite::write_json",
+      "yaml::read_yaml",
+      "knitr::kable",
+      "utils::read.csv",
+      "stats::setNames"
+    ],
+    "std.pipeline.workflowr_targets": [
+      "targets::tar_option_set",
+      "targets::tar_target",
+      "targets::tar_cue"
+    ]
+  }
+}

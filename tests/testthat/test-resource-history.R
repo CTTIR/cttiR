@@ -13,7 +13,7 @@ test_that("retained bundled resources resolve old project pins after a base chan
   expect_match(retained$file, "reshist", fixed = TRUE)
   expect_identical(readBin(retained$file, "raw", file.info(retained$file)$size),
     readBin(original$file, "raw", file.info(original$file)$size))
-  manifest <- snapshot_manifest(read_catalog(resource_file("extdata", "api-catalog.json.gz"))$content_id, old)
+  manifest <- snapshot_manifest(read_bundled_catalog()$content_id, old)
   expect_identical(validate_manifest(manifest), manifest)
   expect_identical(validate_snapshot_content(manifest), manifest)
   project <- new_parent()

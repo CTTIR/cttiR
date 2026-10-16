@@ -122,7 +122,10 @@ test_that("owned reuse probes locally and failed model verification preserves st
   probes$count <- 0L
   local_mocked_bindings(runtime_owner = function(...) owner,
     local_model = function(...) entry,
-    runtime_request = function(...) stop("unexpected download"),
+    runtime_state_verified = function(...) TRUE,
+    runtime_request = function(endpoint, route, ...) {
+      expect_identical(route, "version"); list(version = manifest$runtime_version)
+    },
     runtime_probe = function(...) {
       probes$count <- probes$count + 1L
       list(state = "pass")
@@ -157,4 +160,93 @@ test_that("unverified runtime archives are rejected without download", {
   expect_equal(readLines(archive), "invalid archive")
   manifest$platform <- "unsupported"
   expect_error(acquire_runtime(root, manifest), class = "cttir_runtime_unavailable")
+})
+
+test_that("completed unverified runtime parts remain available for review", {
+  skip_if_not(identical(Sys.info()[["sysname"]], "Linux"))
+  skip_if_not(nzchar(Sys.which("zstd")) && nzchar(Sys.which("tar")))
+  root <- new_parent()
+  part <- file.path(root, "ollama-linux-amd64.tar.zst.part")
+  write_bytes("unverified", part)
+  manifest <- read_document(resource_file("runtime", "manifest.json"))
+  manifest$archive_bytes <- file.info(part)$size
+  before <- file_hash(part)
+  expect_error(acquire_runtime(root, manifest), class = "cttir_path_conflict")
+  expect_identical(file_hash(part), before)
+  inventory <- runtime_storage_files(root)
+  expect_identical(inventory$role, "runtime_archive")
+  expect_true(inventory$retained)
+})
+
+test_that("legacy setup rechecks runtime ownership and model identity before activating state", {
+  root <- new_parent(); withr::local_options(cttiR.runtime_dir = root)
+  manifest <- read_document(resource_file("runtime", "manifest.json"))
+  state <- file.path(root, "runtime-state.json"); write_bytes('{"previous":"retained"}', state)
+  before <- file_hash(state)
+  owner <- list(pid = Sys.getpid(), host = Sys.info()[["nodename"]], locality = "managed_cloud_disabled")
+  original <- strrep("a", 64); changed <- strrep("b", 64)
+  actual <- original; owned <- TRUE; pulled <- 0L; mutate <- "digest"
+  local_mocked_bindings(runtime_owner = function(...) owner,
+    runtime_state_verified = function(...) owned,
+    runtime_request = function(endpoint, route, ...) {
+      if (route == "pull") pulled <<- pulled + 1L
+      list(version = manifest$runtime_version)
+    },
+    local_model = function(...) list(digest = actual),
+    runtime_probe = function(...) {
+      if (mutate == "digest") actual <<- changed else owned <<- FALSE
+      list(state = "pass")
+    })
+  result <- setup(model = "local:small", offline = TRUE)
+  expect_identical(result$state, "blocked")
+  expect_match(result$blockers, "Model identity changed", fixed = TRUE)
+  expect_identical(file_hash(state), before)
+  actual <- original; mutate <- "owner"
+  result <- setup(model = "local:small", offline = TRUE)
+  expect_identical(result$state, "blocked")
+  expect_match(result$blockers, "identity or model storage changed", fixed = TRUE)
+  expect_identical(file_hash(state), before)
+  expect_equal(pulled, 0L)
+})
+
+test_that("legacy setup never pulls after ownership expires or the runtime version changes", {
+  root <- new_parent(); withr::local_options(cttiR.runtime_dir = root)
+  manifest <- read_document(resource_file("runtime", "manifest.json"))
+  owned <- TRUE; version <- manifest$runtime_version; pulled <- 0L
+  local_mocked_bindings(runtime_owner = function(...) list(pid = Sys.getpid()),
+    runtime_state_verified = function(...) owned,
+    runtime_request = function(endpoint, route, ...) {
+      if (route == "pull") pulled <<- pulled + 1L
+      list(version = version)
+    },
+    local_model = function(...) {owned <<- FALSE; NULL})
+  result <- setup(model = "local:small")
+  expect_identical(result$state, "blocked")
+  expect_match(result$blockers, "identity or model storage changed", fixed = TRUE)
+  expect_equal(pulled, 0L)
+  owned <- TRUE; version <- "different"
+  result <- setup(model = "local:small")
+  expect_identical(result$state, "blocked")
+  expect_match(result$blockers, "runtime version differs", fixed = TRUE)
+  expect_equal(pulled, 0L)
+  expect_false(file.exists(file.path(root, "runtime-state.json")))
+})
+
+test_that("failed fresh startup preserves the previous activation record", {
+  root <- new_parent(); withr::local_options(cttiR.runtime_dir = root)
+  manifest <- read_document(resource_file("runtime", "manifest.json"))
+  executable <- file.path(root, paste0("ollama-", manifest$runtime_version), "bin", "ollama")
+  write_bytes("synthetic preflight fixture", executable)
+  state <- file.path(root, "runtime-state.json"); write_bytes('{"previous":"retained"}', state)
+  before <- file_hash(state); killed <- 0L
+  child <- list(is_alive = function() TRUE, kill = function() {killed <<- killed + 1L})
+  local_mocked_bindings(runtime_owner = function(...) NULL,
+    release_start_runtime = function(...) list(owner = list(pid = 123L), process = child),
+    runtime_state_verified = function(...) TRUE,
+    runtime_request = function(...) list(version = "different"))
+  result <- setup(model = "local:small", offline = TRUE)
+  expect_identical(result$state, "blocked")
+  expect_identical(killed, 1L)
+  expect_identical(file_hash(state), before)
+  expect_false(dir.exists(file.path(root, "setup-lock")))
 })

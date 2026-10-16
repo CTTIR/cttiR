@@ -1,0 +1,22 @@
+test_that("local assistance fallback remains usable in English, German and narrow layouts", {
+  live <- browser_app("assistance", "cttiR::setup_app(launch.browser = FALSE)")
+  app <- live$app
+  app$set_inputs(nav = "ask")
+  app$wait_for_js("document.querySelector('#ask-question').offsetParent !== null")
+  app$set_inputs(`ask-action` = "ask", `ask-question` = "Explain dplyr::filter",
+    `ask-local_assistance` = TRUE, `ask-assistance_kind` = "answer")
+  app$click("ask-run", wait_ = FALSE)
+  wait_text(app, "#ask-result", "Catalog-based guidance")
+  expect_match(app$get_text("#ask-result"), "local runtime", fixed = TRUE)
+  expect_match(app$get_text("#ask-result"), "dplyr", fixed = TRUE)
+  expect_false(isTRUE(app$get_js("document.querySelector('#ask-apply_suggestion') !== null")))
+  capture(app, "assistance-fallback-en", "#ask-result")
+  app$set_inputs(lang = "de")
+  wait_text(app, "#ask-result", "Frage, Projekt oder Sprache")
+  app$click("ask-run", wait_ = FALSE)
+  wait_text(app, "#ask-result", "Katalogbasierte Hinweise")
+  expect_equal(app$get_js("document.documentElement.lang"), "de")
+  capture(app, "assistance-fallback-de", "#ask-result")
+  app$set_inputs(`ask-question` = "Explain stats::lm")
+  wait_text(app, "#ask-result", "Frage, Projekt oder Sprache")
+})

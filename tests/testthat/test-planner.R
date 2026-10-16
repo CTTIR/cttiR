@@ -539,7 +539,10 @@ test_that("setup labels planner qualification from the recorded benchmark", {
   owner <- list(pid = Sys.getpid(), host = Sys.info()[["nodename"]], locality = "managed_cloud_disabled")
   local_mocked_bindings(runtime_owner = function(...) owner,
     local_model = function(endpoint, model) list(digest = if (identical(model, manifest$model)) manifest$model_digest else fake_digest),
-    runtime_request = function(...) stop("unexpected download"),
+    runtime_state_verified = function(...) TRUE,
+    runtime_request = function(endpoint, route, ...) {
+      expect_identical(route, "version"); list(version = manifest$runtime_version)
+    },
     runtime_probe = function(...) list(state = "pass"))
   override <- setup(model = "never-benchmarked:tag", offline = TRUE)
   expect_equal(override$state, "runtime_ready")
@@ -598,7 +601,10 @@ test_that("grounding retains keyword evidence and records omissions without chan
   expect_true(planner_validate(planner_proposal_json(plan$proposal))$ok)
   expect_length(original$proposal$capability_ids, 2L)
   keep <- planner_ground(original, "Fit linear regression using an Excel file.")
-  expect_identical(keep$proposal, original$proposal)
+  expect_identical(keep$proposal$capability_ids, original$proposal$capability_ids)
+  expect_identical(keep$proposal[planner_fields], original$proposal[planner_fields])
+  expect_match(tail(keep$proposal$unresolved, 1L), "unapproved candidates", fixed = TRUE)
+  expect_true(planner_validate(planner_proposal_json(keep$proposal))$ok)
   original$provenance$planner_mode <- "deterministic"
   expect_identical(planner_ground(original, "Nothing specified."), original)
 })
@@ -609,7 +615,7 @@ test_that("accepted model capabilities are filtered and omissions persist in spe
   spec <- resolve_spec("Cohort", "methods", "Describe blood pressure.", NULL, list())
   notes <- Filter(function(d) identical(d$field, "/provenance/prompt_version"), spec$decisions)
   expect_length(notes, 1L)
-  expect_contains(unlist(notes[[1]]$evidence_ids), c("capability_grounding:registry-keywords-1",
+  expect_contains(unlist(notes[[1]]$evidence_ids), c("capability_grounding:registry-keywords-2",
     "capability_omitted:std.import.spreadsheet"))
   expect_match(notes[[1]]$reason, "does not approve", fixed = TRUE)
   expect_false(spec$analysis$approved)
@@ -669,7 +675,10 @@ test_that("setup checks actual digest instead of inheriting a mutable tag approv
     },
     runtime_owner = function(...) owner,
     local_model = function(...) list(digest = fake_digest),
-    runtime_request = function(...) stop("unexpected request"),
+    runtime_state_verified = function(...) TRUE,
+    runtime_request = function(endpoint, route, ...) {
+      expect_identical(route, "version"); list(version = manifest$runtime_version)
+    },
     runtime_probe = function(...) list(state = "pass")
   )
   prepared <- setup(model = entry$tag, offline = TRUE)

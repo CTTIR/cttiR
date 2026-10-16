@@ -66,11 +66,13 @@ test_that("successful acquisition retains its before-pull estimate", {
   pulls <- 0L
   local_mocked_bindings(
     runtime_owner = function(...) list(pid = Sys.getpid(), host = "fixture"),
+    runtime_state_verified = function(...) TRUE,
     local_model = function(...) {
       queries <<- queries + 1L
       if (queries == 1L) NULL else list(digest = manifest$model_digest)
     },
     runtime_request = function(endpoint, route, body, ...) {
+      if (route == "version") return(list(version = manifest$runtime_version))
       expect_identical(route, "pull")
       expect_identical(body$model, manifest$model)
       pulls <<- pulls + 1L
@@ -81,7 +83,7 @@ test_that("successful acquisition retains its before-pull estimate", {
   result <- setup(model = manifest$model)
   expect_identical(result$state, "runtime_ready")
   expect_equal(pulls, 1L)
-  expect_equal(queries, 2L)
+  expect_equal(queries, 3L)
   expect_identical(result$download_estimate$model_presence, "absent")
   expect_equal(result$download_estimate$total_bytes, as.double(manifest$model_bytes))
 })

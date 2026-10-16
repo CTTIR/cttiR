@@ -475,7 +475,7 @@ test_that("KB-006 fails when a standard workflow capability has no valid approva
 
 test_that("bundled decisions are role-specific and cite fixtures that exercise them", {
   decisions <- validate_approvals(read_document(resource_file("extdata", "approvals.json")))
-  catalog <- read_catalog(resource_file("extdata", "api-catalog.json.gz"))
+  catalog <- read_bundled_catalog()
   records <- stats::setNames(catalog$packages, vapply(catalog$packages, function(p) p$name, character(1)))
   for (d in decisions) expect_identical(approval_coverage(records[[d$package]], d)$state, "complete", info = d$approval_id)
   ids <- vapply(decisions, function(d) d$approval_id, character(1))
@@ -491,11 +491,23 @@ test_that("bundled decisions are role-specific and cite fixtures that exercise t
   expect_identical(vapply(figures$fixtures, function(x) x$test_name, character(1)),
     "the synthetic demo runs in a generated project and labels its outputs")
   expect_false("survfit" %in% callables("survival:3.8-9:model_coxph"))
-  cited <- unique(unlist(lapply(decisions, function(d) lapply(d$fixtures, function(x) paste(basename(x$test_file), x$test_name, sep = "::")))))
+  cited <- unique(unlist(lapply(decisions, function(d) lapply(d$fixtures, function(x) paste(x$test_file, x$test_name, sep = "::")))))
   known <- character()
   for (file in unique(sub("::.*$", "", cited))) {
-    for (e in parse(test_path(file), keep.source = FALSE)) {
-      if (is.call(e) && identical(e[[1]], as.name("test_that"))) known <- c(known, paste(file, e[[2]], sep = "::"))
+    if (identical(file, "tools/verify-cellspec-structure.R")) {
+      source <- test_path("fixtures", "cellspec-structure.R.txt")
+      expected <- "fe9209252215dfdd1e3c1202ed4c62cc766b99510d62e063edd3c53ea147b689"
+      expect_identical(file_hash(source), expected)
+      original <- test_path("..", "..", file)
+      if (file.exists(original)) expect_identical(file_hash(normalizePath(original)), expected)
+      declaration <- "check"
+    } else {
+      expect_true(startsWith(file, "tests/testthat/"), info = file)
+      source <- test_path(sub("^tests/testthat/", "", file))
+      declaration <- "test_that"
+    }
+    for (e in parse(source, keep.source = FALSE)) {
+      if (is.call(e) && identical(e[[1]], as.name(declaration))) known <- c(known, paste(file, e[[2]], sep = "::"))
     }
   }
   expect_identical(setdiff(cited, known), character())

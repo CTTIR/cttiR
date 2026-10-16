@@ -125,6 +125,16 @@ omissions are recorded in bounded notes and the project decision evidence.
 This can omit legitimate requests expressed without those keywords. Filtering
 is not workflow approval, and fixed inference settings do not guarantee identical
 suggestions. Review proposed study decisions before using them for analysis.
+Requests matching more capabilities than the proposal schema permits return no
+capability selection and ask for a narrower request. Candidate capability IDs
+carry an explicit unapproved-status note; they do not become reviewed adapters.
+
+Planner and assistance qualification also bind package function bodies, defaults,
+static rules, R/platform and direct/transitive Imports and Depends versions.
+Mutable caches are excluded. The implementation fingerprint is deliberately
+conservative: even an unrelated package-code change reopens qualification.
+These identity checks do not prove scientific validity or the integrity of a
+third-party package rebuilt with different contents under the same version.
 Long inputs are bounded again after JSON escaping, preserving valid input JSON.
 Planner 4 keeps the longest prefix that fits this character budget. Every reply,
 including a repair, must report a valid prompt token count with room for the
@@ -194,3 +204,70 @@ not verify a runtime. Project summaries report the planning mode used and direct
 users to this preview without probing or starting an optional local runtime.
 Explicit model preparation remains available for diagnostics even when the
 model is unqualified; it does not grant planning qualification.
+
+## Installing an exact model release
+
+`setup_release()` takes a locally reviewed JSON manifest and its SHA-256 from a
+separately trusted release record. This development package does not yet bundle a
+qualified release manifest. The schema binds package, catalog, policy, prompt,
+runtime, base model, adapter, GGUF and template identities. A manifest cannot grant
+qualification. Linux x86_64 is the only supported acquisition platform.
+
+```{r exact-release, eval=FALSE}
+# Obtain these files and the manifest checksum from a reviewed release record.
+preview <- cttiR::setup_release(
+  manifest = "release.json", manifest_sha256 = trusted_manifest_sha256,
+  model_file = "model.gguf", offline = TRUE
+)
+preview$storage
+preview$download_estimate
+preview$blockers
+
+# A separate explicit action permits the previewed work.
+installed <- cttiR::setup_release(
+  manifest = "release.json", manifest_sha256 = trusted_manifest_sha256,
+  model_file = "model.gguf", offline = TRUE,
+  dry_run = FALSE, consent = TRUE
+)
+```
+
+Preview makes no HTTP requests or writes. It reports conservative disk admission
+requirements, including staging space; these are estimates, not reservations.
+Offline import still needs the pinned runtime to be installed already. Omitting
+`model_file` permits a verified cache or, with downloads enabled, the immutable
+HTTPS model URL in the manifest. Model and runtime transfers require command-line
+`curl` and resume retained partial downloads. Corrupt
+or conflicting files remain for inspection. An occupied unmanaged daemon is not
+modified. Select an unused loopback port through `cttiR.ollama_endpoint` when an
+isolated runtime is needed. The Runtime view exposes the same release inputs and
+consent control.
+
+The installer checks the local model digest and template and performs a bounded
+structured-output probe. `model_ready` is separate from assistance qualification,
+project environment readiness and analysis approval. Keep previous release
+manifests and artifacts for rollback by explicitly selecting their original
+manifest. The atomic runtime-state record identifies the activated release.
+
+## Storage and process lifetime
+
+```{r managed-storage, eval=FALSE}
+cttiR::runtime_storage()
+
+# Choose exact download basenames from the inventory; nothing is auto-selected.
+cleanup <- cttiR::runtime_cleanup(files = selected_download_basenames)
+cttiR::runtime_cleanup(files = selected_download_basenames,
+  expected = cleanup$expected, dry_run = FALSE, consent = TRUE)
+
+shutdown <- cttiR::runtime_stop()
+cttiR::runtime_stop(expected = shutdown$expected,
+  dry_run = FALSE, consent = TRUE)
+```
+
+Storage inventory covers model downloads, runtime archives, blobs and retained manifests, excluding
+runtime libraries and logs from its byte total. Cleanup protects all retained
+release pins, model blobs and unrelated files. It rechecks selected hashes under
+the setup lock and records removals. Shutdown rechecks process ownership and
+creation time, sends a graceful signal only to that process and preserves all
+files. A `stopping` result reports that the process remained alive after five
+seconds; it does not claim that all resources were released. No package hook
+starts, stops or downloads a runtime or model.

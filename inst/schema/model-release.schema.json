@@ -1,0 +1,209 @@
+{
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "release_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,95}$"
+    },
+    "package_version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "catalog_id": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "policy_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "prompt_version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "runtime_version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "platform": {
+      "const": "Linux"
+    },
+    "arch": {
+      "const": "x86_64"
+    },
+    "base_model": {
+      "type": "object",
+      "properties": {
+        "repository": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "revision": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "adapter_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "license": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 65536
+        }
+      },
+      "required": [
+        "repository",
+        "revision",
+        "adapter_sha256",
+        "license"
+      ],
+      "additionalProperties": false
+    },
+    "model": {
+      "type": "object",
+      "properties": {
+        "tag": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,100}:[A-Za-z0-9][A-Za-z0-9._-]{0,25}$"
+        },
+        "file": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,120}[.]gguf$"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 4,
+          "maximum": 137438953472
+        },
+        "url": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^https://huggingface[.]co/[A-Za-z0-9_-]+/[A-Za-z0-9_.-]+/resolve/[a-f0-9]{40}/[A-Za-z0-9_.-]+[.]gguf$"
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "template": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 65536
+        },
+        "template_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "num_ctx": {
+              "type": "integer",
+              "minimum": 2048,
+              "maximum": 65536
+            },
+            "num_predict": {
+              "type": "integer",
+              "minimum": 128,
+              "maximum": 4096
+            },
+            "temperature": {
+              "const": 0
+            },
+            "stop": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128
+              },
+              "maxItems": 16
+            }
+          },
+          "required": [
+            "num_ctx",
+            "num_predict",
+            "temperature",
+            "stop"
+          ],
+          "additionalProperties": false
+        },
+        "import_template": {
+          "description": "NULL retains the native GGUF template; an explicit string is an Ollama import override. The separate template field binds the template returned by show.",
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 65536
+            }
+          ]
+        }
+      },
+      "required": [
+        "tag",
+        "file",
+        "sha256",
+        "bytes",
+        "url",
+        "digest",
+        "template",
+        "template_sha256",
+        "parameters",
+        "import_template"
+      ],
+      "additionalProperties": false
+    },
+    "resources": {
+      "type": "object",
+      "properties": {
+        "minimum_memory_bytes": {
+          "type": "integer",
+          "minimum": 1073741824
+        },
+        "required_disk_bytes": {
+          "type": "integer",
+          "minimum": 1073741824
+        }
+      },
+      "required": [
+        "minimum_memory_bytes",
+        "required_disk_bytes"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "schema_version",
+    "release_id",
+    "package_version",
+    "catalog_id",
+    "policy_sha256",
+    "prompt_version",
+    "runtime_version",
+    "platform",
+    "arch",
+    "base_model",
+    "model",
+    "resources"
+  ],
+  "additionalProperties": false,
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Pinned local model release transport manifest",
+  "description": "Artifact identity and setup compatibility only; this manifest cannot grant model qualification."
+}

@@ -378,6 +378,7 @@ audit_std_routing <- function(context) {
 
 audit_std_bundle <- function(context) {
   audit_with_project(context, function(p) {
+    if (identical(p$spec$workflow$reporting, "workflowr")) return(audit_workflowr_bundle(p))
     manifest_file <- file.path(p$path, "metadata", "workflow-template.json")
     if (is.na(file_hash(manifest_file))) return(audit_result("fail", "metadata/workflow-template.json is missing."))
     manifest <- read_document(manifest_file)
@@ -391,6 +392,9 @@ audit_std_bundle <- function(context) {
       edited_code = as.list(edited))
     if (!identical(manifest$mode, "adapted_templates_with_reviewed_stage_library") || isTRUE(manifest$initializer_invoked)) {
       return(audit_result("fail", "The workflow template provenance is not the reviewed adapted reflowR layout.", evidence))
+    }
+    if (!isTRUE(evidence$manifest_matches_bundle)) {
+      return(audit_result("fail", "The recorded template file identities differ from the pinned bundle.", evidence))
     }
     if (length(edited)) {
       return(audit_result("warning", "Reviewed stage code was edited locally; receipts from edited code do not count as evidence.", evidence))
@@ -522,7 +526,9 @@ audit_kb_approvals <- function(context) {
     }
   }
   total <- function(field) sum(vapply(docs, function(x) x[[field]], numeric(1)))
-  standard <- standard_capability_approvals(catalog)
+  spec <- audit_spec(context)
+  reporting <- if (is.null(spec$workflow$reporting)) "generic" else spec$workflow$reporting
+  standard <- standard_capability_approvals(catalog, reporting = reporting)
   pending <- Filter(function(x) !identical(x$status, "approved"), standard)
   pending_text <- vapply(names(pending), function(id) {
     paste0(id, " (", paste(unlist(pending[[id]]$missing), collapse = ", "), ")")

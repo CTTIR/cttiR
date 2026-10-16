@@ -46,9 +46,13 @@ runtime_owner <- function(root, endpoint) {
     return(NULL)
   }
   state <- read_document(file)
+  if (runtime_state_verified(root, endpoint, state)) state else NULL
+}
+
+runtime_state_verified <- function(root, endpoint, state) {
   if (!identical(state$endpoint, endpoint) || !identical(state$host, Sys.info()[["nodename"]]) ||
       !identical(state$locality, "managed_cloud_disabled")) {
-    return(NULL)
+    return(FALSE)
   }
   valid <- tryCatch(
     {
@@ -60,12 +64,14 @@ runtime_owner <- function(root, endpoint) {
         runtime_executable_matches(state$pid, state$executable) &&
         "serve" %in% args && identical(unname(environment[["OLLAMA_NO_CLOUD"]]), "1") &&
         identical(unname(environment[["OLLAMA_HOST"]]), endpoint) &&
+        identical(normalizePath(unname(environment[["OLLAMA_MODELS"]]), mustWork = TRUE),
+          normalizePath(file.path(root, "models"), mustWork = TRUE)) &&
         identical(state$binary_sha256, manifest$binary_sha256) &&
         identical(digest::digest(file = state$executable, algo = "sha256"), state$binary_sha256)
     },
     error = function(e) FALSE
   )
-  if (valid) state else NULL
+  isTRUE(valid)
 }
 
 acquire_runtime <- function(root, manifest) {
@@ -84,12 +90,24 @@ acquire_runtime <- function(root, manifest) {
     abort_cttir("An existing unverified archive requires manual review.", "cttir_path_conflict")
   }
   if (!intact) {
-    staged <- tempfile("ollama-download-", tmpdir = root)
-    on.exit(unlink(staged), add = TRUE)
-    request <- httr2::request(manifest$archive_url)
-    request <- httr2::req_timeout(request, 900)
-    request <- httr2::req_options(request, maxfilesize = manifest$archive_bytes)
-    httr2::req_perform(request, path = staged)
+    staged <- paste0(archive, ".part")
+    assert_plain_path(staged)
+    if (file.exists(staged) && (dir.exists(staged) || file.info(staged)$size >= manifest$archive_bytes)) {
+      abort_cttir("A completed or oversized unverified runtime transfer requires review.", "cttir_path_conflict")
+    }
+    executable <- Sys.which("curl")
+    if (!nzchar(executable)) abort_cttir("Resumable runtime acquisition requires the curl command-line tool.", "cttir_runtime_unavailable")
+    args <- c("--disable", "--globoff", "--fail", "--silent", "--show-error",
+      "--proto", "=https", "--proto-redir", "=https", "--location", "--max-redirs", "5",
+      "--proxy", "", "--connect-timeout", "15", "--max-time", "900",
+      "--max-filesize", format(manifest$archive_bytes, scientific = FALSE, trim = TRUE),
+      "--continue-at", "-", "--output", staged, "--url", manifest$archive_url)
+    transfer <- processx::run(executable, args, error_on_status = FALSE, timeout = 910)
+    if (transfer$status != 0L) abort_cttir("Runtime download failed; the partial transfer is retained for retry.",
+      "cttir_runtime_unavailable", "download_incomplete")
+    if (file.info(staged)$size != manifest$archive_bytes) {
+      abort_cttir("Runtime archive size differs from the pinned release; the transfer is retained.", "cttir_runtime_unavailable", "checksum_mismatch")
+    }
     if (!identical(digest::digest(file = staged, algo = "sha256"), manifest$archive_sha256)) {
       abort_cttir("Publisher archive checksum mismatch.", "cttir_runtime_unavailable", "checksum_mismatch")
     }
@@ -135,8 +153,8 @@ runtime_executable_matches <- function(pid, executable) {
     identical(normalizePath(image, mustWork = FALSE), normalizePath(executable, mustWork = FALSE))
 }
 
-local_model <- function(endpoint, model) {
-  tags <- runtime_request(endpoint, "tags")$models
+local_model <- function(endpoint, model, timeout = 10) {
+  tags <- runtime_request(endpoint, "tags", timeout = timeout)$models
   names <- vapply(tags, function(x) x$name, character(1))
   index <- match(model, names)
   if (is.na(index)) {
@@ -247,57 +265,27 @@ setup <- function(model = "auto", install_ollama = TRUE, offline = FALSE, dry_ru
       if (is.null(owner)) {
         executable <- file.path(root, paste0("ollama-", manifest$runtime_version), "bin", "ollama")
         assert_plain_path(executable)
-        # Nothing could be started without a verified runtime, so block before any
-        # request, including the loopback port probe.
+        # Offline refusal must precede even a loopback port probe.
         if (!file.exists(executable) && (offline || !install_ollama)) {
           abort_cttir("The verified runtime is absent and acquisition is disabled.", "cttir_runtime_unavailable")
         }
-        reachable <- tryCatch(
-          {
-            runtime_request(endpoint, "version", timeout = 2)
-            TRUE
-          },
-          error = function(e) FALSE
-        )
-        if (reachable) abort_cttir("The port belongs to an unmanaged daemon; choose an unused loopback port.", "cttir_runtime_unavailable", "unmanaged_daemon")
-        if (!file.exists(executable)) executable <- acquire_runtime(root, manifest)
-        if (!identical(digest::digest(file = executable, algo = "sha256"), manifest$binary_sha256)) {
-          abort_cttir("Runtime binary checksum mismatch.", "cttir_runtime_unavailable")
+        started <- release_start_runtime(root, endpoint, manifest, install_ollama, offline)
+        process <- started$process; owner <- started$owner
+      }
+      verify_owner <- function() {
+        if (!runtime_state_verified(root, endpoint, owner)) {
+          abort_cttir("Owned runtime identity or model storage changed during setup.", "cttir_runtime_unavailable")
         }
-        executable <- normalizePath(executable, mustWork = TRUE)
-        dir.create(file.path(root, "models"), recursive = TRUE, showWarnings = FALSE)
-        process <- processx::process$new(executable, "serve",
-          env = c("current",
-            OLLAMA_NO_CLOUD = "1", OLLAMA_HOST = endpoint,
-            OLLAMA_MODELS = normalizePath(file.path(root, "models")),
-            OLLAMA_MAX_LOADED_MODELS = "1", OLLAMA_NUM_PARALLEL = "1"
-          ),
-          stdout = file.path(root, "server.log"), stderr = "2>&1", cleanup = FALSE
-        )
-        owner <- list(
-          pid = process$get_pid(), host = Sys.info()[["nodename"]], executable = executable,
-          binary_sha256 = manifest$binary_sha256, endpoint = endpoint, locality = "managed_cloud_disabled"
-        )
-        assign(as.character(owner$pid), process, envir = .owned_runtimes)
-        write_bytes(paste0(json_text(owner, TRUE), "\n"), file.path(root, "runtime-state.json"))
-        ready <- FALSE
-        for (i in seq_len(40L)) {
-          ready <- tryCatch(
-            {
-              runtime_request(endpoint, "version", timeout = 1)
-              TRUE
-            },
-            error = function(e) FALSE
-          )
-          if (ready || !process$is_alive()) break
-          Sys.sleep(0.25)
-        }
-        if (!ready) abort_cttir("Owned runtime did not become ready.", "cttir_runtime_unavailable")
+      }
+      verify_owner()
+      if (!identical(runtime_request(endpoint, "version")$version, manifest$runtime_version)) {
+        abort_cttir("Serving runtime version differs from the pinned runtime.", "cttir_runtime_unavailable")
       }
       entry <- local_model(endpoint, model)
       result$download_estimate <- runtime_download_estimate(result$preflight, !is.null(entry))
       if (is.null(entry)) {
         if (offline) abort_cttir("The requested model is absent in offline mode.", "cttir_runtime_unavailable")
+        verify_owner()
         runtime_request(endpoint, "pull", list(model = model, stream = FALSE), timeout = 900)
         entry <- local_model(endpoint, model)
       }
@@ -314,12 +302,17 @@ setup <- function(model = "auto", install_ollama = TRUE, offline = FALSE, dry_ru
             "cttir_runtime_unavailable")
         }
       }
+      verify_owner()
       probe <- runtime_probe(endpoint, model)
+      fresh <- local_model(endpoint, model)
+      if (is.null(fresh) || !identical(fresh$digest, entry$digest)) {
+        abort_cttir("Model identity changed during setup.", "cttir_runtime_unavailable", "model_digest_mismatch")
+      }
+      verify_owner()
       owner$selection <- result$selection
       owner$model <- model
       owner$model_digest <- entry$digest
       owner$probe <- probe
-      write_bytes(paste0(json_text(owner, TRUE), "\n"), file.path(root, "runtime-state.json"))
       result$state <- "runtime_ready"
       # Re-evaluate the actual acquired digest; a mutable explicit tag must not
       # inherit an older digest's positive qualification.
@@ -335,6 +328,7 @@ setup <- function(model = "auto", install_ollama = TRUE, offline = FALSE, dry_ru
       )
       result$blockers <- switch(validation, qualified_for_planning = character(),
         candidate_pending_benchmark = "workflow_model_benchmark_pending", "workflow_model_not_qualified")
+      release_write_record(owner, file.path(root, "runtime-state.json"))
       result
     },
     error = function(e) {

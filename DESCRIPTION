@@ -1,5 +1,5 @@
 Package: cttiR
-Title: CTTIR Project Builder
+Title: Reproducible Research Project Builder
 Version: 0.1.1.9000
 Authors@R: person("R.", "Heller", email = "raban.heller@uni-ulm.de", role = c("aut", "cre"))
 Description: Creates deterministic research projects from a name, research type
@@ -13,13 +13,16 @@ Description: Creates deterministic research projects from a name, research type
 License: MIT + file LICENSE
 Encoding: UTF-8
 Depends: R (>= 4.1.0)
+SystemRequirements: curl and tar with zstd support (optional, for managed
+    local runtime acquisition on Linux x86_64)
 Imports: DBI, RSQLite, digest, fs, httr2, jsonlite, jsonvalidate, processx, ps, uuid, yaml
 Suggests: broom, broom.mixed, callr (>= 3.7.0), colorspace, DelayedArray, dplyr,
     ggplot2, knitr, lme4, Matrix, nlme, patchwork, pkgload, png, RColorBrewer, readr,
-    renv (>= 1.0.0), rmarkdown, S4Vectors, Seurat, SeuratObject, shiny (>= 1.7.0),
+    reflowR (>= 0.1.0.9000), renv (>= 1.0.0), rmarkdown, S4Vectors, Seurat, SeuratObject, shiny (>= 1.7.0),
     shinytest2, SingleCellExperiment, SummarizedExperiment, survival, targets,
-    testthat (>= 3.2.0), viridisLite, withr
+    testthat (>= 3.2.0), viridisLite, withr, workflowr
 Config/testthat/edition: 3
+Config/Needs/check: CTTIR/reflowR@910f4688c8fa32540ade7d000ac83ab2ca0e1d1d
 Roxygen: list(markdown = TRUE)
 URL: https://github.com/CTTIR/cttiR
 BugReports: https://github.com/CTTIR/cttiR/issues
