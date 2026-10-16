@@ -1,5 +1,12 @@
 # cttiR 0.1.1.9000
 
+* Detect symbolic links through cross-platform file metadata before project
+  reads or writes, including linked ancestors on Windows. Exact macOS system
+  aliases retain their existing exception.
+* Keep runtime-stop previews read-only on Windows and explicitly refuse applying
+  graceful shutdown before locks, receipts or signals. No forced-kill fallback
+  is used.
+
 * Add a closed synthetic association specification and installed-code study
   compiler using reflowR's strict composition. Analysis and rendering have
   separate externally pinned receipts; current raw inputs, dependency versions,
