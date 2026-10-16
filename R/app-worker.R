@@ -5,7 +5,8 @@
 
 app_operations <- c("project", "sync", "ask", "assistant_advice", "assistant_suggestion_preview",
   "assistant_suggestion_apply", "search", "resources", "packages", "update",
-  "rollback_knowledge", "audit", "setup", "setup_release")
+  "rollback_knowledge", "audit", "setup", "setup_release",
+  "study_preview", "study_compile", "study_run", "study_render")
 
 app_error_field <- function(field) {
   if (is.character(field) && length(field) >= 1L && !is.na(field[[1]])) return(field[[1]])
@@ -37,6 +38,9 @@ app_worker_run <- function(operation, args) {
   attr(args, "cttir_sync_plan") <- NULL
   audit_plan <- attr(args, "cttir_audit_plan")
   attr(args, "cttir_audit_plan") <- NULL
+  if (operation %in% app_study_operations) {
+    return(tryCatch(list(ok = TRUE, value = app_study_dispatch(operation, args)), error = app_condition_payload))
+  }
   target <- switch(operation, assistant_advice = assistant_advice,
     assistant_suggestion_preview = assistant_suggestion_preview,
     assistant_suggestion_apply = assistant_suggestion_apply, getExportedValue("cttiR", operation))

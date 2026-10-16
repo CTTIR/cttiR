@@ -49,6 +49,7 @@ app_ui <- function(mode = "fast", path = NULL) {
     header = shiny::tagList(app_head(), app_header()),
     view("nav.home", "home", app_home_ui("home")),
     view("nav.create", "create", app_builder_ui("create", mode)),
+    view("nav.study", "study", app_study_ui("study")),
     view("nav.open", "open", app_open_ui("open", path)),
     view("nav.ask", "ask", app_ask_ui("ask")),
     view("nav.knowledge", "knowledge", app_knowledge_ui("knowledge")),
@@ -69,6 +70,7 @@ app_server <- function(path = NULL, worker = app_worker) {
     home <- app_home_server("home")
     shiny::observeEvent(home(), shiny::updateNavbarPage(session, "nav", selected = home()$tab))
     create <- app_builder_server("create", pool, lang)
+    study <- app_study_server("study", pool, lang)
     opened <- app_open_server("open", pool, lang, path)
     app_ask_server("ask", pool, lang, project = opened$path)
     app_knowledge_server("knowledge", pool, lang, project = opened$path)
@@ -76,7 +78,7 @@ app_server <- function(path = NULL, worker = app_worker) {
       visible = shiny::reactive(identical(input$nav, "resources")))
     app_audit_server("audit", pool, lang, project = opened$path)
     app_runtime_server("runtime", pool, lang)
-    dirty <- shiny::reactive(isTRUE(create$dirty()) || isTRUE(opened$builder$dirty()))
+    dirty <- shiny::reactive(isTRUE(create$dirty()) || isTRUE(opened$builder$dirty()) || isTRUE(study$dirty()))
     shiny::observe(session$sendCustomMessage("cttir-dirty", list(dirty = dirty())))
     previous <- shiny::reactiveVal(NULL)
     notices <- shiny::reactiveVal(0L)
@@ -86,6 +88,8 @@ app_server <- function(path = NULL, worker = app_worker) {
         notices(notices() + 1L)
         shiny::showNotification(app_t("draft.unsaved_notice", lang()), type = "warning", duration = 8)
       }
+      if (identical(left, "study") && isTRUE(study$dirty()))
+        shiny::showNotification(app_t("study.external", lang()), type = "warning", duration = 8)
       previous(input$nav)
     })
   }
@@ -104,7 +108,20 @@ app_server <- function(path = NULL, worker = app_worker) {
 #' background R process; read-only work can be cancelled and duplicate
 #' submissions are refused. Creation and configuration require a reviewed
 #' preview of the current draft and catalog. Scientific analysis and returned
-#' code are never executed by the interface.
+#' code are never executed by the general project builder.
+#'
+#' The separate Strict synthetic examples view offers two fixed, noncausal
+#' examples: an independent continuous-outcome association and a paired mean
+#' change. Preview, compilation, synthetic analysis and rendering are separate
+#' explicit actions through [study_project()], [study_run()] and
+#' [study_render()]. It accepts no data upload, arbitrary code or model plan,
+#' and installs no packages. The prepared external library must already exist.
+#' One compiled example is retained per application session. Each successful
+#' step retains its trusted external declaration in server-side session state;
+#' download it outside the project for continuation through the R API after
+#' session loss. The interface never recovers authority from project files and
+#' never marks scientific or real-study approval. General Open/Configure remains
+#' for projects created by [project()], not strict example projects.
 #'
 #' Fast asks only for name, research type and goal (plus the parent directory)
 #' and shows the resolved workflow profile, routing reason and selected tools.

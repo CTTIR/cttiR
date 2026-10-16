@@ -1,5 +1,10 @@
 # cttiR 0.1.1.9000
 
+* Add a separate app flow for two fixed synthetic strict-study examples, with
+  explicit preview, compilation, analysis and rendering. Keep declarations in
+  session state for export and reject stale previews, changed fixtures and
+  repeated write steps. General project creation keeps its existing behavior.
+
 * Add a worked synthetic paired-study guide and shorten bundled upstream notice
   paths for portable source archives, preserving every notice byte and license
   reference.
