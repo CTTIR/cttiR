@@ -1,5 +1,8 @@
 # cttiR 0.1.1.9000
 
+* Include the declared outcome name and unit on association and paired-study
+  diagnostic value axes, including normal-quantile plots.
+
 * Add a separate app flow for two fixed synthetic strict-study examples, with
   explicit preview, compilation, analysis and rendering. Keep declarations in
   session state for export and reject stale previews, changed fixtures and

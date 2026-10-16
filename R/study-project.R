@@ -270,18 +270,21 @@ study_run <- function(directory, declaration) {
   device <- grDevices::dev.cur(); on.exit(if (device %in% grDevices::dev.list()) grDevices::dev.off(device), add = TRUE)
   graphics::par(mfrow = c(1L, 2L), mar = c(4, 4, 3, 1))
   color <- declaration$structure$profile$primary_color
+  outcome_label <- paste0(spec$outcome$name, " [", spec$outcome$unit, "]")
   if (study_is_paired(spec)) {
     graphics::plot(seq_len(result$n_pairs), result$diagnostics$difference, pch = 19L, col = color,
-      xlab = "Pair index (sorted ID; not time)", ylab = paste("After minus before [", spec$outcome$unit, "]"),
+      xlab = "Pair index (sorted ID; not time)", ylab = paste("After minus before:", outcome_label),
       main = "Recorded within-pair differences")
     graphics::abline(h = 0, col = "grey50", lty = 2L)
-    stats::qqnorm(result$diagnostics$difference, pch = 19L, col = color, main = "Difference normal quantiles")
+    stats::qqnorm(result$diagnostics$difference, pch = 19L, col = color,
+      ylab = paste("After minus before:", outcome_label), main = "Difference normal quantiles")
     stats::qqline(result$diagnostics$difference, col = "grey50", lty = 2L)
   } else {
     graphics::plot(result$diagnostics$fitted, result$diagnostics$residual, pch = 19L, col = color,
-      xlab = "Fitted outcome", ylab = "Residual", main = "Residuals versus fitted")
+      xlab = paste("Fitted", outcome_label), ylab = paste("Residual:", outcome_label), main = "Residuals versus fitted")
     graphics::abline(h = 0, col = "grey50", lty = 2L)
-    stats::qqnorm(result$diagnostics$residual, pch = 19L, col = color, main = "Residual normal quantiles")
+    stats::qqnorm(result$diagnostics$residual, pch = 19L, col = color,
+      ylab = paste("Residual:", outcome_label), main = "Residual normal quantiles")
     stats::qqline(result$diagnostics$residual, col = "grey50", lty = 2L)
   }
   grDevices::dev.off(device)
