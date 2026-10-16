@@ -49,5 +49,6 @@ articles:
     contents:
       - getting-started
       - standard-workflow
+      - strict-study-workflow
       - knowledge-and-approvals
       - audit-runtime-privacy

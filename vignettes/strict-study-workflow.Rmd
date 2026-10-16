@@ -1,0 +1,118 @@
+---
+title: "A strict synthetic study from plan to report"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{A strict synthetic study from plan to report}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+This walkthrough uses the bounded synthetic association recipe. It requires
+independent observations, a continuous outcome and exposure, and explicit units.
+It estimates an association, not a treatment effect. Paired, clustered,
+longitudinal and survival designs require other recipes and are not admitted by
+this contract. Unique observation IDs prevent accidental duplication; they do
+not establish that observations are independent.
+
+## Declare the question and data
+
+The example generates new synthetic values with English column names and an
+explicit seed. The response-generating equation is known because this is a
+development example. The fitted estimates still vary with the generated noise.
+
+```{r study-data}
+data <- withr::with_seed(20261016, {
+  exposure <- rep(seq_len(10), 4)
+  age <- stats::runif(40, min = 25, max = 65)
+  data.frame(
+    observation_id = sprintf("example_%03d", seq_len(40)),
+    pressure = 110 + 2 * exposure + 0.15 * age + stats::rnorm(40, sd = 5),
+    exposure = exposure,
+    age = age
+  )
+})
+units <- c(pressure = "mmHg", exposure = "mg", age = "years")
+spec <- cttiR::study_spec(
+  study_id = "synthetic_association",
+  name = "Synthetic association example",
+  question = "How is pressure associated with exposure after adjusting for age?",
+  population = "Forty independently generated synthetic observations",
+  observation_id = "observation_id",
+  outcome = list(name = "pressure", type = "continuous", unit = "mmHg"),
+  exposure = list(name = "exposure", type = "continuous", unit = "mg"),
+  covariates = list(list(name = "age", type = "continuous", unit = "years")),
+  research = list(domain = "clinical", data_origin = "primary",
+                  design = "observational")
+)
+cttiR::study_validate(spec, data, units)
+```
+
+The axes have separate meanings: `clinical` controls the research-domain colour,
+`primary` declares newly generated data, and `observational` records the design.
+An existing dataset would use `secondary` data origin without becoming an
+evidence-synthesis project. The strict profile uses clinical red `#C8102E` here.
+
+Missing values, mismatching units and duplicate observation IDs stop validation.
+The recipe also rejects rank-deficient or degenerate fits; it does not silently
+exclude rows or select covariates from p-values. A direct numerical preview is:
+
+```{r numerical-preview}
+result <- cttiR::study_analyze(spec, data, units)
+result$coefficients
+```
+
+This preview creates no project and no persisted execution receipt. Diagnostics
+and scientific assumptions still need review.
+
+## Compile, analyze and render
+
+The following steps are explicit and are not run while this vignette builds.
+Provision an installed external library containing cttiR, reflowR with the strict
+composition API, workflowr and their dependencies. `study_dependency_lock()`
+records the installed R and dependency versions; it does not install packages or
+prove their acquisition origins.
+
+Use a new project path below an existing physical directory. The strict profile
+rejects symbolic links in the path. For an intentional temporary demonstration,
+resolve the known temporary parent before choosing the new child path:
+
+```{r compile-study, eval=FALSE}
+directory <- tempfile("strict-study-", tmpdir = normalizePath(tempdir()))
+compiled <- cttiR::study_project(
+  directory, spec, data, cttiR::study_dependency_lock(),
+  author = "Research group", units = units, seed = 20261016L
+)
+analyzed <- cttiR::study_run(compiled$directory, compiled$declaration)
+reported <- cttiR::study_render(analyzed$directory, analyzed$declaration)
+validation <- cttiR::study_validate_project(
+  reported$directory, reported$declaration, require_render = TRUE
+)
+stopifnot(validation$valid, !validation$scientific_approval)
+```
+
+Retain the returned declarations outside the project in a trusted location. Each
+successful step returns the declaration required by the next step. Do not recover
+that authority from editable files inside the project. The project fixes eleven
+stage locations and a root index; inapplicable stages carry explicit reasons.
+Raw inputs are read-only and separate from derived outputs. This recipe marks
+sensitivity and exploratory work inapplicable because neither is prespecified.
+
+`study_run()` writes numerical results and a receipt binding the declared inputs,
+controls and outputs. `study_render()` invokes genuine workflowr rendering in a
+clean child R session and presents those recorded results. It does not fit the
+model again. Input, code, environment or output changes invalidate the matching
+checks. Preserve the existing project and receipts; compile a new project for a
+new analysis rather than overwriting recorded output.
+
+When retaining a copy, preserve the read-only raw-data directory and file modes
+as well as file contents, and validate the copy against the external declaration.
+A copy operation that makes the raw directory writable fails strict validation.
+
+Inspect `docs/index.html` and the stage pages. A valid report demonstrates the
+checked synthetic workflow and its recorded artifacts. It does not authorize a
+real study, establish legal compliance, select a local model, initialize Git,
+commit files or publish the report.
