@@ -1,0 +1,2840 @@
+{
+  "schema_version": 1,
+  "purpose": "Original upstream notices and separately identified standard license terms for bundled documentation; no relicensing.",
+  "catalog_archive_sha256": "71962828234fe128465e3a95d69b7b37685c7f9dd3cebda42509f35a9f337cd9",
+  "catalog_index_sha256": "f11097206c8c054b23a768da84fb9ea35d60512bf4d27ab6105e2a40a580d4d5",
+  "snapshot_count": 14,
+  "package_count": 60,
+  "source_identity_count": 62,
+  "records": [
+    {
+      "package": "DescrTab2",
+      "version": "2.1.16",
+      "revision": "cran:DescrTab2@2.1.16:facf005488ffc39957c630c5ad81612c",
+      "source_hash": "998e1880b6ccc61df9ca0049b17160bca1ba2cfe1c01158e80524b235eb5dcc8",
+      "license": "GPL (>= 3)",
+      "repository": "https://cran.r-project.org/package=DescrTab2",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "031ca5226128b5a69a347bb775e545c9ab41eba64557b1caf623c4c5a8fc515f",
+        "3e1983fd7f81b618d8cf614d33775068d8ad5628fa96723c515d331122e1501a",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "83517d03188928d54a7f15f0f3866a027046617f400e6b3d6e44022e39e54a99",
+        "92627577cce4722d0673e6c5a71773b0a8b35d6dbd9e38f6bd7b959972a9e67c",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816",
+        "b726a5f47357c4c3e362edba018afe3e5e72b3cfeec53b0ca5653b8fceac2bb9",
+        "c538a9fc77b5896fcae5a2ed04223d417c78b4514e0d97cd2bcff1fd26c61bc4",
+        "d10451ded27d07fd29122b46f8147f3ffa652acd9f952eb200ebe761bcfbe268",
+        "d478f032ffb27328bda3978bfaf17f57f9c2be520d1d1f560acba3331bc0ce1c"
+      ],
+      "notices": [
+        {
+          "file": "texts/9b2a46fbb69d70a70abd26ba331b65ef12affb8044aa959a84216aeb9fdb156a.txt",
+          "sha256": "9b2a46fbb69d70a70abd26ba331b65ef12affb8044aa959a84216aeb9fdb156a",
+          "source_member": "DescrTab2/inst/COPYRIGHTS",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "cfdb2aa80fdf2c0334f8ff710d12640ab1719120c8cba881649e8302d10c221d"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986.txt",
+          "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+          "source_member": "R-4.6.1/share/licenses/GPL-3",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ],
+      "source_archive_url": "https://cloud.r-project.org/src/contrib/Archive/DescrTab2/DescrTab2_2.1.16.tar.gz"
+    },
+    {
+      "package": "Matrix",
+      "version": "1.7-6",
+      "revision": "cran:Matrix@1.7-6:92502b5e17bc36390d9e52c0f2c2e0f0",
+      "source_hash": "f517aff4e13690e78d671078bff411e728836a368fe3677b97c3afae350fa49b",
+      "license": "GPL (>= 2) | file LICENCE",
+      "repository": "https://cran.r-project.org/package=Matrix",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "031ca5226128b5a69a347bb775e545c9ab41eba64557b1caf623c4c5a8fc515f",
+        "3e1983fd7f81b618d8cf614d33775068d8ad5628fa96723c515d331122e1501a",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "83517d03188928d54a7f15f0f3866a027046617f400e6b3d6e44022e39e54a99",
+        "92627577cce4722d0673e6c5a71773b0a8b35d6dbd9e38f6bd7b959972a9e67c",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816",
+        "b726a5f47357c4c3e362edba018afe3e5e72b3cfeec53b0ca5653b8fceac2bb9",
+        "c538a9fc77b5896fcae5a2ed04223d417c78b4514e0d97cd2bcff1fd26c61bc4",
+        "d10451ded27d07fd29122b46f8147f3ffa652acd9f952eb200ebe761bcfbe268",
+        "d478f032ffb27328bda3978bfaf17f57f9c2be520d1d1f560acba3331bc0ce1c"
+      ],
+      "notices": [
+        {
+          "file": "texts/2d1e5ff021e18fa4fb40ea78dc760ff2138860534ef537c4d6148573f89fe1f3.txt",
+          "sha256": "2d1e5ff021e18fa4fb40ea78dc760ff2138860534ef537c4d6148573f89fe1f3",
+          "source_member": "Matrix/inst/doc/SuiteSparse/CAMD/Doc/License.txt",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "694239dbe47e659d6d39a49af95157f46bd94977c283df00c4e8a016601cf143"
+        },
+        {
+          "file": "texts/8a1a423e01f2c27e0b6e182236962cf42a28a4048c4ec4f7f40dc5cf0424b8d3.txt",
+          "sha256": "8a1a423e01f2c27e0b6e182236962cf42a28a4048c4ec4f7f40dc5cf0424b8d3",
+          "source_member": "Matrix/inst/doc/SuiteSparse/LICENSE.txt",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "694239dbe47e659d6d39a49af95157f46bd94977c283df00c4e8a016601cf143"
+        },
+        {
+          "file": "texts/64ab947d7b289ad76e935adff51b31e4ac160df7dfad24480dbaa452e39bbe79.txt",
+          "sha256": "64ab947d7b289ad76e935adff51b31e4ac160df7dfad24480dbaa452e39bbe79",
+          "source_member": "Matrix/inst/doc/SuiteSparse/CHOLMOD/SuiteSparse_metis/LICENSE.txt",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "694239dbe47e659d6d39a49af95157f46bd94977c283df00c4e8a016601cf143"
+        },
+        {
+          "file": "texts/df1b7892c3aaf967f516cf696be883b23bdb4e49ec4993ebae07542429269339.txt",
+          "sha256": "df1b7892c3aaf967f516cf696be883b23bdb4e49ec4993ebae07542429269339",
+          "source_member": "Matrix/inst/doc/SuiteSparse/CHOLMOD/Doc/License.txt",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "694239dbe47e659d6d39a49af95157f46bd94977c283df00c4e8a016601cf143"
+        },
+        {
+          "file": "texts/0e92b7bb3e216b8a4d1357b3d828043a4f758f762b2abc30b3440cf78063f80f.txt",
+          "sha256": "0e92b7bb3e216b8a4d1357b3d828043a4f758f762b2abc30b3440cf78063f80f",
+          "source_member": "Matrix/inst/doc/SuiteSparse/COLAMD/Doc/License.txt",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "694239dbe47e659d6d39a49af95157f46bd94977c283df00c4e8a016601cf143"
+        },
+        {
+          "file": "texts/27e1fb1934109aec52982bea8cda801e3791c683690c2eb0c089c496ba394ac6.txt",
+          "sha256": "27e1fb1934109aec52982bea8cda801e3791c683690c2eb0c089c496ba394ac6",
+          "source_member": "Matrix/inst/doc/SuiteSparse/CCOLAMD/Doc/License.txt",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "694239dbe47e659d6d39a49af95157f46bd94977c283df00c4e8a016601cf143"
+        },
+        {
+          "file": "texts/bb81587970b15230b20b99cab086a59ddc83ee67d7b583b9d2643557a4e3dcc0.txt",
+          "sha256": "bb81587970b15230b20b99cab086a59ddc83ee67d7b583b9d2643557a4e3dcc0",
+          "source_member": "Matrix/inst/doc/SuiteSparse/CXSparse/Doc/License.txt",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "694239dbe47e659d6d39a49af95157f46bd94977c283df00c4e8a016601cf143"
+        },
+        {
+          "file": "texts/e50fdd9a587f4860ce1d503b94576bfff47bccc421f758d1bdc8706c8cd36108.txt",
+          "sha256": "e50fdd9a587f4860ce1d503b94576bfff47bccc421f758d1bdc8706c8cd36108",
+          "source_member": "Matrix/inst/doc/SuiteSparse/AMD/Doc/License.txt",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "694239dbe47e659d6d39a49af95157f46bd94977c283df00c4e8a016601cf143"
+        },
+        {
+          "file": "texts/950f535be089f287efbfb53e97c0e4835e3ec8f4dc10770ff448f95022c33240.txt",
+          "sha256": "950f535be089f287efbfb53e97c0e4835e3ec8f4dc10770ff448f95022c33240",
+          "source_member": "Matrix/LICENCE",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "694239dbe47e659d6d39a49af95157f46bd94977c283df00c4e8a016601cf143"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643.txt",
+          "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643",
+          "source_member": "R-4.6.1/share/licenses/GPL-2",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        },
+        {
+          "file": "texts/3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986.txt",
+          "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+          "source_member": "R-4.6.1/share/licenses/GPL-3",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ],
+      "source_archive_url": "https://cloud.r-project.org/src/contrib/Matrix_1.7-6.tar.gz"
+    },
+    {
+      "package": "RColorBrewer",
+      "version": "1.1-3",
+      "revision": "cran:RColorBrewer@1.1-3:9b687595bbe02a7e43fc195ba33f065c",
+      "source_hash": "ac4cf4865f66d54e357b99de9d2b14429168afcfcc78301ed318d8ab4213cce8",
+      "license": "Apache License 2.0",
+      "repository": "https://cran.r-project.org/package=RColorBrewer",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "031ca5226128b5a69a347bb775e545c9ab41eba64557b1caf623c4c5a8fc515f",
+        "3e1983fd7f81b618d8cf614d33775068d8ad5628fa96723c515d331122e1501a",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "83517d03188928d54a7f15f0f3866a027046617f400e6b3d6e44022e39e54a99",
+        "92627577cce4722d0673e6c5a71773b0a8b35d6dbd9e38f6bd7b959972a9e67c",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816",
+        "b726a5f47357c4c3e362edba018afe3e5e72b3cfeec53b0ca5653b8fceac2bb9",
+        "c538a9fc77b5896fcae5a2ed04223d417c78b4514e0d97cd2bcff1fd26c61bc4",
+        "d10451ded27d07fd29122b46f8147f3ffa652acd9f952eb200ebe761bcfbe268",
+        "d478f032ffb27328bda3978bfaf17f57f9c2be520d1d1f560acba3331bc0ce1c"
+      ],
+      "notices": [
+        {
+          "file": "texts/7c099f4fea951e648742c4e8bbfc6e87b5ddf79aabdf793cd9e4474ec50f671f.txt",
+          "sha256": "7c099f4fea951e648742c4e8bbfc6e87b5ddf79aabdf793cd9e4474ec50f671f",
+          "source_member": "RColorBrewer/inst/COPYING",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4f42f5423c45688b39f492c7892d93f37b4541831c8ffb140364d2bd89031ac0"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30.txt",
+          "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+          "source_member": "R-4.6.1/share/licenses/Apache-2.0",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ],
+      "source_archive_url": "https://cloud.r-project.org/src/contrib/RColorBrewer_1.1-3.tar.gz",
+      "notice_discrepancy": "DESCRIPTION declares Apache License 2.0; the exact inst/COPYING contains Apache-Style Version 1.1. Both are retained without replacing the package notice."
+    },
+    {
+      "package": "S4Vectors",
+      "version": "0.50.2",
+      "revision": "bioc-3.23:S4Vectors@0.50.2:9bc7f87710636bf9637b41bcb3e3d621",
+      "source_hash": "2960d154707b196e54ded97eba037ccb6fa6762f34a701ce6a3a94ca52497780",
+      "license": "Artistic-2.0",
+      "repository": "https://bioconductor.org/packages/3.23/bioc/html/S4Vectors.html",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "031ca5226128b5a69a347bb775e545c9ab41eba64557b1caf623c4c5a8fc515f",
+        "3e1983fd7f81b618d8cf614d33775068d8ad5628fa96723c515d331122e1501a",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "83517d03188928d54a7f15f0f3866a027046617f400e6b3d6e44022e39e54a99",
+        "92627577cce4722d0673e6c5a71773b0a8b35d6dbd9e38f6bd7b959972a9e67c",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816",
+        "b726a5f47357c4c3e362edba018afe3e5e72b3cfeec53b0ca5653b8fceac2bb9",
+        "c538a9fc77b5896fcae5a2ed04223d417c78b4514e0d97cd2bcff1fd26c61bc4",
+        "d10451ded27d07fd29122b46f8147f3ffa652acd9f952eb200ebe761bcfbe268",
+        "d478f032ffb27328bda3978bfaf17f57f9c2be520d1d1f560acba3331bc0ce1c"
+      ],
+      "notices": [],
+      "standard_terms": [
+        {
+          "file": "texts/4cabb00406b10ab960d3ebb5c14e5042cf54d2b970cc4047588aa28c703525fe.txt",
+          "sha256": "4cabb00406b10ab960d3ebb5c14e5042cf54d2b970cc4047588aa28c703525fe",
+          "source_member": "R-4.6.1/share/licenses/Artistic-2.0",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ],
+      "source_archive_url": "https://bioconductor.org/packages/3.23/bioc/src/contrib/Archive/S4Vectors/S4Vectors_0.50.2.tar.gz"
+    },
+    {
+      "package": "Seurat",
+      "version": "5.5.1",
+      "revision": "cran:Seurat@5.5.1:b07be078da2106bfa6cd0572744fdbb6",
+      "source_hash": "d4f5d768c579bd41db31bb24b94dd6a23f24b933796b8ecf192b91dac80f3dd2",
+      "license": "MIT + file LICENSE",
+      "repository": "https://cran.r-project.org/package=Seurat",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "031ca5226128b5a69a347bb775e545c9ab41eba64557b1caf623c4c5a8fc515f",
+        "3e1983fd7f81b618d8cf614d33775068d8ad5628fa96723c515d331122e1501a",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "83517d03188928d54a7f15f0f3866a027046617f400e6b3d6e44022e39e54a99",
+        "92627577cce4722d0673e6c5a71773b0a8b35d6dbd9e38f6bd7b959972a9e67c",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816",
+        "b726a5f47357c4c3e362edba018afe3e5e72b3cfeec53b0ca5653b8fceac2bb9",
+        "c538a9fc77b5896fcae5a2ed04223d417c78b4514e0d97cd2bcff1fd26c61bc4",
+        "d10451ded27d07fd29122b46f8147f3ffa652acd9f952eb200ebe761bcfbe268",
+        "d478f032ffb27328bda3978bfaf17f57f9c2be520d1d1f560acba3331bc0ce1c"
+      ],
+      "notices": [
+        {
+          "file": "texts/78b856611315077c592df6641f61ce0d37ac3523fd434461fe87912a4517cb82.txt",
+          "sha256": "78b856611315077c592df6641f61ce0d37ac3523fd434461fe87912a4517cb82",
+          "source_member": "Seurat/LICENSE",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "9614ef02d3e1010c40be5916a309103a76c4221a667cbc4b312e5126459a5821"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ],
+      "source_archive_url": "https://cloud.r-project.org/src/contrib/Seurat_5.5.1.tar.gz"
+    },
+    {
+      "package": "SeuratObject",
+      "version": "5.4.0",
+      "revision": "cran:SeuratObject@5.4.0:bd4458cced57f2ebe9f11a07d206821e",
+      "source_hash": "1209a3d30c6bf6d042482a6645e669d8f150d98cbd132461df59fd7ae965ed5f",
+      "license": "MIT + file LICENSE",
+      "repository": "https://cran.r-project.org/package=SeuratObject",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "031ca5226128b5a69a347bb775e545c9ab41eba64557b1caf623c4c5a8fc515f",
+        "3e1983fd7f81b618d8cf614d33775068d8ad5628fa96723c515d331122e1501a",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "83517d03188928d54a7f15f0f3866a027046617f400e6b3d6e44022e39e54a99",
+        "92627577cce4722d0673e6c5a71773b0a8b35d6dbd9e38f6bd7b959972a9e67c",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816",
+        "b726a5f47357c4c3e362edba018afe3e5e72b3cfeec53b0ca5653b8fceac2bb9",
+        "c538a9fc77b5896fcae5a2ed04223d417c78b4514e0d97cd2bcff1fd26c61bc4",
+        "d10451ded27d07fd29122b46f8147f3ffa652acd9f952eb200ebe761bcfbe268",
+        "d478f032ffb27328bda3978bfaf17f57f9c2be520d1d1f560acba3331bc0ce1c"
+      ],
+      "notices": [
+        {
+          "file": "texts/4609be70babd23ddffb94c0b834fd50d64a5eda3f5aed5e645633f853a9b5323.txt",
+          "sha256": "4609be70babd23ddffb94c0b834fd50d64a5eda3f5aed5e645633f853a9b5323",
+          "source_member": "SeuratObject/LICENSE",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "11a748f7845115312021ee4e1e4c88f5a37546aa7d066f61652f09d81908f256"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ],
+      "source_archive_url": "https://cloud.r-project.org/src/contrib/SeuratObject_5.4.0.tar.gz"
+    },
+    {
+      "package": "SingleCellExperiment",
+      "version": "1.34.0",
+      "revision": "bioc-3.23:SingleCellExperiment@1.34.0:d756b49f068e0aad987bf9720d40637b",
+      "source_hash": "53532ad436226da7e52492143a443a5ede5bfc54d7cd2cf2a28e99f25a0e1ac9",
+      "license": "GPL-3",
+      "repository": "https://bioconductor.org/packages/3.23/bioc/html/SingleCellExperiment.html",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "031ca5226128b5a69a347bb775e545c9ab41eba64557b1caf623c4c5a8fc515f",
+        "3e1983fd7f81b618d8cf614d33775068d8ad5628fa96723c515d331122e1501a",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "83517d03188928d54a7f15f0f3866a027046617f400e6b3d6e44022e39e54a99",
+        "92627577cce4722d0673e6c5a71773b0a8b35d6dbd9e38f6bd7b959972a9e67c",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816",
+        "b726a5f47357c4c3e362edba018afe3e5e72b3cfeec53b0ca5653b8fceac2bb9",
+        "c538a9fc77b5896fcae5a2ed04223d417c78b4514e0d97cd2bcff1fd26c61bc4",
+        "d10451ded27d07fd29122b46f8147f3ffa652acd9f952eb200ebe761bcfbe268",
+        "d478f032ffb27328bda3978bfaf17f57f9c2be520d1d1f560acba3331bc0ce1c"
+      ],
+      "notices": [],
+      "standard_terms": [
+        {
+          "file": "texts/3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986.txt",
+          "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+          "source_member": "R-4.6.1/share/licenses/GPL-3",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ],
+      "source_archive_url": "https://bioconductor.org/packages/3.23/bioc/src/contrib/SingleCellExperiment_1.34.0.tar.gz"
+    },
+    {
+      "package": "SummarizedExperiment",
+      "version": "1.42.0",
+      "revision": "bioc-3.23:SummarizedExperiment@1.42.0:03714c185f20dd1c45bb8772d544d750",
+      "source_hash": "7c2075d0487ceb5e01f8b4b81f86dc343b865f3f8b7f1cd9e047cc6b486f0aaf",
+      "license": "Artistic-2.0",
+      "repository": "https://bioconductor.org/packages/3.23/bioc/html/SummarizedExperiment.html",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "031ca5226128b5a69a347bb775e545c9ab41eba64557b1caf623c4c5a8fc515f",
+        "3e1983fd7f81b618d8cf614d33775068d8ad5628fa96723c515d331122e1501a",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "83517d03188928d54a7f15f0f3866a027046617f400e6b3d6e44022e39e54a99",
+        "92627577cce4722d0673e6c5a71773b0a8b35d6dbd9e38f6bd7b959972a9e67c",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816",
+        "b726a5f47357c4c3e362edba018afe3e5e72b3cfeec53b0ca5653b8fceac2bb9",
+        "c538a9fc77b5896fcae5a2ed04223d417c78b4514e0d97cd2bcff1fd26c61bc4",
+        "d10451ded27d07fd29122b46f8147f3ffa652acd9f952eb200ebe761bcfbe268",
+        "d478f032ffb27328bda3978bfaf17f57f9c2be520d1d1f560acba3331bc0ce1c"
+      ],
+      "notices": [],
+      "standard_terms": [
+        {
+          "file": "texts/4cabb00406b10ab960d3ebb5c14e5042cf54d2b970cc4047588aa28c703525fe.txt",
+          "sha256": "4cabb00406b10ab960d3ebb5c14e5042cf54d2b970cc4047588aa28c703525fe",
+          "source_member": "R-4.6.1/share/licenses/Artistic-2.0",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ],
+      "source_archive_url": "https://bioconductor.org/packages/3.23/bioc/src/contrib/SummarizedExperiment_1.42.0.tar.gz"
+    },
+    {
+      "package": "annotatR",
+      "version": "0.2.0",
+      "revision": "2ad5478f02cc273b36817f131161df6a091356aa",
+      "source_hash": "ffbc0555107213598bea2027f9a8f575425e6cbead0ec113b1c3fdb6d99a342a",
+      "license": "MIT + file LICENSE",
+      "repository": "https://github.com/CTTIR/annotatR",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816"
+      ],
+      "notices": [
+        {
+          "file": "texts/f93e3b257762c6a6121808ca5390b7b3fd98ae02309e56b839aa423fd07e2c83.txt",
+          "sha256": "f93e3b257762c6a6121808ca5390b7b3fd98ae02309e56b839aa423fd07e2c83",
+          "source_member": "LICENSE",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "2ad5478f02cc273b36817f131161df6a091356aa",
+          "source_blob_oid": "cbdeaaa7f7bfa7803256e21c55ce1873bbe972c3"
+        },
+        {
+          "file": "texts/2e30d1ad0d89e5c29db0ca0871ca05d56c0431e5bac81188f7f8db28ad472a8d.txt",
+          "sha256": "2e30d1ad0d89e5c29db0ca0871ca05d56c0431e5bac81188f7f8db28ad472a8d",
+          "source_member": "LICENSE.md",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "2ad5478f02cc273b36817f131161df6a091356aa",
+          "source_blob_oid": "470d9e7e1cdd8b1a88788a132863a492f84586a7"
+        },
+        {
+          "file": "texts/d19578aebed3c4d65156f0fcedce2a3e0cc0925a2bf1cdd2a925c25cdc4da55e.txt",
+          "sha256": "d19578aebed3c4d65156f0fcedce2a3e0cc0925a2bf1cdd2a925c25cdc4da55e",
+          "source_member": "inst/htmlwidgets/lib/LICENSE_NOTES.md",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "2ad5478f02cc273b36817f131161df6a091356aa",
+          "source_blob_oid": "aeaa5a5b3a8fd1729807534affa2407d66d4f47e"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ]
+    },
+    {
+      "package": "bambamR",
+      "version": "0.1.0",
+      "revision": "e8f13c08a808fba1abf7b5fc9240052c51d694c3",
+      "source_hash": "25b53e627d5bbe497ee495b3a273b44b9075fa89b818a4e5baccb991ea2e57a6",
+      "license": "MIT + file LICENSE",
+      "repository": "https://github.com/CTTIR/bambamR",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816"
+      ],
+      "notices": [
+        {
+          "file": "texts/f93e3b257762c6a6121808ca5390b7b3fd98ae02309e56b839aa423fd07e2c83.txt",
+          "sha256": "f93e3b257762c6a6121808ca5390b7b3fd98ae02309e56b839aa423fd07e2c83",
+          "source_member": "LICENSE",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "e8f13c08a808fba1abf7b5fc9240052c51d694c3",
+          "source_blob_oid": "cbdeaaa7f7bfa7803256e21c55ce1873bbe972c3"
+        },
+        {
+          "file": "texts/83893a3d0b250f7460aaf472d78e893468dad7e1d958b0754e739d8913d62853.txt",
+          "sha256": "83893a3d0b250f7460aaf472d78e893468dad7e1d958b0754e739d8913d62853",
+          "source_member": "LICENSE.md",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "e8f13c08a808fba1abf7b5fc9240052c51d694c3",
+          "source_blob_oid": "548d078c9a1551071b21695fc61de468d3f4462e"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ]
+    },
+    {
+      "package": "bloodspottR",
+      "version": "0.1.0.9000",
+      "revision": "2a86f975df93bf7b20a87a6c06c89d8867d4bee1",
+      "source_hash": "1c32110fa2ae99bb3295aea99a1e52bb6715a15e0573a89bb0b683b61843b975",
+      "license": "MIT + file LICENSE",
+      "repository": "https://github.com/CTTIR/bloodspottR",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816"
+      ],
+      "notices": [
+        {
+          "file": "texts/f65c585663d73b1de58a3b8ed49b0e52597c778c791307cffc45277e0392b72e.txt",
+          "sha256": "f65c585663d73b1de58a3b8ed49b0e52597c778c791307cffc45277e0392b72e",
+          "source_member": "LICENSE",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "2a86f975df93bf7b20a87a6c06c89d8867d4bee1",
+          "source_blob_oid": "d275fc4330036809a3ebf031910a1a4ba1100d43"
+        },
+        {
+          "file": "texts/d762d17899ed008881734b36bbfe47590bd0f00a77a71f63f45fa3580b867f45.txt",
+          "sha256": "d762d17899ed008881734b36bbfe47590bd0f00a77a71f63f45fa3580b867f45",
+          "source_member": "LICENSE.md",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "2a86f975df93bf7b20a87a6c06c89d8867d4bee1",
+          "source_blob_oid": "f8d68fa879caf46ce44c98683bd289061de60f85"
+        },
+        {
+          "file": "texts/17da96b26ac706d2cbd06d4555dedb43026782f4943faf0156fe7acf89454228.txt",
+          "sha256": "17da96b26ac706d2cbd06d4555dedb43026782f4943faf0156fe7acf89454228",
+          "source_member": "inst/app/vendor/LICENSE-openseadragon.txt",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "2a86f975df93bf7b20a87a6c06c89d8867d4bee1",
+          "source_blob_oid": "eb18aceff4f748a3cba80b685ce5ff4acf40ecc8"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ]
+    },
+    {
+      "package": "brainwritR",
+      "version": "0.6.0",
+      "revision": "0ed57870bc323c4f755026a128c8e1e1a1035653",
+      "source_hash": "46b54ca1f1e55fc5291a89986b0c4759bd3547d06cc3e6069b442906220e0982",
+      "license": "MIT + file LICENSE",
+      "repository": "https://github.com/CTTIR/brainwritR",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816"
+      ],
+      "notices": [
+        {
+          "file": "texts/f65c585663d73b1de58a3b8ed49b0e52597c778c791307cffc45277e0392b72e.txt",
+          "sha256": "f65c585663d73b1de58a3b8ed49b0e52597c778c791307cffc45277e0392b72e",
+          "source_member": "LICENSE",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "0ed57870bc323c4f755026a128c8e1e1a1035653",
+          "source_blob_oid": "d275fc4330036809a3ebf031910a1a4ba1100d43"
+        },
+        {
+          "file": "texts/29b77db3f6c608670bc28cfc77ebba736f75c6abb9d8a32aec917051f4d52cdd.txt",
+          "sha256": "29b77db3f6c608670bc28cfc77ebba736f75c6abb9d8a32aec917051f4d52cdd",
+          "source_member": "LICENSE.md",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "0ed57870bc323c4f755026a128c8e1e1a1035653",
+          "source_blob_oid": "194c04cfb138dfba69c992d3c7651de7db4f16b2"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ]
+    },
+    {
+      "package": "broom",
+      "version": "1.0.13",
+      "revision": "cran:broom@1.0.13:f18019fa804c6a0f47eb5b83c0cc5bb8",
+      "source_hash": "990ed9afd4832cfb201915f7fca954c885ee65948d2cbaf9f096c16faef0de43",
+      "license": "MIT + file LICENSE",
+      "repository": "https://cran.r-project.org/package=broom",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "031ca5226128b5a69a347bb775e545c9ab41eba64557b1caf623c4c5a8fc515f",
+        "3e1983fd7f81b618d8cf614d33775068d8ad5628fa96723c515d331122e1501a",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "83517d03188928d54a7f15f0f3866a027046617f400e6b3d6e44022e39e54a99",
+        "92627577cce4722d0673e6c5a71773b0a8b35d6dbd9e38f6bd7b959972a9e67c",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816",
+        "b726a5f47357c4c3e362edba018afe3e5e72b3cfeec53b0ca5653b8fceac2bb9",
+        "c538a9fc77b5896fcae5a2ed04223d417c78b4514e0d97cd2bcff1fd26c61bc4",
+        "d10451ded27d07fd29122b46f8147f3ffa652acd9f952eb200ebe761bcfbe268",
+        "d478f032ffb27328bda3978bfaf17f57f9c2be520d1d1f560acba3331bc0ce1c"
+      ],
+      "notices": [
+        {
+          "file": "texts/54e7060e0601aa93cecaa263cba388d9275ae96a33294b60dbf018d151cba1e7.txt",
+          "sha256": "54e7060e0601aa93cecaa263cba388d9275ae96a33294b60dbf018d151cba1e7",
+          "source_member": "broom/LICENSE",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "f946601f57b4d90e7d2ea88c55c1516dacb8220cb12a980ba1e0fa1832320f61"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ],
+      "source_archive_url": "https://cloud.r-project.org/src/contrib/broom_1.0.13.tar.gz"
+    },
+    {
+      "package": "broom.mixed",
+      "version": "0.2.9.7",
+      "revision": "cran:broom.mixed@0.2.9.7:0e4e13eb7644b97a38db87fc51a125b1",
+      "source_hash": "ef94326512c2dab82a1f3ab4e5dab6b771b7f24f50e29df3e9fef58c7facc565",
+      "license": "GPL-3",
+      "repository": "https://cran.r-project.org/package=broom.mixed",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "031ca5226128b5a69a347bb775e545c9ab41eba64557b1caf623c4c5a8fc515f",
+        "3e1983fd7f81b618d8cf614d33775068d8ad5628fa96723c515d331122e1501a",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "83517d03188928d54a7f15f0f3866a027046617f400e6b3d6e44022e39e54a99",
+        "92627577cce4722d0673e6c5a71773b0a8b35d6dbd9e38f6bd7b959972a9e67c",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816",
+        "b726a5f47357c4c3e362edba018afe3e5e72b3cfeec53b0ca5653b8fceac2bb9",
+        "c538a9fc77b5896fcae5a2ed04223d417c78b4514e0d97cd2bcff1fd26c61bc4",
+        "d10451ded27d07fd29122b46f8147f3ffa652acd9f952eb200ebe761bcfbe268",
+        "d478f032ffb27328bda3978bfaf17f57f9c2be520d1d1f560acba3331bc0ce1c"
+      ],
+      "notices": [],
+      "standard_terms": [
+        {
+          "file": "texts/3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986.txt",
+          "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+          "source_member": "R-4.6.1/share/licenses/GPL-3",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ],
+      "source_archive_url": "https://cloud.r-project.org/src/contrib/broom.mixed_0.2.9.7.tar.gz"
+    },
+    {
+      "package": "cellreportR",
+      "version": "0.2.0.9000",
+      "revision": "45e8fdbe297d38086000d5ab0bd74658608c481b",
+      "source_hash": "7c1eac21091662526bb5e6cbed9ffb32601c2ddc22efa8fc1a63c29cdaaea3c1",
+      "license": "MIT + file LICENSE",
+      "repository": "https://github.com/CTTIR/cellreportR",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816"
+      ],
+      "notices": [
+        {
+          "file": "texts/f93e3b257762c6a6121808ca5390b7b3fd98ae02309e56b839aa423fd07e2c83.txt",
+          "sha256": "f93e3b257762c6a6121808ca5390b7b3fd98ae02309e56b839aa423fd07e2c83",
+          "source_member": "LICENSE",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "45e8fdbe297d38086000d5ab0bd74658608c481b",
+          "source_blob_oid": "cbdeaaa7f7bfa7803256e21c55ce1873bbe972c3"
+        },
+        {
+          "file": "texts/2e30d1ad0d89e5c29db0ca0871ca05d56c0431e5bac81188f7f8db28ad472a8d.txt",
+          "sha256": "2e30d1ad0d89e5c29db0ca0871ca05d56c0431e5bac81188f7f8db28ad472a8d",
+          "source_member": "LICENSE.md",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "45e8fdbe297d38086000d5ab0bd74658608c481b",
+          "source_blob_oid": "470d9e7e1cdd8b1a88788a132863a492f84586a7"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ]
+    },
+    {
+      "package": "cellspecR",
+      "version": "1.0.0",
+      "revision": "a248e4dfccb4cb7fc528f30fe6b01536e95ae1c8",
+      "source_hash": "717cc3ae39e410754eb83bf3b138796bbca66a026b22585a8e10bf46f3e75702",
+      "license": "MIT + file LICENSE",
+      "repository": "https://github.com/CTTIR/cellspecR",
+      "catalog_snapshots": [
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd"
+      ],
+      "notices": [
+        {
+          "file": "texts/f65c585663d73b1de58a3b8ed49b0e52597c778c791307cffc45277e0392b72e.txt",
+          "sha256": "f65c585663d73b1de58a3b8ed49b0e52597c778c791307cffc45277e0392b72e",
+          "source_member": "LICENSE",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "a248e4dfccb4cb7fc528f30fe6b01536e95ae1c8",
+          "source_blob_oid": "d275fc4330036809a3ebf031910a1a4ba1100d43"
+        },
+        {
+          "file": "texts/29b77db3f6c608670bc28cfc77ebba736f75c6abb9d8a32aec917051f4d52cdd.txt",
+          "sha256": "29b77db3f6c608670bc28cfc77ebba736f75c6abb9d8a32aec917051f4d52cdd",
+          "source_member": "LICENSE.md",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "a248e4dfccb4cb7fc528f30fe6b01536e95ae1c8",
+          "source_blob_oid": "194c04cfb138dfba69c992d3c7651de7db4f16b2"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ]
+    },
+    {
+      "package": "cellspecR",
+      "version": "1.0.0",
+      "revision": "a248e4dfccb4cb7fc528f30fe6b01536e95ae1c8",
+      "source_hash": "89194a30c77df2715322381ac5655d063c2c16e28d98da296c676851b2a52cee",
+      "license": "MIT + file LICENSE",
+      "repository": "https://github.com/CTTIR/cellspecR",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816"
+      ],
+      "notices": [
+        {
+          "file": "texts/f65c585663d73b1de58a3b8ed49b0e52597c778c791307cffc45277e0392b72e.txt",
+          "sha256": "f65c585663d73b1de58a3b8ed49b0e52597c778c791307cffc45277e0392b72e",
+          "source_member": "LICENSE",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "a248e4dfccb4cb7fc528f30fe6b01536e95ae1c8",
+          "source_blob_oid": "d275fc4330036809a3ebf031910a1a4ba1100d43"
+        },
+        {
+          "file": "texts/29b77db3f6c608670bc28cfc77ebba736f75c6abb9d8a32aec917051f4d52cdd.txt",
+          "sha256": "29b77db3f6c608670bc28cfc77ebba736f75c6abb9d8a32aec917051f4d52cdd",
+          "source_member": "LICENSE.md",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "a248e4dfccb4cb7fc528f30fe6b01536e95ae1c8",
+          "source_blob_oid": "194c04cfb138dfba69c992d3c7651de7db4f16b2"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ]
+    },
+    {
+      "package": "colorspace",
+      "version": "2.1-2",
+      "revision": "cran:colorspace@2.1-2:01f2fc58e8c4a7326d1d19393358cd5b",
+      "source_hash": "49f1d4c1aeb201f3d4510d6bbe5a7115a60b7d1c981b350277742ecc3e147ced",
+      "license": "BSD_3_clause + file LICENSE",
+      "repository": "https://cran.r-project.org/package=colorspace",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "031ca5226128b5a69a347bb775e545c9ab41eba64557b1caf623c4c5a8fc515f",
+        "3e1983fd7f81b618d8cf614d33775068d8ad5628fa96723c515d331122e1501a",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "83517d03188928d54a7f15f0f3866a027046617f400e6b3d6e44022e39e54a99",
+        "92627577cce4722d0673e6c5a71773b0a8b35d6dbd9e38f6bd7b959972a9e67c",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816",
+        "b726a5f47357c4c3e362edba018afe3e5e72b3cfeec53b0ca5653b8fceac2bb9",
+        "c538a9fc77b5896fcae5a2ed04223d417c78b4514e0d97cd2bcff1fd26c61bc4",
+        "d10451ded27d07fd29122b46f8147f3ffa652acd9f952eb200ebe761bcfbe268",
+        "d478f032ffb27328bda3978bfaf17f57f9c2be520d1d1f560acba3331bc0ce1c"
+      ],
+      "notices": [
+        {
+          "file": "texts/f91887789da4fc1f1184fffe89c342a2cc35e449e390ae26f4e5608c41557c57.txt",
+          "sha256": "f91887789da4fc1f1184fffe89c342a2cc35e449e390ae26f4e5608c41557c57",
+          "source_member": "colorspace/LICENSE",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "ec71499d33ef5d72b7fb3359b8320639e06e413abad61a070201178a254b153e"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/942d8f6a395b75acaf4e147261e6fb4478a4a3e176cf1e581dff3366cb9b6985.txt",
+          "sha256": "942d8f6a395b75acaf4e147261e6fb4478a4a3e176cf1e581dff3366cb9b6985",
+          "source_member": "R-4.6.1/share/licenses/BSD_3_clause",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ],
+      "source_archive_url": "https://cloud.r-project.org/src/contrib/Archive/colorspace/colorspace_2.1-2.tar.gz"
+    },
+    {
+      "package": "cttiR",
+      "version": "0.0.1.9000",
+      "revision": "cb8d33bde21044c7c40e5b1d4639b2379c3ce8b4",
+      "source_hash": "d38fb845d387dcf168d200d29f9565f3c48291ad3fc8e3b3e59a24764ff16916",
+      "license": "MIT + file LICENSE",
+      "repository": "https://github.com/CTTIR/cttiR",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816"
+      ],
+      "notices": [
+        {
+          "file": "texts/f65c585663d73b1de58a3b8ed49b0e52597c778c791307cffc45277e0392b72e.txt",
+          "sha256": "f65c585663d73b1de58a3b8ed49b0e52597c778c791307cffc45277e0392b72e",
+          "source_member": "LICENSE",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "cb8d33bde21044c7c40e5b1d4639b2379c3ce8b4",
+          "source_blob_oid": "d275fc4330036809a3ebf031910a1a4ba1100d43"
+        },
+        {
+          "file": "texts/29b77db3f6c608670bc28cfc77ebba736f75c6abb9d8a32aec917051f4d52cdd.txt",
+          "sha256": "29b77db3f6c608670bc28cfc77ebba736f75c6abb9d8a32aec917051f4d52cdd",
+          "source_member": "LICENSE.md",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "cb8d33bde21044c7c40e5b1d4639b2379c3ce8b4",
+          "source_blob_oid": "194c04cfb138dfba69c992d3c7651de7db4f16b2"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ]
+    },
+    {
+      "package": "digest",
+      "version": "0.6.39",
+      "revision": "cran:digest@0.6.39:2b7268922b0f86dbc8064ff8e3a1ca1b",
+      "source_hash": "3a20926489e4886fe98e4d61ffa7ab79663bf50c203114a479d8a7952b033df0",
+      "license": "GPL (>= 2)",
+      "repository": "https://cran.r-project.org/package=digest",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "031ca5226128b5a69a347bb775e545c9ab41eba64557b1caf623c4c5a8fc515f",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816",
+        "d10451ded27d07fd29122b46f8147f3ffa652acd9f952eb200ebe761bcfbe268",
+        "d478f032ffb27328bda3978bfaf17f57f9c2be520d1d1f560acba3331bc0ce1c"
+      ],
+      "notices": [],
+      "standard_terms": [
+        {
+          "file": "texts/8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643.txt",
+          "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643",
+          "source_member": "R-4.6.1/share/licenses/GPL-2",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        },
+        {
+          "file": "texts/3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986.txt",
+          "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+          "source_member": "R-4.6.1/share/licenses/GPL-3",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ],
+      "source_archive_url": "https://cran.r-project.org/src/contrib/digest_0.6.39.tar.gz"
+    },
+    {
+      "package": "dplyr",
+      "version": "1.2.1",
+      "revision": "cran:dplyr@1.2.1:1c6ba2499c7a08d081bdb530423ab22c",
+      "source_hash": "6ba6da8b58681fd8926e3b336b4bf61d1b1f38a8d8c967592a11c9bb80a8552e",
+      "license": "MIT + file LICENSE",
+      "repository": "https://cran.r-project.org/package=dplyr",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "031ca5226128b5a69a347bb775e545c9ab41eba64557b1caf623c4c5a8fc515f",
+        "3e1983fd7f81b618d8cf614d33775068d8ad5628fa96723c515d331122e1501a",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "83517d03188928d54a7f15f0f3866a027046617f400e6b3d6e44022e39e54a99",
+        "92627577cce4722d0673e6c5a71773b0a8b35d6dbd9e38f6bd7b959972a9e67c",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816",
+        "b726a5f47357c4c3e362edba018afe3e5e72b3cfeec53b0ca5653b8fceac2bb9",
+        "c538a9fc77b5896fcae5a2ed04223d417c78b4514e0d97cd2bcff1fd26c61bc4",
+        "d10451ded27d07fd29122b46f8147f3ffa652acd9f952eb200ebe761bcfbe268",
+        "d478f032ffb27328bda3978bfaf17f57f9c2be520d1d1f560acba3331bc0ce1c"
+      ],
+      "notices": [
+        {
+          "file": "texts/add53f944f3d6baea3005489ec794341760114890b8d72665c912f09c703cde4.txt",
+          "sha256": "add53f944f3d6baea3005489ec794341760114890b8d72665c912f09c703cde4",
+          "source_member": "dplyr/LICENSE",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "18d66fe2f24cda8b619c177326d39dd015229ab99695fa67d3fa31e4569390e0"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ],
+      "source_archive_url": "https://cloud.r-project.org/src/contrib/dplyr_1.2.1.tar.gz"
+    },
+    {
+      "package": "dynasimR",
+      "version": "0.1.0",
+      "revision": "ac3a474f7461806e4d83d1fedae389489768e188",
+      "source_hash": "0e7766ce76716151e94f906a48b19db80e90e111c5560191c9f483ff9999465c",
+      "license": "MIT + file LICENSE",
+      "repository": "https://github.com/CTTIR/dynasimR",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816"
+      ],
+      "notices": [
+        {
+          "file": "texts/f65c585663d73b1de58a3b8ed49b0e52597c778c791307cffc45277e0392b72e.txt",
+          "sha256": "f65c585663d73b1de58a3b8ed49b0e52597c778c791307cffc45277e0392b72e",
+          "source_member": "LICENSE",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "ac3a474f7461806e4d83d1fedae389489768e188",
+          "source_blob_oid": "d275fc4330036809a3ebf031910a1a4ba1100d43"
+        },
+        {
+          "file": "texts/29b77db3f6c608670bc28cfc77ebba736f75c6abb9d8a32aec917051f4d52cdd.txt",
+          "sha256": "29b77db3f6c608670bc28cfc77ebba736f75c6abb9d8a32aec917051f4d52cdd",
+          "source_member": "LICENSE.md",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "ac3a474f7461806e4d83d1fedae389489768e188",
+          "source_blob_oid": "194c04cfb138dfba69c992d3c7651de7db4f16b2"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ]
+    },
+    {
+      "package": "gatekeepR",
+      "version": "1.0.0",
+      "revision": "290442543883f8e9f1d1c3baa0abcc07341e9b7c",
+      "source_hash": "363c713489cda21a26dd016d08b0e5bfcda73548b01839c6d3ee6550e9ee44a2",
+      "license": "MIT + file LICENSE",
+      "repository": "https://github.com/CTTIR/gatekeepR",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816"
+      ],
+      "notices": [
+        {
+          "file": "texts/f65c585663d73b1de58a3b8ed49b0e52597c778c791307cffc45277e0392b72e.txt",
+          "sha256": "f65c585663d73b1de58a3b8ed49b0e52597c778c791307cffc45277e0392b72e",
+          "source_member": "LICENSE",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "290442543883f8e9f1d1c3baa0abcc07341e9b7c",
+          "source_blob_oid": "d275fc4330036809a3ebf031910a1a4ba1100d43"
+        },
+        {
+          "file": "texts/29b77db3f6c608670bc28cfc77ebba736f75c6abb9d8a32aec917051f4d52cdd.txt",
+          "sha256": "29b77db3f6c608670bc28cfc77ebba736f75c6abb9d8a32aec917051f4d52cdd",
+          "source_member": "LICENSE.md",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "290442543883f8e9f1d1c3baa0abcc07341e9b7c",
+          "source_blob_oid": "194c04cfb138dfba69c992d3c7651de7db4f16b2"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ]
+    },
+    {
+      "package": "gatekeepR",
+      "version": "1.0.0",
+      "revision": "290442543883f8e9f1d1c3baa0abcc07341e9b7c",
+      "source_hash": "de8c6cc5bc354c9fcdf153d32d477524270e67667556b31248567be193a57e11",
+      "license": "MIT + file LICENSE",
+      "repository": "https://github.com/CTTIR/gatekeepR",
+      "catalog_snapshots": [
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd"
+      ],
+      "notices": [
+        {
+          "file": "texts/f65c585663d73b1de58a3b8ed49b0e52597c778c791307cffc45277e0392b72e.txt",
+          "sha256": "f65c585663d73b1de58a3b8ed49b0e52597c778c791307cffc45277e0392b72e",
+          "source_member": "LICENSE",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "290442543883f8e9f1d1c3baa0abcc07341e9b7c",
+          "source_blob_oid": "d275fc4330036809a3ebf031910a1a4ba1100d43"
+        },
+        {
+          "file": "texts/29b77db3f6c608670bc28cfc77ebba736f75c6abb9d8a32aec917051f4d52cdd.txt",
+          "sha256": "29b77db3f6c608670bc28cfc77ebba736f75c6abb9d8a32aec917051f4d52cdd",
+          "source_member": "LICENSE.md",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "290442543883f8e9f1d1c3baa0abcc07341e9b7c",
+          "source_blob_oid": "194c04cfb138dfba69c992d3c7651de7db4f16b2"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ]
+    },
+    {
+      "package": "generics",
+      "version": "0.1.4",
+      "revision": "cran:generics@0.1.4:dda54b65216fe3c53571d2adaddc7461",
+      "source_hash": "7fbd0862dc31ccaf672431c0bd8be757b7c9a45286ecbf8ec5b2797b3748594b",
+      "license": "MIT + file LICENSE",
+      "repository": "https://cran.r-project.org/package=generics",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "031ca5226128b5a69a347bb775e545c9ab41eba64557b1caf623c4c5a8fc515f",
+        "3e1983fd7f81b618d8cf614d33775068d8ad5628fa96723c515d331122e1501a",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "83517d03188928d54a7f15f0f3866a027046617f400e6b3d6e44022e39e54a99",
+        "92627577cce4722d0673e6c5a71773b0a8b35d6dbd9e38f6bd7b959972a9e67c",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816",
+        "b726a5f47357c4c3e362edba018afe3e5e72b3cfeec53b0ca5653b8fceac2bb9",
+        "c538a9fc77b5896fcae5a2ed04223d417c78b4514e0d97cd2bcff1fd26c61bc4",
+        "d10451ded27d07fd29122b46f8147f3ffa652acd9f952eb200ebe761bcfbe268",
+        "d478f032ffb27328bda3978bfaf17f57f9c2be520d1d1f560acba3331bc0ce1c"
+      ],
+      "notices": [
+        {
+          "file": "texts/ff0eda985f01ac9a3863994da579f47ede323b80108ccedd6dd263418639baaa.txt",
+          "sha256": "ff0eda985f01ac9a3863994da579f47ede323b80108ccedd6dd263418639baaa",
+          "source_member": "generics/LICENSE",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "bbe95a097792d38fc3b7e677738af1b95b66ea5e5017e33b8beac6a6088d0801"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ],
+      "source_archive_url": "https://cloud.r-project.org/src/contrib/generics_0.1.4.tar.gz"
+    },
+    {
+      "package": "ggplot2",
+      "version": "4.0.3",
+      "revision": "cran:ggplot2@4.0.3:c50d6864f6226ed9759e5deaa0a25e7f",
+      "source_hash": "199935a5d3795ab31a7b9766b9dbf62fbf49d5bd5b1b28a42797e48a83da1ad9",
+      "license": "MIT + file LICENSE",
+      "repository": "https://cran.r-project.org/package=ggplot2",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "031ca5226128b5a69a347bb775e545c9ab41eba64557b1caf623c4c5a8fc515f",
+        "3e1983fd7f81b618d8cf614d33775068d8ad5628fa96723c515d331122e1501a",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "83517d03188928d54a7f15f0f3866a027046617f400e6b3d6e44022e39e54a99",
+        "92627577cce4722d0673e6c5a71773b0a8b35d6dbd9e38f6bd7b959972a9e67c",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816",
+        "b726a5f47357c4c3e362edba018afe3e5e72b3cfeec53b0ca5653b8fceac2bb9",
+        "c538a9fc77b5896fcae5a2ed04223d417c78b4514e0d97cd2bcff1fd26c61bc4",
+        "d10451ded27d07fd29122b46f8147f3ffa652acd9f952eb200ebe761bcfbe268",
+        "d478f032ffb27328bda3978bfaf17f57f9c2be520d1d1f560acba3331bc0ce1c"
+      ],
+      "notices": [
+        {
+          "file": "texts/4fe3d57081473525c4267a88d5a231526b7fb7e7b645c43ba16608880fed8689.txt",
+          "sha256": "4fe3d57081473525c4267a88d5a231526b7fb7e7b645c43ba16608880fed8689",
+          "source_member": "ggplot2/LICENSE",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "690224bd61642b6222adb109470988e87f786e193cca77a15c0923cf9da73fa5"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ],
+      "source_archive_url": "https://cloud.r-project.org/src/contrib/ggplot2_4.0.3.tar.gz"
+    },
+    {
+      "package": "grDevices",
+      "version": "4.6.1",
+      "revision": "r-distribution:R-4.6.1:grDevices",
+      "source_hash": "e5b5feb04a95bf072c756894964ae8699e3d9dd651c2fa48ceea6a7324f16c93",
+      "license": "Part of R 4.6.1",
+      "repository": "https://cran.r-project.org/src/base/R-4/R-4.6.1.tar.gz",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "031ca5226128b5a69a347bb775e545c9ab41eba64557b1caf623c4c5a8fc515f",
+        "3e1983fd7f81b618d8cf614d33775068d8ad5628fa96723c515d331122e1501a",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "83517d03188928d54a7f15f0f3866a027046617f400e6b3d6e44022e39e54a99",
+        "92627577cce4722d0673e6c5a71773b0a8b35d6dbd9e38f6bd7b959972a9e67c",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816",
+        "b726a5f47357c4c3e362edba018afe3e5e72b3cfeec53b0ca5653b8fceac2bb9",
+        "c538a9fc77b5896fcae5a2ed04223d417c78b4514e0d97cd2bcff1fd26c61bc4",
+        "d10451ded27d07fd29122b46f8147f3ffa652acd9f952eb200ebe761bcfbe268",
+        "d478f032ffb27328bda3978bfaf17f57f9c2be520d1d1f560acba3331bc0ce1c"
+      ],
+      "notices": [
+        {
+          "file": "texts/e6d6a009505e345fe949e1310334fcb0747f28dae2856759de102ab66b722cb4.txt",
+          "sha256": "e6d6a009505e345fe949e1310334fcb0747f28dae2856759de102ab66b722cb4",
+          "source_member": "R-4.6.1/COPYING",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4",
+          "scope": "distribution_global_notice"
+        },
+        {
+          "file": "texts/93a225906ee6514d1482548f8945e41a5cfcbae70610f9577ac7c9a512e060f0.txt",
+          "sha256": "93a225906ee6514d1482548f8945e41a5cfcbae70610f9577ac7c9a512e060f0",
+          "source_member": "R-4.6.1/doc/COPYRIGHTS",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4",
+          "scope": "distribution_global_notice"
+        },
+        {
+          "file": "texts/e6d6a009505e345fe949e1310334fcb0747f28dae2856759de102ab66b722cb4.txt",
+          "sha256": "e6d6a009505e345fe949e1310334fcb0747f28dae2856759de102ab66b722cb4",
+          "source_member": "R-4.6.1/doc/COPYING",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4",
+          "scope": "distribution_global_notice"
+        },
+        {
+          "file": "texts/3ddf9be5c28fe27dad143a5dc76eea25222ad1dd68934a047064e56ed2fa40c5.txt",
+          "sha256": "3ddf9be5c28fe27dad143a5dc76eea25222ad1dd68934a047064e56ed2fa40c5",
+          "source_member": "R-4.6.1/src/library/grDevices/inst/fonts/Roboto/LICENSE.txt",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4",
+          "scope": "exact_mapped_package_subtree_notice",
+          "applicability_to_literal_bundled_documents": "requires_review_not_inferred_from_package_membership",
+          "referenced_component": "font_asset",
+          "component_binary_or_font_bundling_claim": false
+        },
+        {
+          "file": "texts/5f05fcf6ef25a6c31bccd2df7c0c46b23107bbeb2ce5cdba74efb5cc357f4dbb.txt",
+          "sha256": "5f05fcf6ef25a6c31bccd2df7c0c46b23107bbeb2ce5cdba74efb5cc357f4dbb",
+          "source_member": "R-4.6.1/src/library/grDevices/inst/afm/LICENSE.LPPL",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4",
+          "scope": "exact_mapped_package_subtree_notice",
+          "applicability_to_literal_bundled_documents": "requires_review_not_inferred_from_package_membership",
+          "referenced_component": "font_asset",
+          "component_binary_or_font_bundling_claim": false
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643.txt",
+          "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643",
+          "source_member": "R-4.6.1/share/licenses/GPL-2",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        },
+        {
+          "file": "texts/3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986.txt",
+          "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+          "source_member": "R-4.6.1/share/licenses/GPL-3",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ]
+    },
+    {
+      "package": "harbouR",
+      "version": "0.1.0",
+      "revision": "e76cb31dbad8f528e2acb507375f16ca03ea4c5e",
+      "source_hash": "b416db76b64d3df18279954ad6d9987569153f08b143234aa9052ec62e36b98e",
+      "license": "MIT + file LICENSE",
+      "repository": "https://github.com/CTTIR/harbouR",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816"
+      ],
+      "notices": [
+        {
+          "file": "texts/f93e3b257762c6a6121808ca5390b7b3fd98ae02309e56b839aa423fd07e2c83.txt",
+          "sha256": "f93e3b257762c6a6121808ca5390b7b3fd98ae02309e56b839aa423fd07e2c83",
+          "source_member": "LICENSE",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "e76cb31dbad8f528e2acb507375f16ca03ea4c5e",
+          "source_blob_oid": "cbdeaaa7f7bfa7803256e21c55ce1873bbe972c3"
+        },
+        {
+          "file": "texts/2e30d1ad0d89e5c29db0ca0871ca05d56c0431e5bac81188f7f8db28ad472a8d.txt",
+          "sha256": "2e30d1ad0d89e5c29db0ca0871ca05d56c0431e5bac81188f7f8db28ad472a8d",
+          "source_member": "LICENSE.md",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "e76cb31dbad8f528e2acb507375f16ca03ea4c5e",
+          "source_blob_oid": "470d9e7e1cdd8b1a88788a132863a492f84586a7"
+        },
+        {
+          "file": "texts/54d8db65d69fcfcba3ef4ccbe3315e7ed300ef065806c751b047f9e0bd4bae57.txt",
+          "sha256": "54d8db65d69fcfcba3ef4ccbe3315e7ed300ef065806c751b047f9e0bd4bae57",
+          "source_member": "NOTICE.md",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "e76cb31dbad8f528e2acb507375f16ca03ea4c5e",
+          "source_blob_oid": "a43a8932703e92d30c68e3a19ae846860c456405"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ]
+    },
+    {
+      "package": "hexmakR",
+      "version": "0.1.0",
+      "revision": "87ba284a436bc5abe9318225eeb8c7afaac72e7d",
+      "source_hash": "3eff3eda036167de948d1c236c30b2147977516dac05f0dee3807d1ed91afd04",
+      "license": "MIT + file LICENSE",
+      "repository": "https://github.com/CTTIR/hexmakR",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816"
+      ],
+      "notices": [
+        {
+          "file": "texts/f93e3b257762c6a6121808ca5390b7b3fd98ae02309e56b839aa423fd07e2c83.txt",
+          "sha256": "f93e3b257762c6a6121808ca5390b7b3fd98ae02309e56b839aa423fd07e2c83",
+          "source_member": "LICENSE",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "87ba284a436bc5abe9318225eeb8c7afaac72e7d",
+          "source_blob_oid": "cbdeaaa7f7bfa7803256e21c55ce1873bbe972c3"
+        },
+        {
+          "file": "texts/152947102c7e33857fa8bdae4cd07fd45f8e38e73f51c756a9433e966fef5510.txt",
+          "sha256": "152947102c7e33857fa8bdae4cd07fd45f8e38e73f51c756a9433e966fef5510",
+          "source_member": "LICENSE.md",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "87ba284a436bc5abe9318225eeb8c7afaac72e7d",
+          "source_blob_oid": "8418f1f02355cbba8555019d5a9fa71456c57a67"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ]
+    },
+    {
+      "package": "hyperspectR",
+      "version": "0.2.0.9000",
+      "revision": "2c87ea90456cbc18c41cb9a1236abc630e25d73e",
+      "source_hash": "0fce3d92a7c35b1a41906d593ec4bd2078bd4dcdbc4cbb971c41447aec27d3cb",
+      "license": "MIT + file LICENSE",
+      "repository": "https://github.com/CTTIR/hyperspectR",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816"
+      ],
+      "notices": [
+        {
+          "file": "texts/d065c149d4c6aad163b743e2dd4402c4ac8b3e486902166691a3208ee1a0a265.txt",
+          "sha256": "d065c149d4c6aad163b743e2dd4402c4ac8b3e486902166691a3208ee1a0a265",
+          "source_member": "LICENSE",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "2c87ea90456cbc18c41cb9a1236abc630e25d73e",
+          "source_blob_oid": "3209fdfb6e0f4fc5cba24647b3e4563e6e1a6ad6"
+        },
+        {
+          "file": "texts/2031c6707a0730c7359234c744b5f333d61cd69da6a4d8639aa096188039942a.txt",
+          "sha256": "2031c6707a0730c7359234c744b5f333d61cd69da6a4d8639aa096188039942a",
+          "source_member": "LICENSE.md",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "2c87ea90456cbc18c41cb9a1236abc630e25d73e",
+          "source_blob_oid": "9e1879151ee2b3c879d746b6abf31c5655406878"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ]
+    },
+    {
+      "package": "hyperspectaculR",
+      "version": "0.1.0",
+      "revision": "1df0bdde3762afd7e4f918c23c85250d512a59db",
+      "source_hash": "4cec553af4c0f1d19fbb09032f3cd175981a8c2ab7fdabbe5c0fb4806da1bd0c",
+      "license": "MIT + file LICENSE",
+      "repository": "https://github.com/CTTIR/hyperspectaculR",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816"
+      ],
+      "notices": [
+        {
+          "file": "texts/f65c585663d73b1de58a3b8ed49b0e52597c778c791307cffc45277e0392b72e.txt",
+          "sha256": "f65c585663d73b1de58a3b8ed49b0e52597c778c791307cffc45277e0392b72e",
+          "source_member": "LICENSE",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "1df0bdde3762afd7e4f918c23c85250d512a59db",
+          "source_blob_oid": "d275fc4330036809a3ebf031910a1a4ba1100d43"
+        },
+        {
+          "file": "texts/2031c6707a0730c7359234c744b5f333d61cd69da6a4d8639aa096188039942a.txt",
+          "sha256": "2031c6707a0730c7359234c744b5f333d61cd69da6a4d8639aa096188039942a",
+          "source_member": "LICENSE.md",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "1df0bdde3762afd7e4f918c23c85250d512a59db",
+          "source_blob_oid": "9e1879151ee2b3c879d746b6abf31c5655406878"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ]
+    },
+    {
+      "package": "jsonlite",
+      "version": "2.0.0",
+      "revision": "cran:jsonlite@2.0.0:3e54e6fbc0c9063936e3d01e91419c14",
+      "source_hash": "f6952614f49231a51e26c3897403ab9535bb5ce530c5df61ec7be926280d3e26",
+      "license": "MIT + file LICENSE",
+      "repository": "https://cran.r-project.org/package=jsonlite",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "031ca5226128b5a69a347bb775e545c9ab41eba64557b1caf623c4c5a8fc515f",
+        "3e1983fd7f81b618d8cf614d33775068d8ad5628fa96723c515d331122e1501a",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "83517d03188928d54a7f15f0f3866a027046617f400e6b3d6e44022e39e54a99",
+        "92627577cce4722d0673e6c5a71773b0a8b35d6dbd9e38f6bd7b959972a9e67c",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816",
+        "b726a5f47357c4c3e362edba018afe3e5e72b3cfeec53b0ca5653b8fceac2bb9",
+        "c538a9fc77b5896fcae5a2ed04223d417c78b4514e0d97cd2bcff1fd26c61bc4",
+        "d10451ded27d07fd29122b46f8147f3ffa652acd9f952eb200ebe761bcfbe268",
+        "d478f032ffb27328bda3978bfaf17f57f9c2be520d1d1f560acba3331bc0ce1c"
+      ],
+      "notices": [
+        {
+          "file": "texts/008725198f645358cbb93366529f71300cdc33586bbd0f071e5879a16bacbdb1.txt",
+          "sha256": "008725198f645358cbb93366529f71300cdc33586bbd0f071e5879a16bacbdb1",
+          "source_member": "jsonlite/LICENSE",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "75eb910c82b350ec33f094779da0f87bff154c232e4ae39c9896a9b89f3ac82d"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ],
+      "source_archive_url": "https://cloud.r-project.org/src/contrib/jsonlite_2.0.0.tar.gz"
+    },
+    {
+      "package": "knitr",
+      "version": "1.51",
+      "revision": "cran:knitr@1.51:79f32f24b572fe198baca8882d6aa87f",
+      "source_hash": "5578b362315d566cd05e2d4691281c138fb72e587f618567fe6ec47a6ddeafcf",
+      "license": "GPL",
+      "repository": "https://cran.r-project.org/package=knitr",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "031ca5226128b5a69a347bb775e545c9ab41eba64557b1caf623c4c5a8fc515f",
+        "3e1983fd7f81b618d8cf614d33775068d8ad5628fa96723c515d331122e1501a",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "83517d03188928d54a7f15f0f3866a027046617f400e6b3d6e44022e39e54a99",
+        "92627577cce4722d0673e6c5a71773b0a8b35d6dbd9e38f6bd7b959972a9e67c",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816",
+        "b726a5f47357c4c3e362edba018afe3e5e72b3cfeec53b0ca5653b8fceac2bb9",
+        "c538a9fc77b5896fcae5a2ed04223d417c78b4514e0d97cd2bcff1fd26c61bc4",
+        "d10451ded27d07fd29122b46f8147f3ffa652acd9f952eb200ebe761bcfbe268",
+        "d478f032ffb27328bda3978bfaf17f57f9c2be520d1d1f560acba3331bc0ce1c"
+      ],
+      "notices": [],
+      "standard_terms": [
+        {
+          "file": "texts/8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643.txt",
+          "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643",
+          "source_member": "R-4.6.1/share/licenses/GPL-2",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        },
+        {
+          "file": "texts/3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986.txt",
+          "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+          "source_member": "R-4.6.1/share/licenses/GPL-3",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ],
+      "source_archive_url": "https://cloud.r-project.org/src/contrib/Archive/knitr/knitr_1.51.tar.gz"
+    },
+    {
+      "package": "libscanR",
+      "version": "0.1.0",
+      "revision": "5516d3ea47abf479af51e5ab1abe1a05adfae3e6",
+      "source_hash": "6237ac880d4a0b96d0cf09be2c3ffc79c939ab6c565a7ddeb8d3ae9e947a6ce0",
+      "license": "MIT + file LICENSE",
+      "repository": "https://github.com/CTTIR/libscanR",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816"
+      ],
+      "notices": [
+        {
+          "file": "texts/f93e3b257762c6a6121808ca5390b7b3fd98ae02309e56b839aa423fd07e2c83.txt",
+          "sha256": "f93e3b257762c6a6121808ca5390b7b3fd98ae02309e56b839aa423fd07e2c83",
+          "source_member": "LICENSE",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "5516d3ea47abf479af51e5ab1abe1a05adfae3e6",
+          "source_blob_oid": "cbdeaaa7f7bfa7803256e21c55ce1873bbe972c3"
+        },
+        {
+          "file": "texts/2e30d1ad0d89e5c29db0ca0871ca05d56c0431e5bac81188f7f8db28ad472a8d.txt",
+          "sha256": "2e30d1ad0d89e5c29db0ca0871ca05d56c0431e5bac81188f7f8db28ad472a8d",
+          "source_member": "LICENSE.md",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "5516d3ea47abf479af51e5ab1abe1a05adfae3e6",
+          "source_blob_oid": "470d9e7e1cdd8b1a88788a132863a492f84586a7"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ]
+    },
+    {
+      "package": "methods",
+      "version": "4.6.1",
+      "revision": "r-distribution:R-4.6.1:methods",
+      "source_hash": "fcff54983f7496227847037c7c3180bf6aafdcb87a3e205b0cd82b052c6f50ee",
+      "license": "Part of R 4.6.1",
+      "repository": "https://cran.r-project.org/src/base/R-4/R-4.6.1.tar.gz",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "031ca5226128b5a69a347bb775e545c9ab41eba64557b1caf623c4c5a8fc515f",
+        "3e1983fd7f81b618d8cf614d33775068d8ad5628fa96723c515d331122e1501a",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "83517d03188928d54a7f15f0f3866a027046617f400e6b3d6e44022e39e54a99",
+        "92627577cce4722d0673e6c5a71773b0a8b35d6dbd9e38f6bd7b959972a9e67c",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816",
+        "b726a5f47357c4c3e362edba018afe3e5e72b3cfeec53b0ca5653b8fceac2bb9",
+        "c538a9fc77b5896fcae5a2ed04223d417c78b4514e0d97cd2bcff1fd26c61bc4",
+        "d10451ded27d07fd29122b46f8147f3ffa652acd9f952eb200ebe761bcfbe268",
+        "d478f032ffb27328bda3978bfaf17f57f9c2be520d1d1f560acba3331bc0ce1c"
+      ],
+      "notices": [
+        {
+          "file": "texts/e6d6a009505e345fe949e1310334fcb0747f28dae2856759de102ab66b722cb4.txt",
+          "sha256": "e6d6a009505e345fe949e1310334fcb0747f28dae2856759de102ab66b722cb4",
+          "source_member": "R-4.6.1/COPYING",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4",
+          "scope": "distribution_global_notice"
+        },
+        {
+          "file": "texts/93a225906ee6514d1482548f8945e41a5cfcbae70610f9577ac7c9a512e060f0.txt",
+          "sha256": "93a225906ee6514d1482548f8945e41a5cfcbae70610f9577ac7c9a512e060f0",
+          "source_member": "R-4.6.1/doc/COPYRIGHTS",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4",
+          "scope": "distribution_global_notice"
+        },
+        {
+          "file": "texts/e6d6a009505e345fe949e1310334fcb0747f28dae2856759de102ab66b722cb4.txt",
+          "sha256": "e6d6a009505e345fe949e1310334fcb0747f28dae2856759de102ab66b722cb4",
+          "source_member": "R-4.6.1/doc/COPYING",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4",
+          "scope": "distribution_global_notice"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643.txt",
+          "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643",
+          "source_member": "R-4.6.1/share/licenses/GPL-2",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        },
+        {
+          "file": "texts/3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986.txt",
+          "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+          "source_member": "R-4.6.1/share/licenses/GPL-3",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ]
+    },
+    {
+      "package": "molpathR",
+      "version": "0.1.0",
+      "revision": "886f3fb406aea3b8794736977f5d9e439b3b1f2d",
+      "source_hash": "5c07528dca19b892069e3a7c923cf1e7fe359a2246fd3554d2b43383a80ec522",
+      "license": "MIT + file LICENSE",
+      "repository": "https://github.com/CTTIR/molpathR",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816"
+      ],
+      "notices": [
+        {
+          "file": "texts/f93e3b257762c6a6121808ca5390b7b3fd98ae02309e56b839aa423fd07e2c83.txt",
+          "sha256": "f93e3b257762c6a6121808ca5390b7b3fd98ae02309e56b839aa423fd07e2c83",
+          "source_member": "LICENSE",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "886f3fb406aea3b8794736977f5d9e439b3b1f2d",
+          "source_blob_oid": "cbdeaaa7f7bfa7803256e21c55ce1873bbe972c3"
+        },
+        {
+          "file": "texts/60986d0843f35ab0f7cba419cdbb4862e8f849af92798d5987b640dbb7c88d88.txt",
+          "sha256": "60986d0843f35ab0f7cba419cdbb4862e8f849af92798d5987b640dbb7c88d88",
+          "source_member": "LICENSE.md",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "886f3fb406aea3b8794736977f5d9e439b3b1f2d",
+          "source_blob_oid": "f83738a63eb6c1c086eadf9bf67a93d05603ab0b"
+        },
+        {
+          "file": "texts/07e361564eb07c1b3d9641b5586f24bd120c6fdec587e46ab18e2dcc1b85547a.txt",
+          "sha256": "07e361564eb07c1b3d9641b5586f24bd120c6fdec587e46ab18e2dcc1b85547a",
+          "source_member": "docs/LICENSE-text.html",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "886f3fb406aea3b8794736977f5d9e439b3b1f2d",
+          "source_blob_oid": "cf5da02ae05db74c0407bf5bb94677002e39f1f1"
+        },
+        {
+          "file": "texts/1f7b06ce155015c8a1bd7aa12319e8d3949058800f4aced87f20726c387e3c99.txt",
+          "sha256": "1f7b06ce155015c8a1bd7aa12319e8d3949058800f4aced87f20726c387e3c99",
+          "source_member": "docs/LICENSE-text.md",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "886f3fb406aea3b8794736977f5d9e439b3b1f2d",
+          "source_blob_oid": "a5eb6d9c8508eea9cd1b4c9780fad3cb906ba6ad"
+        },
+        {
+          "file": "texts/42f99eed5e9afde52064a79f9a7c6234380752b50b975344c6cf052056386653.txt",
+          "sha256": "42f99eed5e9afde52064a79f9a7c6234380752b50b975344c6cf052056386653",
+          "source_member": "docs/LICENSE.html",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "886f3fb406aea3b8794736977f5d9e439b3b1f2d",
+          "source_blob_oid": "0b8fd961ad51f2249314b83fafcec223a2283860"
+        },
+        {
+          "file": "texts/104a3e26900dcc42c50e5e80193252bb6215cd2f4a5fab229eda9405ed97f6fc.txt",
+          "sha256": "104a3e26900dcc42c50e5e80193252bb6215cd2f4a5fab229eda9405ed97f6fc",
+          "source_member": "docs/LICENSE.md",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "886f3fb406aea3b8794736977f5d9e439b3b1f2d",
+          "source_blob_oid": "70c4983d9a0d25c4d2f1bf683f045ce9667098e6"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ]
+    },
+    {
+      "package": "nlme",
+      "version": "3.1-170",
+      "revision": "cran:nlme@3.1-170:1cca4f944fb0f0da191eeaf965bba912",
+      "source_hash": "726dbd3c6d84779c6fe4e7847d940ccb2fff079675c4d892ea061382e83354c3",
+      "license": "GPL (>= 2)",
+      "repository": "https://cran.r-project.org/package=nlme",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "031ca5226128b5a69a347bb775e545c9ab41eba64557b1caf623c4c5a8fc515f",
+        "3e1983fd7f81b618d8cf614d33775068d8ad5628fa96723c515d331122e1501a",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "83517d03188928d54a7f15f0f3866a027046617f400e6b3d6e44022e39e54a99",
+        "92627577cce4722d0673e6c5a71773b0a8b35d6dbd9e38f6bd7b959972a9e67c",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816",
+        "b726a5f47357c4c3e362edba018afe3e5e72b3cfeec53b0ca5653b8fceac2bb9",
+        "c538a9fc77b5896fcae5a2ed04223d417c78b4514e0d97cd2bcff1fd26c61bc4",
+        "d10451ded27d07fd29122b46f8147f3ffa652acd9f952eb200ebe761bcfbe268",
+        "d478f032ffb27328bda3978bfaf17f57f9c2be520d1d1f560acba3331bc0ce1c"
+      ],
+      "notices": [
+        {
+          "file": "texts/0281d64db1145eb914ffa61451cf2036d7be6ede5237c49f8205dbc95bf9bb00.txt",
+          "sha256": "0281d64db1145eb914ffa61451cf2036d7be6ede5237c49f8205dbc95bf9bb00",
+          "source_member": "nlme/LICENSE.note",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "d8e1a92cc295b046c9fd12bc1b875fe7921cc1db58f4407f0b97d625e8197b44"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643.txt",
+          "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643",
+          "source_member": "R-4.6.1/share/licenses/GPL-2",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        },
+        {
+          "file": "texts/3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986.txt",
+          "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+          "source_member": "R-4.6.1/share/licenses/GPL-3",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ],
+      "source_archive_url": "https://cloud.r-project.org/src/contrib/Archive/nlme/nlme_3.1-170.tar.gz"
+    },
+    {
+      "package": "patchwork",
+      "version": "1.3.2",
+      "revision": "cran:patchwork@1.3.2:cd1723c708ead431720bc9652998e325",
+      "source_hash": "edc600c31dd9f14a6b3cf3178e66ef72f32b1b31049601c953a4bed1d7a4f327",
+      "license": "MIT + file LICENSE",
+      "repository": "https://cran.r-project.org/package=patchwork",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "031ca5226128b5a69a347bb775e545c9ab41eba64557b1caf623c4c5a8fc515f",
+        "3e1983fd7f81b618d8cf614d33775068d8ad5628fa96723c515d331122e1501a",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "83517d03188928d54a7f15f0f3866a027046617f400e6b3d6e44022e39e54a99",
+        "92627577cce4722d0673e6c5a71773b0a8b35d6dbd9e38f6bd7b959972a9e67c",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816",
+        "b726a5f47357c4c3e362edba018afe3e5e72b3cfeec53b0ca5653b8fceac2bb9",
+        "c538a9fc77b5896fcae5a2ed04223d417c78b4514e0d97cd2bcff1fd26c61bc4",
+        "d10451ded27d07fd29122b46f8147f3ffa652acd9f952eb200ebe761bcfbe268",
+        "d478f032ffb27328bda3978bfaf17f57f9c2be520d1d1f560acba3331bc0ce1c"
+      ],
+      "notices": [
+        {
+          "file": "texts/1923917f4721017e793b05d15f55f85138d1e58fe43a19e0b6c466b72bd4655d.txt",
+          "sha256": "1923917f4721017e793b05d15f55f85138d1e58fe43a19e0b6c466b72bd4655d",
+          "source_member": "patchwork/LICENSE",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "0ec469acfd69d1a4f1a6317c861e6bf000f768c2d5047e3aed6713df9afe27eb"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ],
+      "source_archive_url": "https://cloud.r-project.org/src/contrib/patchwork_1.3.2.tar.gz"
+    },
+    {
+      "package": "phenoscapR",
+      "version": "0.1.0",
+      "revision": "28609bf9b848a79ca8a988d5fa373a16ae71eb19",
+      "source_hash": "f3dcc22d9bcb071327f9fa007b9cdbe3c54bd0c56e095ea1d784b58e4521a34f",
+      "license": "MIT + file LICENSE",
+      "repository": "https://github.com/CTTIR/phenoscapR",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816"
+      ],
+      "notices": [
+        {
+          "file": "texts/423daf7c3bfc7c56984b8f36cb6665d384db8a8f26f8dc96680c9352118493b0.txt",
+          "sha256": "423daf7c3bfc7c56984b8f36cb6665d384db8a8f26f8dc96680c9352118493b0",
+          "source_member": "LICENSE",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "28609bf9b848a79ca8a988d5fa373a16ae71eb19",
+          "source_blob_oid": "7f41abe4b2bcd74bbdc5d00c3988216f211f7548"
+        },
+        {
+          "file": "texts/b5a8af84071e9e27f94c382a2333e857f317fcec7335a44bab44af9459122afc.txt",
+          "sha256": "b5a8af84071e9e27f94c382a2333e857f317fcec7335a44bab44af9459122afc",
+          "source_member": "LICENSE.md",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "28609bf9b848a79ca8a988d5fa373a16ae71eb19",
+          "source_blob_oid": "5513c46f8b82a6470547d78025196ad6305412eb"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ]
+    },
+    {
+      "package": "pressR",
+      "version": "0.1.0",
+      "revision": "21d2b79d20fefe6c773c9e3577ce44c8699adcf9",
+      "source_hash": "4520a8d768071de2076b3ef6d3e901d6c3d993cb1f68db6cac811cdd748aa9e9",
+      "license": "MIT + file LICENSE",
+      "repository": "https://github.com/CTTIR/pressR",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816"
+      ],
+      "notices": [
+        {
+          "file": "texts/f93e3b257762c6a6121808ca5390b7b3fd98ae02309e56b839aa423fd07e2c83.txt",
+          "sha256": "f93e3b257762c6a6121808ca5390b7b3fd98ae02309e56b839aa423fd07e2c83",
+          "source_member": "LICENSE",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "21d2b79d20fefe6c773c9e3577ce44c8699adcf9",
+          "source_blob_oid": "cbdeaaa7f7bfa7803256e21c55ce1873bbe972c3"
+        },
+        {
+          "file": "texts/2e30d1ad0d89e5c29db0ca0871ca05d56c0431e5bac81188f7f8db28ad472a8d.txt",
+          "sha256": "2e30d1ad0d89e5c29db0ca0871ca05d56c0431e5bac81188f7f8db28ad472a8d",
+          "source_member": "LICENSE.md",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "21d2b79d20fefe6c773c9e3577ce44c8699adcf9",
+          "source_blob_oid": "470d9e7e1cdd8b1a88788a132863a492f84586a7"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ]
+    },
+    {
+      "package": "qviewparsR",
+      "version": "1.0.0",
+      "revision": "b6df219b028e8bc13b79b82500ebea3e8ffd562d",
+      "source_hash": "129abcdaf30fe3c01faedd90b5bddbd651bdca4c07173b8462d20a85d0c6acea",
+      "license": "MIT + file LICENSE",
+      "repository": "https://github.com/CTTIR/qviewparsR",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816"
+      ],
+      "notices": [
+        {
+          "file": "texts/ebf142f5dc6c3c972ca5a5409611e8e02f47c27956be62f3e7d299612c0f4151.txt",
+          "sha256": "ebf142f5dc6c3c972ca5a5409611e8e02f47c27956be62f3e7d299612c0f4151",
+          "source_member": "LICENSE",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "b6df219b028e8bc13b79b82500ebea3e8ffd562d",
+          "source_blob_oid": "d5ab1d67793e24da33ac4db0d201457cf003a32c"
+        },
+        {
+          "file": "texts/2484af9ecfd28037363b657df0771703551a1cd0e16ee2107b5251637a427f7f.txt",
+          "sha256": "2484af9ecfd28037363b657df0771703551a1cd0e16ee2107b5251637a427f7f",
+          "source_member": "LICENSE.md",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "b6df219b028e8bc13b79b82500ebea3e8ffd562d",
+          "source_blob_oid": "daa940db2234de91debaaed2724372e94303d31b"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ]
+    },
+    {
+      "package": "readr",
+      "version": "2.2.0",
+      "revision": "cran:readr@2.2.0:3e87b7c88d9853bb2cec2f11eec2bf72",
+      "source_hash": "1c442d1d69b0856fcb937707a26d546c247aae81e6fe2485f273300d2f57f573",
+      "license": "MIT + file LICENSE",
+      "repository": "https://cran.r-project.org/package=readr",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "031ca5226128b5a69a347bb775e545c9ab41eba64557b1caf623c4c5a8fc515f",
+        "3e1983fd7f81b618d8cf614d33775068d8ad5628fa96723c515d331122e1501a",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "83517d03188928d54a7f15f0f3866a027046617f400e6b3d6e44022e39e54a99",
+        "92627577cce4722d0673e6c5a71773b0a8b35d6dbd9e38f6bd7b959972a9e67c",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816",
+        "b726a5f47357c4c3e362edba018afe3e5e72b3cfeec53b0ca5653b8fceac2bb9",
+        "c538a9fc77b5896fcae5a2ed04223d417c78b4514e0d97cd2bcff1fd26c61bc4",
+        "d10451ded27d07fd29122b46f8147f3ffa652acd9f952eb200ebe761bcfbe268",
+        "d478f032ffb27328bda3978bfaf17f57f9c2be520d1d1f560acba3331bc0ce1c"
+      ],
+      "notices": [
+        {
+          "file": "texts/7bf9d9d35e0548c8a7fe5c68935b6eb9cb0aec6bc7705a8b39fe7b48c1c978f5.txt",
+          "sha256": "7bf9d9d35e0548c8a7fe5c68935b6eb9cb0aec6bc7705a8b39fe7b48c1c978f5",
+          "source_member": "readr/LICENSE",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "8025d797c183e12ad5ebe4af891dbcb5a8e9bd53aa4765006eb25a07f9a9f473"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ],
+      "source_archive_url": "https://cloud.r-project.org/src/contrib/readr_2.2.0.tar.gz"
+    },
+    {
+      "package": "reflowR",
+      "version": "0.1.0",
+      "revision": "cd1243a068ff2c8fb6796e34b58f6c6ce6af87e8",
+      "source_hash": "32d2a3362b1f430d16674651d72db63d4c0bd3d107ac753f71a40012b6637f14",
+      "license": "MIT + file LICENSE",
+      "repository": "https://github.com/CTTIR/reflowR",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "031ca5226128b5a69a347bb775e545c9ab41eba64557b1caf623c4c5a8fc515f",
+        "3e1983fd7f81b618d8cf614d33775068d8ad5628fa96723c515d331122e1501a",
+        "5fc141ceb69a995a4e10fd91c7a6e29748ab17a8d3a9f7e97d25a2e7964c0464",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "83517d03188928d54a7f15f0f3866a027046617f400e6b3d6e44022e39e54a99",
+        "8e5a591daa5b55552bc7ca52a659fe422ec369aeab19f87adf9de60f94971788",
+        "92627577cce4722d0673e6c5a71773b0a8b35d6dbd9e38f6bd7b959972a9e67c",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816",
+        "b726a5f47357c4c3e362edba018afe3e5e72b3cfeec53b0ca5653b8fceac2bb9",
+        "c538a9fc77b5896fcae5a2ed04223d417c78b4514e0d97cd2bcff1fd26c61bc4",
+        "d10451ded27d07fd29122b46f8147f3ffa652acd9f952eb200ebe761bcfbe268",
+        "d478f032ffb27328bda3978bfaf17f57f9c2be520d1d1f560acba3331bc0ce1c"
+      ],
+      "notices": [
+        {
+          "file": "texts/f65c585663d73b1de58a3b8ed49b0e52597c778c791307cffc45277e0392b72e.txt",
+          "sha256": "f65c585663d73b1de58a3b8ed49b0e52597c778c791307cffc45277e0392b72e",
+          "source_member": "LICENSE",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "cd1243a068ff2c8fb6796e34b58f6c6ce6af87e8",
+          "source_blob_oid": "d275fc4330036809a3ebf031910a1a4ba1100d43"
+        },
+        {
+          "file": "texts/29b77db3f6c608670bc28cfc77ebba736f75c6abb9d8a32aec917051f4d52cdd.txt",
+          "sha256": "29b77db3f6c608670bc28cfc77ebba736f75c6abb9d8a32aec917051f4d52cdd",
+          "source_member": "LICENSE.md",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "cd1243a068ff2c8fb6796e34b58f6c6ce6af87e8",
+          "source_blob_oid": "194c04cfb138dfba69c992d3c7651de7db4f16b2"
+        },
+        {
+          "file": "texts/2f1da1d54a724050c6ee9c1fb6dd53b7ffb33ace383cb002c36e76f34761dbc6.txt",
+          "sha256": "2f1da1d54a724050c6ee9c1fb6dd53b7ffb33ace383cb002c36e76f34761dbc6",
+          "source_member": "docs/LICENSE-text.html",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "cd1243a068ff2c8fb6796e34b58f6c6ce6af87e8",
+          "source_blob_oid": "6725c9868cad1f24747b3e0b4fac97531b87570e"
+        },
+        {
+          "file": "texts/0e5d9b27f931d8badc0e91ed54ffbb07144c765614aedd12bb04821ea1c1b81c.txt",
+          "sha256": "0e5d9b27f931d8badc0e91ed54ffbb07144c765614aedd12bb04821ea1c1b81c",
+          "source_member": "docs/LICENSE-text.md",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "cd1243a068ff2c8fb6796e34b58f6c6ce6af87e8",
+          "source_blob_oid": "2b4e48bc12bd6773a43ba178fc854ca0fac1b9af"
+        },
+        {
+          "file": "texts/a99d9af8458c9500f35b5f60afa9ccc435234109fb2eabc3c1b058ffd594000c.txt",
+          "sha256": "a99d9af8458c9500f35b5f60afa9ccc435234109fb2eabc3c1b058ffd594000c",
+          "source_member": "docs/LICENSE.html",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "cd1243a068ff2c8fb6796e34b58f6c6ce6af87e8",
+          "source_blob_oid": "4a3cf5035391f5adbb7912c7d51089bb06846da6"
+        },
+        {
+          "file": "texts/40561dc7ff646ea211f0d5df5e533fe7e503d3d3bf6cc203bc53faf02aad7d64.txt",
+          "sha256": "40561dc7ff646ea211f0d5df5e533fe7e503d3d3bf6cc203bc53faf02aad7d64",
+          "source_member": "docs/LICENSE.md",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "cd1243a068ff2c8fb6796e34b58f6c6ce6af87e8",
+          "source_blob_oid": "2ab4eb45a8669ab587344abfa819966cefbe6c8b"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ]
+    },
+    {
+      "package": "renv",
+      "version": "1.2.3",
+      "revision": "cran:renv@1.2.3:81fdeac5bb71f68fcde3eed5243a0f2f",
+      "source_hash": "c9dffb136a527bf517dee5b245ba87f8c755649cef2425701f29987b007eff5e",
+      "license": "MIT + file LICENSE",
+      "repository": "https://cran.r-project.org/package=renv",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "031ca5226128b5a69a347bb775e545c9ab41eba64557b1caf623c4c5a8fc515f",
+        "3e1983fd7f81b618d8cf614d33775068d8ad5628fa96723c515d331122e1501a",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "83517d03188928d54a7f15f0f3866a027046617f400e6b3d6e44022e39e54a99",
+        "92627577cce4722d0673e6c5a71773b0a8b35d6dbd9e38f6bd7b959972a9e67c",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816",
+        "b726a5f47357c4c3e362edba018afe3e5e72b3cfeec53b0ca5653b8fceac2bb9",
+        "c538a9fc77b5896fcae5a2ed04223d417c78b4514e0d97cd2bcff1fd26c61bc4",
+        "d10451ded27d07fd29122b46f8147f3ffa652acd9f952eb200ebe761bcfbe268",
+        "d478f032ffb27328bda3978bfaf17f57f9c2be520d1d1f560acba3331bc0ce1c"
+      ],
+      "notices": [
+        {
+          "file": "texts/6b825e0a02fc21dbef4c67986f90e84753686021a5ceb249054acfd2bf265520.txt",
+          "sha256": "6b825e0a02fc21dbef4c67986f90e84753686021a5ceb249054acfd2bf265520",
+          "source_member": "renv/LICENSE",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "f462b55ace5436b6bed18e01ac1267649fc196ad8505f55c8546704eda104bfb"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ],
+      "source_archive_url": "https://cloud.r-project.org/src/contrib/Archive/renv/renv_1.2.3.tar.gz"
+    },
+    {
+      "package": "rmarkdown",
+      "version": "2.31",
+      "revision": "cran:rmarkdown@2.31:8f7a4eef6b62e7f2284550c3134f28c8",
+      "source_hash": "07843070538ca810f3d8f3f15d868d9918582544fc0583075dcbf0e97477c086",
+      "license": "GPL-3",
+      "repository": "https://cran.r-project.org/package=rmarkdown",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "031ca5226128b5a69a347bb775e545c9ab41eba64557b1caf623c4c5a8fc515f",
+        "3e1983fd7f81b618d8cf614d33775068d8ad5628fa96723c515d331122e1501a",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "83517d03188928d54a7f15f0f3866a027046617f400e6b3d6e44022e39e54a99",
+        "92627577cce4722d0673e6c5a71773b0a8b35d6dbd9e38f6bd7b959972a9e67c",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816",
+        "b726a5f47357c4c3e362edba018afe3e5e72b3cfeec53b0ca5653b8fceac2bb9",
+        "c538a9fc77b5896fcae5a2ed04223d417c78b4514e0d97cd2bcff1fd26c61bc4",
+        "d10451ded27d07fd29122b46f8147f3ffa652acd9f952eb200ebe761bcfbe268",
+        "d478f032ffb27328bda3978bfaf17f57f9c2be520d1d1f560acba3331bc0ce1c"
+      ],
+      "notices": [
+        {
+          "file": "texts/5407c91b6c8b7305f72aec4ee5ffb99b32ed9a5413c19cf3cd1b94354d2645e8.txt",
+          "sha256": "5407c91b6c8b7305f72aec4ee5ffb99b32ed9a5413c19cf3cd1b94354d2645e8",
+          "source_member": "rmarkdown/inst/rmd/h/ionicons/LICENSE",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "0c5baed4a447292f15507794d2dde6b18bae1fa6c45ea6ada8bcd99ca211fcbc"
+        },
+        {
+          "file": "texts/2b94ab7172940a756507f9353c9dfd1447667a9b7896b93deaed761b5a73900a.txt",
+          "sha256": "2b94ab7172940a756507f9353c9dfd1447667a9b7896b93deaed761b5a73900a",
+          "source_member": "rmarkdown/inst/rmd/h/tabset/LICENSE",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "0c5baed4a447292f15507794d2dde6b18bae1fa6c45ea6ada8bcd99ca211fcbc"
+        },
+        {
+          "file": "texts/de33fb695880d0b07615d4b86f78cd43796906959ade5fdfef70968827a0db78.txt",
+          "sha256": "de33fb695880d0b07615d4b86f78cd43796906959ade5fdfef70968827a0db78",
+          "source_member": "rmarkdown/inst/rmd/h/jqueryui/LICENSE.txt",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "0c5baed4a447292f15507794d2dde6b18bae1fa6c45ea6ada8bcd99ca211fcbc"
+        },
+        {
+          "file": "texts/5b298a3e7ee8d2c82df7ea24a2f386380ee1acebd0b7207a1cae0e415bc6bb52.txt",
+          "sha256": "5b298a3e7ee8d2c82df7ea24a2f386380ee1acebd0b7207a1cae0e415bc6bb52",
+          "source_member": "rmarkdown/inst/COPYING",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "0c5baed4a447292f15507794d2dde6b18bae1fa6c45ea6ada8bcd99ca211fcbc"
+        },
+        {
+          "file": "texts/a8ea2d9e8aba25fac6f701f7214eec2903f1fb1fb7782ee9311e03852b3a5095.txt",
+          "sha256": "a8ea2d9e8aba25fac6f701f7214eec2903f1fb1fb7782ee9311e03852b3a5095",
+          "source_member": "rmarkdown/inst/NOTICE",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "0c5baed4a447292f15507794d2dde6b18bae1fa6c45ea6ada8bcd99ca211fcbc"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986.txt",
+          "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+          "source_member": "R-4.6.1/share/licenses/GPL-3",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ],
+      "source_archive_url": "https://cloud.r-project.org/src/contrib/Archive/rmarkdown/rmarkdown_2.31.tar.gz"
+    },
+    {
+      "package": "scimagR",
+      "version": "0.1.0",
+      "revision": "7c1fb14a6af881df5748fa8f9caaccc960935c7e",
+      "source_hash": "967a621815ebf130067f329c845df6f59ec2af08ce1b125866ca2d882a24e867",
+      "license": "MIT + file LICENSE",
+      "repository": "https://github.com/CTTIR/scimagR",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816"
+      ],
+      "notices": [
+        {
+          "file": "texts/f93e3b257762c6a6121808ca5390b7b3fd98ae02309e56b839aa423fd07e2c83.txt",
+          "sha256": "f93e3b257762c6a6121808ca5390b7b3fd98ae02309e56b839aa423fd07e2c83",
+          "source_member": "LICENSE",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "7c1fb14a6af881df5748fa8f9caaccc960935c7e",
+          "source_blob_oid": "cbdeaaa7f7bfa7803256e21c55ce1873bbe972c3"
+        },
+        {
+          "file": "texts/2e30d1ad0d89e5c29db0ca0871ca05d56c0431e5bac81188f7f8db28ad472a8d.txt",
+          "sha256": "2e30d1ad0d89e5c29db0ca0871ca05d56c0431e5bac81188f7f8db28ad472a8d",
+          "source_member": "LICENSE.md",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "7c1fb14a6af881df5748fa8f9caaccc960935c7e",
+          "source_blob_oid": "470d9e7e1cdd8b1a88788a132863a492f84586a7"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ]
+    },
+    {
+      "package": "scimapR",
+      "version": "0.1.0",
+      "revision": "57cc6b7ffa871d4382a2f43af837b7bcebfd7694",
+      "source_hash": "41f8e97e1413af7e69e0c8d189891c26d808e227843d86ab30e187ab833701d3",
+      "license": "MIT + file LICENSE",
+      "repository": "https://github.com/CTTIR/scimapR",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816"
+      ],
+      "notices": [
+        {
+          "file": "texts/d065c149d4c6aad163b743e2dd4402c4ac8b3e486902166691a3208ee1a0a265.txt",
+          "sha256": "d065c149d4c6aad163b743e2dd4402c4ac8b3e486902166691a3208ee1a0a265",
+          "source_member": "LICENSE",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "57cc6b7ffa871d4382a2f43af837b7bcebfd7694",
+          "source_blob_oid": "3209fdfb6e0f4fc5cba24647b3e4563e6e1a6ad6"
+        },
+        {
+          "file": "texts/2031c6707a0730c7359234c744b5f333d61cd69da6a4d8639aa096188039942a.txt",
+          "sha256": "2031c6707a0730c7359234c744b5f333d61cd69da6a4d8639aa096188039942a",
+          "source_member": "LICENSE.md",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "57cc6b7ffa871d4382a2f43af837b7bcebfd7694",
+          "source_blob_oid": "9e1879151ee2b3c879d746b6abf31c5655406878"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ]
+    },
+    {
+      "package": "segmantR",
+      "version": "0.1.0.9000",
+      "revision": "ce2c3edc498e0bf2e123d720118a052452153427",
+      "source_hash": "c584506197063328094608b432a9c25f5886078b466f869be288328c43bb1605",
+      "license": "MIT + file LICENSE",
+      "repository": "https://github.com/CTTIR/segmantR",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816"
+      ],
+      "notices": [
+        {
+          "file": "texts/f65c585663d73b1de58a3b8ed49b0e52597c778c791307cffc45277e0392b72e.txt",
+          "sha256": "f65c585663d73b1de58a3b8ed49b0e52597c778c791307cffc45277e0392b72e",
+          "source_member": "LICENSE",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "ce2c3edc498e0bf2e123d720118a052452153427",
+          "source_blob_oid": "d275fc4330036809a3ebf031910a1a4ba1100d43"
+        },
+        {
+          "file": "texts/2e30d1ad0d89e5c29db0ca0871ca05d56c0431e5bac81188f7f8db28ad472a8d.txt",
+          "sha256": "2e30d1ad0d89e5c29db0ca0871ca05d56c0431e5bac81188f7f8db28ad472a8d",
+          "source_member": "LICENSE.md",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "ce2c3edc498e0bf2e123d720118a052452153427",
+          "source_blob_oid": "470d9e7e1cdd8b1a88788a132863a492f84586a7"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ]
+    },
+    {
+      "package": "songR",
+      "version": "0.1.0",
+      "revision": "b933efdb116aca7d6ec38fee32796411750b9d45",
+      "source_hash": "abbde1e3867567187ada260caada0efb265cd1c1cb3ad4c88fb7085f381bd95b",
+      "license": "MIT + file LICENSE",
+      "repository": "https://github.com/CTTIR/songR",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816"
+      ],
+      "notices": [
+        {
+          "file": "texts/f93e3b257762c6a6121808ca5390b7b3fd98ae02309e56b839aa423fd07e2c83.txt",
+          "sha256": "f93e3b257762c6a6121808ca5390b7b3fd98ae02309e56b839aa423fd07e2c83",
+          "source_member": "LICENSE",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "b933efdb116aca7d6ec38fee32796411750b9d45",
+          "source_blob_oid": "cbdeaaa7f7bfa7803256e21c55ce1873bbe972c3"
+        },
+        {
+          "file": "texts/a5ba114a276bc168a7d4761f6da463a707dc157439c423fe7e5984c455d703fb.txt",
+          "sha256": "a5ba114a276bc168a7d4761f6da463a707dc157439c423fe7e5984c455d703fb",
+          "source_member": "LICENSE.md",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "b933efdb116aca7d6ec38fee32796411750b9d45",
+          "source_blob_oid": "bfa7723e5518c6ed41375824680093880251c461"
+        },
+        {
+          "file": "texts/e587e3d940aaf4811499564a6abdbbabe7b654a2e6c11f74912ebb1ed9a1ff04.txt",
+          "sha256": "e587e3d940aaf4811499564a6abdbbabe7b654a2e6c11f74912ebb1ed9a1ff04",
+          "source_member": "inst/COPYRIGHTS",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "b933efdb116aca7d6ec38fee32796411750b9d45",
+          "source_blob_oid": "4137caeb28e363fea0e9418fb588179040e82b20"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ]
+    },
+    {
+      "package": "stats",
+      "version": "4.6.1",
+      "revision": "r-distribution:R-4.6.1:stats",
+      "source_hash": "3735c4ce9c6824a794d61ba1c97d4a498a8657908970176e8e13c64b3df0ee7e",
+      "license": "Part of R 4.6.1",
+      "repository": "https://cran.r-project.org/src/base/R-4/R-4.6.1.tar.gz",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "031ca5226128b5a69a347bb775e545c9ab41eba64557b1caf623c4c5a8fc515f",
+        "3e1983fd7f81b618d8cf614d33775068d8ad5628fa96723c515d331122e1501a",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "83517d03188928d54a7f15f0f3866a027046617f400e6b3d6e44022e39e54a99",
+        "92627577cce4722d0673e6c5a71773b0a8b35d6dbd9e38f6bd7b959972a9e67c",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816",
+        "b726a5f47357c4c3e362edba018afe3e5e72b3cfeec53b0ca5653b8fceac2bb9",
+        "c538a9fc77b5896fcae5a2ed04223d417c78b4514e0d97cd2bcff1fd26c61bc4",
+        "d10451ded27d07fd29122b46f8147f3ffa652acd9f952eb200ebe761bcfbe268",
+        "d478f032ffb27328bda3978bfaf17f57f9c2be520d1d1f560acba3331bc0ce1c"
+      ],
+      "notices": [
+        {
+          "file": "texts/e6d6a009505e345fe949e1310334fcb0747f28dae2856759de102ab66b722cb4.txt",
+          "sha256": "e6d6a009505e345fe949e1310334fcb0747f28dae2856759de102ab66b722cb4",
+          "source_member": "R-4.6.1/COPYING",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4",
+          "scope": "distribution_global_notice"
+        },
+        {
+          "file": "texts/93a225906ee6514d1482548f8945e41a5cfcbae70610f9577ac7c9a512e060f0.txt",
+          "sha256": "93a225906ee6514d1482548f8945e41a5cfcbae70610f9577ac7c9a512e060f0",
+          "source_member": "R-4.6.1/doc/COPYRIGHTS",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4",
+          "scope": "distribution_global_notice"
+        },
+        {
+          "file": "texts/e6d6a009505e345fe949e1310334fcb0747f28dae2856759de102ab66b722cb4.txt",
+          "sha256": "e6d6a009505e345fe949e1310334fcb0747f28dae2856759de102ab66b722cb4",
+          "source_member": "R-4.6.1/doc/COPYING",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4",
+          "scope": "distribution_global_notice"
+        },
+        {
+          "file": "texts/eb1b2482d36fac732e3ac428281d2b2ed5381a565a0dc596653e6f17556f6285.txt",
+          "sha256": "eb1b2482d36fac732e3ac428281d2b2ed5381a565a0dc596653e6f17556f6285",
+          "source_member": "R-4.6.1/src/library/stats/COPYRIGHTS.modreg",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4",
+          "scope": "exact_mapped_package_subtree_notice",
+          "applicability_to_literal_bundled_documents": "requires_review_not_inferred_from_package_membership",
+          "referenced_component": "underlying_statistical_source_implementation",
+          "component_binary_or_font_bundling_claim": false
+        },
+        {
+          "file": "texts/a0ae0ae9f5396485b4f7422ded42987645f880c3ad58824eb281726a9a641f6c.txt",
+          "sha256": "a0ae0ae9f5396485b4f7422ded42987645f880c3ad58824eb281726a9a641f6c",
+          "source_member": "R-4.6.1/src/library/stats/COPYRIGHTS.portsrc",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4",
+          "scope": "exact_mapped_package_subtree_notice",
+          "applicability_to_literal_bundled_documents": "requires_review_not_inferred_from_package_membership",
+          "referenced_component": "underlying_statistical_source_implementation",
+          "component_binary_or_font_bundling_claim": false
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643.txt",
+          "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643",
+          "source_member": "R-4.6.1/share/licenses/GPL-2",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        },
+        {
+          "file": "texts/3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986.txt",
+          "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+          "source_member": "R-4.6.1/share/licenses/GPL-3",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ]
+    },
+    {
+      "package": "survival",
+      "version": "3.8-9",
+      "revision": "cran:survival@3.8-9:a89fa5477da46a579392fc3bfef17d57",
+      "source_hash": "5613b7efc6b033867d92d8891b60380a3fd18e121c9b8dec4045f3000dc92ddd",
+      "license": "LGPL (>= 2)",
+      "repository": "https://cran.r-project.org/package=survival",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "031ca5226128b5a69a347bb775e545c9ab41eba64557b1caf623c4c5a8fc515f",
+        "3e1983fd7f81b618d8cf614d33775068d8ad5628fa96723c515d331122e1501a",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "83517d03188928d54a7f15f0f3866a027046617f400e6b3d6e44022e39e54a99",
+        "92627577cce4722d0673e6c5a71773b0a8b35d6dbd9e38f6bd7b959972a9e67c",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816",
+        "b726a5f47357c4c3e362edba018afe3e5e72b3cfeec53b0ca5653b8fceac2bb9",
+        "c538a9fc77b5896fcae5a2ed04223d417c78b4514e0d97cd2bcff1fd26c61bc4",
+        "d10451ded27d07fd29122b46f8147f3ffa652acd9f952eb200ebe761bcfbe268",
+        "d478f032ffb27328bda3978bfaf17f57f9c2be520d1d1f560acba3331bc0ce1c"
+      ],
+      "notices": [
+        {
+          "file": "texts/0075b8e17b222b7b50cc2a2a4b950f4a412479ec0be784f004eecadb39bd2776.txt",
+          "sha256": "0075b8e17b222b7b50cc2a2a4b950f4a412479ec0be784f004eecadb39bd2776",
+          "source_member": "survival/inst/COPYRIGHTS",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "9aa8fadd4fb185ac48f260c9d0f69fd6dfff4a4e2724920618057aa1f5d5bfbe"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/e3a994d82e644b03a792a930f574002658412f62407f5fee083f2555c5f23118.txt",
+          "sha256": "e3a994d82e644b03a792a930f574002658412f62407f5fee083f2555c5f23118",
+          "source_member": "R-4.6.1/share/licenses/LGPL-3",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        },
+        {
+          "file": "texts/655bbf126cb0247df3a5cfce85e2293e76a1cbd588568b3b482b6e5029646097.txt",
+          "sha256": "655bbf126cb0247df3a5cfce85e2293e76a1cbd588568b3b482b6e5029646097",
+          "source_member": "R-4.6.1/share/licenses/LGPL-2",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        },
+        {
+          "file": "texts/dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551.txt",
+          "sha256": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551",
+          "source_member": "R-4.6.1/share/licenses/LGPL-2.1",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        },
+        {
+          "file": "texts/3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986.txt",
+          "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+          "source_member": "R-4.6.1/share/licenses/GPL-3",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ],
+      "source_archive_url": "https://cloud.r-project.org/src/contrib/Archive/survival/survival_3.8-9.tar.gz"
+    },
+    {
+      "package": "targets",
+      "version": "1.12.0",
+      "revision": "cran:targets@1.12.0:6dc00fdf98c8a3241ac1fa290623f216",
+      "source_hash": "37dcc3d82a43679046228805486b46e503ef461681ca89be248b5608bacedac3",
+      "license": "MIT + file LICENSE",
+      "repository": "https://cran.r-project.org/package=targets",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "031ca5226128b5a69a347bb775e545c9ab41eba64557b1caf623c4c5a8fc515f",
+        "3e1983fd7f81b618d8cf614d33775068d8ad5628fa96723c515d331122e1501a",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "83517d03188928d54a7f15f0f3866a027046617f400e6b3d6e44022e39e54a99",
+        "92627577cce4722d0673e6c5a71773b0a8b35d6dbd9e38f6bd7b959972a9e67c",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816",
+        "b726a5f47357c4c3e362edba018afe3e5e72b3cfeec53b0ca5653b8fceac2bb9",
+        "c538a9fc77b5896fcae5a2ed04223d417c78b4514e0d97cd2bcff1fd26c61bc4",
+        "d10451ded27d07fd29122b46f8147f3ffa652acd9f952eb200ebe761bcfbe268",
+        "d478f032ffb27328bda3978bfaf17f57f9c2be520d1d1f560acba3331bc0ce1c"
+      ],
+      "notices": [
+        {
+          "file": "texts/d5722ff6a779d84aaff0da53dbb42003568b5ada258c4ef5f8cc800b76c4baa2.txt",
+          "sha256": "d5722ff6a779d84aaff0da53dbb42003568b5ada258c4ef5f8cc800b76c4baa2",
+          "source_member": "targets/LICENSE.note",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "9ae2e0edd25bf5f34eb97f566e74073fdbe8bd968b43475a964882875fa3a06e"
+        },
+        {
+          "file": "texts/9002cfa3e4141b33eac767b9562f4d6c988df3c6896b182075f5bbdefe43dbc9.txt",
+          "sha256": "9002cfa3e4141b33eac767b9562f4d6c988df3c6896b182075f5bbdefe43dbc9",
+          "source_member": "targets/LICENSE",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "9ae2e0edd25bf5f34eb97f566e74073fdbe8bd968b43475a964882875fa3a06e"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ],
+      "source_archive_url": "https://cloud.r-project.org/src/contrib/targets_1.12.0.tar.gz"
+    },
+    {
+      "package": "themakR",
+      "version": "0.1.0",
+      "revision": "134fcb7067a50481424b1803749ee64fc32d9be0",
+      "source_hash": "13d29211d9c1139fb1fd3f1c2827ce2859e2f5d2f2de4105fa301826a445b1a3",
+      "license": "MIT + file LICENSE",
+      "repository": "https://github.com/CTTIR/themakR",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816"
+      ],
+      "notices": [
+        {
+          "file": "texts/f65c585663d73b1de58a3b8ed49b0e52597c778c791307cffc45277e0392b72e.txt",
+          "sha256": "f65c585663d73b1de58a3b8ed49b0e52597c778c791307cffc45277e0392b72e",
+          "source_member": "LICENSE",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "134fcb7067a50481424b1803749ee64fc32d9be0",
+          "source_blob_oid": "d275fc4330036809a3ebf031910a1a4ba1100d43"
+        },
+        {
+          "file": "texts/29b77db3f6c608670bc28cfc77ebba736f75c6abb9d8a32aec917051f4d52cdd.txt",
+          "sha256": "29b77db3f6c608670bc28cfc77ebba736f75c6abb9d8a32aec917051f4d52cdd",
+          "source_member": "LICENSE.md",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "134fcb7067a50481424b1803749ee64fc32d9be0",
+          "source_blob_oid": "194c04cfb138dfba69c992d3c7651de7db4f16b2"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ]
+    },
+    {
+      "package": "tibble",
+      "version": "3.3.1",
+      "revision": "cran:tibble@3.3.1:97ff25ebdd1460ec152d48e9bb54fa43",
+      "source_hash": "a5a48bb68d56849f5f1d5e83a26f943dc1a20a17de6f30d230f4735c864fe8b2",
+      "license": "MIT + file LICENSE",
+      "repository": "https://cran.r-project.org/package=tibble",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "031ca5226128b5a69a347bb775e545c9ab41eba64557b1caf623c4c5a8fc515f",
+        "3e1983fd7f81b618d8cf614d33775068d8ad5628fa96723c515d331122e1501a",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "83517d03188928d54a7f15f0f3866a027046617f400e6b3d6e44022e39e54a99",
+        "92627577cce4722d0673e6c5a71773b0a8b35d6dbd9e38f6bd7b959972a9e67c",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816",
+        "b726a5f47357c4c3e362edba018afe3e5e72b3cfeec53b0ca5653b8fceac2bb9",
+        "c538a9fc77b5896fcae5a2ed04223d417c78b4514e0d97cd2bcff1fd26c61bc4",
+        "d10451ded27d07fd29122b46f8147f3ffa652acd9f952eb200ebe761bcfbe268",
+        "d478f032ffb27328bda3978bfaf17f57f9c2be520d1d1f560acba3331bc0ce1c"
+      ],
+      "notices": [
+        {
+          "file": "texts/30024b268600650b7f18647c65d34b86c81f36d08e850ca2840d53dabdeede56.txt",
+          "sha256": "30024b268600650b7f18647c65d34b86c81f36d08e850ca2840d53dabdeede56",
+          "source_member": "tibble/LICENSE",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "fb309f8a1939021b237c7e85ff7ad6e8ff5acd57a6230d220a452094b492b28f"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ],
+      "source_archive_url": "https://cloud.r-project.org/src/contrib/tibble_3.3.1.tar.gz"
+    },
+    {
+      "package": "tidyr",
+      "version": "1.3.2",
+      "revision": "cran:tidyr@1.3.2:f8e976221d4ed9092c734cf86abcdba9",
+      "source_hash": "a92ea96ddf4667f626e4a9c2937df6da7cfcd326677e78815b4b327954d164a4",
+      "license": "MIT + file LICENSE",
+      "repository": "https://cran.r-project.org/package=tidyr",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "031ca5226128b5a69a347bb775e545c9ab41eba64557b1caf623c4c5a8fc515f",
+        "3e1983fd7f81b618d8cf614d33775068d8ad5628fa96723c515d331122e1501a",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "83517d03188928d54a7f15f0f3866a027046617f400e6b3d6e44022e39e54a99",
+        "92627577cce4722d0673e6c5a71773b0a8b35d6dbd9e38f6bd7b959972a9e67c",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816",
+        "b726a5f47357c4c3e362edba018afe3e5e72b3cfeec53b0ca5653b8fceac2bb9",
+        "c538a9fc77b5896fcae5a2ed04223d417c78b4514e0d97cd2bcff1fd26c61bc4",
+        "d10451ded27d07fd29122b46f8147f3ffa652acd9f952eb200ebe761bcfbe268",
+        "d478f032ffb27328bda3978bfaf17f57f9c2be520d1d1f560acba3331bc0ce1c"
+      ],
+      "notices": [
+        {
+          "file": "texts/691e3cedf43e97386f568d4f6d14b6525d2c6954c248e06d12b911609e8fa5c4.txt",
+          "sha256": "691e3cedf43e97386f568d4f6d14b6525d2c6954c248e06d12b911609e8fa5c4",
+          "source_member": "tidyr/LICENSE",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "04c0e6daf0af682af73763a42c027d7171761cdbdbf9ff7a77a0e421343d665a"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ],
+      "source_archive_url": "https://cloud.r-project.org/src/contrib/tidyr_1.3.2.tar.gz"
+    },
+    {
+      "package": "tivis.r",
+      "version": "0.1.0",
+      "revision": "39383e4e0341d6fd10abd808a7bde5dde63d38c5",
+      "source_hash": "573b1663994e7663afae05f312e4bbfbf74eb45fa4d295fab1c516443f713a1b",
+      "license": "MIT + file LICENSE",
+      "repository": "https://github.com/CTTIR/tivis.r",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816"
+      ],
+      "notices": [
+        {
+          "file": "texts/b55d0d142bd993e2bc852795863113fd6b628b54cc6d5a0bce7f9eb3533d073e.txt",
+          "sha256": "b55d0d142bd993e2bc852795863113fd6b628b54cc6d5a0bce7f9eb3533d073e",
+          "source_member": "LICENSE",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "39383e4e0341d6fd10abd808a7bde5dde63d38c5",
+          "source_blob_oid": "fbdaffcfb698abd7e0e450791b88538fe68feea7"
+        },
+        {
+          "file": "texts/66d7731968b4069e667089da843c26d27682c878da87ee77934134537a34f73d.txt",
+          "sha256": "66d7731968b4069e667089da843c26d27682c878da87ee77934134537a34f73d",
+          "source_member": "LICENSE.md",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "39383e4e0341d6fd10abd808a7bde5dde63d38c5",
+          "source_blob_oid": "d7b137f28a0f422dcb31abbbc20454c02f8f6d8e"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ]
+    },
+    {
+      "package": "tools",
+      "version": "4.6.1",
+      "revision": "r-distribution:R-4.6.1:tools",
+      "source_hash": "bbc2f559c15b98d69831842a14ab3fb304bd17bf97b2b869e27498518fece817",
+      "license": "Part of R 4.6.1",
+      "repository": "https://cran.r-project.org/src/base/R-4/R-4.6.1.tar.gz",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "031ca5226128b5a69a347bb775e545c9ab41eba64557b1caf623c4c5a8fc515f",
+        "3e1983fd7f81b618d8cf614d33775068d8ad5628fa96723c515d331122e1501a",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "83517d03188928d54a7f15f0f3866a027046617f400e6b3d6e44022e39e54a99",
+        "92627577cce4722d0673e6c5a71773b0a8b35d6dbd9e38f6bd7b959972a9e67c",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816",
+        "b726a5f47357c4c3e362edba018afe3e5e72b3cfeec53b0ca5653b8fceac2bb9",
+        "c538a9fc77b5896fcae5a2ed04223d417c78b4514e0d97cd2bcff1fd26c61bc4",
+        "d10451ded27d07fd29122b46f8147f3ffa652acd9f952eb200ebe761bcfbe268",
+        "d478f032ffb27328bda3978bfaf17f57f9c2be520d1d1f560acba3331bc0ce1c"
+      ],
+      "notices": [
+        {
+          "file": "texts/e6d6a009505e345fe949e1310334fcb0747f28dae2856759de102ab66b722cb4.txt",
+          "sha256": "e6d6a009505e345fe949e1310334fcb0747f28dae2856759de102ab66b722cb4",
+          "source_member": "R-4.6.1/COPYING",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4",
+          "scope": "distribution_global_notice"
+        },
+        {
+          "file": "texts/93a225906ee6514d1482548f8945e41a5cfcbae70610f9577ac7c9a512e060f0.txt",
+          "sha256": "93a225906ee6514d1482548f8945e41a5cfcbae70610f9577ac7c9a512e060f0",
+          "source_member": "R-4.6.1/doc/COPYRIGHTS",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4",
+          "scope": "distribution_global_notice"
+        },
+        {
+          "file": "texts/e6d6a009505e345fe949e1310334fcb0747f28dae2856759de102ab66b722cb4.txt",
+          "sha256": "e6d6a009505e345fe949e1310334fcb0747f28dae2856759de102ab66b722cb4",
+          "source_member": "R-4.6.1/doc/COPYING",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4",
+          "scope": "distribution_global_notice"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643.txt",
+          "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643",
+          "source_member": "R-4.6.1/share/licenses/GPL-2",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        },
+        {
+          "file": "texts/3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986.txt",
+          "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+          "source_member": "R-4.6.1/share/licenses/GPL-3",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ]
+    },
+    {
+      "package": "utils",
+      "version": "4.6.1",
+      "revision": "r-distribution:R-4.6.1:utils",
+      "source_hash": "18a55079220b9a423cf67b7c6e63dda098bd5cb01b5f331e72e193aea0c118e3",
+      "license": "Part of R 4.6.1",
+      "repository": "https://cran.r-project.org/src/base/R-4/R-4.6.1.tar.gz",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "031ca5226128b5a69a347bb775e545c9ab41eba64557b1caf623c4c5a8fc515f",
+        "3e1983fd7f81b618d8cf614d33775068d8ad5628fa96723c515d331122e1501a",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "83517d03188928d54a7f15f0f3866a027046617f400e6b3d6e44022e39e54a99",
+        "92627577cce4722d0673e6c5a71773b0a8b35d6dbd9e38f6bd7b959972a9e67c",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816",
+        "b726a5f47357c4c3e362edba018afe3e5e72b3cfeec53b0ca5653b8fceac2bb9",
+        "c538a9fc77b5896fcae5a2ed04223d417c78b4514e0d97cd2bcff1fd26c61bc4",
+        "d10451ded27d07fd29122b46f8147f3ffa652acd9f952eb200ebe761bcfbe268",
+        "d478f032ffb27328bda3978bfaf17f57f9c2be520d1d1f560acba3331bc0ce1c"
+      ],
+      "notices": [
+        {
+          "file": "texts/e6d6a009505e345fe949e1310334fcb0747f28dae2856759de102ab66b722cb4.txt",
+          "sha256": "e6d6a009505e345fe949e1310334fcb0747f28dae2856759de102ab66b722cb4",
+          "source_member": "R-4.6.1/COPYING",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4",
+          "scope": "distribution_global_notice"
+        },
+        {
+          "file": "texts/93a225906ee6514d1482548f8945e41a5cfcbae70610f9577ac7c9a512e060f0.txt",
+          "sha256": "93a225906ee6514d1482548f8945e41a5cfcbae70610f9577ac7c9a512e060f0",
+          "source_member": "R-4.6.1/doc/COPYRIGHTS",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4",
+          "scope": "distribution_global_notice"
+        },
+        {
+          "file": "texts/e6d6a009505e345fe949e1310334fcb0747f28dae2856759de102ab66b722cb4.txt",
+          "sha256": "e6d6a009505e345fe949e1310334fcb0747f28dae2856759de102ab66b722cb4",
+          "source_member": "R-4.6.1/doc/COPYING",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4",
+          "scope": "distribution_global_notice"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643.txt",
+          "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643",
+          "source_member": "R-4.6.1/share/licenses/GPL-2",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        },
+        {
+          "file": "texts/3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986.txt",
+          "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+          "source_member": "R-4.6.1/share/licenses/GPL-3",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ]
+    },
+    {
+      "package": "viridisLite",
+      "version": "0.4.3",
+      "revision": "cran:viridisLite@0.4.3:ecfcfd15db2d5a79c25b9514748762b5",
+      "source_hash": "09aae7443ad1b72342ccb9dc83dfe5b96e196ab5cc3073f0dcfb4f2b28e606f2",
+      "license": "MIT + file LICENSE",
+      "repository": "https://cran.r-project.org/package=viridisLite",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "031ca5226128b5a69a347bb775e545c9ab41eba64557b1caf623c4c5a8fc515f",
+        "3e1983fd7f81b618d8cf614d33775068d8ad5628fa96723c515d331122e1501a",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "83517d03188928d54a7f15f0f3866a027046617f400e6b3d6e44022e39e54a99",
+        "92627577cce4722d0673e6c5a71773b0a8b35d6dbd9e38f6bd7b959972a9e67c",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816",
+        "b726a5f47357c4c3e362edba018afe3e5e72b3cfeec53b0ca5653b8fceac2bb9",
+        "c538a9fc77b5896fcae5a2ed04223d417c78b4514e0d97cd2bcff1fd26c61bc4",
+        "d10451ded27d07fd29122b46f8147f3ffa652acd9f952eb200ebe761bcfbe268",
+        "d478f032ffb27328bda3978bfaf17f57f9c2be520d1d1f560acba3331bc0ce1c"
+      ],
+      "notices": [
+        {
+          "file": "texts/46baa7d65d49290680799b75af5378f2c5216b256465a5c8ebc90be5811c0183.txt",
+          "sha256": "46baa7d65d49290680799b75af5378f2c5216b256465a5c8ebc90be5811c0183",
+          "source_member": "viridisLite/LICENSE",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "433be9bde66234dc76301fb4ffbbc9fc74bab5c14f4548d8ef2fc0065e121ef5"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ],
+      "source_archive_url": "https://cloud.r-project.org/src/contrib/viridisLite_0.4.3.tar.gz"
+    },
+    {
+      "package": "workflowr",
+      "version": "1.7.2",
+      "revision": "cran:workflowr@1.7.2:bf1df721a580b26122a70957cbb5b51a",
+      "source_hash": "b0222dd9aed19ec7a1bbe55a44db7fd5541fd4d96e944683bcee049724e164d3",
+      "license": "MIT + file LICENSE",
+      "repository": "https://cran.r-project.org/package=workflowr",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "031ca5226128b5a69a347bb775e545c9ab41eba64557b1caf623c4c5a8fc515f",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816",
+        "d10451ded27d07fd29122b46f8147f3ffa652acd9f952eb200ebe761bcfbe268",
+        "d478f032ffb27328bda3978bfaf17f57f9c2be520d1d1f560acba3331bc0ce1c"
+      ],
+      "notices": [
+        {
+          "file": "texts/40a2d0880d15d344a2c34c0cef79e3231f22bb8cf1f691cffed2011c5ee8a0d3.txt",
+          "sha256": "40a2d0880d15d344a2c34c0cef79e3231f22bb8cf1f691cffed2011c5ee8a0d3",
+          "source_member": "workflowr/LICENSE",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "1406ec1890396a2354b563c9eb555620f68abeb99eb7320b9880d119a4d277fe"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ],
+      "source_archive_url": "https://cran.r-project.org/src/contrib/workflowr_1.7.2.tar.gz"
+    },
+    {
+      "package": "yaml",
+      "version": "2.3.12",
+      "revision": "cran:yaml@2.3.12:6beea9b09717960f6c79fcbc1e129c41",
+      "source_hash": "0de6c22bc0ee9530f22bb43bb7f7e7f3c8853a374268c98db36ecd05c5f68b58",
+      "license": "BSD_3_clause + file LICENSE",
+      "repository": "https://cran.r-project.org/package=yaml",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "031ca5226128b5a69a347bb775e545c9ab41eba64557b1caf623c4c5a8fc515f",
+        "3e1983fd7f81b618d8cf614d33775068d8ad5628fa96723c515d331122e1501a",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "83517d03188928d54a7f15f0f3866a027046617f400e6b3d6e44022e39e54a99",
+        "92627577cce4722d0673e6c5a71773b0a8b35d6dbd9e38f6bd7b959972a9e67c",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816",
+        "b726a5f47357c4c3e362edba018afe3e5e72b3cfeec53b0ca5653b8fceac2bb9",
+        "c538a9fc77b5896fcae5a2ed04223d417c78b4514e0d97cd2bcff1fd26c61bc4",
+        "d10451ded27d07fd29122b46f8147f3ffa652acd9f952eb200ebe761bcfbe268",
+        "d478f032ffb27328bda3978bfaf17f57f9c2be520d1d1f560acba3331bc0ce1c"
+      ],
+      "notices": [
+        {
+          "file": "texts/a8354c81c730e3927d92f12429da1974934fb47c0709a5bfe65f2e3852cc7f78.txt",
+          "sha256": "a8354c81c730e3927d92f12429da1974934fb47c0709a5bfe65f2e3852cc7f78",
+          "source_member": "yaml/COPYING",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "80ccf3dde851133ef3e333b818a817c296c6ccdacfc4709cd466995289cd556c"
+        },
+        {
+          "file": "texts/cf3a460077c7085a2e856f0d384c902e4b9f4af544d2218145050593262aa7cb.txt",
+          "sha256": "cf3a460077c7085a2e856f0d384c902e4b9f4af544d2218145050593262aa7cb",
+          "source_member": "yaml/LICENSE",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "80ccf3dde851133ef3e333b818a817c296c6ccdacfc4709cd466995289cd556c"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/942d8f6a395b75acaf4e147261e6fb4478a4a3e176cf1e581dff3366cb9b6985.txt",
+          "sha256": "942d8f6a395b75acaf4e147261e6fb4478a4a3e176cf1e581dff3366cb9b6985",
+          "source_member": "R-4.6.1/share/licenses/BSD_3_clause",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ],
+      "source_archive_url": "https://cloud.r-project.org/src/contrib/yaml_2.3.12.tar.gz"
+    },
+    {
+      "package": "zhncommandR",
+      "version": "0.1.0",
+      "revision": "eb04897d42ffb8251825fcdb6a0d704f8ad44b2f",
+      "source_hash": "f4ab02546a670aec9a07fdb06fbd204391b5b4d366ffec42f6e92803962ff015",
+      "license": "MIT + file LICENSE",
+      "repository": "https://github.com/CTTIR/zhncommandR",
+      "catalog_snapshots": [
+        "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+        "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+        "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816"
+      ],
+      "notices": [
+        {
+          "file": "texts/9e0a14b3407af1729ea5a22871e06b310d59ce0c0cbb5bbe9fe5b9eef519a5d7.txt",
+          "sha256": "9e0a14b3407af1729ea5a22871e06b310d59ce0c0cbb5bbe9fe5b9eef519a5d7",
+          "source_member": "LICENSE",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "eb04897d42ffb8251825fcdb6a0d704f8ad44b2f",
+          "source_blob_oid": "b6013accf69336b8ec38cb28c3eb57c0fa9071ea"
+        },
+        {
+          "file": "texts/82111da32235c7bf573dfb683b9b8965d2c3b26618508304c261010f4c4823a6.txt",
+          "sha256": "82111da32235c7bf573dfb683b9b8965d2c3b26618508304c261010f4c4823a6",
+          "source_member": "LICENSE.md",
+          "source_kind": "exact_local_git_revision_blob",
+          "source_revision": "eb04897d42ffb8251825fcdb6a0d704f8ad44b2f",
+          "source_blob_oid": "34cd50b7291283c2dd0a616702d40d24754038c5"
+        }
+      ],
+      "standard_terms": [
+        {
+          "file": "texts/dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91.txt",
+          "sha256": "dabc720ac4a1dacea5f2d72070cef67e9fafb623e0db6e86aae3ff6e31db0d91",
+          "source_member": "R-4.6.1/share/licenses/MIT",
+          "source_kind": "exact_archive_member",
+          "source_archive_sha256": "4da6e61d2c0aac5f14a2e7e432cb5fcc269efe83da4293050ba7f03dff4e2cf4"
+        }
+      ]
+    }
+  ]
+}

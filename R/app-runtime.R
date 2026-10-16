@@ -37,10 +37,18 @@ app_setup_ui <- function(x, lang) {
       shiny::tags$dd(shiny::tags$code(value$model$name %||% "?"), " ", app_badge(value$model$validation %||% "unknown", lang),
         if (!is.null(value$model$digest)) shiny::tags$code(substr(value$model$digest, 1L, 12L)))),
     shiny::tags$h3(app_t("runtime.actions", lang)),
-    app_list_block(value$actions, lang),
+    app_list_block(value$actions, lang, prefix = "value."),
+    if (!is.null(value$storage)) shiny::tagList(
+      shiny::tags$h3(app_t("runtime.storage", lang)),
+      shiny::tags$dl(class = "cttir-dl",
+        shiny::tags$dt(app_t("runtime.storage_path", lang)), shiny::tags$dd(shiny::tags$code(value$storage$root)),
+        shiny::tags$dt(app_t("runtime.disk_required", lang)), shiny::tags$dd(app_bytes(value$storage$required_free_bytes) %||% "?"),
+        shiny::tags$dt(app_t("runtime.disk_available", lang)), shiny::tags$dd(app_bytes(value$storage$available_bytes) %||% "?")),
+      shiny::tags$p(app_t("runtime.disk_estimate_note", lang)),
+      if (isFALSE(value$download_estimate$allowed)) shiny::tags$p(app_t("runtime.downloads_disabled", lang))),
     if (!is.null(step_rows)) shiny::tagList(shiny::tags$h3(app_t("runtime.steps", lang)), app_table(step_rows, lang, badges = "state")),
     shiny::tags$h3(app_t("runtime.blockers", lang)),
-    app_list_block(value$blockers, lang),
+    app_list_block(value$blockers, lang, prefix = "value."),
     app_other_fields(x, c("state", "steps", "runtime", "model", "actions", "blockers"), lang)
   )
 }
@@ -52,6 +60,14 @@ app_runtime_ui <- function(id) {
     shiny::tags$p(class = "cttir-lead", app_tr("runtime.intro")),
     shiny::uiOutput(ns("estimate")),
     shiny::textInput(ns("model"), app_tr("runtime.model_tag"), value = "auto", width = "100%"),
+    shiny::tags$details(
+      shiny::tags$summary(app_tr("runtime.release_title")),
+      shiny::helpText(app_tr("runtime.release_help")),
+      shiny::checkboxInput(ns("use_release"), app_tr("runtime.use_release"), value = FALSE),
+      shiny::textInput(ns("release_manifest"), app_tr("runtime.release_manifest")),
+      shiny::textInput(ns("release_checksum"), app_tr("runtime.release_checksum")),
+      shiny::textInput(ns("release_file"), app_tr("runtime.release_file")),
+      shiny::checkboxInput(ns("release_consent"), app_tr("runtime.release_consent"), value = FALSE)),
     shiny::checkboxInput(ns("install"), app_tr("runtime.install"), value = TRUE),
     shiny::checkboxInput(ns("offline"), app_tr("runtime.offline"), value = FALSE),
     shiny::tags$div(class = "cttir-actions",
@@ -71,6 +87,14 @@ app_runtime_server <- function(id, pool, lang = shiny::reactive("en")) {
     slot <- app_job_slot(pool, session)
     state <- shiny::reactiveValues(status = app_status("info", "runtime.ready"), result = NULL, locality = NULL)
     setup_args <- function(dry_run) {
+      if (isTRUE(input$use_release)) {
+        model_file <- trimws(input$release_file %||% "")
+        return(list(manifest = trimws(input$release_manifest %||% ""),
+          manifest_sha256 = trimws(input$release_checksum %||% ""),
+          model_file = if (nzchar(model_file)) model_file else NULL,
+          consent = isTRUE(input$release_consent), install_ollama = !isFALSE(input$install),
+          offline = isTRUE(input$offline), dry_run = dry_run))
+      }
       model <- trimws(input$model %||% "auto")
       list(model = if (nzchar(model)) model else "auto", install_ollama = !isFALSE(input$install),
         offline = isTRUE(input$offline), dry_run = dry_run)
@@ -84,15 +108,19 @@ app_runtime_server <- function(id, pool, lang = shiny::reactive("en")) {
       state$result <- result$value
       state$status <- if (identical(result$value$state, "blocked")) {
         app_status("warning", "runtime.blocked")
+      } else if (identical(result$value$state, "planned")) {
+        app_status("info", "runtime.preview_ready")
       } else {
         app_status("success", "runtime.done", state = app_value_label(result$value$state, lang()))
       }
     }
     shiny::observeEvent(input$plan, {
-      state$status <- app_start_job(slot, "setup", setup_args(TRUE), "job.setup_plan", on_setup)
+      operation <- if (isTRUE(input$use_release)) "setup_release" else "setup"
+      state$status <- app_start_job(slot, operation, setup_args(TRUE), "job.setup_plan", on_setup)
     })
     shiny::observeEvent(input$run, {
-      state$status <- app_start_job(slot, "setup", setup_args(FALSE), "job.setup_run", on_setup, mutating = TRUE)
+      operation <- if (isTRUE(input$use_release)) "setup_release" else "setup"
+      state$status <- app_start_job(slot, operation, setup_args(FALSE), "job.setup_run", on_setup, mutating = TRUE)
     })
     shiny::observeEvent(input$status_check, {
       state$status <- app_start_job(slot, "audit", list(scope = "installation"), "job.runtime_status", function(result) {
@@ -105,7 +133,7 @@ app_runtime_server <- function(id, pool, lang = shiny::reactive("en")) {
       })
     })
     shiny::observeEvent(input$cancel, state$status <- app_cancel_status(slot))
-    output$estimate <- shiny::renderUI(app_runtime_estimate(lang()))
+    output$estimate <- shiny::renderUI(if (!isTRUE(input$use_release)) app_runtime_estimate(lang()))
     output$status <- shiny::renderUI(app_status_ui(state$status, lang()))
     output$progress <- shiny::renderUI({
       if (!is.null(slot$state$job)) shiny::invalidateLater(1000, session)

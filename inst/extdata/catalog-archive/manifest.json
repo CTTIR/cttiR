@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "current_id": "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+  "uncompressed_bytes": 131908237,
+  "archive_sha256": "71962828234fe128465e3a95d69b7b37685c7f9dd3cebda42509f35a9f337cd9",
+  "snapshots": [
+    {
+      "content_id": "46c734e07ec405f9021f0305c48df0278440d153dc7b2146c5bf1be14184753e",
+      "offset": 0,
+      "length": 14122727,
+      "sha256": "6b45f257a793d371d198fe7ad241708b3c5a7c1a291d506024bc8e9fee8eb259",
+      "source": "inst/extdata/api-catalog.json.gz",
+      "original_gzip_sha256": "b786f886b2a26e10eab35b0b8b0d04c9cf0d4e3d4e187fc812d68321f9e92e80"
+    },
+    {
+      "content_id": "031ca5226128b5a69a347bb775e545c9ab41eba64557b1caf623c4c5a8fc515f",
+      "offset": 14122727,
+      "length": 11302919,
+      "sha256": "86b0bb78a90810a2057a5ae49d3a4db6d42a0a5ee294f9f1f2ff0331b4c9046b",
+      "source": "inst/extdata/history/031ca5226128b5a69a347bb775e545c9ab41eba64557b1caf623c4c5a8fc515f.json.gz",
+      "original_gzip_sha256": "ab9f878e5519b7c34b7e8d99388a7a10d14b9972672dcc95afe93a55425fb0c7"
+    },
+    {
+      "content_id": "3e1983fd7f81b618d8cf614d33775068d8ad5628fa96723c515d331122e1501a",
+      "offset": 25425646,
+      "length": 10679717,
+      "sha256": "52b5b6f84b9e95e588a1d3ebaad4dd20f0e8ef058572d82b877a59fb2cd59e71",
+      "source": "inst/extdata/history/3e1983fd7f81b618d8cf614d33775068d8ad5628fa96723c515d331122e1501a.json.gz",
+      "original_gzip_sha256": "961f4398c36182df8e9930486a090d0e9129747c2cb70b35489e26de82f41fde"
+    },
+    {
+      "content_id": "5fc141ceb69a995a4e10fd91c7a6e29748ab17a8d3a9f7e97d25a2e7964c0464",
+      "offset": 36105363,
+      "length": 829654,
+      "sha256": "e8a13b43bb6c274ee5ba9fd35ccbbd8815bcc098edf999acfabf3c9dc9706020",
+      "source": "inst/extdata/history/5fc141ceb69a995a4e10fd91c7a6e29748ab17a8d3a9f7e97d25a2e7964c0464.json.gz",
+      "original_gzip_sha256": "07cf64653f204f177d5679d4624cfb51a1364253405c2fe018dd0a215659a567"
+    },
+    {
+      "content_id": "78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd",
+      "offset": 36935017,
+      "length": 14038833,
+      "sha256": "6c01efcd62f2172558b7a91d4d790544ced5e66ba400f244b39b109104c9e991",
+      "source": "inst/extdata/history/78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd.json.gz",
+      "original_gzip_sha256": "98cd65512845137fe521b5726094e4ec78d8a28cff06fe94b922620bdbea57ba"
+    },
+    {
+      "content_id": "83517d03188928d54a7f15f0f3866a027046617f400e6b3d6e44022e39e54a99",
+      "offset": 50973850,
+      "length": 10681355,
+      "sha256": "eb25735f73d8fd3e8da9e0292b72cf1cd3d776e60800beb186fdffa40184013c",
+      "source": "inst/extdata/history/83517d03188928d54a7f15f0f3866a027046617f400e6b3d6e44022e39e54a99.json.gz",
+      "original_gzip_sha256": "6ee835246d69c352b2e06e9e8bf9caf8f3906c96d53af6960a7db40c1a3c8a68"
+    },
+    {
+      "content_id": "8e5a591daa5b55552bc7ca52a659fe422ec369aeab19f87adf9de60f94971788",
+      "offset": 61655205,
+      "length": 829941,
+      "sha256": "9face77f5b17c8daf08505615bc127caaa42082fee10dd545eec955077758306",
+      "source": "inst/extdata/history/8e5a591daa5b55552bc7ca52a659fe422ec369aeab19f87adf9de60f94971788.json.gz",
+      "original_gzip_sha256": "3fd418560c1f29cd0be6c7758b873621f165319b12c92846bded04d93201b436"
+    },
+    {
+      "content_id": "92627577cce4722d0673e6c5a71773b0a8b35d6dbd9e38f6bd7b959972a9e67c",
+      "offset": 62485146,
+      "length": 10681355,
+      "sha256": "65b762b49dddba15150786e1a96097b2ac35455add8a148b651bfdc5529095a4",
+      "source": "inst/extdata/history/92627577cce4722d0673e6c5a71773b0a8b35d6dbd9e38f6bd7b959972a9e67c.json.gz",
+      "original_gzip_sha256": "9e77f7bf8eda9b35c5bf9afdb8fdcf1db2acc9b172c4e57b450301d1da5a4f9c"
+    },
+    {
+      "content_id": "9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816",
+      "offset": 73166501,
+      "length": 14111358,
+      "sha256": "595e897a759cb723e8e9128eaf67a6ad0cc5ec210207a53e5239a77b7cd35113",
+      "source": "inst/extdata/history/9b701e3635647755c05faae52e6e606bcdaec57b4d067d20cab1fe5149b0a816.json.gz",
+      "original_gzip_sha256": "f41874a5de5ad4d4504a2d8083782896c8c5aa190e2ff0d75cc645c887de4787"
+    },
+    {
+      "content_id": "b0012136be1f85f1104ab1ecb1c87ad644b28e3b19a40c43bc4e043e53b04f5a",
+      "offset": 87277859,
+      "length": 771298,
+      "sha256": "0cc596d29c92e5c1375893ce993bee8ce0faa89090a0a90816546c0deeeb7713",
+      "source": "inst/extdata/history/b0012136be1f85f1104ab1ecb1c87ad644b28e3b19a40c43bc4e043e53b04f5a.json.gz",
+      "original_gzip_sha256": "2c330118e18f86a59d773454c57d6567b09aa5abae353119223809c7d8f43b28"
+    },
+    {
+      "content_id": "b726a5f47357c4c3e362edba018afe3e5e72b3cfeec53b0ca5653b8fceac2bb9",
+      "offset": 88049157,
+      "length": 10614901,
+      "sha256": "ec7000e7975ffa28e59e4fb73bdf38779bbe26957bd3a82a76e8e2432e82d9ef",
+      "source": "inst/extdata/history/b726a5f47357c4c3e362edba018afe3e5e72b3cfeec53b0ca5653b8fceac2bb9.json.gz",
+      "original_gzip_sha256": "8ef88624b19c48eb4b665b39cdedbd8d45228fd37cf0b165624049af9c3cc5b5"
+    },
+    {
+      "content_id": "c538a9fc77b5896fcae5a2ed04223d417c78b4514e0d97cd2bcff1fd26c61bc4",
+      "offset": 98664058,
+      "length": 10641744,
+      "sha256": "86cffbc00459df5ec5f4d940a3200be60f6edd8b4934a8af13b4614a5bdcd24b",
+      "source": "inst/extdata/history/c538a9fc77b5896fcae5a2ed04223d417c78b4514e0d97cd2bcff1fd26c61bc4.json.gz",
+      "original_gzip_sha256": "f6f6c4201befa357dff0b91476e25108237a671908efd1e4e0b88eead0567638"
+    },
+    {
+      "content_id": "d10451ded27d07fd29122b46f8147f3ffa652acd9f952eb200ebe761bcfbe268",
+      "offset": 109305802,
+      "length": 11301242,
+      "sha256": "8e034b6aa6f62ea4c81cb3ec143164187d4980d74db736b8a8599fff7cc723cc",
+      "source": "inst/extdata/history/d10451ded27d07fd29122b46f8147f3ffa652acd9f952eb200ebe761bcfbe268.json.gz",
+      "original_gzip_sha256": "d9923924d003329ff6757ca2ed1e1e1f9c593bd5fd3367e9313ee412ddb65b00"
+    },
+    {
+      "content_id": "d478f032ffb27328bda3978bfaf17f57f9c2be520d1d1f560acba3331bc0ce1c",
+      "offset": 120607044,
+      "length": 11301193,
+      "sha256": "73fbb413c41ec7a107f9cc43bd4716e3b91bf9172eea3c820fb121a7efa1e6d6",
+      "source": "inst/extdata/history/d478f032ffb27328bda3978bfaf17f57f9c2be520d1d1f560acba3331bc0ce1c.json.gz",
+      "original_gzip_sha256": "41017d837e53dbee437e104a25c999a307f9802459c5c8d0158ef6bc15fad430"
+    }
+  ]
+}

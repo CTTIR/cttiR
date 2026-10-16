@@ -1,10 +1,11 @@
 # Bounded background execution for the local application. Every operation is
-# an exported domain function run in a separate R process with serialized
+# an allowlisted domain function run in a separate R process with serialized
 # immutable inputs; the Shiny session only polls, cancels read-only work and
 # renders the returned values.
 
-app_operations <- c("project", "sync", "ask", "search", "resources", "packages", "update",
-  "rollback_knowledge", "audit", "setup")
+app_operations <- c("project", "sync", "ask", "assistant_advice", "assistant_suggestion_preview",
+  "assistant_suggestion_apply", "search", "resources", "packages", "update",
+  "rollback_knowledge", "audit", "setup", "setup_release")
 
 app_error_field <- function(field) {
   if (is.character(field) && length(field) >= 1L && !is.na(field[[1]])) return(field[[1]])
@@ -36,7 +37,9 @@ app_worker_run <- function(operation, args) {
   attr(args, "cttir_sync_plan") <- NULL
   audit_plan <- attr(args, "cttir_audit_plan")
   attr(args, "cttir_audit_plan") <- NULL
-  target <- getExportedValue("cttiR", operation)
+  target <- switch(operation, assistant_advice = assistant_advice,
+    assistant_suggestion_preview = assistant_suggestion_preview,
+    assistant_suggestion_apply = assistant_suggestion_apply, getExportedValue("cttiR", operation))
   if (operation == "project" && !is.null(expected)) {
     target <- project_impl
     args$expected_catalog <- expected

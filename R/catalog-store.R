@@ -13,7 +13,7 @@ current_catalog_manifest <- function() {
   pointer <- catalog_pointer()
   base_resources <- read_document(resource_file("extdata", "resource-manifest.json"))$content_id
   if (is.null(pointer)) {
-    return(snapshot_manifest(read_catalog(resource_file("extdata", "api-catalog.json.gz"))$content_id, base_resources))
+    return(snapshot_manifest(read_bundled_catalog()$content_id, base_resources))
   }
   if (!is.null(pointer$manifest_id)) return(validate_manifest(pointer))
   snapshot_manifest(catalog_snapshot(pointer$content_id)$content_id, base_resources)
@@ -140,19 +140,14 @@ active_snapshot <- function() {
 }
 
 catalog_snapshot <- function(id) {
-  base <- read_catalog(resource_file("extdata", "api-catalog.json.gz"))
+  base <- read_bundled_catalog()
   if (identical(id, base$content_id)) {
     return(base)
   }
   if (!is.character(id) || length(id) != 1L || !grepl("^[a-f0-9]{64}$", id)) {
     abort_cttir("Invalid catalog identifier.", "cttir_catalog_corrupt")
   }
-  historical <- system.file("extdata", "history", paste0(id, ".json.gz"), package = "cttiR")
-  if (nzchar(historical)) {
-    result <- read_catalog(historical)
-    if (!identical(result$content_id, id)) abort_cttir("Historical catalog identity mismatch.", "cttir_catalog_corrupt")
-    return(result)
-  }
+  if (id %in% bundled_catalog_ids()) return(read_bundled_catalog(id))
   result <- read_catalog(file.path(catalog_store(), "snapshots", id, "api-catalog.json.gz"))
   if (!identical(result$content_id, id)) abort_cttir("Catalog snapshot identity mismatch.", "cttir_catalog_corrupt")
   result

@@ -329,8 +329,13 @@ approval_diff <- function(before, after) {
 # Approval state of every adapter-tested standard-workflow capability in one
 # catalog, decided exactly as the router decides it. The time-to-event figure
 # panel additionally needs survival approved for the figures adapter.
-standard_capability_approvals <- function(catalog, registry = capability_registry()) {
+standard_capability_approvals <- function(catalog, registry = capability_registry(), reporting = "generic") {
   caps <- Filter(function(x) startsWith(x$id, "std.") && identical(x$status, "adapter_tested"), registry$capabilities)
+  # A historical generic project does not acquire a new reporting dependency.
+  excluded_report <- if (identical(reporting, "workflowr")) "std.report.render" else "std.report.workflowr"
+  caps[[excluded_report]] <- NULL
+  excluded_pipeline <- if (identical(reporting, "workflowr")) "std.pipeline.targets" else "std.pipeline.workflowr_targets"
+  caps[[excluded_pipeline]] <- NULL
   figures <- caps[["std.figures.accessible"]]
   if (!is.null(figures)) {
     figures$packages <- figure_packages(registry, list(outcome_family = "time_to_event"))

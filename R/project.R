@@ -19,6 +19,7 @@ project_bundle <- function(spec, prior_lock = NULL) {
   if (!is.null(prior_lock)) {
     lock <- prior_lock
     lock$spec_sha256 <- content_hash(json_text(spec))
+    lock$catalog_id <- spec$provenance$catalog_id
   }
   if (identical(spec$provenance$planner_mode, "local_llm")) {
     lock$model <- list(id = spec$provenance$model_id, digest = spec$provenance$model_digest,
@@ -32,7 +33,7 @@ project_bundle <- function(spec, prior_lock = NULL) {
     lock$workflow <- route_summary(route)
   }
   files[["cttir-lock.json"]] <- paste0(json_text(lock, TRUE), "\n")
-  manifest <- project_manifest(files, spec$provenance$template_version)
+  manifest <- project_manifest(files, spec$provenance$template_version, spec$workflow$reporting)
   files[[".cttir/managed-files.json"]] <- paste0(json_text(list(schema_version = 1L, files = manifest), TRUE), "\n")
   files[[".cttir/state.json"]] <- paste0(json_text(list(
     schema_version = 1L, project_id = spec$project$id,
@@ -170,6 +171,16 @@ render_project <- function(spec, route = project_route(spec)) {
       "# Derived outputs; study-data reports may contain results\n",
       "demo/outputs/\ndemo/receipt.json\noutput/\n",
       ".Rhistory\n.RData\n.Rproj.user/\n")
+    if (identical(spec$workflow$reporting, "workflowr")) {
+      files[["README.md"]] <- sub(
+        "reflow_init and workflowr are not invoked. Dependencies are listed, not installed.",
+        paste0("The root site uses workflowr; rendering is an explicit preview without commits or publication.\n",
+          "Only pages in `config/report-pages.json` are rendered. Current computation receipts are required\n",
+          "before recorded results can be shown. Dependencies are listed, not installed."),
+        files[["README.md"]], fixed = TRUE)
+      files[[".gitignore"]] <- paste0(files[[".gitignore"]],
+        ".cttir/report-receipt.json\nreports/render-logs/\n")
+    }
   }
   files
 }
@@ -326,6 +337,9 @@ carry_user_records <- function(bundle, p, refresh = FALSE) {
     at <- match(bundle$manifest[[i]]$path, recorded)
     if (is.na(at) || !identical(p$manifest$files[[at]]$ownership, "user")) next
     old <- p$manifest$files[[at]]
+    if (identical(p$spec$workflow$reporting, "generic") &&
+        identical(bundle$lock$workflow$bundle, "workflowr-0.4.0") &&
+        old$path %in% c("analysis/_site.yml", "metadata/workflow-template.json")) next
     current <- if (refresh) file_hash(file.path(p$path, old$path)) else NULL
     if (refresh && (is.na(current) || current %in% c(old$baseline_sha256, bundle$manifest[[i]]$baseline_sha256))) {
       bundle$manifest[[i]]$ownership <- "user"
@@ -337,7 +351,7 @@ carry_user_records <- function(bundle, p, refresh = FALSE) {
   bundle
 }
 
-project_manifest <- function(files, template_version = "0.1.0") {
+project_manifest <- function(files, template_version = "0.1.0", reporting = "generic") {
   lapply(names(files), function(path) {
     ownership <- if (grepl("^(protocol/|analysis/|publications/|metadata/|administration/|reports/|data/)", path) ||
         path == ".cttir/local.yml") {
@@ -346,6 +360,8 @@ project_manifest <- function(files, template_version = "0.1.0") {
       "managed"
     }
     if (path == "metadata/reflowr-template.json") ownership <- "managed"
+    if (identical(reporting, "workflowr") &&
+        path %in% c("analysis/_site.yml", "metadata/workflow-template.json")) ownership <- "managed"
     list(path = path, ownership = ownership, baseline_sha256 = content_hash(files[[path]]), template_version = template_version)
   })
 }
@@ -356,7 +372,7 @@ project_manifest <- function(files, template_version = "0.1.0") {
 #' installation or execution of study code. It makes no network calls and no
 #' model inference unless the local planner policy enables one loopback
 #' exchange with an owned local model (see Details). The planned
-#' standard workflow is explicitly pending reflowR integration. Advanced workflow
+#' standard workflow uses the reviewed reflowR layout. Advanced workflow
 #' options that are not implemented raise a typed error instead of being ignored.
 #'
 #' Explicit `workflow` options add reviewed integrations. `pipeline = "targets"`
@@ -367,6 +383,11 @@ project_manifest <- function(files, template_version = "0.1.0") {
 #' the new project root only, never inside another work tree, and never stages
 #' or commits. Failures of these steps keep the scaffold and are reported as
 #' readiness blockers with a recovery command.
+#' `reporting = "workflowr"` with `git = TRUE` creates one root workflowr site.
+#' `reporting_preset` selects `"minimal"` or `"standard"` (default). Rendering
+#' is explicit and checks current computation receipts. Use [sync()] to preview
+#' migration from the current generic bundle. With workflowr, targets scheduling
+#' checks content identities and reuses fresh study results before explicit rendering.
 #'
 #' Creation stages the scaffold next to the target and publishes it with one
 #' rename while holding a creation lock that records its process. A lock left

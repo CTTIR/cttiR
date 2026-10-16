@@ -3,6 +3,8 @@
 ^.*\.Rcheck$
 ^.*\.tar\.gz$
 ^CURRENT_STATE\.md$
+^CONCEPT\.md$
+^ROADMAP\.md$
 ^\.git$
 ^\.gitignore$
 ^LICENSE\.md$
@@ -10,5 +12,10 @@
 ^\.github$
 ^\.lintr$
 ^\.gitattributes$
+^inst/extdata/api-catalog\.json\.gz$
+^inst/extdata/history$
+^AGENT_STATUS\.md$
+^HANDOVER\.md$
 ^_pkgdown\.yml$
 ^site$
+^training-data$

@@ -61,14 +61,37 @@ sync_spec <- function(saved, config, options, edited = NULL, root = ".") {
     if (any(c("id", "slug", "created_at") %in% names(x$project))) {
       abort_cttir("Synchronization preserves project identity and paths.")
     }
-    if (isTRUE(x$knowledge$refresh)) {
-      abort_cttir("Knowledge migration is not yet supported.", "cttir_api_mismatch")
-    }
     if (identical(x$workflow$profile, "auto")) abort_cttir("Synchronization keeps the resolved profile; 'auto' is a creation-time request.", "cttir_api_mismatch")
   }
   base <- apply_hand_edit(saved, hand)
   merged <- merge_config(merge_config(base, config), options)
+  refresh_catalog <- isTRUE(merged$knowledge$refresh)
   merged$knowledge <- NULL
+  reporting_migration <- identical(saved$workflow$reporting, "generic") &&
+    identical(merged$workflow$reporting, "workflowr") &&
+    identical(saved$provenance$template_version, current_template_version)
+  refresh_replay <- refresh_catalog && identical(saved$workflow$reporting, "workflowr") &&
+    identical(merged$workflow$reporting, "workflowr") &&
+    identical(saved$provenance$catalog_id, resolve_catalog()$content_id)
+  if (refresh_catalog && !reporting_migration && !refresh_replay) {
+    abort_cttir("Catalog refresh during sync is supported only for explicit migration to workflowr.", "cttir_api_mismatch")
+  }
+  if (refresh_catalog) {
+    previous <- catalog_snapshot(saved$provenance$catalog_id)
+    next_catalog <- resolve_catalog()
+    dependencies <- route_dependencies(project_route(saved), previous)
+    index <- stats::setNames(next_catalog$packages, vapply(next_catalog$packages, function(p) p$name, ""))
+    changed <- vapply(dependencies, function(dep) {
+      candidate <- index[[dep$package]]
+      is.null(candidate) || !identical(candidate$source_hash, dep$source_hash) ||
+        !identical(candidate$version, dep$version)
+    }, logical(1))
+    if (any(changed)) {
+      abort_cttir("Workflowr migration would change an existing dependency revision; a separate dependency review is required.",
+        "cttir_api_mismatch", "migration_dependency_change")
+    }
+    merged$provenance$catalog_id <- next_catalog$content_id
+  }
   # Arrays merge by stable ID, so an entry can only disappear by an explicit
   # removal (an empty list) or by deleting it from cttir-project.yml.
   for (key in c("publications", "data_sources")) {
@@ -88,6 +111,7 @@ sync_spec <- function(saved, config, options, edited = NULL, root = ".") {
   } else {
     character()
   }
+  if (reporting_migration) changeable <- c(changeable, "reporting", "reporting_preset")
   fixed <- setdiff(union(names(merged$workflow), names(saved$workflow)), changeable)
   moved <- fixed[!vapply(fixed, function(key) identical(merged$workflow[[key]], saved$workflow[[key]]), logical(1))]
   if (length(moved)) {
@@ -138,6 +162,10 @@ sync_plan <- function(project, bundle, accepted = character()) {
     control <- path %in% sync_control_files
     baseline <- if (is.na(index)) NA_character_ else old[[index]]$baseline_sha256
     ownership <- if (control) "managed" else if (is.na(index)) "new" else old[[index]]$ownership
+    if (identical(project$spec$workflow$reporting, "generic") &&
+        identical(bundle$lock$workflow$bundle, "workflowr-0.4.0") && path %in% c("analysis/_site.yml", "metadata/workflow-template.json")) {
+      if (!is.na(index)) ownership <- "managed"
+    }
     if ((control && is.na(baseline)) || path %in% accepted) baseline <- actual
     # A file that differs only by CRLF line endings (saved on Windows) is
     # compared by its LF content; old_hash keeps the exact bytes for the writer.
@@ -172,7 +200,8 @@ proposal_path <- function(path) file.path(".cttir", "proposed", path)
 
 #' Preview or apply project configuration changes
 #'
-#' Preserves identity, catalog pins and edits. A file changed both by its user
+#' Preserves identity, catalog pins and edits unless an explicit reporting migration
+#' requests the compatible local catalog refresh described below. A file changed both by its user
 #' and by the new rendering is never overwritten: a managed file yields a
 #' conflict, and no writes occur while any conflict is present; a user-owned
 #' file (protocol, metadata, publication and analysis text) is kept and the
@@ -183,6 +212,13 @@ proposal_path <- function(path) file.path(".cttir", "proposed", path)
 #' operation is not a multi-file atomic filesystem transaction. Interrupted
 #' writers require review; a writer lock left by a stopped process that had not
 #' started its journal is released.
+#' Migration from `reporting = "generic"` to `"workflowr"` is supported for
+#' the current template with `git = TRUE`. Preview first, then apply with
+#' `dry_run = FALSE`. Edited site configuration conflicts; edited manuscripts
+#' remain user-owned. For older catalog pins, `knowledge = list(refresh = TRUE)`
+#' explicitly selects the active local catalog only if every existing dependency
+#' retains its source revision. This option performs no network update.
+#'
 #' @param path Exact project root.
 #' @param config Optional configuration list or YAML/JSON path.
 #' @param options Configuration overrides taking precedence over `config`.
@@ -277,6 +313,11 @@ sync_impl <- function(path = ".", config = NULL, options = list(), dry_run = TRU
         changes = spec_changes(p$spec[setdiff(names(p$spec), "decisions")], spec[setdiff(names(spec), "decisions")]))
     },
     migration = if (length(migration$steps)) list(steps = migration$steps, original = backup),
+    reporting_migration = if (!identical(p$spec$workflow$reporting, spec$workflow$reporting)) {
+      list(from = p$spec$workflow$reporting, to = spec$workflow$reporting,
+        previous_catalog = p$spec$provenance$catalog_id, catalog = spec$provenance$catalog_id,
+        existing_dependency_revisions_preserved = TRUE)
+    },
     recovered = recovered,
     writer_lock = if (!identical(writer$state, "absent")) writer[c("state", "reason")],
     journal = journal, readiness = readiness$level, blockers = readiness$blockers,

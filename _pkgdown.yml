@@ -11,6 +11,17 @@ reference:
       - validate_config
       - validate_spec
       - check_analysis_data
+  - title: Synthetic study workflow
+    contents:
+      - study_spec
+      - study_project
+      - study_validate
+      - study_dependency_lock
+      - study_stage
+      - study_analyze
+      - study_render
+      - study_run
+      - study_validate_project
   - title: Knowledge and resources
     contents:
       - packages
@@ -19,6 +30,8 @@ reference:
       - resources
       - update
       - rollback_knowledge
+      - evidence_search
+      - evidence_resolve
   - title: Audit and runtime
     contents:
       - audit
@@ -26,6 +39,10 @@ reference:
       - setup
       - setup_app
       - configure
+      - setup_release
+      - runtime_storage
+      - runtime_stop
+      - runtime_cleanup
 articles:
   - title: Guides
     navbar: ~

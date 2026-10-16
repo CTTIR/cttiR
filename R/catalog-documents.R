@@ -52,13 +52,13 @@ document_inventory <- function(path, rights = NULL) {
     if (budget$hashed > 200000000) abort_cttir("Documentation assets exceed the inventory bound.", "cttir_source_unavailable")
     hash <- digest::digest(file = file, algo = "sha256")
     kind <- if (startsWith(rel, "man/")) "reference" else if (startsWith(rel, "vignettes/") || startsWith(rel, "inst/doc/")) "vignette" else "package_document"
-    stored <- !is.null(rights) && text_format && !oversize
+    stored <- !is.null(rights) && text_format && !oversize && !derivative
     content <- if (stored) read_source_text(file) else NULL
     if (stored && (anyNA(iconv(content, from = "UTF-8", to = "UTF-8")))) {
       abort_cttir("Documentation is not valid UTF-8.", "cttir_source_unavailable")
     }
     list(path = rel, kind = kind, source_sha256 = hash, bytes = size,
-      storage = if (stored) "source_text" else if (oversize) "oversize_metadata_only" else if (!text_format) "asset_metadata_only" else "rights_not_confirmed",
+      storage = if (stored) "source_text" else if (oversize) "oversize_metadata_only" else if (!text_format || derivative) "asset_metadata_only" else "rights_not_confirmed",
       rights_basis = rights, content = content,
       content_sha256 = if (stored) content_hash(content) else NULL,
       extraction = "literal_no_execution")
@@ -94,6 +94,43 @@ compact_document_corpus <- function(corpus, keep, reason = "not_required_for_app
   corpus$coverage$metadata_only <- sum(!stored)
   corpus$coverage$indexed_not_bundled <- sum(vapply(corpus$documents, function(x) identical(x$storage, "indexed_not_bundled"), logical(1)))
   corpus
+}
+
+# Merge a partial documentation snapshot only within the package's pinned source
+# identity. Missing files in a partial snapshot are not evidence of removal.
+merge_pinned_document_corpus <- function(package, incoming) {
+  validate_document_corpus(incoming)
+  matches_pin <- function(doc) identical(doc$source_sha256, package$source_files[[doc$path]])
+  if (!all(vapply(incoming$documents, matches_pin, logical(1)))) {
+    abort_cttir("Incoming documentation does not match the pinned source.", "cttir_catalog_corrupt")
+  }
+  previous <- package$documentation_corpus
+  if (is.null(previous)) return(incoming)
+  validate_document_corpus(previous)
+  retained <- Filter(matches_pin, previous$documents)
+  index <- function(docs) stats::setNames(docs, vapply(docs, function(d) d$path, ""))
+  documents <- index(retained)
+  for (doc in incoming$documents) {
+    old <- documents[[doc$path]]
+    # A metadata-only snapshot must not discard already licensed literal text.
+    if (!is.null(old) && identical(old$storage, "source_text") &&
+        !identical(doc$storage, "source_text")) next
+    documents[[doc$path]] <- doc
+  }
+  incoming$documents <- unname(documents[sort(names(documents), method = "radix")])
+  storage <- vapply(incoming$documents, function(d) d$storage, "")
+  incoming$coverage$discovered <- length(storage)
+  incoming$coverage$stored <- sum(storage == "source_text")
+  incoming$coverage$metadata_only <- sum(storage != "source_text")
+  incoming$coverage$oversize_metadata_only <- sum(storage == "oversize_metadata_only")
+  incoming$coverage$indexed_not_bundled <- sum(storage == "indexed_not_bundled")
+  incoming$coverage$source_manifest_complete <- isTRUE(incoming$coverage$source_manifest_complete) ||
+    (isTRUE(previous$coverage$source_manifest_complete) && length(retained) == length(previous$documents))
+  incoming$coverage$vignette_status <- if (any(vapply(incoming$documents,
+      function(d) identical(d$kind, "vignette"), logical(1)))) "discovered" else
+    if (incoming$coverage$source_manifest_complete) "not_present_in_source" else "partial_snapshot_not_observed"
+  validate_document_corpus(incoming)
+  incoming
 }
 
 # Why a document's text is not stored (NA when it is). Bundled corpora compacted

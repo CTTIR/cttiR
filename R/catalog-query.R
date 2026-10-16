@@ -6,7 +6,6 @@ catalog_store <- function() {
 }
 
 resolve_catalog <- function(path = NULL) {
-  bundled <- resource_file("extdata", "api-catalog.json.gz")
   if (!is.null(path)) {
     p <- read_project(path)
     id <- p$lock$catalog_id
@@ -19,7 +18,7 @@ resolve_catalog <- function(path = NULL) {
   active <- file.path(catalog_store(), "active.json")
   assert_plain_path(active)
   if (!file.exists(active)) {
-    return(read_catalog(bundled))
+    return(read_bundled_catalog())
   }
   id <- catalog_pointer()$content_id
   if (!is.character(id) || length(id) != 1L || !grepl("^[a-f0-9]{64}$", id)) {

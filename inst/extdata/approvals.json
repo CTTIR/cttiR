@@ -3681,6 +3681,365 @@
       ],
       "decided_at": "2026-10-04T00:22:47Z",
       "rights_basis": "Upstream license 'BSD_3_clause + file LICENSE' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
+    },
+    {
+      "approval_id": "workflowr:1.7.2:workflowr_render",
+      "package": "workflowr",
+      "version": "1.7.2",
+      "source_hash": "b0222dd9aed19ec7a1bbe55a44db7fd5541fd4d96e944683bcee049724e164d3",
+      "role": "workflowr_render",
+      "profile": "standard_reflowR",
+      "adapter_id": "standard.workflowr_report",
+      "adapter_version": "0.4.0",
+      "status": "approved",
+      "required_callables": [
+        "wflow_build",
+        "wflow_html"
+      ],
+      "required_methods": [],
+      "required_objects": [],
+      "required_topics": [
+        "wflow_build",
+        "wflow_html"
+      ],
+      "required_documents": [
+        "LICENSE"
+      ],
+      "fixtures": [
+        {
+          "test_file": "tests/testthat/test-workflowr-runner.R",
+          "test_name": "Exact-source candidate workflowr runner, descriptive HTML and content freshness",
+          "result": "pass",
+          "run_at": "2026-10-13T17:46:31Z"
+        }
+      ],
+      "decided_at": "2026-10-13T17:46:31Z",
+      "rights_basis": "Unmodified workflowr 1.7.2 source documentation under MIT; upstream LICENSE and terms retained in inst/licenses and template PROVENANCE.md. Retrieval only; training/model redistribution is a separate review."
+    },
+    {
+      "approval_id": "digest:0.6.39:workflowr_render",
+      "package": "digest",
+      "version": "0.6.39",
+      "source_hash": "3a20926489e4886fe98e4d61ffa7ab79663bf50c203114a479d8a7952b033df0",
+      "role": "workflowr_render",
+      "profile": "standard_reflowR",
+      "adapter_id": "standard.workflowr_report",
+      "adapter_version": "0.4.0",
+      "status": "approved",
+      "required_callables": [
+        "digest"
+      ],
+      "required_methods": [],
+      "required_objects": [],
+      "required_topics": [
+        "digest"
+      ],
+      "required_documents": [],
+      "fixtures": [
+        {
+          "test_file": "tests/testthat/test-workflowr-runner.R",
+          "test_name": "Exact-source candidate workflowr runner, descriptive HTML and content freshness",
+          "result": "pass",
+          "run_at": "2026-10-13T17:46:31Z"
+        }
+      ],
+      "decided_at": "2026-10-13T17:46:31Z",
+      "rights_basis": "Unmodified digest 0.6.39 source documentation under GPL-2-or-later; upstream credits and GPL-2 text retained in inst/licenses. Retrieval only; training/model redistribution is a separate review."
+    },
+    {
+      "approval_id": "jsonlite:2.0.0:workflowr_render",
+      "package": "jsonlite",
+      "version": "2.0.0",
+      "source_hash": "f6952614f49231a51e26c3897403ab9535bb5ce530c5df61ec7be926280d3e26",
+      "role": "workflowr_render",
+      "profile": "standard_reflowR",
+      "adapter_id": "standard.workflowr_report",
+      "adapter_version": "0.4.0",
+      "status": "approved",
+      "required_callables": [
+        "read_json",
+        "write_json"
+      ],
+      "required_methods": [],
+      "required_objects": [],
+      "required_topics": [
+        "read_json",
+        "write_json"
+      ],
+      "required_documents": [],
+      "fixtures": [
+        {
+          "test_file": "tests/testthat/test-workflowr-runner.R",
+          "test_name": "Exact-source candidate workflowr runner, descriptive HTML and content freshness",
+          "result": "pass",
+          "run_at": "2026-10-13T17:46:31Z"
+        }
+      ],
+      "decided_at": "2026-10-13T17:46:31Z",
+      "rights_basis": "Upstream license 'MIT + file LICENSE' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
+    },
+    {
+      "approval_id": "yaml:2.3.12:workflowr_render",
+      "package": "yaml",
+      "version": "2.3.12",
+      "source_hash": "0de6c22bc0ee9530f22bb43bb7f7e7f3c8853a374268c98db36ecd05c5f68b58",
+      "role": "workflowr_render",
+      "profile": "standard_reflowR",
+      "adapter_id": "standard.workflowr_report",
+      "adapter_version": "0.4.0",
+      "status": "approved",
+      "required_callables": [
+        "read_yaml"
+      ],
+      "required_methods": [],
+      "required_objects": [],
+      "required_topics": [
+        "read_yaml"
+      ],
+      "required_documents": [],
+      "fixtures": [
+        {
+          "test_file": "tests/testthat/test-workflowr-runner.R",
+          "test_name": "Exact-source candidate workflowr runner, descriptive HTML and content freshness",
+          "result": "pass",
+          "run_at": "2026-10-13T17:46:31Z"
+        }
+      ],
+      "decided_at": "2026-10-13T17:46:31Z",
+      "rights_basis": "Upstream license 'BSD_3_clause + file LICENSE' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
+    },
+    {
+      "approval_id": "knitr:1.51:workflowr_render",
+      "package": "knitr",
+      "version": "1.51",
+      "source_hash": "5578b362315d566cd05e2d4691281c138fb72e587f618567fe6ec47a6ddeafcf",
+      "role": "workflowr_render",
+      "profile": "standard_reflowR",
+      "adapter_id": "standard.workflowr_report",
+      "adapter_version": "0.4.0",
+      "status": "approved",
+      "required_callables": [
+        "kable"
+      ],
+      "required_methods": [],
+      "required_objects": [],
+      "required_topics": [
+        "kable"
+      ],
+      "required_documents": [],
+      "fixtures": [
+        {
+          "test_file": "tests/testthat/test-workflowr-runner.R",
+          "test_name": "Exact-source candidate workflowr runner, descriptive HTML and content freshness",
+          "result": "pass",
+          "run_at": "2026-10-13T17:46:31Z"
+        }
+      ],
+      "decided_at": "2026-10-13T17:46:31Z",
+      "rights_basis": "Upstream license 'GPL' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
+    },
+    {
+      "approval_id": "utils:4.6.1:workflowr_render",
+      "package": "utils",
+      "version": "4.6.1",
+      "source_hash": "18a55079220b9a423cf67b7c6e63dda098bd5cb01b5f331e72e193aea0c118e3",
+      "role": "workflowr_render",
+      "profile": "standard_reflowR",
+      "adapter_id": "standard.workflowr_report",
+      "adapter_version": "0.4.0",
+      "status": "approved",
+      "required_callables": [
+        "read.csv"
+      ],
+      "required_methods": [],
+      "required_objects": [],
+      "required_topics": [
+        "read.csv"
+      ],
+      "required_documents": [],
+      "fixtures": [
+        {
+          "test_file": "tests/testthat/test-workflowr-runner.R",
+          "test_name": "Exact-source candidate workflowr runner, descriptive HTML and content freshness",
+          "result": "pass",
+          "run_at": "2026-10-13T17:46:31Z"
+        }
+      ],
+      "decided_at": "2026-10-13T17:46:31Z",
+      "rights_basis": "Upstream license 'Part of R (GPL-2 | GPL-3)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
+    },
+    {
+      "approval_id": "stats:4.6.1:workflowr_render",
+      "package": "stats",
+      "version": "4.6.1",
+      "source_hash": "3735c4ce9c6824a794d61ba1c97d4a498a8657908970176e8e13c64b3df0ee7e",
+      "role": "workflowr_render",
+      "profile": "standard_reflowR",
+      "adapter_id": "standard.workflowr_report",
+      "adapter_version": "0.4.0",
+      "status": "approved",
+      "required_callables": [
+        "setNames"
+      ],
+      "required_methods": [],
+      "required_objects": [],
+      "required_topics": [
+        "setNames"
+      ],
+      "required_documents": [],
+      "fixtures": [
+        {
+          "test_file": "tests/testthat/test-workflowr-runner.R",
+          "test_name": "Exact-source candidate workflowr runner, descriptive HTML and content freshness",
+          "result": "pass",
+          "run_at": "2026-10-13T17:46:31Z"
+        }
+      ],
+      "decided_at": "2026-10-13T17:46:31Z",
+      "rights_basis": "Upstream license 'Part of R (GPL-2 | GPL-3)' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
+    },
+    {
+      "approval_id": "targets:1.12.0:workflowr_targets",
+      "package": "targets",
+      "version": "1.12.0",
+      "source_hash": "37dcc3d82a43679046228805486b46e503ef461681ca89be248b5608bacedac3",
+      "role": "workflowr_targets",
+      "profile": "standard_reflowR",
+      "adapter_id": "standard.workflowr_targets",
+      "adapter_version": "0.4.0",
+      "status": "approved",
+      "required_callables": [
+        "tar_option_set",
+        "tar_target",
+        "tar_cue"
+      ],
+      "required_methods": [],
+      "required_objects": [],
+      "required_topics": [
+        "tar_option_set",
+        "tar_target",
+        "tar_cue"
+      ],
+      "required_documents": [
+        "NEWS.md",
+        "inst/CITATION"
+      ],
+      "fixtures": [
+        {
+          "test_file": "tests/testthat/test-workflowr-targets-lifecycle.R",
+          "test_name": "workflowr targets computes once and invalidates changed content and missing outputs",
+          "result": "pass",
+          "run_at": "2026-10-13T18:28:24Z"
+        }
+      ],
+      "decided_at": "2026-10-13T18:28:24Z",
+      "rights_basis": "Upstream license 'MIT + file LICENSE' (DESCRIPTION) permits redistributing unmodified documentation with its notice; stored literally for revision-aligned retrieval, never rendered or executed."
+    },
+    {
+      "approval_id": "cellspecR:1.0.0:cell_structure:89194a30c77d",
+      "package": "cellspecR",
+      "version": "1.0.0",
+      "source_hash": "89194a30c77df2715322381ac5655d063c2c16e28d98da296c676851b2a52cee",
+      "role": "cell_structure",
+      "profile": "cttir_specialist",
+      "adapter_id": "review.cellspec_structure",
+      "adapter_version": "1.0.0",
+      "status": "approved",
+      "required_callables": [
+        "cs_new",
+        "cs_validate"
+      ],
+      "required_topics": [
+        "cs_new",
+        "cs_validate"
+      ],
+      "required_documents": [
+        "LICENSE",
+        "LICENSE.md"
+      ],
+      "fixtures": [
+        {
+          "test_file": "tools/verify-cellspec-structure.R",
+          "test_name": "shared class does not establish structural interchangeability",
+          "result": "pass",
+          "run_at": "2026-10-13T20:51:49Z"
+        },
+        {
+          "test_file": "tools/verify-cellspec-structure.R",
+          "test_name": "explicit synthetic calibration yields valid structure without input mutation",
+          "result": "pass",
+          "run_at": "2026-10-13T20:51:49Z"
+        },
+        {
+          "test_file": "tools/verify-cellspec-structure.R",
+          "test_name": "constructor refuses absent zero and negative calibration",
+          "result": "pass",
+          "run_at": "2026-10-13T20:51:49Z"
+        },
+        {
+          "test_file": "tools/verify-cellspec-structure.R",
+          "test_name": "constructor refuses duplicate cell keys and row misalignment",
+          "result": "pass",
+          "run_at": "2026-10-13T20:51:49Z"
+        },
+        {
+          "test_file": "tools/verify-cellspec-structure.R",
+          "test_name": "validator reports corrupted keys without repairing data",
+          "result": "pass",
+          "run_at": "2026-10-13T20:51:49Z"
+        },
+        {
+          "test_file": "tools/verify-cellspec-structure.R",
+          "test_name": "nonfinite normalization is disclosed in provenance and preserves the source",
+          "result": "pass",
+          "run_at": "2026-10-13T20:51:49Z"
+        }
+      ],
+      "decided_at": "2026-10-13T20:52:31Z",
+      "rights_basis": "MIT source documentation retained with literal license notices at the pinned public revision. Technical construction and structural-validation scope only; no scientific or model qualification."
+    },
+    {
+      "approval_id": "gatekeepR:1.0.0:cell_structure:363c713489cd",
+      "package": "gatekeepR",
+      "version": "1.0.0",
+      "source_hash": "363c713489cda21a26dd016d08b0e5bfcda73548b01839c6d3ee6550e9ee44a2",
+      "role": "cell_structure",
+      "profile": "cttir_specialist",
+      "adapter_id": "review.cellspec_structure",
+      "adapter_version": "1.0.0",
+      "status": "approved",
+      "required_callables": [
+        "gk_cellspec"
+      ],
+      "required_topics": [
+        "gk_cellspec"
+      ],
+      "required_documents": [
+        "LICENSE",
+        "LICENSE.md"
+      ],
+      "fixtures": [
+        {
+          "test_file": "tools/verify-cellspec-structure.R",
+          "test_name": "producer preserves input and leaves unknown calibration explicit",
+          "result": "pass",
+          "run_at": "2026-10-13T20:51:49Z"
+        },
+        {
+          "test_file": "tools/verify-cellspec-structure.R",
+          "test_name": "producer rejects incomplete tables and invalid measurement shape",
+          "result": "pass",
+          "run_at": "2026-10-13T20:51:49Z"
+        },
+        {
+          "test_file": "tools/verify-cellspec-structure.R",
+          "test_name": "shared class does not establish structural interchangeability",
+          "result": "pass",
+          "run_at": "2026-10-13T20:51:49Z"
+        }
+      ],
+      "decided_at": "2026-10-13T20:52:31Z",
+      "rights_basis": "MIT source documentation retained with literal license notices at the pinned public revision. Technical construction and structural-validation scope only; no scientific or model qualification."
     }
   ]
 }

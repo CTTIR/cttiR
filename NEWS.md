@@ -1,5 +1,38 @@
 # cttiR 0.1.1.9000
 
+* Add a closed synthetic association specification and installed-code study
+  compiler using reflowR's strict composition. Analysis and rendering have
+  separate externally pinned receipts; current raw inputs, dependency versions,
+  controls and results are required before a report is accepted.
+* Add read-only evidence search and exact citation resolution with source/version
+  locators, immutable SQLite reads, external manifest pins and stale-source
+  rejection. Retrieved documentation confers no execution or training approval.
+* Require current data, configuration and output identities for legacy study-data
+  readiness instead of accepting a historical passing code receipt alone.
+
+* Grounded advice now preserves exact bare-callable evidence, reports absent or
+  ambiguous APIs, and withholds model code when known outcome/design constraints
+  conflict with the reviewed adapter. Partial support is labelled explicitly.
+* Planner proposals abstain when capability matches exceed the schema bound and
+  identify unapproved candidate capabilities. Qualification now binds package
+  function bodies, defaults, static rules, R/platform and transitive dependency
+  versions; implementation changes require renewed qualification.
+
+* Add explicit release-manifest setup with trusted checksums, offline GGUF import,
+  resumable model and runtime downloads, owned-runtime identity checks and bilingual setup
+  controls. Import verifies transport and structured response behavior; it does
+  not qualify a model for assistance.
+
+* Add read-only runtime storage inventory, hash-bound removal of unreferenced
+  downloads and separately confirmed graceful shutdown of an owned daemon.
+  Retained releases, model blobs and unrelated files remain protected.
+
+* Preserve pinned documentation when partial reference imports omit existing
+  documents. API explanations distinguish documented function behavior from
+  workflow execution approval and avoid unrelated project guidance.
+
+* Store bundled current and historical API catalogs in a lossless indexed XZ archive. Preserve every logical snapshot identity and the original source-tree files while bounding reads and checking archive and snapshot hashes.
+
 * Complete supplemental DESCRIPTION coverage for eleven Seurat ecosystem packages, using the pinned Seurat archive rather than the newer live release. Incremental provenance imports preserve earlier records and refuse unmatched versions before mutation.
 
 * Preserve separately retrieved companion DESCRIPTION evidence with source URLs, hashes and declared roles. New evidence never overwrites seed observation hashes, implies ownership or promotes candidate workflows; older resource pins retain their original bytes.

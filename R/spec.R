@@ -374,7 +374,32 @@ check_supported_workflow <- function(spec, combined) {
       !identical(spec$provenance$template_version, current_template_version)) {
     pending("targets, renv and Git integration require the current standard template bundle.", "/workflow")
   }
-  if (!identical(workflow$reporting, "generic")) pending("Only the reviewed reflowR-layout rendering is supported.", "/workflow/reporting")
+  if (!is.null(workflow$reporting_preset) && !identical(workflow$reporting, "workflowr")) {
+    incoherent("Reporting presets require workflow.reporting = 'workflowr'.", "/workflow/reporting_preset",
+      "Remove reporting_preset for other reporting backends.")
+  }
+  if (!workflow$reporting %in% c("generic", "workflowr")) {
+    pending("This reporting backend has no reviewed integration.", "/workflow/reporting")
+  }
+  if (identical(workflow$reporting, "workflowr")) {
+    if (!identical(spec$provenance$template_version, current_template_version)) {
+      pending("Workflowr requires the current template bundle.", "/workflow/reporting")
+    }
+    if (!isTRUE(workflow$git)) {
+      incoherent("Workflowr requires an explicit root Git context (workflow.git = TRUE).", "/workflow/git",
+        "Enable workflow.git; project creation initializes the root without staging or committing.")
+    }
+    if (identical(workflow$pipeline, "targets")) {
+      scheduler <- capability_registry()$capabilities$std.pipeline.workflowr_targets
+      if (!identical(capability_approval(scheduler, catalog_snapshot(spec$provenance$catalog_id))$status, "approved")) {
+        pending("The pinned catalog lacks complete workflowr targets approvals.", "/workflow/pipeline")
+      }
+    }
+    cap <- capability_registry()$capabilities$std.report.workflowr
+    if (!identical(capability_approval(cap, catalog_snapshot(spec$provenance$catalog_id))$status, "approved")) {
+      pending("The pinned catalog lacks complete workflowr reporting approvals.", "/workflow/reporting")
+    }
+  }
   if (!workflow$table_backend %in% c("DescrTab2", "none")) {
     pending("This table backend has no reviewed adapter; use DescrTab2 or none.", "/workflow/table_backend")
   }

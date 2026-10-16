@@ -84,6 +84,7 @@ ask_patterns <- list(
     time_to_event = c("time (until|to|till) (the )?(death|relapse|event|failure|recurrence|progression|discharge)",
       "lost to follow", "censor", "zeit bis (zum|zur)", "zensiert"),
     binary = c("yes( or |/| vs\\.? )no", "\\bwhether\\b", "readmi", "dichotom", "ja( oder |/)nein",
+      "\\bbinary\\s+(model|response|variable|measurement|data)\\b", "\\bbin(\u00e4|ae)re[nmrs]?\\s+(modell|antwort|variable|messung|daten)\\b",
       "eingetreten ist oder nicht", "occurred or not"),
     continuous = c("regress [\\p{L}\\p{N}_. ]+ on ", "blood pressure", "glucose", "laborwert", "continuous")
   ),
@@ -112,7 +113,7 @@ ask_patterns <- list(
   )
 )
 
-ask_pattern_hit <- function(text, patterns) any(vapply(patterns, function(p) grepl(p, text, perl = TRUE), logical(1)))
+ask_pattern_hit <- function(text, patterns) any(vapply(patterns, function(p) affirmed_hit(text, p), logical(1)))
 
 ask_signals <- function(text, registry) {
   signals <- infer_goal(text, registry)
@@ -233,7 +234,7 @@ ask_engine_capability <- function(signals) {
 ask_matches <- function(text, registry, signals, methods = character()) {
   ids <- character()
   for (cap in registry$capabilities) {
-    if (keyword_hit(text, cap$keywords) || grepl(tolower(cap$title), text, fixed = TRUE)) ids <- c(ids, cap$id)
+    if (keyword_hit(text, cap$keywords) || affirmed_hit(text, keyword_pattern(cap$title))) ids <- c(ids, cap$id)
   }
   for (id in names(ask_patterns$capability)) {
     if (ask_pattern_hit(text, ask_patterns$capability[[id]])) ids <- c(ids, id)
@@ -245,24 +246,49 @@ ask_matches <- function(text, registry, signals, methods = character()) {
     cap <- registry$capabilities[[id]]
     identical(cap$stage, "model") && identical(cap$status, "candidate")
   }, logical(1)))
-  if (length(methods)) {
+  if (unsupported_method) {
     ids <- Filter(function(id) {
       cap <- registry$capabilities[[id]]
       !(cap$stage %in% c("model", "effects") && identical(cap$status, "adapter_tested"))
     }, ids)
   }
-  engine <- if (unsupported_method) NULL else ask_engine_capability(signals)
+  # An explicit model is a request to check that model, not permission to
+  # replace it with another engine inferred from incomplete design words.
+  named_model <- any(vapply(ids, function(id) identical(registry$capabilities[[id]]$stage, "model"), logical(1)))
+  engine <- if (unsupported_method || named_model) NULL else ask_engine_capability(signals)
   if (!is.null(engine)) ids <- c(ids, engine)
+  requested <- unique(unlist(ids, use.names = FALSE))
+  conflicts <- list()
+  for (id in requested) {
+    cap <- registry$capabilities[[id]]
+    if (!identical(cap$stage, "model") || !identical(cap$status, "adapter_tested")) next
+    fields <- c("outcome_family", "unit_structure")
+    incompatible <- fields[vapply(fields, function(field) {
+      value <- signals[[field]]
+      !identical(value, "unknown") && length(cap$applies[[field]]) > 0L && !value %in% unlist(cap$applies[[field]])
+    }, logical(1))]
+    if (length(incompatible)) conflicts[[id]] <- paste0("model_configuration_mismatch:", id, " (",
+      paste(paste0(incompatible, "=", unlist(signals[incompatible])), collapse = ", "),
+      "): the requested design is outside this adapter's reviewed applicability; no model is substituted")
+  }
+  if (!unsupported_method && !named_model && is.null(engine) &&
+      !"unknown" %in% unlist(signals[c("outcome_family", "unit_structure")]) &&
+      (identical(signals$aim, "explanatory") || ask_pattern_hit(text, c("\\bmodels?\\b", "\\bmodell(e|en|s)?\\b")))) {
+    conflicts[["analysis"]] <- paste0("model_configuration_mismatch:analysis (outcome_family=",
+      signals$outcome_family, ", unit_structure=", signals$unit_structure,
+      "): no reviewed model adapter covers this combination; no model is substituted")
+  }
+  ids <- setdiff(ids, names(conflicts))
   model_ids <- c("std.model.lm", "std.model.glm_binomial", "std.model.lme", "std.model.coxph")
   if (any(ids %in% model_ids)) ids <- c(ids, "std.effects.broom")
-  requested <- unique(unlist(ids, use.names = FALSE))
+  requested <- unique(c(requested, ids))
   # Capabilities for the detected data modality are context, not the request.
   if (!signals$modality %in% c("unknown", "tabular")) {
     for (cap in registry$capabilities) {
       if (signals$modality %in% cap$applies$modality && !identical(cap$family, "standard")) ids <- c(ids, cap$id)
     }
   }
-  structure(unique(unlist(ids, use.names = FALSE)), requested = requested)
+  structure(unique(unlist(ids, use.names = FALSE)), requested = requested, model_conflicts = conflicts)
 }
 
 .ask_export_cache <- new.env(parent = emptyenv())
@@ -283,19 +309,25 @@ ask_export_index <- function(catalog) {
   owners
 }
 
-# Function names written without a namespace: identifiers followed by "()" or
+# Function names written without a namespace: adjacent call syntax or names
 # containing an underscore, a dot or an inner capital (FindClusters, t.test).
-# Known exports become exact symbols; an unknown name written as a call is
-# reported absent. Base R functions and package names are not function claims.
+# Empty calls can contain spaces. A spaced argument list needs a known or
+# function-shaped name so ordinary prose parentheses are not API claims.
+# No arguments are evaluated. Base functions and package names are excluded.
 ask_function_names <- function(question, catalog) {
-  tokens <- regmatches(question, gregexpr("(?<![\\p{L}\\p{N}._:])[\\p{L}][\\p{L}\\p{N}._]*(\\(\\))?", question, perl = TRUE))[[1]]
-  called <- endsWith(tokens, "()")
-  words <- sub("[.]+$", "", sub("\\(\\)$", "", tokens))
+  matches <- gregexpr("(?<![\\p{L}\\p{N}._:])[\\p{L}.][\\p{L}\\p{N}._]*", question, perl = TRUE)[[1L]]
+  if (matches[[1L]] < 0L) return(list(symbols = character(), absent = character()))
+  tokens <- regmatches(question, list(matches))[[1L]]
+  after <- substring(question, matches + attr(matches, "match.length"))
+  owners <- ask_export_index(catalog)
+  shaped <- grepl("_|[.]|[a-z][A-Z]", sub("[.]+$", "", tokens))
+  called <- startsWith(after, "(") | grepl("^[[:space:]]*\\([[:space:]]*\\)", after) |
+    (grepl("^[[:space:]]+\\(", after) & (shaped | tokens %in% names(owners)))
+  words <- ifelse(called, tokens, sub("[.]+$", "", tokens))
   keep <- (called | grepl("_|[.]|[a-z][A-Z]", words)) & nzchar(words)
   packages <- vapply(catalog$packages, function(p) p$name, character(1))
-  base <- vapply(words, function(w) exists(w, envir = baseenv(), inherits = FALSE), logical(1))
+  base <- vapply(words, function(w) nzchar(w) && exists(w, envir = baseenv(), inherits = FALSE), logical(1))
   keep <- keep & !words %in% packages & !base
-  owners <- ask_export_index(catalog)
   symbols <- character()
   absent <- character()
   for (i in which(keep)) {
@@ -307,6 +339,22 @@ ask_function_names <- function(question, catalog) {
     }
   }
   list(symbols = unique(symbols), absent = unique(absent))
+}
+
+ask_namespaced_symbols <- function(question, catalog, pattern) {
+  symbols <- unique(regmatches(question, gregexpr(pattern, question, perl = TRUE))[[1L]])
+  packages <- stats::setNames(catalog$packages, vapply(catalog$packages, function(x) x$name, ""))
+  known <- function(symbol) {
+    parts <- strsplit(symbol, ":{2,3}")[[1L]]
+    length(parts) == 2L && any(vapply(packages[[parts[[1L]]]]$exports,
+      function(entry) identical(entry$name, parts[[2L]]), logical(1)))
+  }
+  unique(vapply(symbols, function(symbol) {
+    # A trailing dot can be a valid export name or sentence punctuation.
+    # Preserve exact catalog matches; strip punctuation only to a known API.
+    trimmed <- sub("[.]+$", "", symbol)
+    if (!identical(trimmed, symbol) && !known(symbol) && known(trimmed)) trimmed else symbol
+  }, "", USE.NAMES = FALSE))
 }
 
 ask_symbol <- function(symbol, catalog, verified_only) {
@@ -408,11 +456,12 @@ ask <- function(question, path = NULL, verified_only = TRUE) {
   }
   methods <- if (injected) character() else ask_unsupported(text)
   named <- ask_function_names(unqualified, catalog)
-  symbols <- unique(regmatches(question, gregexpr(symbol_pattern, question, perl = TRUE))[[1]])
+  symbols <- ask_namespaced_symbols(question, catalog, symbol_pattern)
   symbol_rows <- lapply(symbols, ask_symbol, catalog = catalog, verified_only = verified_only)
-  # Bare names are reported only when they are not usable at this revision.
+  # Keep successful exact bare-name resolution too: its pinned evidence is
+  # needed even when no workflow keyword occurs in an API-only question.
   for (row in lapply(setdiff(named$symbols, symbols), ask_symbol, catalog = catalog, verified_only = verified_only)) {
-    if (!identical(row$status, "ok")) symbol_rows[[length(symbol_rows) + 1L]] <- row
+    symbol_rows[[length(symbol_rows) + 1L]] <- row
   }
   for (name in named$absent) {
     symbol_rows[[length(symbol_rows) + 1L]] <- list(symbol = paste0(name, "()"), found = FALSE, package = NA_character_,
@@ -426,6 +475,7 @@ ask <- function(question, path = NULL, verified_only = TRUE) {
   absent <- any(vapply(symbol_rows, function(x) !isTRUE(x$found), logical(1)))
   ids <- if (injected) character() else ask_matches(text, registry, signals, methods)
   requested <- as.character(attr(ids, "requested"))
+  model_conflicts <- attr(ids, "model_conflicts")
   ids <- as.character(ids)
   routed <- lapply(ids, function(id) route_stage(registry, catalog, registry$capabilities[[id]]$stage, id))
   approved <- Filter(function(x) identical(x$status, "approved"), routed)
@@ -434,7 +484,10 @@ ask <- function(question, path = NULL, verified_only = TRUE) {
   approved <- approved[order]
   # A question whose method family has no reviewed adapter gets no snippet for
   # any part of it either; matched capabilities are only nearby context.
-  withheld <- absent || length(methods) > 0L
+  unsupported_model <- any(vapply(pending, function(x) {
+    x$capability %in% requested && identical(registry$capabilities[[x$capability]]$stage, "model")
+  }, logical(1)))
+  withheld <- absent || length(methods) > 0L || length(model_conflicts) > 0L || unsupported_model
   alternatives <- if (withheld) vapply(approved, function(x) x$capability, character(1)) else character()
   if (withheld) approved <- list()
   snippets <- ask_snippets()
@@ -461,7 +514,7 @@ ask <- function(question, path = NULL, verified_only = TRUE) {
       limitations <- c(limitations, paste0("The snippet for ", stage$capability, " did not validate against this revision and was withheld."))
     }
   }
-  if (!verified_only && !blocked && !length(methods)) {
+  if (!verified_only && !blocked && !withheld) {
     for (stage in pending) {
       snippet <- snippets[[stage$capability]]
       if (is.null(snippet)) next
@@ -489,7 +542,8 @@ ask <- function(question, path = NULL, verified_only = TRUE) {
     }
   }
   evidence <- unique(evidence)
-  gaps <- vapply(methods, ask_unsupported_gap, character(1), USE.NAMES = FALSE)
+  gaps <- c(vapply(methods, ask_unsupported_gap, character(1), USE.NAMES = FALSE),
+    unlist(model_conflicts, use.names = FALSE))
   for (stage in pending) {
     cap <- registry$capabilities[[stage$capability]]
     same_stage <- Filter(function(x) {
@@ -536,7 +590,7 @@ ask <- function(question, path = NULL, verified_only = TRUE) {
   # an analysis that itself has no approved adapter.
   analyses <- Filter(function(id) !isTRUE(registry$capabilities[[id]]$infrastructure), requested)
   approved_ids <- vapply(approved, function(x) x$capability, character(1))
-  unanswered <- length(analyses) > 0L && !any(analyses %in% approved_ids)
+  unanswered <- length(analyses) > 0L && any(!analyses %in% approved_ids)
   answer <- if (length(methods)) {
     paste0("Unsupported method: ", paste(vapply(ask_unsupported_methods[methods], function(m) m$label, character(1)), collapse = "; "),
       ". No reviewed adapter exists, so no code is returned for it; see gaps for registry candidates and the nearest ",
@@ -544,6 +598,11 @@ ask <- function(question, path = NULL, verified_only = TRUE) {
   } else if (absent) {
     paste0("A named function is not in the pinned catalog revision, so no code is returned; see gaps.",
       if (length(alternatives)) paste0(" Nearest approved alternatives (context only): ", paste(alternatives, collapse = ", "), "."))
+  } else if (length(model_conflicts) || unsupported_model) {
+    "The requested model or design has no compatible approved adapter. No code is returned and no model is substituted; see gaps."
+  } else if (unanswered && any(analyses %in% approved_ids)) {
+    paste0("Partially supported with approved adapters: ", supported, ". No approved adapter covers: ",
+      paste(setdiff(analyses, approved_ids), collapse = ", "), "; see gaps. The supported steps do not complete the whole request.")
   } else if (unanswered) {
     paste0("No approved adapter covers the requested analysis (", paste(setdiff(analyses, approved_ids), collapse = ", "),
       "); see gaps.", if (length(approved)) paste0(" Approved adapters for related steps or this data type (context only): ",

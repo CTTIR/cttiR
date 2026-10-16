@@ -1,0 +1,102 @@
+{
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "policy_id": {
+      "const": "cttir-code-1"
+    },
+    "catalog_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "language": {
+      "enum": [
+        "en",
+        "de"
+      ]
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4000
+    },
+    "citation_ids": {
+      "type": "array",
+      "maxItems": 16,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128,
+        "pattern": "^[A-Za-z0-9_.:-]+$"
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "maxItems": 16,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1000
+      }
+    },
+    "operation": {
+      "const": "suggest"
+    },
+    "changes": {
+      "type": "array",
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 240
+          },
+          "original_sha256": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "content": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32768
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "path",
+          "original_sha256",
+          "content",
+          "reason"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "policy_id",
+    "catalog_id",
+    "language",
+    "summary",
+    "citation_ids",
+    "limitations",
+    "operation",
+    "changes"
+  ],
+  "additionalProperties": false,
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CTTIR suggestion proposal version 1",
+  "description": "Untrusted proposal only. Schema validity does not authorize writes, execution or a validation claim."
+}

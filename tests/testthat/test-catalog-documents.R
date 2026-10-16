@@ -39,6 +39,20 @@ test_that("Sweave and TeX documentation stays literal and rights-gated", {
   expect_true(validate_document_corpus(permitted$documentation_corpus))
 })
 
+test_that("small rendered HTML stays metadata-only even when source documentation is licensed", {
+  f <- document_fixture()
+  dir.create(file.path(f$source, "inst", "doc"), recursive = TRUE)
+  writeLines("<html>rendered_only_probe<script>never_run()</script></html>",
+    file.path(f$source, "inst", "doc", "guide.html"))
+  entry <- extract_source(f$source, "fixture", "one", documentation_rights = "Synthetic fixture")
+  rendered <- Filter(function(x) x$path == "inst/doc/guide.html", entry$documentation_corpus$documents)[[1]]
+  expect_identical(rendered$storage, "asset_metadata_only")
+  expect_null(rendered$content)
+  expect_match(rendered$source_sha256, "^[a-f0-9]{64}$")
+  expect_length(document_hits(entry, "rendered_only_probe"), 0L)
+  expect_true(validate_document_corpus(entry$documentation_corpus))
+})
+
 test_that("document-only updates preserve pinned corpus and rollback", {
   f <- document_fixture()
   withr::local_options(cttiR.sources = list(list(id = "fixture", path = f$source,
@@ -120,6 +134,34 @@ test_that("diff failures cannot activate a candidate snapshot", {
   local_mocked_bindings(documentation_diff = function(...) abort_cttir("Injected diff failure", "cttir_catalog_corrupt"))
   expect_error(update(), class = "cttir_catalog_corrupt")
   expect_equal(read_document(file.path(f$store, "active.json")), before)
+})
+
+test_that("partial snapshots preserve documentation only at the same pinned hashes", {
+  f <- document_fixture()
+  original <- document_inventory(f$source, "Synthetic test text")
+  package <- list(documentation_corpus = original,
+    source_files = stats::setNames(lapply(original$documents, function(d) d$source_sha256),
+      vapply(original$documents, function(d) d$path, "")))
+  partial <- original
+  partial$documents <- Filter(function(d) !startsWith(d$path, "vignettes/"), original$documents)
+  partial$coverage$discovered <- length(partial$documents)
+  partial$coverage$stored <- sum(vapply(partial$documents, function(d) d$storage == "source_text", logical(1)))
+  partial$coverage$source_manifest_complete <- FALSE
+  merged <- merge_pinned_document_corpus(package, partial)
+  expect_identical(merged$documents, original$documents)
+  expect_true(merged$coverage$source_manifest_complete)
+  expect_identical(merged$coverage$vignette_status, "discovered")
+  expect_true(validate_document_corpus(merged))
+
+  metadata <- compact_document_corpus(partial, character())
+  expect_identical(merge_pinned_document_corpus(package, metadata)$documents, original$documents)
+  vignette <- "vignettes/guide.Rmd"
+  package$source_files[[vignette]] <- paste(rep("0", 64L), collapse = "")
+  changed <- merge_pinned_document_corpus(package, partial)
+  expect_false(vignette %in% vapply(changed$documents, function(d) d$path, ""))
+  expect_false(changed$coverage$source_manifest_complete)
+  expect_identical(changed$coverage$vignette_status, "partial_snapshot_not_observed")
+  expect_error(merge_pinned_document_corpus(package, original), class = "cttir_catalog_corrupt")
 })
 
 test_that("documents dropped from a bundled corpus record why", {

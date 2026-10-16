@@ -250,6 +250,10 @@ read_catalog <- function(file) {
   on.exit(close(con), add = TRUE)
   text <- readBin(con, "raw", n = 25000001L)
   if (length(text) > 25000000L) abort_cttir("Catalog exceeds the read limit.", "cttir_catalog_corrupt")
+  decode_catalog(text, cache_key)
+}
+
+decode_catalog <- function(text, cache_key) {
   # Catalogs are UTF-8 bytes; an unmarked string would be translated from the
   # session locale (e.g. C) and no longer reproduce its content ID.
   text <- rawToChar(text)

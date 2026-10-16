@@ -553,6 +553,9 @@ if (identical(args, "build")) {
   approved <- ns$approved_callables(built)
   stopifnot(identical(built$content_id, id), nrow(approved) > 0L)
   stopifnot(file.copy(candidate, old_file, overwrite = TRUE))
+  archive_builder <- new.env(parent = baseenv())
+  sys.source("tools/build_catalog_archive.R", envir = archive_builder)
+  archive_builder$build_catalog_archive()
   summary <- list(previous = before$content_id, current = id, packages = length(built$packages),
     standard_packages = length(entries), decisions = length(decisions),
     approved = sum(vapply(decisions, function(d) identical(d$status, "approved"), logical(1))),

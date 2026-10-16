@@ -1,6 +1,6 @@
 # cttiR <img src="man/figures/logo.png" align="right" width="150" alt="cttiR hex logo" />
 
-**CTTIR Project Builder — three inputs, one research-ready project.**
+**CTTIR Project Builder — three inputs, one structured research project.**
 
 cttiR creates a standardized research project from a name, a research type and
 a goal, routes it to a reviewed analysis workflow, and keeps a revision-scoped
@@ -20,6 +20,47 @@ Use `dry_run = TRUE` for a read-only preview. Creation uses local resources by
 default and does not read study data or install packages. An explicitly enabled
 local planner can consult the configured local model.
 
+## Strict study compilation
+
+`study_spec()`, `study_project()`, `study_run()` and `study_render()` provide an
+explicit, narrower workflow using reflowR's `strict-cttir-v1` profile. The first
+recipe handles synthetic independent observations with a continuous outcome,
+continuous exposure and declared continuous or categorical covariates. It fits
+a noncausal adjusted association using `stats::lm`. Unsupported designs,
+missing values, duplicate IDs, mismatched units and rank-deficient fits stop
+before a report is accepted.
+
+Prepare an installed external R library containing cttiR, reflowR and workflowr.
+Create a specification with `study_spec()` and supply a data frame plus explicit
+column units. Then retain each returned declaration **outside** the project:
+
+```r
+compiled <- cttiR::study_project(
+  directory, spec, data, cttiR::study_dependency_lock(),
+  author = "Research group", units = units
+)
+analyzed <- cttiR::study_run(compiled$directory, compiled$declaration)
+reported <- cttiR::study_render(analyzed$directory, analyzed$declaration)
+cttiR::study_validate_project(
+  reported$directory, reported$declaration, require_render = TRUE
+)
+```
+
+The compiler fixes all eleven stage locations, applicability reasons and the
+research-domain palette. Reports consume recorded results and verify input,
+configuration, installed-writer and output hashes. Rendering does not rerun the
+statistical fit. The dependency snapshot records installed versions; provision
+the external library separately. Passing checks does not approve a real study,
+establish scientific validity, commit files or publish the site.
+
+`evidence_search()` and `evidence_resolve()` retrieve local source passages from
+an externally pinned evidence registry. They preserve version and page/topic
+locators, reject changed sources and exclude restricted documents. A trusted
+host may supply `options(cttiR.evidence_registry = list(directory = ...,
+manifest_sha256 = ...))` to include bounded passages in advice. Retrieval gives
+documentation no execution authority and does not certify claim support or
+current legal applicability.
+
 ## What a project contains
 
 * `cttir-project.yml`, `cttir-lock.json` and ownership metadata; publication
@@ -37,6 +78,44 @@ local planner can consult the configured local model.
   present — otherwise it lists exactly what is missing.
 * Optional `targets` pipeline, renv environment (prepared in an isolated
   process) and Git initialisation of the project root only.
+
+## Workflowr reporting
+
+For a root workflowr site, choose the reporting backend explicitly:
+
+```r
+p <- cttiR::project(
+  "Reporting Study", "primary_research", "Describe cohort measurements",
+  path = tempdir(),
+  options = list(workflow = list(
+    reporting = "workflowr", reporting_preset = "standard", git = TRUE
+  ))
+)
+```
+
+The standard preset has eight stage pages plus an index; `"minimal"` has three
+stage pages plus an index. Stages remain placeholders until their inputs and
+reviewed implementation are available. Creation initializes the root Git
+repository without staging or committing. Prepare the pinned dependencies
+explicitly, then use `Rscript code/render_report.R` to preview the allowlisted
+pages with workflowr reproducibility panels. Recorded result tables require
+current input, code, configuration and output hashes. Rendering does not publish.
+Existing projects retain their reporting backend until an explicit migration:
+
+```r
+migration <- list(workflow = list(reporting = "workflowr", git = TRUE),
+                  knowledge = list(refresh = TRUE))
+cttiR::sync(p$path, options = migration)                 # preview
+cttiR::sync(p$path, options = migration, dry_run = FALSE) # apply after review
+```
+
+Catalog refresh here selects the active local snapshot without downloading. It
+refuses changes to existing dependency revisions. Edited site configuration
+conflicts; manuscripts and publication identities are preserved. Migration is
+supported from the current generic bundle. Add `pipeline = "targets"` to schedule
+computation. The workflowr scheduler checks content receipts on each explicit run,
+reuses fresh results, and regenerates missing outputs. Rendering consumes those
+results separately; missing prerequisites leave the study target blocked.
 
 ## Routing
 
@@ -81,13 +160,44 @@ restores an earlier one. Project pins never change implicitly.
   model is available. Its conservative resource policy remains tested separately.
   Experimental explicit model use requires the unqualified-model acknowledgement;
   no model result approves a scientific analysis.
+* `setup_release()` previews a reviewed release manifest and imports an exact
+  GGUF only after explicit consent. Its checksum must come from a separately
+  trusted release record. Offline import and resumable downloads are supported;
+  import does not grant model qualification. No qualified release manifest is
+  bundled yet.
+* `runtime_storage()` inventories model downloads, blobs and retained release
+  manifests. `runtime_cleanup()` removes only explicitly selected unreferenced
+  downloads after a hash-bound preview; `runtime_stop()` separately previews
+  and stops only the verified owned daemon. Neither removes model blobs or pins.
 * `setup_app()` and `configure()` open the local Shiny application (Fast and
   Detailed creation with a bilingual questionnaire, Ask, Knowledge, Resources,
   Audit and Runtime views).
 
+The Ask view offers optional local explanations and code suggestions. It requires
+a separately qualified local model; when unavailable, catalog-based guidance
+remains available. No qualified assistance model ships with this development
+version. With a project selected, suggestions can be previewed as current and
+proposed file contents. Applying requires a separate review action, rechecks the
+preview and file hashes, and uses the project transaction journal. Conflicts block
+application. Applying writes files only; it does not execute code or establish
+scientific correctness.
+
+Suggestion drafts support R scripts and a bounded Markdown/R Markdown subset:
+prose, ordinary document metadata, standard output-format names, R chunks and
+inline R. R code and supported chunk-option expressions receive static checks;
+custom render hooks, child documents, figure-device overrides, other engines,
+raw HTML/TeX and ambiguous fences are refused. Prose is retained verbatim and is
+not checked for factual correctness. Static checks are not a rendering-safety
+proof. Preview and apply never knit or execute the document.
+
 See the vignettes for the getting-started walkthrough, the standard workflow,
 knowledge and approvals, and audit/runtime/privacy. The development record is
 in [CURRENT_STATE.md](https://github.com/CTTIR/cttiR/blob/main/CURRENT_STATE.md).
+
+The [refined concept](CONCEPT.md) and [completion roadmap](ROADMAP.md) describe
+the planned trained-model release, Hugging Face distribution, explicit Ollama
+setup and actual workflowr integration. These are development targets; the
+features and limitations below describe the current package.
 
 ## Limits
 

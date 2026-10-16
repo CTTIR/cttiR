@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "policy_id": "cttir-code-1",
+  "status": "contract_for_local_specialization",
+  "model_output_authority": "proposal_only",
+  "rules": {
+    "package_calls": "explicit_namespaces_and_revision_scoped_catalog_evidence",
+    "raw_input": "read_only",
+    "paths": "project_relative_confined_no_symlink_escape",
+    "installation": "explicit_environment_preparation_only",
+    "scientific_inference": "requires_resolved_design_and_reviewed_adapter",
+    "configuration_precedence": ["explicit_options", "project_configuration", "package_defaults"],
+    "unknown_information": "state_limitation_or_request_missing_input",
+    "model_suggested_code": "never_automatically_evaluated"
+  },
+  "validation_levels": {
+    "proposed": "Untrusted output; no correctness claim.",
+    "schema_valid": "Required fields, types and bounds passed.",
+    "catalog_checked": "Callable identities checked against a pinned catalog; inspect warnings.",
+    "static_complete": "Nonempty parsed code with no validator warning or rejection; no execution claim.",
+    "fixture_tested": "Exact code, environment and synthetic input hashes match a passing execution receipt.",
+    "scientifically_reviewed": "Separate study-specific review; never inferred from technical checks."
+  },
+  "operations": {
+    "explain": {"writes_project": false, "executes_suggestion": false},
+    "plan": {"writes_project": false, "executes_suggestion": false},
+    "suggest": {"writes_project": false, "executes_suggestion": false},
+    "preview": {"writes_project": false, "executes_suggestion": false},
+    "apply": {"requires": ["explicit_apply_intent", "accepted_diff", "matching_original_hashes", "path_and_ownership_checks"]},
+    "prepare_environment": {"requires": ["explicit_environment_intent", "dependency_plan", "network_policy"]},
+    "run": {"requires": ["explicit_run_intent", "reviewed_workflow", "validated_input_contract"]},
+    "render": {"requires": ["explicit_render_intent", "reviewed_page_allowlist", "fresh_output_receipt"]},
+    "commit": {"requires": ["explicit_commit_intent", "verified_owner_identity", "reviewed_diff"]},
+    "publish": {"requires": ["explicit_publication_intent", "reviewed_artifacts", "verified_destination"]}
+  },
+  "qualification": "This contract alone does not implement or certify any operation."
+}

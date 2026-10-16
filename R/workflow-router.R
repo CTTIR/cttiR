@@ -77,13 +77,31 @@ keyword_pattern <- function(keyword) {
 negation_prefix <- paste0("(?:^|[^\\p{L}\\p{N}/-])(?:not|no|without|non|never|nor|neither|kein|keine|keinen|keinem|",
   "keiner|keines|ohne|nicht|nie)(?:\\s+|-)(?:(?:a|an|the|any|ein|eine|einen|einem|einer|der|die|das|den|dem)\\s+)?$")
 
-# TRUE when `pattern` (PCRE) matches somewhere that is not directly negated.
+# Negative imperatives can govern a later keyword ("do not import CSV").
+# Keep this conservative rule within a short clause. Punctuation and explicit
+# contrast words end its scope; this is not a general language parser.
+negated_keyword_prefix <- function(text, start) {
+  before <- tolower(substr(text, max(1L, start - 256L), start - 1L))
+  if (grepl(negation_prefix, before, perl = TRUE)) return(TRUE)
+  clause <- sub("(?s)^.*(?:[!?;,\\n]|[.]\\s+|\\b(?:but|however|instead|yet|aber|sondern|stattdessen|jedoch)\\b)", "", before, perl = TRUE)
+  negative <- paste0("\\b(?:(?:do|does|did|should|would|will|can|could|must)\\s+not(?!\\s+only\\b)|",
+    "(?:don|doesn|didn|shouldn|wouldn|won|can|couldn|mustn)['\u2019]t|never)\\s+",
+    "|^\\s*(?:bitte\\s+)?(?:kein(?:e|en|em|er|es)?|nicht(?!\\s+nur\\b)|niemals)\\s+")
+  positions <- gregexpr(negative, clause, perl = TRUE)[[1L]]
+  if (positions[[1L]] < 0L) return(FALSE)
+  any(vapply(positions, function(at) {
+    scope <- substring(clause, at)
+    nchar(scope) <= 200L && length(strsplit(trimws(scope), "\\s+", perl = TRUE)[[1L]]) <= 24L
+  }, logical(1)))
+}
+
+# TRUE when `pattern` (PCRE) matches somewhere outside recognized negation.
 affirmed_hit <- function(text, pattern) {
   text <- enc2utf8(text)
   starts <- gregexpr(pattern, text, perl = TRUE)[[1]]
   if (starts[[1]] < 0L) return(FALSE)
   any(vapply(starts, function(start) {
-    !grepl(negation_prefix, substr(text, max(1L, start - 40L), start - 1L), perl = TRUE)
+    !negated_keyword_prefix(text, start)
   }, logical(1)))
 }
 
@@ -300,11 +318,12 @@ route_workflow <- function(spec, requested = "auto", catalog = catalog_snapshot(
     }
   }
   closing <- list(route_stage(registry, catalog, "demo", "std.demo.synthetic"),
-    route_stage(registry, catalog, "report", "std.report.render"))
+    route_stage(registry, catalog, "report", if (identical(spec$workflow$reporting, "workflowr")) "std.report.workflowr" else "std.report.render"))
   stages <- c(stages, closing)
   # Orchestration is infrastructure: it adds targets to the lean manifest only when requested.
   if (identical(spec$workflow$pipeline, "targets")) {
-    stages <- c(stages, list(route_stage(registry, catalog, "pipeline", "std.pipeline.targets")))
+    stages <- c(stages, list(route_stage(registry, catalog, "pipeline", if (identical(spec$workflow$reporting, "workflowr"))
+      "std.pipeline.workflowr_targets" else "std.pipeline.targets")))
   }
   if (!modality %in% c("unknown", "tabular")) {
     gaps <- c(gaps, paste0("modality_workflow_requires_review:", modality))
@@ -438,7 +457,9 @@ route_dependencies <- function(route, catalog) {
 }
 
 route_summary <- function(route) {
-  summary <- list(profile = route$profile, bundle = "standard-0.3.0", engine = route$engine, modality = route$modality,
+  workflowr <- any(vapply(route$stages, function(x) identical(x$capability, "std.report.workflowr"), logical(1)))
+  summary <- list(profile = route$profile, bundle = if (workflowr) "workflowr-0.4.0" else "standard-0.3.0",
+    engine = route$engine, modality = route$modality,
     stages = lapply(route$stages, function(x) x[c("stage", "capability", "adapter", "enabled", "status")]),
     gaps = as.list(route$gaps))
   if (length(route$notes)) summary$notes <- as.list(route$notes)

@@ -5,7 +5,7 @@
 # enumerated decisions plus a validated plain-text rationale can be accepted.
 
 planner_prompt_version <- "planner-4"
-planner_grounding_policy <- "registry-keywords-1"
+planner_grounding_policy <- "registry-keywords-2"
 
 planner_limits <- list(
   name = 200L, type = 100L, goal = 2000L, prompt = 14000L, output_bytes = 4096L,
@@ -273,17 +273,35 @@ planner_proposal_json <- function(proposal) {
 
 # Reviewed keyword rules: infer_goal() for the decisions plus keyword hits
 # among selectable capabilities (a superset of infer_goal's specialist hits).
+planner_bound_proposal <- function(proposal, registry = capability_registry()) {
+  notes <- character()
+  if (length(proposal$capability_ids) > planner_limits$capabilities) {
+    # Registry order is not a relevance ranking. Do not silently select the
+    # first eight routes from an overbroad request.
+    proposal$capability_ids <- character()
+    notes <- c(notes, "Too many capabilities matched; narrow the request before selecting a workflow.")
+  }
+  candidate <- vapply(proposal$capability_ids, function(id)
+    identical(registry$capabilities[[id]]$status, "candidate"), logical(1))
+  if (any(candidate)) {
+    notes <- c(notes, "Some proposed capabilities are unapproved candidates without reviewed workflow adapters.")
+  }
+  if (length(notes)) proposal$unresolved <- c(
+    utils::head(proposal$unresolved, planner_limits$notes - length(notes)), notes)
+  proposal
+}
+
 deterministic_proposal <- function(goal, registry = capability_registry()) {
   signals <- infer_goal(goal, registry)
   text <- tolower(enc2utf8(goal))
   hits <- Filter(function(cap) keyword_hit(text, cap$keywords), planner_capabilities(registry))
   unknown <- planner_fields[vapply(planner_fields, function(f) identical(signals[[f]], "unknown"), logical(1))]
-  list(
+  planner_bound_proposal(list(
     aim = signals$aim, outcome_family = signals$outcome_family, unit_structure = signals$unit_structure,
     modality = signals$modality, capability_ids = unname(vapply(hits, function(cap) cap$id, character(1))),
     rationale = "Reviewed keyword rules matched the goal text; fields without a matching rule stay unknown.",
     unresolved = if (length(unknown)) paste(unknown, "not determined by keyword rules") else character()
-  )
+  ), registry)
 }
 
 # Retain only capabilities with registered keyword evidence in the goal.
@@ -301,6 +319,7 @@ planner_ground <- function(plan, goal, registry = capability_registry()) {
   }
   plan$provenance$capability_grounding <- list(policy = planner_grounding_policy,
     retained = as.list(kept), removed = as.list(removed))
+  plan$proposal <- planner_bound_proposal(plan$proposal, registry)
   checked <- planner_validate(planner_proposal_json(plan$proposal), planner_schema(registry), registry)
   if (!checked$ok) abort_cttir("The grounded planner proposal is invalid.", "cttir_schema_error", "invalid_grounded_proposal")
   plan
@@ -326,6 +345,7 @@ planner_qualification_context <- function(manifest = NULL) {
   if (is.null(manifest)) manifest <- read_document(resource_file("runtime", "manifest.json"))
   registry <- capability_registry()
   list(prompt_version = planner_prompt_version, grounding_policy = planner_grounding_policy,
+    implementation_sha256 = model_implementation_fingerprint(),
     prompt_sha256 = content_hash(paste(planner_rules(registry), collapse = "\n")),
     planner_assets_sha256 = content_hash(json_text(list(
       user = planner_prompt("<name>", "<type>", "<goal>", registry)$user,

@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "bundle": "workflowr-0.4.0",
+  "status": "explicit_creation_migration_and_targets_supported",
+  "mode": "declarative_reflowR_workflowr_profile",
+  "reflowR_revision": "65fda310397220996bdf27135e7968b85144a6f0",
+  "workflowr_version": "1.7.2",
+  "workflowr_archive_sha256": "1406ec1890396a2354b563c9eb555620f68abeb99eb7320b9880d119a4d277fe",
+  "renderer": "workflowr::wflow_build",
+  "format": "workflowr::wflow_html",
+  "initializer_invoked_during_project_creation": false,
+  "files": {
+    "code/R/cttir_workflow.R": "0333a8feb138eb870a261b59773ba4fc8c5fe4b521c62267538ba2d586ad3c1e",
+    "code/R/report_integrity.R": "53730e591dcfca548ee100544affcbd990b53284b4a8d369e94d205ee14bed14",
+    "code/render_report.R": "60bb3d07ffa2638283a50b2870da8add520a02585100d3a65a468fb7e64f0f67",
+    "code/run_workflow.R": "793d7a9bb3ab4f0600c05b0eaacec9d889d04eb92693fc98b7d4387a6e56bf03",
+    "_targets.R": "4315b03274e610563609515eedcac2b65f8a7ff8eeb5b6aebc696372fff5c969"
+  },
+  "generator_source_sha256": "1ad568e309abf1c956eb177c4a17dd415516c174e6cc85545268f14bb50e30da",
+  "limitations": [
+    "Migration from older template bundles requires separate review.",
+    "Pages remain scaffold placeholders until reviewed result views are connected.",
+    "The candidate runner records before/after code, configuration and external dataset content identities."
+  ],
+  "base_bundle": "standard-0.3.0"
+}

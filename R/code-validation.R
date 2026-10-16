@@ -131,6 +131,9 @@ empty_argument <- function(parts, i) identical(unname(parts[i]), unname(alist(x 
 #'   code, such as a missing first argument without a default
 #'   (`missing_required_argument:<formal>`); their `package` is `NA` and their
 #'   `export` names the callee as `package::export`.
+#'   The additional `static_complete` attribute requires nonempty code and no
+#'   warning, rejection or parse error. It does not establish execution or
+#'   scientific correctness; those require separate fixture evidence.
 #' @noRd
 validate_generated_code <- function(text, catalog = NULL, approved_only = TRUE) {
   scalar_flag(approved_only, "approved_only")
@@ -140,7 +143,10 @@ validate_generated_code <- function(text, catalog = NULL, approved_only = TRUE) 
   acc <- new.env(parent = emptyenv())
   acc$rows <- data.frame(call = character(), package = character(), export = character(), status = character(),
     reason = character(), stringsAsFactors = FALSE)
-  finish <- function(rows) structure(rows, valid = nrow(rows) == 0L || all(rows$status %in% c("ok", "warning")))
+  finish <- function(rows) structure(rows,
+    valid = nrow(rows) == 0L || all(rows$status %in% c("ok", "warning")),
+    static_complete = length(expressions) > 0L && !inherits(expressions, "error") &&
+      all(rows$status == "ok"))
   expressions <- tryCatch(parse(text = text, keep.source = FALSE), error = function(e) e)
   if (inherits(expressions, "error")) {
     message <- strsplit(conditionMessage(expressions), "\n", fixed = TRUE)[[1]][[1]]
@@ -406,7 +412,8 @@ validate_generated_code <- function(text, catalog = NULL, approved_only = TRUE) 
     if (base_call) {
       positions <- higher_order_formals[[name]]
       strict <- if (length(positions)) positions[[length(positions)]] else character()
-      check_arguments(expr, base_formals(name), name, paste0("base::", name), strict, outside_dots = !in_function)
+      check_arguments(expr, base_formals(name), name, paste0("base::", name), strict,
+        required = TRUE, outside_dots = !in_function)
     }
     for (i in seq_along(args)) if (!empty_argument(args, i)) walk(args[[i]], depth + 1L, formula, in_function)
     invisible(NULL)

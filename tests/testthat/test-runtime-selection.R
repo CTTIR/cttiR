@@ -118,9 +118,12 @@ test_that("memory pressure before inference preserves an existing runtime state"
     list(platform = "Linux", arch = "x86_64", physical_cores = 16,
       available_memory_bytes = if (reads < 3L) 1e12 else 0, available_disk_bytes = 1e12)
   }, runtime_owner = function(...) list(pid = Sys.getpid()),
+    runtime_state_verified = function(...) TRUE,
     local_model = function(...) list(digest = candidate$digest),
     runtime_probe = function(...) stop("unexpected inference"),
-    runtime_request = function(...) stop("unexpected HTTP"))
+    runtime_request = function(endpoint, route, ...) {
+      expect_identical(route, "version"); list(version = manifest$runtime_version)
+    })
   result <- setup(offline = TRUE)
   expect_identical(result$state, "blocked")
   expect_match(result$blockers, "memory headroom changed")
