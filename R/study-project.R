@@ -1,7 +1,30 @@
 # The external declaration is the trust boundary. Project files cannot supply it.
 study_require <- function() {
-  for (package in c("reflowR", "workflowr", "callr"))
+  for (package in c("reflowR", "workflowr", "callr", "git2r"))
     if (!requireNamespace(package, quietly = TRUE)) study_fail(paste("Provision the external R library first:", package))
+}
+
+study_repository <- function(directory) {
+  root <- normalizePath(directory, mustWork = TRUE)
+  metadata <- file.path(root, ".git")
+  assert_plain_path(metadata)
+  if (!dir.exists(metadata)) study_fail("A study-owned Git repository is required; ancestor discovery is forbidden.")
+  repo <- tryCatch(git2r::repository(root, discover = FALSE), error = function(e) NULL)
+  if (is.null(repo) || !identical(normalizePath(git2r::workdir(repo), mustWork = TRUE), root))
+    study_fail("Git repository work directory must equal the study root.")
+  invisible(TRUE)
+}
+
+study_report_git_status <- function(directory, files) {
+  study_repository(directory)
+  repo <- git2r::repository(directory, discover = FALSE)
+  status <- git2r::status(repo, ignored = TRUE)
+  explicit <- unlist(status, use.names = FALSE)
+  head <- tryCatch(git2r::ls_tree(repo = repo), error = function(e) NULL)
+  committed <- if (is.null(head)) character() else paste0(head$path[head$type == "blob"], head$name[head$type == "blob"])
+  if (!all(files %in% c(explicit, committed)))
+    study_fail("Report source Git status is ambiguous; stage the generated analysis Rmd files before rendering.")
+  invisible(TRUE)
 }
 
 study_json <- function(path) jsonlite::read_json(path, simplifyVector = FALSE)
@@ -40,7 +63,7 @@ study_installed_runtime <- function() {
 study_dependency_lock <- function() {
   study_require()
   installed <- utils::installed.packages()
-  roots <- c("cttiR", "reflowR", "workflowr", "callr")
+  roots <- c("cttiR", "reflowR", "workflowr", "callr", "git2r")
   dependencies <- tools::package_dependencies(roots, db = installed,
     which = c("Depends", "Imports", "LinkingTo"), recursive = TRUE)
   packages <- sort(unique(c(roots, unlist(dependencies, use.names = FALSE))))
@@ -72,7 +95,8 @@ study_environment <- function(lock) {
 #' @return A list with directory and an external trusted declaration. Retain the
 #'   declaration outside the project and pass successive updated declarations to
 #'   [study_run()], [study_render()] and [study_validate_project()]. Creation
-#'   neither initializes Git nor commits, publishes or approves a real study.
+#'   initializes a study-owned Git repository and stages only generated analysis
+#'   Rmd files. It does not commit, publish or approve a real study.
 #' @export
 study_project <- function(directory, spec, data, dependency_lock, author, units, seed = 1L) {
   study_require(); study_validate(spec, data, units); study_environment(dependency_lock)
@@ -83,17 +107,21 @@ study_project <- function(directory, spec, data, dependency_lock, author, units,
   assert_plain_path(root)
   if (file.exists(root) || dir.exists(root) || !dir.exists(dirname(root)))
     study_fail("Use a new project path with an existing parent directory.")
-  variables <- c(list(spec$outcome, spec$exposure), spec$covariates)
-  columns <- c(spec$observation_id, vapply(variables, `[[`, "", "name"))
+  layout <- study_data_layout(spec)
+  variables <- layout$variables
+  columns <- layout$columns
   projected <- data[, columns, drop = FALSE]
-  projected[[spec$observation_id]] <- as.character(projected[[spec$observation_id]])
+  projected[[layout$id]] <- as.character(projected[[layout$id]])
   scratch <- tempfile("study-input-", tmpdir = tempdir(), fileext = ".csv")
   on.exit(unlink(scratch), add = TRUE)
   old <- options(digits = 17L); on.exit(options(old), add = TRUE)
   utils::write.csv(projected, scratch, row.names = FALSE, na = "", fileEncoding = "UTF-8")
-  classes <- c("character", vapply(variables, function(x) if (x$type == "continuous") "numeric" else "character", ""))
-  recipe <- list(schema_version = 1L, id = .study_recipe_id, engine = "stats::lm",
-    interpretation = "noncausal_association", input = list(path = "data/raw/observations.csv",
+  classes <- layout$classes
+  paired <- study_is_paired(spec)
+  recipe <- list(schema_version = 1L, id = spec$recipe_id,
+    engine = if (paired) "stats::t.test" else "stats::lm",
+    interpretation = if (paired) "noncausal_paired_mean_change" else "noncausal_association",
+    input = list(path = "data/raw/observations.csv",
       sha256 = file_hash(scratch), rows = nrow(data), columns = as.list(columns), classes = as.list(classes),
       units = as.list(units), projection = "Only the declared ID and analysis columns are copied; no rows are excluded."),
     outputs = as.list(c("output/analysis/results.json", "output/analysis/coefficients.csv",
@@ -108,7 +136,9 @@ study_project <- function(directory, spec, data, dependency_lock, author, units,
     legal_basis = "Locally supplied synthetic values; no ethics or legal approval asserted")
   composition <- list(schema_version = 1L, study = spec, recipe = recipe, runtime = runtime)
   compiled <- reflowR::reflow_init_strict(root, profile, spec$name, author, dependency_lock,
-    git = FALSE, composition = composition)
+    git = TRUE, composition = composition)
+  analysis_files <- c("analysis/index.Rmd", vapply(profile$stages, `[[`, "", "analysis"))
+  git2r::add(git2r::repository(root, discover = FALSE), analysis_files, force = TRUE)
   raw <- file.path(root, "data/raw")
   Sys.chmod(raw, "0755")
   on.exit(Sys.chmod(raw, "0555"), add = TRUE)
@@ -166,12 +196,13 @@ study_validate_project <- function(directory, declaration, require_run = FALSE, 
     structure <- declaration$structure
     if (!identical(structure$profile$profile_version, "strict-cttir-v1")) study_fail("A composed strict profile is required.")
     study_validate(structure$composition$study)
+    study_repository(directory)
     study_environment(structure$dependency_lock)
     checked <- reflowR::reflow_validate_strict(directory, structure,
       execution_receipts = if (!is.null(declaration$render)) declaration$render$stages else NULL)
     if (!isTRUE(checked$valid) || !isTRUE(checked$execution_ready)) study_fail("Strict project structure or installed runtime differs from its declaration.")
     recipe <- structure$composition$recipe
-    if (!identical(recipe$id, .study_recipe_id) || !identical(recipe$input$path, "data/raw/observations.csv") ||
+    if (!identical(recipe$id, structure$composition$study$recipe_id) || !identical(recipe$input$path, "data/raw/observations.csv") ||
         !identical(study_hashes(directory, recipe$input$path)[[1L]], recipe$input$sha256)) study_fail("Raw input differs from its declared identity.")
     raw <- study_inventory(file.path(as.character(fs::path_abs(directory)), "data/raw"))
     if (!setequal(names(raw), c("README.md", "observations.csv"))) study_fail("Unexpected raw input inventory.")
@@ -211,9 +242,13 @@ study_run <- function(directory, declaration) {
   if (!identical(names(data), unlist(recipe$input$columns, use.names = FALSE)) || nrow(data) != recipe$input$rows)
     study_fail("Imported shape differs from the compiler declaration.")
   result <- study_analyze(spec, data, recipe$input$units)
-  variables <- c(list(spec$outcome, spec$exposure), spec$covariates)
+  variables <- study_data_layout(spec)$variables
   continuous <- Filter(function(x) x$type == "continuous", variables)
-  descriptives <- do.call(rbind, lapply(continuous, function(x) {
+  descriptives <- if (study_is_paired(spec)) do.call(rbind, lapply(c("before", "after", "difference"), function(key) {
+    value <- result$diagnostics[[key]]
+    data.frame(variable = key, unit = spec$outcome$unit, n = length(value), mean = mean(value),
+      sd = stats::sd(value), min = min(value), median = stats::median(value), max = max(value))
+  })) else do.call(rbind, lapply(continuous, function(x) {
     value <- data[[x$name]]
     data.frame(variable = x$name, unit = x$unit, n = length(value), mean = mean(value),
       sd = stats::sd(value), min = min(value), median = stats::median(value), max = max(value))
@@ -235,11 +270,20 @@ study_run <- function(directory, declaration) {
   device <- grDevices::dev.cur(); on.exit(if (device %in% grDevices::dev.list()) grDevices::dev.off(device), add = TRUE)
   graphics::par(mfrow = c(1L, 2L), mar = c(4, 4, 3, 1))
   color <- declaration$structure$profile$primary_color
-  graphics::plot(result$diagnostics$fitted, result$diagnostics$residual, pch = 19L, col = color,
-    xlab = "Fitted outcome", ylab = "Residual", main = "Residuals versus fitted")
-  graphics::abline(h = 0, col = "grey50", lty = 2L)
-  stats::qqnorm(result$diagnostics$residual, pch = 19L, col = color, main = "Residual normal quantiles")
-  stats::qqline(result$diagnostics$residual, col = "grey50", lty = 2L)
+  if (study_is_paired(spec)) {
+    graphics::plot(seq_len(result$n_pairs), result$diagnostics$difference, pch = 19L, col = color,
+      xlab = "Pair index (sorted ID; not time)", ylab = paste("After minus before [", spec$outcome$unit, "]"),
+      main = "Recorded within-pair differences")
+    graphics::abline(h = 0, col = "grey50", lty = 2L)
+    stats::qqnorm(result$diagnostics$difference, pch = 19L, col = color, main = "Difference normal quantiles")
+    stats::qqline(result$diagnostics$difference, col = "grey50", lty = 2L)
+  } else {
+    graphics::plot(result$diagnostics$fitted, result$diagnostics$residual, pch = 19L, col = color,
+      xlab = "Fitted outcome", ylab = "Residual", main = "Residuals versus fitted")
+    graphics::abline(h = 0, col = "grey50", lty = 2L)
+    stats::qqnorm(result$diagnostics$residual, pch = 19L, col = color, main = "Residual normal quantiles")
+    stats::qqline(result$diagnostics$residual, col = "grey50", lty = 2L)
+  }
   grDevices::dev.off(device)
   if (!identical(before, study_hashes(directory, names(before)))) study_fail("Declared inputs changed during computation.")
   study_admit(directory, declaration)
@@ -278,6 +322,9 @@ study_stage <- function(stage, directory = ".") {
   table <- function(x) cat(knitr::kable(x, format = "html", escape = TRUE, digits = 6L), "\n")
   paragraph(paste("Synthetic study:", spec$name))
   paragraph(paste("Scientific review:", result$scientific_review))
+  if (study_is_paired(spec)) {
+    study_paired_stage(stage, spec, recipe, result, directory, declaration, paragraph, table)
+  } else {
   if (stage == "protocol") {
     paragraph(spec$question); paragraph(paste("Population:", spec$population))
     paragraph(paste("Estimand:", spec$estimand, "; independent observations; no causal interpretation."))
@@ -315,6 +362,7 @@ study_stage <- function(stage, directory = ".") {
     paragraph(paste("External analysis receipt SHA-256:", declaration$run$sha256))
     paragraph("Current raw inputs, fixed compiler controls, complete installed writer inventory, R/package versions and recorded outputs were checked before this view. Rendering consumes recorded results and performs no model fit.")
   }
+  }
   study_assert_run(directory, declaration)
   view <- list(schema_version = 1L, stage = stage, run_receipt_sha256 = declaration$run$sha256,
     status = "recorded_results_presented_not_scientifically_approved")
@@ -336,6 +384,8 @@ study_render <- function(directory, declaration, timeout = 600) {
   study_admit(directory, declaration, require_run = TRUE)
   if (!is.null(declaration$render)) study_fail("This external declaration already pins a render; preserve it and its artifacts.")
   root <- as.character(fs::path_abs(directory))
+  files <- c("analysis/index.Rmd", vapply(declaration$structure$profile$stages, `[[`, "", "analysis"))
+  study_report_git_status(root, files)
   callr::r(function(root, declaration) {
     options(cttir.study.external_declaration = declaration)
     setwd(root)

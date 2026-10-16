@@ -14,6 +14,7 @@ reference:
   - title: Synthetic study workflow
     contents:
       - study_spec
+      - study_paired_spec
       - study_project
       - study_validate
       - study_dependency_lock

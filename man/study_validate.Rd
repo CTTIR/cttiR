@@ -7,9 +7,11 @@
 study_validate(spec, data = NULL, units = NULL)
 }
 \arguments{
-\item{spec}{A closed specification from \code{\link[=study_spec]{study_spec()}}.}
+\item{spec}{A closed specification from \code{\link[=study_spec]{study_spec()}} or \code{\link[=study_paired_spec]{study_paired_spec()}}.}
 
-\item{data}{Optional data frame. Every row must have a unique, nonmissing ID.}
+\item{data}{Optional data frame. Association observations need unique,
+nonmissing IDs. Paired observations need exactly one measurement per pair ID
+at each declared occasion.}
 
 \item{units}{Named character vector or list declaring the actual units of
 every continuous analysis column; these must equal the planned units.}
