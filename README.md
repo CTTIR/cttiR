@@ -53,6 +53,9 @@ statistical fit. The dependency snapshot records installed versions; provision
 the external library separately. Passing checks does not approve a real study,
 establish scientific validity, commit files or publish the site.
 
+The `strict-study-workflow` vignette gives a complete synthetic specification,
+data example and the explicit compile, analyze and render sequence.
+
 `evidence_search()` and `evidence_resolve()` retrieve local source passages from
 an externally pinned evidence registry. They preserve version and page/topic
 locators, reject changed sources and exclude restricted documents. A trusted
