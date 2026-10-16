@@ -3,7 +3,7 @@
 * text=auto eol=lf
 # Preserve exact upstream notice bytes, including original line endings.
 inst/licenses/*.txt -text
-inst/licenses/upstream/texts/*.txt -text
+inst/licenses/upstream/*.txt -text
 *.gz binary
 *.sqlite binary
 *.png binary

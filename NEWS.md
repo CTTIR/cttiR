@@ -1,5 +1,9 @@
 # cttiR 0.1.1.9000
 
+* Add a worked synthetic paired-study guide and shorten bundled upstream notice
+  paths for portable source archives, preserving every notice byte and license
+  reference.
+
 * Detect symbolic links through cross-platform file metadata before project
   reads or writes, including linked ancestors on Windows. Exact macOS system
   aliases retain their existing exception.
