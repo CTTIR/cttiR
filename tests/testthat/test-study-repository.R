@@ -8,7 +8,10 @@ test_that("study repository checks refuse ancestor discovery", {
   expect_error(study_repository(child), "study-owned Git")
   git2r::init(child)
   expect_true(study_repository(child))
-  expect_identical(normalizePath(git2r::workdir(git2r::repository(child, discover = FALSE))), child)
+  expect_identical(
+    normalizePath(git2r::workdir(git2r::repository(child, discover = FALSE)), mustWork = TRUE),
+    normalizePath(child, mustWork = TRUE)
+  )
   unlink(file.path(child, ".git"), recursive = TRUE)
   expect_error(study_repository(child), "study-owned Git")
 })
