@@ -12,7 +12,7 @@ Updated 16 October 2026.
 - Read-only evidence search and citation resolution with exact source locators, restriction checks and externally pinned registry identities.
 - Local model setup, owned-runtime controls and assistance validation. Setup success does not qualify a model for research advice.
 
-The combined package archive passed 7,292 assertions with no test failures or warnings and 15 explicit skips. Its one package-check note concerns long upstream-license paths. The paired-workflow and report-provenance extension also passed 97 independent focused checks. The supporting reflowR archive passed 2,593 assertions with two skips, and its latest six-job hosted matrix passed. Windows portability fixes are published; their complete hosted cttiR matrix remains pending. Local success is not a substitute for that verification.
+The combined core regression passed 7,292 assertions with no test failures or warnings and 15 explicit skips. The paired-workflow and report-provenance extension also passed 97 independent focused checks. A subsequent documentation and notice-path update builds cleanly and passes packaging checks without errors, warnings or notes; executable code and tests are unchanged. The worked paired guide passed separate numerical and report-provenance review. The supporting reflowR archive passed 2,593 assertions with two skips, and its latest six-job hosted matrix passed. Windows portability fixes are published; their complete hosted cttiR matrix remains pending. Local success is not a substitute for that verification.
 
 ## Model and evaluation work
 

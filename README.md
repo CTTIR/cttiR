@@ -67,7 +67,8 @@ ID, fixes the difference direction as after minus before, rejects incomplete
 pairs and produces paired-specific reports through the same strict workflow.
 The independence declaration is an assumption requiring review, not proof of
 independence or a causal effect. This recipe does not extend the model's
-qualified planning scope.
+qualified planning scope. The `strict-paired-study` vignette provides a complete
+simulated example with shuffled rows and the compile, analyze and render steps.
 
 `evidence_search()` and `evidence_resolve()` retrieve local source passages from
 an externally pinned evidence registry. They preserve version and page/topic
