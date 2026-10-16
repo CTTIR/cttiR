@@ -121,6 +121,9 @@ runtime_cleanup <- function(files, expected = NULL, dry_run = TRUE, consent = FA
 #' lock. Sends a graceful termination signal only to that process. No lookup by
 #' port/name, forced kill, model deletion or service-manager change is performed.
 #' All files and release pins remain available for a subsequent explicit setup.
+#' Windows supports the read-only preview only. Applying a stop on Windows is
+#' refused before creating locks or receipts or sending signals, because this
+#' graceful termination operation is unavailable there.
 #' @param dry_run Preview without signals or writes (default `TRUE`).
 #' @param consent Explicit consent to stop the previewed daemon (default `FALSE`).
 #' @param expected Exact identity checksum returned by the preview.
@@ -143,6 +146,9 @@ runtime_stop <- function(dry_run = TRUE, consent = FALSE, expected = NULL) {
   if (dry_run) return(result)
   if (!consent) abort_cttir("Stopping the owned daemon requires explicit consent.")
   if (!identical(expected, observed$expected)) abort_cttir("Daemon identity changed or was not previewed.", "cttir_path_conflict")
+  if (identical(.Platform$OS.type, "windows"))
+    abort_cttir("Graceful daemon shutdown is not supported on Windows; no files or signals were changed.",
+      "cttir_runtime_unavailable", "unsupported_platform")
   lock <- file.path(root, "setup-lock"); assert_plain_path(lock)
   if (!dir.create(lock, showWarnings = FALSE)) abort_cttir("Runtime setup is locked; preserve the active writer.", "cttir_transaction_conflict")
   on.exit(unlink(lock, recursive = TRUE), add = TRUE)

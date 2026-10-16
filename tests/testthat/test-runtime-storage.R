@@ -72,10 +72,44 @@ test_that("daemon stop targets only a separately previewed owned process", {
   expect_error(runtime_stop(dry_run = FALSE, expected = preview$expected), 'explicit consent')
   expect_error(runtime_stop(dry_run = FALSE, consent = TRUE, expected = 'stale'), 'identity changed')
   expect_true(child$is_alive())
-  result <- runtime_stop(dry_run = FALSE, consent = TRUE, expected = preview$expected)
-  expect_identical(result$state, 'stopped'); expect_false(child$is_alive())
-  expect_identical(read_document(result$receipt)$state, 'stopped')
+  if (.Platform$OS.type == "windows") {
+    expect_error(runtime_stop(dry_run = FALSE, consent = TRUE, expected = preview$expected),
+      "Graceful daemon shutdown is not supported on Windows", class = "cttir_runtime_unavailable")
+    expect_true(child$is_alive())
+    expect_identical(tree_hashes(root), before)
+    expect_false(dir.exists(file.path(root, 'lifecycle-receipts')))
+  } else {
+    result <- runtime_stop(dry_run = FALSE, consent = TRUE, expected = preview$expected)
+    expect_identical(result$state, 'stopped'); expect_false(child$is_alive())
+    expect_identical(read_document(result$receipt)$state, 'stopped')
+  }
   expect_false(dir.exists(file.path(root, 'setup-lock')))
   local_mocked_bindings(runtime_owner = function(...) NULL)
   expect_error(runtime_stop(), 'No verified owned daemon')
+})
+
+test_that("unsupported Windows stop refuses before writes or signals", {
+  root <- new_parent(); withr::local_options(cttiR.runtime_dir = root)
+  owner <- list(pid = Sys.getpid(), host = Sys.info()[["nodename"]], endpoint = runtime_endpoint())
+  local_mocked_bindings(runtime_owner = function(...) owner)
+  signals <- 0L
+  local_mocked_bindings(ps_terminate = function(...) {
+    signals <<- signals + 1L
+    stop("Unexpected signal attempt")
+  }, .package = "ps")
+  stop_windows <- runtime_stop
+  platform <- .Platform; platform$OS.type <- "windows"
+  environment(stop_windows) <- list2env(list(.Platform = platform), parent = environment(runtime_stop))
+  before <- tree_hashes(root)
+  preview <- stop_windows()
+  expect_identical(preview$state, "planned")
+  expect_identical(tree_hashes(root), before)
+  expect_error(stop_windows(dry_run = FALSE, expected = preview$expected), "explicit consent")
+  expect_error(stop_windows(dry_run = FALSE, consent = TRUE, expected = "stale"), "identity changed")
+  expect_error(stop_windows(dry_run = FALSE, consent = TRUE, expected = preview$expected),
+    "Graceful daemon shutdown is not supported on Windows", class = "cttir_runtime_unavailable")
+  expect_identical(signals, 0L)
+  expect_identical(tree_hashes(root), before)
+  expect_false(dir.exists(file.path(root, "setup-lock")))
+  expect_false(dir.exists(file.path(root, "lifecycle-receipts")))
 })

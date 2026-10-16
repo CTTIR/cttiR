@@ -57,11 +57,11 @@ assert_plain_path <- function(path) {
   if (any(parts == "..")) abort_cttir("Parent traversal is not allowed in project paths.")
   current <- path
   repeat {
-    link <- Sys.readlink(current)
+    link <- fs::is_link(current)
     system_alias <- identical(Sys.info()[["sysname"]], "Darwin") &&
       current %in% c("/var", "/tmp", "/etc") &&
       identical(normalizePath(current, winslash = "/", mustWork = FALSE), paste0("/private", current))
-    if (!is.na(link) && nzchar(link) && !system_alias) {
+    if (isTRUE(link) && !system_alias) {
       abort_cttir("Project paths cannot pass through symbolic links.", "cttir_path_conflict", "symlink")
     }
     parent <- dirname(current)
