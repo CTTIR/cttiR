@@ -392,6 +392,7 @@ study_render <- function(directory, declaration, timeout = 600) {
   files <- c("analysis/index.Rmd", vapply(declaration$structure$profile$stages, `[[`, "", "analysis"))
   study_report_git_status(root, files)
   callr::r(function(root, declaration) {
+    loadNamespace("cttiR")
     options(cttir.study.external_declaration = declaration)
     setwd(root)
     files <- c("analysis/index.Rmd", vapply(declaration$structure$profile$stages, `[[`, "", "analysis"))
