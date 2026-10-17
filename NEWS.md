@@ -1,5 +1,9 @@
 # cttiR 0.1.1.9000
 
+* Name missing packages when a study dependency lock is incomplete. Provision
+  cpp11 explicitly in CI so binary installations retain the required build
+  dependency closure, and report the first failed app pipeline phase clearly.
+
 * Include the declared outcome name and unit on association and paired-study
   diagnostic value axes, including normal-quantile plots.
 

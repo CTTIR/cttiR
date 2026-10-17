@@ -36,7 +36,9 @@ jobs:
         if: matrix.config.full
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::rcmdcheck
+          extra-packages: |
+            any::rcmdcheck
+            any::cpp11
           needs: check
       - name: Install hard dependencies and the standard workflow suggests
         if: ${{ !matrix.config.full }}
@@ -45,6 +47,7 @@ jobs:
           dependencies: '"hard"'
           extra-packages: |
             any::rcmdcheck
+            any::cpp11
             any::testthat
             any::knitr
             any::rmarkdown
