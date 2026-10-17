@@ -68,7 +68,9 @@ study_dependency_lock <- function() {
     which = c("Depends", "Imports", "LinkingTo"), recursive = TRUE)
   packages <- sort(unique(c(roots, unlist(dependencies, use.names = FALSE))))
   packages <- setdiff(packages, "R")
-  if (!all(packages %in% rownames(installed))) study_fail("The prepared dependency closure is incomplete.")
+  missing <- setdiff(packages, rownames(installed))
+  if (length(missing)) study_fail(paste("The prepared dependency closure is incomplete. Missing:",
+    paste(missing, collapse = ", ")))
   list(R = list(Version = as.character(getRversion())), Packages = stats::setNames(lapply(packages,
     function(p) list(Package = p, Version = as.character(utils::packageVersion(p)))), packages))
 }
