@@ -1,6 +1,7 @@
 app_study_test_parent <- function() {
   path <- tempfile("cttir-app-study-")
   dir.create(path)
+  path <- normalizePath(path, winslash = "/", mustWork = TRUE)
   withr::defer({
     raw_dirs <- file.path(path, c("association_study", "paired_study"), "data", "raw")
     Sys.chmod(raw_dirs[dir.exists(raw_dirs)], mode = "0755")
@@ -146,43 +147,41 @@ test_that("pending study jobs refuse duplicates and ignore stale preview complet
 test_that("both fixed worker pipelines render current synthetic results without implicit fitting", {
   skip_if_not_installed("reflowR"); skip_if_not_installed("workflowr")
   skip_if_not(rmarkdown::pandoc_available())
-  with_original_worker_diagnostics({
-    worker <- function(operation, args) {
-      process <- app_worker(operation, args)
-      process$wait(timeout = 660000)
-      if (process$is_alive()) {
-        process$kill()
-        stop("The test-owned installed worker exceeded its deadline")
-      }
-      process$get_result()
+  worker <- function(operation, args) {
+    process <- app_worker(operation, args)
+    process$wait(timeout = 660000)
+    if (process$is_alive()) {
+      process$kill()
+      stop("The test-owned installed worker exceeded its deadline")
     }
-    for (recipe in c("association", "paired")) {
-      parent <- app_study_test_parent(); request <- app_study_test_request(parent, recipe)
-      p <- worker("study_preview", list(request = request))
-      expect_true(p$ok, info = paste(p$message, p$code, p$class))
-      if (!isTRUE(p$ok)) next
-      c <- worker("study_compile", list(request = request, expected_fingerprint = p$value$fingerprint))
-      expect_true(c$ok, info = paste(c$message, c$code, c$class))
-      if (!isTRUE(c$ok)) next
-      expect_identical(c$value$phase, "compiled")
-      bad <- c$value; bad$request$recipe <- if (recipe == "paired") "association" else "paired"
-      expect_false(app_worker_run("study_run", list(record = bad))$ok)
-      a <- worker("study_run", list(record = c$value))
-      expect_true(a$ok, info = paste(a$message, a$code, a$class))
-      if (!isTRUE(a$ok)) next
-      expect_identical(a$value$phase, "analyzed")
-      numerical <- tree_hashes(file.path(request$directory, "output/analysis"))
-      r <- worker("study_render", list(record = a$value))
-      expect_true(r$ok, info = paste(r$message, r$code, r$class))
-      if (!isTRUE(r$ok)) next
-      expect_identical(r$value$phase, "rendered")
-      expect_true(r$value$validation$valid)
-      expect_false(r$value$validation$scientific_approval)
-      expect_identical(tree_hashes(file.path(request$directory, "output/analysis")), numerical)
-      expect_length(list.files(file.path(request$directory, "docs"), pattern = "\\.html$"), 12L)
-      expect_false(app_worker_run("study_render", list(record = r$value))$ok)
-    }
-  })
+    process$get_result()
+  }
+  for (recipe in c("association", "paired")) {
+    parent <- app_study_test_parent(); request <- app_study_test_request(parent, recipe)
+    p <- worker("study_preview", list(request = request))
+    expect_true(p$ok, info = paste(p$message, p$code, p$class))
+    if (!isTRUE(p$ok)) next
+    c <- worker("study_compile", list(request = request, expected_fingerprint = p$value$fingerprint))
+    expect_true(c$ok, info = paste(c$message, c$code, c$class))
+    if (!isTRUE(c$ok)) next
+    expect_identical(c$value$phase, "compiled")
+    bad <- c$value; bad$request$recipe <- if (recipe == "paired") "association" else "paired"
+    expect_false(app_worker_run("study_run", list(record = bad))$ok)
+    a <- worker("study_run", list(record = c$value))
+    expect_true(a$ok, info = paste(a$message, a$code, a$class))
+    if (!isTRUE(a$ok)) next
+    expect_identical(a$value$phase, "analyzed")
+    numerical <- tree_hashes(file.path(request$directory, "output/analysis"))
+    r <- worker("study_render", list(record = a$value))
+    expect_true(r$ok, info = paste(r$message, r$code, r$class))
+    if (!isTRUE(r$ok)) next
+    expect_identical(r$value$phase, "rendered")
+    expect_true(r$value$validation$valid)
+    expect_false(r$value$validation$scientific_approval)
+    expect_identical(tree_hashes(file.path(request$directory, "output/analysis")), numerical)
+    expect_length(list.files(file.path(request$directory, "docs"), pattern = "\\.html$"), 12L)
+    expect_false(app_worker_run("study_render", list(record = r$value))$ok)
+  }
 })
 
 
