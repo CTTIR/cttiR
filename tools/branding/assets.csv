@@ -1,0 +1,15 @@
+identity,rendered,destination
+cttiR,icon-128.png,man/figures/icon-128.png
+cttiR,icon-256.png,man/figures/icon-256.png
+cttiR,icon-32.png,man/figures/icon-32.png
+cttiR,icon-48.png,man/figures/icon-48.png
+cttiR,icon-64.png,man/figures/icon-64.png
+cttiR,logo-light.png,man/figures/logo-light.png
+cttiR,logo-light.svg,man/figures/logo-light.svg
+cttiR,logo-mono.png,man/figures/logo-mono.png
+cttiR,logo-mono.svg,man/figures/logo-mono.svg
+cttiR,logo-symbol.svg,man/figures/logo-symbol.svg
+cttiR,logo.pdf,man/figures/logo.pdf
+cttiR,logo.png,man/figures/logo.png
+cttiR,logo.svg,man/figures/logo.svg
+cttiR,icon-48.png,pkgdown/favicon/favicon-48x48.png
