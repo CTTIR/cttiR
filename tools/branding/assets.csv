@@ -26,3 +26,9 @@ cttiR,hex.pdf,man/figures/logo.pdf
 cttiR,hex.png,man/figures/logo.png
 cttiR,hex.svg,man/figures/logo.svg
 cttiR,icon-48.png,pkgdown/favicon/favicon-48x48.png
+cttiR,icon-180.png,pkgdown/favicon/apple-touch-icon.png
+cttiR,icon-96.png,pkgdown/favicon/favicon-96x96.png
+cttiR,favicon.ico,pkgdown/favicon/favicon.ico
+cttiR,hex-dark.svg,pkgdown/favicon/favicon.svg
+cttiR,icon-192.png,pkgdown/favicon/web-app-manifest-192x192.png
+cttiR,icon-512.png,pkgdown/favicon/web-app-manifest-512x512.png

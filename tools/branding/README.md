@@ -43,3 +43,16 @@ package does not change its documentation theme or the user's font settings.
 
 Source archive SHA-256:
 `420401d00ab4c5eefdd74440d826b76282f3c1e5262c1f044fc0c6a052f6890e`
+
+## Documentation browser icons
+
+After building the documentation site, refresh its hex images and browser icons:
+
+```sh
+Rscript tools/branding/sync-site.R site
+```
+
+The command updates every HTML head, including nested articles and existing
+`dev/` pages, with relative SVG, PNG, ICO, touch-icon and manifest links.
+An artwork revision in each URL refreshes cached browser icons. Article content
+and other head metadata are preserved.
