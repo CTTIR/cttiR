@@ -1,5 +1,9 @@
 # cttiR 0.1.1.9000
 
+* Standardize the named v5 package logo across README, documentation pages
+  and available application headers, with matching light and dark artwork.
+
+
 * Name missing packages when a study dependency lock is incomplete. Provision
   cpp11 explicitly in CI so binary installations retain the required build
   dependency closure, and report the first failed app pipeline phase clearly.

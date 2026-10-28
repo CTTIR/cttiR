@@ -1,4 +1,4 @@
-# cttiR <picture class="cttir-readme-logo"><source class="cttir-logo-dark-source" media="(prefers-color-scheme: dark)" srcset="man/figures/logo-with-name-dark.png" /><img src="man/figures/logo-with-name.png" align="right" alt="cttiR hex logo" width="120" height="139" /></picture>
+# cttiR <picture class="cttir-readme-logo"><source class="cttir-logo-dark-source" media="(prefers-color-scheme: dark)" srcset="man/figures/logo-with-name-dark.png" /><img src="man/figures/logo-with-name.png" align="right" alt="cttiR logo" width="120" height="139" /></picture>
 
 **CTTIR Project Builder — three inputs, one structured research project.**
 
