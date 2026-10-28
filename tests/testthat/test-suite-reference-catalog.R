@@ -1,7 +1,7 @@
 test_that("suite reference additions preserve API pins and workflow approvals", {
   withr::local_options(cttiR.catalog_dir = tempfile("unused-catalog-"))
   old <- catalog_snapshot("031ca5226128b5a69a347bb775e545c9ab41eba64557b1caf623c4c5a8fc515f")
-  current <- catalog_snapshot("78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd")
+  current <- catalog_snapshot("7ce5825c796fbde5988f0836ce86bc84d89a90d900e560880399ec1ff5a51c17")
   expect_identical(approved_callables(current), approved_callables(old))
   pick <- function(catalog) Filter(function(p) p$name == "brainwritR", catalog$packages)[[1]]
   before <- pick(old); after <- pick(current)
@@ -18,7 +18,7 @@ test_that("suite reference additions preserve API pins and workflow approvals", 
 
 test_that("structural review adds only the three revision-scoped callables", {
   withr::local_options(cttiR.catalog_dir = tempfile("unused-catalog-"))
-  before <- approved_callables(catalog_snapshot("78aaa544281483dec6fa7de891c58196675f0df6cad6ded4ad0edbb9f3fe20cd"))
+  before <- approved_callables(catalog_snapshot("7ce5825c796fbde5988f0836ce86bc84d89a90d900e560880399ec1ff5a51c17"))
   current <- resolve_catalog()
   after <- approved_callables(current)
   added <- after[!after$approval_id %in% before$approval_id, , drop = FALSE]
