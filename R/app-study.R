@@ -14,8 +14,7 @@ app_study_request <- function(request) {
   if (!isTRUE(request$synthetic_acknowledged)) study_fail("Acknowledge that this workflow uses only the fixed synthetic example.")
   if (request$recipe == "paired" && !isTRUE(request$independent_pairs))
     study_fail("Explicitly acknowledge the independent synthetic pairs before proceeding.")
-  assert_plain_path(request$directory)
-  request$directory <- as.character(fs::path_abs(request$directory))
+  request$directory <- study_directory(request$directory)
   request
 }
 
@@ -101,8 +100,7 @@ app_study_fixture_binding <- function(fixture) {
   projected[[layout$id]] <- as.character(projected[[layout$id]])
   scratch <- tempfile("app-study-fixture-", fileext = ".csv")
   on.exit(unlink(scratch), add = TRUE)
-  old <- options(digits = 17L); on.exit(options(old), add = TRUE)
-  utils::write.csv(projected, scratch, row.names = FALSE, na = "", fileEncoding = "UTF-8")
+  study_write_csv(projected, scratch)
   list(sha256 = file_hash(scratch), rows = nrow(fixture$data), columns = as.list(layout$columns),
     classes = as.list(layout$classes), units = as.list(fixture$units), seed = fixture$seed)
 }

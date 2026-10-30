@@ -18,7 +18,14 @@ mixed <- cttiR::project("Mixed Example", "mixed", "Plan distinct research public
     analysis_role = "unknown", data_origin = "literature"))))
 standard <- cttiR::project("Standard Example", "other", "Plan a tabular comparison", out)
 stopifnot(standard$spec$workflow$profile == "standard_reflowR")
-stopifnot("reflowR_integration_pending" %in% standard$readiness$blockers)
+stopifnot(identical(standard$readiness$level, "scaffold_ready"),
+  isTRUE(standard$readiness$materialized),
+  identical(standard$readiness$analysis$state, "incomplete"),
+  identical(standard$readiness$analysis$executable, FALSE),
+  length(standard$readiness$analysis$missing_fields) > 0L,
+  length(standard$readiness$workflow$stages) > 0L,
+  all(vapply(standard$readiness$workflow$stages,
+    function(stage) identical(stage$status, "approved"), logical(1))))
 for (p in list(primary, mixed, standard)) {
   cttiR::validate_spec(file.path(p$path, "cttir-project.yml"))
   stopifnot(nrow(cttiR::resources("Seurat", path = p$path, limit = 1)) == 1L)

@@ -49,6 +49,14 @@ not a CTTIR specialist package fits. This vignette shows how cttiR chooses the
 profile, what the generated standard workflow contains, and which explicit steps
 stand between a scaffold and a study-data analysis.
 
+The preferred DescrTab2 2.1.16 backend is archived on CRAN. Choose
+`options = list(workflow = list(table_backend = "none"))` when creating a project
+to use the supported base descriptive table instead. To use the reviewed
+DescrTab2 adapter, provision the exact archive explicitly with
+`remotes::install_version("DescrTab2", version = "2.1.16", upgrade = "never")`.
+The generated dependency lock remains authoritative for the other package pins;
+an available archive does not establish ongoing upstream maintenance.
+
 ## Profiles
 
 | Evidence | Profile |

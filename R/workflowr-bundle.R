@@ -20,7 +20,9 @@ workflowr_profile_files <- function(preset = c("standard", "minimal"), pipeline 
   )
   for (page in pages) {
     title <- if (page == "index") "Research project" else gsub("_", " ", page, fixed = TRUE)
-    files[[paste0("analysis/", page, ".Rmd")]] <- paste0("---\n", yaml::as.yaml(list(title = title)), "---\n\n",
+    header <- list(title = title)
+    if (page == "index") header$site <- "workflowr::wflow_site"
+    files[[paste0("analysis/", page, ".Rmd")]] <- paste0("---\n", yaml::as.yaml(header), "---\n\n",
       "Creating this page does not run an analysis or establish scientific review.\n\n",
       "Review `protocol/analysis-plan.md` and the pinned workflow before adding calculations.\n",
       "Keep raw inputs read-only. Use explicit package namespaces and record unresolved design decisions.\n\n",
@@ -35,13 +37,16 @@ workflowr_profile_files <- function(preset = c("standard", "minimal"), pipeline 
     "\n## Recorded descriptive results\n\n",
     "The table below is shown only when input, code, configuration and output content identities remain current.\n",
     "A freshness check does not establish scientific validity.\n\n",
-    "```{r reviewed-description}\n",
+    "```{r reviewed-description, echo=FALSE, results='asis'}\n",
     "source('code/R/report_integrity.R', local = TRUE)\n",
     "descriptive <- cr_report_table('.', 'descriptives')\n",
     "if (is.null(descriptive)) {\n",
     "  cat('No completed study-data descriptive output is available.\\n')\n",
     "} else {\n",
-    "  knitr::kable(descriptive, format = 'html', escape = TRUE)\n",
+    "  cat('<div class=\"table-responsive\" tabindex=\"0\" role=\"region\" aria-label=\"Recorded descriptive results\">')\n",
+    "  cat(knitr::kable(descriptive, format = 'html', escape = TRUE,\n",
+    "    table.attr = 'class=\"table table-striped table-condensed\"'))\n",
+    "  cat('</div>')\n",
     "}\n```\n")
   root <- system.file("templates", "workflowr-0.4.0", package = "cttiR")
   manifest <- read_document(file.path(root, "manifest.json"))
