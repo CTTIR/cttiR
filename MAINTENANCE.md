@@ -108,7 +108,17 @@ zero failures or warnings, and 27 explicit skips. Its three check notes were
 development/new-submission metadata (including the non-CRAN reflowR dependency),
 the packaged website directory, and the system HTML validator's age. Seurat
 packages were unavailable for that baseline; they and the archived DescrTab2
-2.1.16 were installed before final validation. The final archive check is running.
+2.1.16 were installed before final validation.
+
+The final archive passes `R CMD check --as-cran`: **zero errors, zero warnings,
+one note** for the development/new-submission metadata and non-CRAN reflowR
+dependency. **7,502 assertions pass with zero failures or warnings and 21 explicit
+skips.** Vignette rebuilding, PDF manual and HTML manual validation pass. Browser,
+environment, source-message and workflow lifecycle skips were exercised
+separately below; the archived DescrTab2 branch also passed separately. The
+complete interoperability module passes another **432 assertions, zero failures,
+warnings or skips**, with Seurat 5.5.1 and SeuratObject 5.4.0, covering the
+historical-version fixture skipped under the current Seurat 5.6.0 library.
 
 Completed verification on macOS ARM64, R 4.6.1:
 
@@ -116,7 +126,9 @@ Completed verification on macOS ARM64, R 4.6.1:
   passed 34, including matrix rejection, factor references, numeric-ID
   collisions, exact decimal storage and accepted/refused path aliases. Both
   recipes agreed with direct computation and preserved recorded results through
-  rendering. Initial source-loaded compiler attempts correctly failed because
+  rendering. Eight Git regression assertions verify the selected branch, empty
+  repository/index and unchanged repeated initialization. Initial source-loaded
+  compiler attempts correctly failed because
   this workflow requires an installed package; installed reruns passed.
 - A separate 100,000-row round trip preserved all IDs, four numeric columns and
   fitted coefficients exactly. Writing took 1.052 seconds and reading 1.089
@@ -145,6 +157,11 @@ Completed verification on macOS ARM64, R 4.6.1:
   remain. Workflow syntax and `git diff --check` pass. A narrow scan found no
   tracked private-key/common-token patterns; this is not a comprehensive secret
   or vulnerability assessment.
+- All 47 generated documentation pages have their 1,823 local references and
+  356 fragment targets present. The site builds successfully with upstream
+  Pandoc math-option deprecation warnings retained. All 83 upstream notice files
+  match their hashes, and the notice manifest matches all 14 catalog snapshots;
+  this verifies preserved provenance, not a new legal or training-use approval.
 
 The frozen source archive SHA-256 is
 `577697590b0e577e4d2ef64ff2cfe3a86e656420cc141783d62016a1829ffabe`.
@@ -187,6 +204,11 @@ they use temporary projects and a private package installation. Linux-only
 runtime process checks and an actual qualified model remain external to this
 macOS validation. No model was acquired or qualified by this review.
 
+Strict dependency snapshots are not restoration manifests. Preserve the exact
+prepared writer library together with the external declarations; changing or
+reinstalling the runtime requires identity verification. Portable restoration
+across different R environments remains outside this release's evidence.
+
 Before release: obtain hosted checks for this candidate on the supported OS/R
 matrix, choose release metadata and resolve any intended CRAN distribution of
 reflowR. Confidential/offline report deployment needs asset provisioning and
@@ -194,3 +216,7 @@ review. Real-study interpretation and model qualification require their own
 evidence. Existing pinned projects retain their original bytes/runtime; compile
 a new strict project to use the repaired compiler. No changes from this review
 have been pushed, submitted or deployed.
+
+The local acceptance criteria for project scaffolding and the supported synthetic
+workflows are satisfied. The remaining unexercised test conditions require Linux
+runtime process behavior or a qualified model; they are not represented as passed.
