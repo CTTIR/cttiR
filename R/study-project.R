@@ -4,6 +4,19 @@ study_require <- function() {
     if (!requireNamespace(package, quietly = TRUE)) study_fail(paste("Provision the external R library first:", package))
 }
 
+study_directory <- function(directory) {
+  scalar_text(directory, "directory")
+  root <- as.character(fs::path_abs(directory))
+  # Check the supplied spelling first: normalization must not hide a user link.
+  # Only the platform aliases already admitted by assert_plain_path may resolve.
+  assert_plain_path(root)
+  parent <- dirname(root)
+  if (dir.exists(parent)) {
+    root <- file.path(normalizePath(parent, winslash = "/", mustWork = TRUE), basename(root))
+  }
+  root
+}
+
 study_repository <- function(directory) {
   root <- normalizePath(directory, mustWork = TRUE)
   metadata <- file.path(root, ".git")
@@ -30,7 +43,34 @@ study_report_git_status <- function(directory, files) {
 study_json <- function(path) jsonlite::read_json(path, simplifyVector = FALSE)
 study_write_json <- function(value, path) {
   dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
-  write_bytes(paste0(json_text(value, pretty = TRUE), "\n"), path)
+  text <- json_text(value, pretty = TRUE, digits = 17L)
+  write_bytes(paste0(text, "\n"), path)
+}
+
+# write.csv's internal 15-digit conversion ignores options(digits).
+study_write_csv <- function(data, path) {
+  numeric <- vapply(data, is.numeric, logical(1))
+  data[numeric] <- lapply(data[numeric], function(x) {
+    trimws(formatC(x, format = "g", digits = 17L, decimal.mark = "."))
+  })
+  utils::write.csv(data, path, row.names = FALSE, na = "", fileEncoding = "UTF-8")
+}
+
+study_read_csv <- function(path, classes) {
+  data <- utils::read.csv(path, check.names = FALSE, colClasses = "character",
+    stringsAsFactors = FALSE, fileEncoding = "UTF-8", na.strings = "")
+  if (length(classes) != ncol(data) || !all(classes %in% c("character", "numeric")))
+    study_fail("Imported columns differ from the declared classes.")
+  for (i in which(classes == "numeric")) {
+    text <- data[[i]]
+    if (anyNA(text) || any(!grepl("^-?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-]?[0-9]+)?$", text)))
+      study_fail("Stored numeric values must be finite decimal numbers.")
+    # The JSON parser avoids platform-dependent rounding in scan/read.table.
+    value <- as.numeric(jsonlite::fromJSON(paste0("[", paste(text, collapse = ","), "]")))
+    if (any(!is.finite(value))) study_fail("Stored numeric values must be finite.")
+    data[[i]] <- value
+  }
+  data
 }
 
 study_inventory <- function(root) {
@@ -89,7 +129,9 @@ study_environment <- function(lock) {
 
 #' Compile a Synthetic Study into a Strict Workflow Project
 #' @inheritParams study_validate
-#' @param directory New project directory whose parent already exists.
+#' @param directory New project directory whose parent already exists. Accepted
+#'   platform aliases are resolved to their physical paths before compilation;
+#'   user-created symbolic links remain unsupported.
 #' @param dependency_lock An externally prepared dependency lock, for example
 #'   from [study_dependency_lock()]. No packages are restored automatically.
 #' @param author Plain-text author name.
@@ -99,14 +141,15 @@ study_environment <- function(lock) {
 #'   [study_run()], [study_render()] and [study_validate_project()]. Creation
 #'   initializes a study-owned Git repository and stages only generated analysis
 #'   Rmd files. It does not commit, publish or approve a real study.
+#'   Declared measurements are written as 17-digit decimal values and checked
+#'   for an exact round trip before any project is created.
 #' @export
 study_project <- function(directory, spec, data, dependency_lock, author, units, seed = 1L) {
   study_require(); study_validate(spec, data, units); study_environment(dependency_lock)
   runtime <- study_installed_runtime()
   if (!all(c("cttiR", "reflowR", "workflowr", "callr", "fs") %in% names(dependency_lock$Packages)))
     study_fail("The lock must include the study compiler and rendering runtime.")
-  root <- as.character(fs::path_abs(directory))
-  assert_plain_path(root)
+  root <- study_directory(directory)
   if (file.exists(root) || dir.exists(root) || !dir.exists(dirname(root)))
     study_fail("Use a new project path with an existing parent directory.")
   layout <- study_data_layout(spec)
@@ -116,9 +159,14 @@ study_project <- function(directory, spec, data, dependency_lock, author, units,
   projected[[layout$id]] <- as.character(projected[[layout$id]])
   scratch <- tempfile("study-input-", tmpdir = tempdir(), fileext = ".csv")
   on.exit(unlink(scratch), add = TRUE)
-  old <- options(digits = 17L); on.exit(options(old), add = TRUE)
-  utils::write.csv(projected, scratch, row.names = FALSE, na = "", fileEncoding = "UTF-8")
   classes <- layout$classes
+  study_write_csv(projected, scratch)
+  restored <- study_read_csv(scratch, classes)
+  for (i in seq_along(classes)) {
+    expected <- if (classes[[i]] == "numeric") as.numeric(projected[[i]]) else as.character(projected[[i]])
+    if (!identical(restored[[i]], expected))
+      study_fail(paste("Stored input would change accepted values:", columns[[i]]))
+  }
   paired <- study_is_paired(spec)
   recipe <- list(schema_version = 1L, id = spec$recipe_id,
     engine = if (paired) "stats::t.test" else "stats::lm",
@@ -192,6 +240,7 @@ study_assert_run <- function(directory, declaration) {
 #' @export
 study_validate_project <- function(directory, declaration, require_run = FALSE, require_render = FALSE) {
   tryCatch({
+    directory <- study_directory(directory)
     study_require()
     study_keys(declaration, c("schema_version", "structure", "run", "render"), "External study declaration")
     if (!isTRUE(declaration$schema_version == 1)) study_fail("Unsupported external declaration version.")
@@ -233,14 +282,14 @@ study_admit <- function(directory, declaration, require_run = FALSE) {
 #'   declaration pinning the exact run receipt. Preserve the updated declaration.
 #' @export
 study_run <- function(directory, declaration) {
+  directory <- study_directory(directory)
   study_admit(directory, declaration)
   if (!is.null(declaration$render)) study_fail("Use a new compiled project for a new analysis after rendering.")
   spec <- declaration$structure$composition$study
   recipe <- declaration$structure$composition$recipe
   before <- study_hashes(directory, c(study_controls, recipe$input$path))
-  data <- utils::read.csv(file.path(directory, recipe$input$path), check.names = FALSE,
-    colClasses = unlist(recipe$input$classes, use.names = FALSE), stringsAsFactors = FALSE,
-    fileEncoding = "UTF-8", na.strings = "")
+  data <- study_read_csv(file.path(directory, recipe$input$path),
+    unlist(recipe$input$classes, use.names = FALSE))
   if (!identical(names(data), unlist(recipe$input$columns, use.names = FALSE)) || nrow(data) != recipe$input$rows)
     study_fail("Imported shape differs from the compiler declaration.")
   result <- study_analyze(spec, data, recipe$input$units)
@@ -265,9 +314,9 @@ study_run <- function(directory, declaration) {
   if (dir.exists(output)) study_fail("Analysis output already exists; preserve it and compile a new project for another run.")
   dir.create(output)
   study_write_json(result, file.path(output, "results.json"))
-  for (entry in c("coefficients", "diagnostics")) utils::write.csv(result[[entry]], file.path(output, paste0(entry, ".csv")), row.names = FALSE)
-  utils::write.csv(descriptives, file.path(output, "descriptives.csv"), row.names = FALSE)
-  utils::write.csv(frequencies, file.path(output, "frequencies.csv"), row.names = FALSE)
+  for (entry in c("coefficients", "diagnostics")) study_write_csv(result[[entry]], file.path(output, paste0(entry, ".csv")))
+  study_write_csv(descriptives, file.path(output, "descriptives.csv"))
+  study_write_csv(frequencies, file.path(output, "frequencies.csv"))
   grDevices::png(file.path(output, "diagnostics.png"), width = 1200L, height = 600L, res = 120L)
   device <- grDevices::dev.cur(); on.exit(if (device %in% grDevices::dev.list()) grDevices::dev.off(device), add = TRUE)
   graphics::par(mfrow = c(1L, 2L), mar = c(4, 4, 3, 1))
@@ -388,7 +437,7 @@ study_render <- function(directory, declaration, timeout = 600) {
     study_fail("Rendering timeout must be between 30 and 3600 seconds.")
   study_admit(directory, declaration, require_run = TRUE)
   if (!is.null(declaration$render)) study_fail("This external declaration already pins a render; preserve it and its artifacts.")
-  root <- as.character(fs::path_abs(directory))
+  root <- study_directory(directory)
   files <- c("analysis/index.Rmd", vapply(declaration$structure$profile$stages, `[[`, "", "analysis"))
   study_report_git_status(root, files)
   callr::r(function(root, declaration) {

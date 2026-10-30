@@ -30,6 +30,14 @@ a noncausal adjusted association using `stats::lm`. Unsupported designs,
 missing values, duplicate IDs, mismatched units and rank-deficient fits stop
 before a report is accepted.
 
+Continuous columns must contain one plain numeric value per row; matrix columns
+and numeric class objects are refused. Compilation checks that every declared
+measurement and identifier survives CSV storage unchanged. Use character IDs
+to preserve leading zeros or distinguish closely spaced numeric identifiers.
+New numerical CSV and JSON outputs use 17-digit precision. Existing projects
+retain their pinned bytes and runtime requirements; compile a new project with
+the updated package to benefit from these repairs.
+
 Prepare an installed external R library containing cttiR, reflowR and workflowr.
 Create a specification with `study_spec()` and supply a data frame plus explicit
 column units. Then retain each returned declaration **outside** the project:
@@ -211,10 +219,9 @@ See the vignettes for the getting-started walkthrough, the standard workflow,
 knowledge and approvals, and audit/runtime/privacy. The development record is
 in [CURRENT_STATE.md](https://github.com/CTTIR/cttiR/blob/main/CURRENT_STATE.md).
 
-The [refined concept](CONCEPT.md) and [completion roadmap](ROADMAP.md) describe
-the planned trained-model release, Hugging Face distribution, explicit Ollama
-setup and actual workflowr integration. These are development targets; the
-features and limitations below describe the current package.
+The [public maintenance record](MAINTENANCE.md) describes the current audit,
+repair strategy, verification and remaining release gates. Model qualification
+and distribution remain separate development targets.
 
 ## Limits
 
@@ -238,12 +245,58 @@ Runtime acquisition is verified on Linux x86_64 only.
 MIT licensed.
 ## Installation and documentation
 
-Install the development package and its rendered vignettes from GitHub:
+Use R 4.1 or newer. Install the development package and its rendered vignettes
+from GitHub (source dependencies may require the platform's R build tools):
 
 ```r
-install.packages("remotes")
+install.packages(c("remotes", "knitr", "rmarkdown"))
 remotes::install_github("CTTIR/cttiR", build_vignettes = TRUE)
 ```
+
+For a local source checkout, replace the last line with
+`remotes::install_local("/absolute/path/to/cttiR", build_vignettes = TRUE)`.
+The first example above creates a project without a model or a network call.
+For the optional local interface, install `shiny` and `callr`, then run
+`cttiR::setup_app()`.
+
+New projects with Git enabled retain Git's selected initial branch in local
+configuration. For an older, still-uncommitted project whose workflowr render
+fails while reading `sha(NULL)`, run this inside that project's root, then retry:
+
+```sh
+git config --local init.defaultBranch "$(git symbolic-ref --short HEAD)"
+```
+
+This records the existing branch choice; it stages and commits nothing.
+
+Standard workflowr HTML reports use upstream MathJax scripts and a workflowr
+badge, so viewing them can contact external servers. Local computation does not
+make a report offline. Review and provision the report's assets for the intended
+environment before viewing confidential results or publishing a report.
+
+The standard workflow's preferred DescrTab2 2.1.16 backend is
+[archived on CRAN](https://CRAN.R-project.org/package=DescrTab2).
+For new projects, `options = list(workflow = list(table_backend = "none"))`
+selects the supported base descriptive table and avoids that dependency.
+If the reviewed DescrTab2 adapter is required, explicitly provision its pin with
+`remotes::install_version("DescrTab2", version = "2.1.16", upgrade = "never")`.
+Other standard-workflow dependencies must also match the generated lock;
+archived availability does not establish ongoing upstream maintenance.
+
+Strict study compilation and rendering additionally require Git, Pandoc and
+the pinned composition API used by this development version:
+
+```r
+install.packages(c("workflowr", "git2r", "callr"))
+remotes::install_github("CTTIR/reflowR@910f4688c8fa32540ade7d000ac83ab2ca0e1d1d")
+stopifnot(rmarkdown::pandoc_available(), nzchar(Sys.which("git")))
+```
+
+Follow the complete [association example](https://github.com/CTTIR/cttiR/blob/main/vignettes/strict-study-workflow.Rmd)
+or [paired example](https://github.com/CTTIR/cttiR/blob/main/vignettes/strict-paired-study.Rmd), including explicit units
+and retention of each returned declaration outside the project. Those examples
+use synthetic data and do not require a model. `study_dependency_lock()` records
+the prepared environment; it does not install or restore dependencies.
 
 Start with `vignette("getting-started", package = "cttiR")`. The source guides
 cover [project creation](https://github.com/CTTIR/cttiR/blob/main/vignettes/getting-started.Rmd), the

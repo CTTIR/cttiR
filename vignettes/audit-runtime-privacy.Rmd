@@ -201,6 +201,11 @@ runtime backends have not inherited that measured result.
 * The planner (when enabled) and `ask()` never send text off the machine; the
   runtime listens on loopback only and refuses cloud-backed models.
 * Exported Shiny drafts can contain your text; review them before sharing.
+* Standard workflowr reports use upstream MathJax scripts and a workflowr badge.
+  Viewing their HTML can contact external servers even after local computation.
+  Remote JavaScript runs in the report's browser context. Before using
+  confidential results, review and provision the report assets for that
+  environment; offline viewing is not established by a successful local render.
 
 ## Troubleshooting
 
