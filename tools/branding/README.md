@@ -29,6 +29,18 @@ images, vignettes and application headers. Explicit `logo-symbol` and
 consumer filenames remain available. Icons use the dark artwork at native
 sizes; the maskable application icon includes its required opaque safe area.
 
+## Identity palette
+
+`identity_colours.csv` overrides v5 colour roles for one identity and mode.
+cttiR uses a black, white and gold palette (gold `#D4AF37`) in light and dark
+mode; grayscale stays the shared v5 mono. For an overridden mode, `render.R`
+recolours the approved master SVG: the bundled renderer draws the same element
+sequence, so its colours replace the master's one by one and the supplied name
+outlines stay intact. The script stops if a master no longer matches the
+renderer. PNG and PDF are drawn from the recoloured SVG with rsvg, as hexmakR
+does, and all icon sizes are drawn with the palette. Remove the rows to return
+to the shared v5 colours.
+
 The build script uses hexmakR 0.2.0 or later for approved masters, and base R,
 grid, grDevices, utils and Cairo for additional platform icon sizes. It does
 not add a runtime dependency to the package. Fonts and their licences are
