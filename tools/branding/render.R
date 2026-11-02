@@ -124,14 +124,62 @@ run_branding <- function() {
     }
   }
 
+  # The reserved core palette (cttiR scale, gold accent) recolours the
+  # approved master, which is drawn in the platform palette. The bundled
+  # renderer draws the master's element sequence, so its core colours replace
+  # the master's one by one and the supplied name outlines stay intact.
+  master_family <- c(core = "platform")
+  colour_attr <- "(fill|stroke)=\"rgb\\([^)]*\\)\""
+  colour_attrs <- function(x) regmatches(x, gregexpr(colour_attr, x))[[1]]
+  draw_svg <- function(name, family, mode, layout) {
+    file <- tempfile(fileext = ".svg")
+    on.exit(unlink(file), add = TRUE)
+    d <- cttir_dimensions(layout)
+    cttir_device(function() grDevices::svg(file, width = d$width, height = d$height,
+                                           bg = "transparent"),
+                 function() cttir_draw(name, family, mode, layout))
+    readChar(file, file.size(file), useBytes = TRUE)
+  }
+  recolour_master <- function(name, family, mode, layout, directory) {
+    path <- hexmakR::hex_asset(name, mode, layout, "svg")
+    master <- readChar(path, file.size(path), useBytes = TRUE)
+    if (!identical(colour_attrs(master),
+                   colour_attrs(draw_svg(name, master_family[[family]], mode, layout)))) {
+      stop("The ", name, " ", mode, " ", layout,
+           " master no longer matches the bundled renderer.")
+    }
+    recoloured <- colour_attrs(draw_svg(name, family, mode, layout))
+    if (length(recoloured) != length(colour_attrs(master))) {
+      stop("The ", family, " palette changed the ", name, " drawing structure.")
+    }
+    regmatches(master, gregexpr(colour_attr, master)) <- list(recoloured)
+    stem <- paste0(layout, if (mode == "light") "" else paste0("-", mode))
+    writeChar(master, file.path(directory, paste0(stem, ".svg")), eos = NULL,
+              useBytes = TRUE)
+    # PNG and PDF follow hexmakR: drawn from the SVG at the master pixel size.
+    stretched <- sub("<svg ", "<svg preserveAspectRatio=\"none\" ", master, fixed = TRUE)
+    rsvg::rsvg_png(charToRaw(stretched), file.path(directory, paste0(stem, ".png")),
+                   width = 1600L, height = 1848L)
+    rsvg::rsvg_pdf(charToRaw(master), file.path(directory, paste0(stem, ".pdf")))
+  }
+
   for (i in seq_len(nrow(registry))) {
     name <- registry$name[i]
     family <- registry$family[i]
     directory <- file.path(output, if (name == "CTTIR") "CTTIR-brand" else name)
+    recolour <- family %in% names(master_family)
+    if (recolour && !requireNamespace("rsvg", quietly = TRUE)) {
+      stop("Install rsvg to render the ", family, " palette.")
+    }
     # Approved masters preserve the supplied v5 name outlines exactly.
     dir.create(directory, recursive = TRUE, showWarnings = FALSE)
     for (layout in c("hex", "lockup")) {
       for (mode in c("light", "dark", "mono")) {
+        # Greyscale is shared by every identity and stays as supplied.
+        if (recolour && mode != "mono") {
+          recolour_master(name, family, mode, layout, directory)
+          next
+        }
         for (format in c("svg", "png", "pdf")) {
           master <- hexmakR::hex_asset(name, mode, layout, format)
           if (!file.copy(master, file.path(directory, basename(master)),
@@ -139,13 +187,17 @@ run_branding <- function() {
         }
       }
     }
-    for (size in c(32L, 48L, 64L, 128L, 256L)) {
+    # Icons carry no name, so a recoloured identity draws every size.
+    drawn <- c(16L, 96L, 180L, 192L, 512L)
+    if (recolour) {
+      drawn <- sort(c(drawn, 32L, 48L, 64L, 128L, 256L))
+    } else for (size in c(32L, 48L, 64L, 128L, 256L)) {
       master <- hexmakR::hex_asset(name, layout = "icon", format = "png",
                                   size = size)
       if (!file.copy(master, file.path(directory, basename(master)),
                      overwrite = TRUE)) stop("Could not copy v5 icon.")
     }
-    for (px in c(16L, 96L, 180L, 192L, 512L)) {
+    for (px in drawn) {
       cttir_device(function() grDevices::png(
         file.path(directory, paste0("icon-", px, ".png")),
         width = px, height = px, res = px / 6, bg = "transparent",

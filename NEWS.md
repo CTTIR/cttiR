@@ -1,5 +1,9 @@
 # cttiR 0.1.1.9000
 
+* The package logo uses the reserved CTTIR core palette, which it shares only
+  with the CTTIR institution logo: the same near-black, white and slate grey
+  with a gold border.
+
 * Standardize the named v5 package logo across README, documentation pages
   and available application headers, with matching light and dark artwork.
 
