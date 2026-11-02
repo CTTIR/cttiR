@@ -10,26 +10,7 @@ base::source(base::file.path(.cttir_rdir,"tokens.R"))
 cttir_tokens <- cttir_load_tokens(base::file.path(.cttir_root,"design_tokens.csv"))
 for(.f in c("accessibility.R","palette.R","primitives.R","motifs.R"))
   base::source(base::file.path(.cttir_rdir,.f),local=FALSE)
-# Optional per-identity palettes replace v5 colour roles for one identity and mode.
-.cttir_ic <- base::file.path(.cttir_root,"identity_colours.csv")
-cttir_identity_palette <- if(base::file.exists(.cttir_ic)) {
-  utils::read.csv(.cttir_ic,stringsAsFactors=FALSE,colClasses="character")
-} else base::data.frame(identity=character(),mode=character(),role=character(),value=character())
-base::stopifnot(base::identical(base::names(cttir_identity_palette),c("identity","mode","role","value")),
-  !base::anyNA(cttir_identity_palette),
-  cttir_identity_palette$mode %in% c("light","dark","mono"),
-  cttir_identity_palette$role %in% base::setdiff(base::names(cttir_style("platform")),"mode"),
-  !base::anyDuplicated(cttir_identity_palette[c("identity","mode","role")]))
-base::invisible(grDevices::col2rgb(cttir_identity_palette$value))
-base::rm(.f,.cttir_source,.cttir_rdir,.cttir_root,.cttir_fc,.cttir_ic)
-
-cttir_identity_colours <- function(name,mode) {
-  if(mode=="primary") mode <- "dark"
-  x <- cttir_identity_palette[cttir_identity_palette$identity==name & cttir_identity_palette$mode==mode,,drop=FALSE]
-  out <- base::as.list(x$value)
-  base::names(out) <- x$role
-  out
-}
+base::rm(.f,.cttir_source,.cttir_rdir,.cttir_root,.cttir_fc)
 
 # Fit exact case and punctuation with device metrics, never stretch text.
 # The bundled Linux font profile maps face 2 to JetBrains Mono SemiBold.
@@ -47,7 +28,7 @@ cttir_name <- function(name,y=.049,max_width=.90,size=34,colour="#212121",
 # Both layouts share the same hex; the named layout reserves a lower text zone.
 cttir_draw <- function(name,family,mode="light",layout=c("hex","lockup"),small=FALSE,
                        font=base::Sys.getenv("CTTIR_BRAND_FONT",cttir_token("type","brand_font")),
-                       newpage=TRUE, symbol_only=NULL, colours=cttir_identity_colours(name,mode)) {
+                       newpage=TRUE, symbol_only=NULL) {
   layout <- base::match.arg(layout)
   if(!base::is.null(symbol_only)) {layout<-"hex";small<-symbol_only}
   if(newpage) grid::grid.newpage()
@@ -60,11 +41,6 @@ cttir_draw <- function(name,family,mode="light",layout=c("hex","lockup"),small=F
   total_height <- grid::convertHeight(grid::unit(1,"npc"),"inches",valueOnly=TRUE)
   hex_fraction <- 1
   s <- cttir_style(family,mode)
-  if(base::length(colours)) {
-    vision <- base::getOption("cttir.vision","normal")
-    if(vision!="normal") colours <- base::lapply(colours,cttir_simulate_cvd,vision)
-    s[base::names(colours)] <- colours
-  }
   # All content stays within the hex; the exterior stays transparent.
   grid::pushViewport(grid::viewport(y=1-hex_fraction/2,height=hex_fraction))
   hex <- function(r,fill,col=NA,lwd=1) grid::grid.polygon(
