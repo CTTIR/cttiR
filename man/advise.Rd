@@ -10,7 +10,7 @@ advise(
   path = NULL,
   acknowledge_experimental = FALSE,
   endpoint = NULL,
-  model = getOption("cttiR.adviser_model", adviser_default_model),
+  model = getOption("cttiR.adviser_model"),
   constrain = TRUE,
   timeout = 180
 )
@@ -28,7 +28,8 @@ records that you understand the plan is an unqualified draft.}
 \item{endpoint}{Loopback endpoint of the owned runtime; defaults to
 \code{getOption("cttiR.ollama_endpoint")}.}
 
-\item{model}{Model tag; defaults to \code{getOption("cttiR.adviser_model")} or
+\item{model}{Model tag. Defaults to \code{getOption("cttiR.adviser_model")}, then
+the adviser release most recently installed with \code{\link[=setup_release]{setup_release()}}, then
 \code{"cttir-adviser:v1-q4"}.}
 
 \item{constrain}{Constrain decoding to the adviser schema (default). \code{FALSE}

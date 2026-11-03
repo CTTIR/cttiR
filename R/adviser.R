@@ -193,7 +193,8 @@ adviser_validate <- function(content, evidence, catalog = NULL) {
 #'   records that you understand the plan is an unqualified draft.
 #' @param endpoint Loopback endpoint of the owned runtime; defaults to
 #'   `getOption("cttiR.ollama_endpoint")`.
-#' @param model Model tag; defaults to `getOption("cttiR.adviser_model")` or
+#' @param model Model tag. Defaults to `getOption("cttiR.adviser_model")`, then
+#'   the adviser release most recently installed with [setup_release()], then
 #'   `"cttir-adviser:v1-q4"`.
 #' @param constrain Constrain decoding to the adviser schema (default). `FALSE`
 #'   reproduces the unconstrained decoding used during training.
@@ -208,7 +209,7 @@ adviser_validate <- function(content, evidence, catalog = NULL) {
 #' }
 #' @export
 advise <- function(question, language = c("en", "de"), path = NULL, acknowledge_experimental = FALSE,
-                   endpoint = NULL, model = getOption("cttiR.adviser_model", adviser_default_model),
+                   endpoint = NULL, model = getOption("cttiR.adviser_model"),
                    constrain = TRUE, timeout = 180) {
   language <- match.arg(language)
   scalar_flag(acknowledge_experimental, "acknowledge_experimental")
@@ -245,9 +246,11 @@ advise <- function(question, language = c("en", "de"), path = NULL, acknowledge_
   if (!length(evidence)) return(result("fallback", "evidence_unavailable"))
   if (is.null(endpoint)) endpoint <- tryCatch(runtime_endpoint(), error = function(e) NULL)
   if (!planner_valid_endpoint(endpoint)) return(result("fallback", "endpoint_rejected", evidence = evidence))
-  if (!valid_model_tag(model)) return(result("fallback", "model_refused", evidence = evidence))
   owner <- tryCatch(runtime_owner(runtime_directory(), endpoint), error = function(e) NULL)
   if (is.null(owner)) return(result("fallback", "runtime_unverified", evidence = evidence))
+  # Without an explicit choice, use the adviser release installed last by setup_release().
+  if (is.null(model)) model <- if (is.character(owner$model) && grepl("^cttir-adviser:", owner$model)) owner$model else adviser_default_model
+  if (!valid_model_tag(model)) return(result("fallback", "model_refused", evidence = evidence))
   entry <- tryCatch(local_model(endpoint, model, timeout = min(10, remaining())), error = function(e) NULL)
   if (is.null(entry)) return(result("fallback", "model_missing", evidence = evidence))
   digest <- entry$digest

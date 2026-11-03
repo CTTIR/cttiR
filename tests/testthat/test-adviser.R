@@ -114,6 +114,7 @@ test_that("advise() returns a checked plan with the training request shape", {
   advise("Explain dplyr::filter", acknowledge_experimental = TRUE, constrain = FALSE,
     endpoint = "http://127.0.0.1:11434")
   expect_null(log$request$format)
+  expect_identical(log$request$model, "cttir-adviser:v1-q4")
 })
 
 test_that("advise() falls back on runtime and reply failures", {
