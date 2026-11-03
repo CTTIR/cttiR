@@ -3,7 +3,7 @@
 # immutable inputs; the Shiny session only polls, cancels read-only work and
 # renders the returned values.
 
-app_operations <- c("project", "sync", "ask", "assistant_advice", "assistant_suggestion_preview",
+app_operations <- c("project", "sync", "ask", "advise", "assistant_advice", "assistant_suggestion_preview",
   "assistant_suggestion_apply", "search", "resources", "packages", "update",
   "rollback_knowledge", "audit", "setup", "setup_release",
   "study_preview", "study_compile", "study_run", "study_render")
