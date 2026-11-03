@@ -30,7 +30,7 @@ records that you understand the plan is an unqualified draft.}
 
 \item{model}{Model tag. Defaults to \code{getOption("cttiR.adviser_model")}, then
 the adviser release most recently installed with \code{\link[=setup_release]{setup_release()}}, then
-\code{"cttir-adviser:v1-q4"}.}
+\code{"cttir-adviser:v1-q8"}.}
 
 \item{constrain}{Constrain decoding to the adviser schema (default). \code{FALSE}
 reproduces the unconstrained decoding used during training.}

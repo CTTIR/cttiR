@@ -3,7 +3,7 @@
 # executors and the model keeps its "experimental, not qualified" label.
 
 adviser_label <- "experimental_not_qualified"
-adviser_default_model <- "cttir-adviser:v1-q4"
+adviser_default_model <- "cttir-adviser:v1-q8"
 adviser_context_limit <- 8192L
 adviser_output_limit <- 1536L
 
@@ -195,7 +195,7 @@ adviser_validate <- function(content, evidence, catalog = NULL) {
 #'   `getOption("cttiR.ollama_endpoint")`.
 #' @param model Model tag. Defaults to `getOption("cttiR.adviser_model")`, then
 #'   the adviser release most recently installed with [setup_release()], then
-#'   `"cttir-adviser:v1-q4"`.
+#'   `"cttir-adviser:v1-q8"`.
 #' @param constrain Constrain decoding to the adviser schema (default). `FALSE`
 #'   reproduces the unconstrained decoding used during training.
 #' @param timeout Seconds allowed for the whole exchange (1 to 600).
