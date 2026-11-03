@@ -311,7 +311,7 @@ adviser_reason_text <- function(reason) {
 
 #' @export
 print.cttir_advice <- function(x, ...) {
-  cat("cttiR adviser — EXPERIMENTAL, not scientifically qualified; nothing was executed.\n")
+  cat("cttiR adviser \u2014 EXPERIMENTAL, not scientifically qualified; nothing was executed.\n")
   if (!identical(x$state, "plan")) {
     cat("No model plan: ", adviser_reason_text(x$reason), "\n\n", sep = "")
     cat("Deterministic catalog answer:\n")
