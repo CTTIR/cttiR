@@ -100,13 +100,29 @@ adviser_user_message <- function(question, evidence) {
   paste0(question, "\nEvidence: ", if (length(evidence)) json_text(unname(evidence)) else "[]")
 }
 
-adviser_request <- function(question, evidence, model, language) {
-  list(model = model, stream = FALSE, think = FALSE,
+# The adviser schema with every `properties` block in alphabetical key order,
+# the order the model learned from its training targets.
+adviser_format_schema <- function() {
+  sort_properties <- function(x) {
+    if (!is.list(x)) return(x)
+    if (!is.null(names(x)) && is.list(x$properties)) x$properties <- x$properties[sort(names(x$properties))]
+    for (i in seq_along(x)) if (is.list(x[[i]])) x[[i]] <- sort_properties(x[[i]])
+    x
+  }
+  sort_properties(jsonlite::fromJSON(adviser_schema_file(), simplifyVector = FALSE))
+}
+
+adviser_request <- function(question, evidence, model, language, constrain = TRUE) {
+  request <- list(model = model, stream = FALSE, think = FALSE,
     messages = list(
       list(role = "system", content = adviser_system_prompt(language)),
       list(role = "user", content = adviser_user_message(question, evidence))),
     options = list(temperature = 0, top_k = 1L, seed = 42L,
       num_ctx = adviser_context_limit, num_predict = adviser_output_limit))
+  # Schema-constrained decoding is a decoding-only guard against malformed or
+  # oversized JSON; the reply is validated again either way.
+  if (constrain) request$format <- adviser_format_schema()
+  request
 }
 
 # Namespaced calls mentioned in the plan, e.g. `stats::t.test`.
@@ -129,10 +145,11 @@ adviser_unknown_apis <- function(symbols, catalog) {
   symbols[!known]
 }
 
-# Strict reading of one reply: one JSON object, the bundled schema, supplied
-# sources only, and a plan whenever the status says ready.
+# Strict reading of one reply: one JSON object, the bundled schema and supplied
+# sources only. "ready" without a plan is a source-grounded explanation, as in training.
 adviser_validate <- function(content, evidence, catalog = NULL) {
-  bad <- function(reason) list(ok = FALSE, reason = reason, proposal = NULL, checks = NULL)
+  bad <- function(reason, errors = NULL) list(ok = FALSE, reason = reason, proposal = NULL,
+    checks = if (is.null(errors)) NULL else list(schema_errors = errors))
   if (!is.character(content) || length(content) != 1L || is.na(content)) return(bad("invalid_json"))
   text <- trimws(content)
   if (!nzchar(text) || !startsWith(text, "{") || !endsWith(text, "}") || !isTRUE(jsonlite::validate(text))) {
@@ -141,8 +158,11 @@ adviser_validate <- function(content, evidence, catalog = NULL) {
   proposal <- tryCatch(jsonlite::fromJSON(text, simplifyVector = FALSE), error = function(e) NULL)
   if (!is.list(proposal) || is.null(names(proposal))) return(bad("invalid_json"))
   valid <- json_schema_validate(text, adviser_schema_file(), engine = "ajv", verbose = TRUE)
-  if (!isTRUE(valid)) return(bad("schema_mismatch"))
-  if (identical(proposal$status, "ready") && !is.list(proposal$plan)) return(bad("schema_mismatch"))
+  if (!isTRUE(valid)) {
+    errors <- attr(valid, "errors")
+    detail <- if (is.data.frame(errors) && nrow(errors)) utils::head(paste(errors$instancePath, errors$message), 5L) else NULL
+    return(bad("schema_mismatch", detail))
+  }
   supplied <- vapply(evidence, function(x) x$source_id, character(1))
   cited <- unlist(proposal$source_ids, use.names = FALSE)
   if (length(cited) && !all(cited %in% supplied)) return(bad("unsupported_source"))
@@ -175,6 +195,8 @@ adviser_validate <- function(content, evidence, catalog = NULL) {
 #'   `getOption("cttiR.ollama_endpoint")`.
 #' @param model Model tag; defaults to `getOption("cttiR.adviser_model")` or
 #'   `"cttir-adviser:v1-q4"`.
+#' @param constrain Constrain decoding to the adviser schema (default). `FALSE`
+#'   reproduces the unconstrained decoding used during training.
 #' @param timeout Seconds allowed for the whole exchange (1 to 600).
 #' @return A `cttir_advice` list with `state` (`"plan"` or `"fallback"`),
 #'   `reason`, `proposal`, `evidence`, `checks`, `deterministic`, `label` and
@@ -187,9 +209,10 @@ adviser_validate <- function(content, evidence, catalog = NULL) {
 #' @export
 advise <- function(question, language = c("en", "de"), path = NULL, acknowledge_experimental = FALSE,
                    endpoint = NULL, model = getOption("cttiR.adviser_model", adviser_default_model),
-                   timeout = 180) {
+                   constrain = TRUE, timeout = 180) {
   language <- match.arg(language)
   scalar_flag(acknowledge_experimental, "acknowledge_experimental")
+  scalar_flag(constrain, "constrain")
   question <- utf8_input(question)
   scalar_text(question, "question")
   if (nchar(question, type = "bytes") > 8000L) abort_cttir("The question exceeds 8000 bytes.")
@@ -199,10 +222,12 @@ advise <- function(question, language = c("en", "de"), path = NULL, acknowledge_
   started <- proc.time()[["elapsed"]]
   remaining <- function() max(0, timeout - (proc.time()[["elapsed"]] - started))
   deterministic <- ask(question, path = path, verified_only = FALSE)
-  result <- function(state, reason = NULL, proposal = NULL, evidence = list(), checks = NULL, provenance = NULL) {
+  result <- function(state, reason = NULL, proposal = NULL, evidence = list(), checks = NULL, provenance = NULL,
+                     raw_reply = NULL) {
     structure(list(state = state, reason = reason, question = question, language = language,
       proposal = proposal, evidence = evidence, checks = checks, deterministic = deterministic,
-      label = adviser_label, execution_authorized = FALSE, provenance = provenance), class = "cttir_advice")
+      label = adviser_label, execution_authorized = FALSE, provenance = provenance,
+      raw_reply = raw_reply), class = "cttir_advice")
   }
   if (!acknowledge_experimental) return(result("fallback", "acknowledgement_required"))
   context <- tryCatch(assistant_context(question, path = path, approved_only = FALSE), error = function(e) NULL)
@@ -226,7 +251,7 @@ advise <- function(question, language = c("en", "de"), path = NULL, acknowledge_
   entry <- tryCatch(local_model(endpoint, model, timeout = min(10, remaining())), error = function(e) NULL)
   if (is.null(entry)) return(result("fallback", "model_missing", evidence = evidence))
   digest <- entry$digest
-  request <- adviser_request(question, evidence, model, language)
+  request <- adviser_request(question, evidence, model, language, constrain)
   sent <- proc.time()[["elapsed"]]
   response <- tryCatch(runtime_request(endpoint, "chat", request, timeout = remaining()), error = function(e) NULL)
   seconds <- proc.time()[["elapsed"]] - sent
@@ -242,14 +267,17 @@ advise <- function(question, language = c("en", "de"), path = NULL, acknowledge_
     return(result("fallback", "context_overflow", evidence = evidence, provenance = provenance))
   }
   if (!isTRUE(response$done) || !identical(response$done_reason, "stop")) {
-    return(result("fallback", "incomplete_response", evidence = evidence, provenance = provenance))
+    return(result("fallback", "incomplete_response", evidence = evidence, provenance = provenance,
+      raw_reply = response$message$content))
   }
   message <- response$message
   if (!is.list(message) || !identical(message$role, "assistant") || length(message$tool_calls)) {
     return(result("fallback", "invalid_message", evidence = evidence, provenance = provenance))
   }
   checked <- adviser_validate(message$content, evidence, catalog)
-  if (!checked$ok) return(result("fallback", checked$reason, evidence = evidence, provenance = provenance))
+  # The unaccepted reply is kept for inspection only; it is never shown as a plan.
+  if (!checked$ok) return(result("fallback", checked$reason, evidence = evidence, checks = checked$checks,
+    provenance = provenance, raw_reply = message$content))
   fresh <- tryCatch(local_model(endpoint, model, timeout = min(10, max(1, remaining()))), error = function(e) NULL)
   if (is.null(fresh) || !identical(fresh$digest, digest)) {
     return(result("fallback", "model_digest_changed", evidence = evidence, provenance = provenance))

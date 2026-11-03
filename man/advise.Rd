@@ -11,6 +11,7 @@ advise(
   acknowledge_experimental = FALSE,
   endpoint = NULL,
   model = getOption("cttiR.adviser_model", adviser_default_model),
+  constrain = TRUE,
   timeout = 180
 )
 }
@@ -29,6 +30,9 @@ records that you understand the plan is an unqualified draft.}
 
 \item{model}{Model tag; defaults to \code{getOption("cttiR.adviser_model")} or
 \code{"cttir-adviser:v1-q4"}.}
+
+\item{constrain}{Constrain decoding to the adviser schema (default). \code{FALSE}
+reproduces the unconstrained decoding used during training.}
 
 \item{timeout}{Seconds allowed for the whole exchange (1 to 600).}
 }

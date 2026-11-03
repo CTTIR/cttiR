@@ -46,8 +46,10 @@ test_that("replies must be exactly one schema-valid plan citing supplied sources
   expect_identical(adviser_validate(substr(good, 1, 80), evidence)$reason, "invalid_json")
   missing <- adviser_plan_fixture(id); missing$status <- NULL
   expect_identical(adviser_validate(json_text(missing), evidence)$reason, "schema_mismatch")
-  ready_without_plan <- adviser_plan_fixture(id); ready_without_plan$plan <- NULL
-  expect_identical(adviser_validate(json_text(ready_without_plan, digits = NA), evidence)$reason, "schema_mismatch")
+  no_plan_key <- adviser_plan_fixture(id); no_plan_key$plan <- NULL
+  expect_identical(adviser_validate(json_text(no_plan_key, digits = NA), evidence)$reason, "schema_mismatch")
+  explanation <- sub('"plan":\\{.*\\}\\}$', '"plan":null}', good)
+  expect_true(adviser_validate(explanation, evidence)$ok)
   invented <- adviser_plan_fixture("api:made:up")
   expect_identical(adviser_validate(json_text(invented), evidence)$reason, "unsupported_source")
 })
@@ -107,6 +109,11 @@ test_that("advise() returns a checked plan with the training request shape", {
   expect_identical(body$options[c("temperature", "top_k", "seed", "num_ctx", "num_predict")],
     list(temperature = 0, top_k = 1L, seed = 42L, num_ctx = 8192L, num_predict = 1536L))
   expect_output(print(advice), "EXPERIMENTAL")
+  expect_identical(names(body$format$properties), sort(names(body$format$properties)))
+  expect_identical(body$format$properties$plan$type, list("object", "null"))
+  advise("Explain dplyr::filter", acknowledge_experimental = TRUE, constrain = FALSE,
+    endpoint = "http://127.0.0.1:11434")
+  expect_null(log$request$format)
 })
 
 test_that("advise() falls back on runtime and reply failures", {
