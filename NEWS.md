@@ -1,8 +1,8 @@
 # cttiR 0.1.1.9000
 
-* Recolour the cttiR hex logo, icons and favicons in black, white and gold.
-  The palette lives in `tools/branding/identity_colours.csv` and keeps the
-  approved v5 artwork and name lettering.
+* The package logo uses the reserved CTTIR core palette, which it shares only
+  with the CTTIR institution logo: the same near-black, white and slate grey
+  with a gold border.
 
 * Standardize the named v5 package logo across README, documentation pages
   and available application headers, with matching light and dark artwork.

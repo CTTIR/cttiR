@@ -124,32 +124,33 @@ run_branding <- function() {
     }
   }
 
-  # An identity palette (identity_colours.csv) recolours the approved master.
-  # The bundled renderer draws the master's element sequence, so its colours
-  # replace the master's one by one and the supplied name outlines stay intact.
+  # The reserved core palette (cttiR scale, gold accent) recolours the
+  # approved master, which is drawn in the platform palette. The bundled
+  # renderer draws the master's element sequence, so its core colours replace
+  # the master's one by one and the supplied name outlines stay intact.
+  master_family <- c(core = "platform")
   colour_attr <- "(fill|stroke)=\"rgb\\([^)]*\\)\""
   colour_attrs <- function(x) regmatches(x, gregexpr(colour_attr, x))[[1]]
-  draw_svg <- function(name, family, mode, layout, colours) {
+  draw_svg <- function(name, family, mode, layout) {
     file <- tempfile(fileext = ".svg")
     on.exit(unlink(file), add = TRUE)
     d <- cttir_dimensions(layout)
     cttir_device(function() grDevices::svg(file, width = d$width, height = d$height,
                                            bg = "transparent"),
-                 function() cttir_draw(name, family, mode, layout, colours = colours))
+                 function() cttir_draw(name, family, mode, layout))
     readChar(file, file.size(file), useBytes = TRUE)
   }
   recolour_master <- function(name, family, mode, layout, directory) {
     path <- hexmakR::hex_asset(name, mode, layout, "svg")
     master <- readChar(path, file.size(path), useBytes = TRUE)
     if (!identical(colour_attrs(master),
-                   colour_attrs(draw_svg(name, family, mode, layout, list())))) {
+                   colour_attrs(draw_svg(name, master_family[[family]], mode, layout)))) {
       stop("The ", name, " ", mode, " ", layout,
            " master no longer matches the bundled renderer.")
     }
-    recoloured <- colour_attrs(draw_svg(name, family, mode, layout,
-                                        cttir_identity_colours(name, mode)))
+    recoloured <- colour_attrs(draw_svg(name, family, mode, layout))
     if (length(recoloured) != length(colour_attrs(master))) {
-      stop("The ", name, " palette changed the drawing structure.")
+      stop("The ", family, " palette changed the ", name, " drawing structure.")
     }
     regmatches(master, gregexpr(colour_attr, master)) <- list(recoloured)
     stem <- paste0(layout, if (mode == "light") "" else paste0("-", mode))
@@ -166,15 +167,16 @@ run_branding <- function() {
     name <- registry$name[i]
     family <- registry$family[i]
     directory <- file.path(output, if (name == "CTTIR") "CTTIR-brand" else name)
-    recoloured_modes <- unique(cttir_identity_palette$mode[cttir_identity_palette$identity == name])
-    if (length(recoloured_modes) && !requireNamespace("rsvg", quietly = TRUE)) {
-      stop("Install rsvg to render the ", name, " identity palette.")
+    recolour <- family %in% names(master_family)
+    if (recolour && !requireNamespace("rsvg", quietly = TRUE)) {
+      stop("Install rsvg to render the ", family, " palette.")
     }
     # Approved masters preserve the supplied v5 name outlines exactly.
     dir.create(directory, recursive = TRUE, showWarnings = FALSE)
     for (layout in c("hex", "lockup")) {
       for (mode in c("light", "dark", "mono")) {
-        if (mode %in% recoloured_modes) {
+        # Greyscale is shared by every identity and stays as supplied.
+        if (recolour && mode != "mono") {
           recolour_master(name, family, mode, layout, directory)
           next
         }
@@ -185,9 +187,9 @@ run_branding <- function() {
         }
       }
     }
-    # Icons carry no name, so a recoloured identity draws all sizes directly.
+    # Icons carry no name, so a recoloured identity draws every size.
     drawn <- c(16L, 96L, 180L, 192L, 512L)
-    if ("dark" %in% recoloured_modes) {
+    if (recolour) {
       drawn <- sort(c(drawn, 32L, 48L, 64L, 128L, 256L))
     } else for (size in c(32L, 48L, 64L, 128L, 256L)) {
       master <- hexmakR::hex_asset(name, layout = "icon", format = "png",
@@ -210,9 +212,7 @@ run_branding <- function() {
     # The complete mark fits within the central maskable safe circle.
     cttir_device(function() grDevices::png(
       file.path(directory, "icon-maskable-512.png"),
-      width = 512L, height = 512L, res = 512 / 6,
-      bg = if (is.null(cttir_identity_colours(name, "dark")$face)) cttir_token("dark", "page")
-           else cttir_identity_colours(name, "dark")$face,
+      width = 512L, height = 512L, res = 512 / 6, bg = cttir_token("dark", "page"),
       type = "cairo", antialias = "gray"
     ), function() {
       grid::grid.newpage()

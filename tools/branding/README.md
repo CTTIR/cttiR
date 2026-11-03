@@ -29,18 +29,6 @@ images, vignettes and application headers. Explicit `logo-symbol` and
 consumer filenames remain available. Icons use the dark artwork at native
 sizes; the maskable application icon includes its required opaque safe area.
 
-## Identity palette
-
-`identity_colours.csv` overrides v5 colour roles for one identity and mode.
-cttiR uses a black, white and gold palette (gold `#D4AF37`) in light and dark
-mode; grayscale stays the shared v5 mono. For an overridden mode, `render.R`
-recolours the approved master SVG: the bundled renderer draws the same element
-sequence, so its colours replace the master's one by one and the supplied name
-outlines stay intact. The script stops if a master no longer matches the
-renderer. PNG and PDF are drawn from the recoloured SVG with rsvg, as hexmakR
-does, and all icon sizes are drawn with the palette. Remove the rows to return
-to the shared v5 colours.
-
 The build script uses hexmakR 0.2.0 or later for approved masters, and base R,
 grid, grDevices, utils and Cairo for additional platform icon sizes. It does
 not add a runtime dependency to the package. Fonts and their licences are
@@ -52,6 +40,24 @@ package does not change its documentation theme or the user's font settings.
 
 Source archive SHA-256:
 `420401d00ab4c5eefdd74440d826b76282f3c1e5262c1f044fc0c6a052f6890e`
+
+## Reserved core palette
+
+cttiR and the CTTIR institution logo share the `core` palette, which no topic
+family uses: the cttiR scale of near-black, white and slate grey with a gold
+accent on the rim. `topic,core` holds the gold for dark surfaces (#D4AF37) and
+`core,accent_light` the deeper gold for light surfaces (#9A7B26), because
+#D4AF37 is only 2:1 against white. `cttir_style("core", mode)` builds it from
+the platform scale; greyscale stays the shared v5 grey.
+
+hexmakR's approved cttiR master is drawn in the platform palette. For a
+`core` identity, `render.R` recolours the master SVG element by element with
+the colours the bundled renderer draws in the core palette, so the artwork
+and the supplied name outlines are kept, then renders PNG and PDF from it with
+rsvg at the master size. It stops if the master no longer matches the bundled
+renderer. Icons carry no name and are drawn directly. Re-running reproduces
+every file except the recoloured PDFs, whose embedded metadata changes each
+time.
 
 ## Documentation browser icons
 

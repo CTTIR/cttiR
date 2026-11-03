@@ -28,3 +28,5 @@ topic,simulation,#E69F00,Okabe-Ito
 topic,evidence,#F0E442,Okabe-Ito
 topic,platform,#000000,Okabe-Ito
 topic,brand,#0072B2,CTTIR blue
+topic,core,#D4AF37,CTTIR gold: the institution logo and cttiR only
+core,accent_light,#9A7B26,CTTIR gold on light surfaces: #D4AF37 is 2:1 on white
