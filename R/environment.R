@@ -513,6 +513,18 @@ git_initialize <- function(root) {
   if (out$status != 0L || !identical(git_toplevel(git, root), root)) {
     return(list(state = "failed", detail = trimws(out$stderr)))
   }
+  # Retain the branch chosen by Git, including a user-configured default. Some
+  # libgit2 readers do not see Git's global default and otherwise misidentify a
+  # new main-branch repository as nonempty, then try to read its absent HEAD.
+  recorded <- tryCatch({
+    branch <- processx::run(git, c("symbolic-ref", "--short", "HEAD"), wd = root,
+      env = git_env(), error_on_status = FALSE, timeout = 60)
+    if (branch$status != 0L) stop(trimws(branch$stderr))
+    if (!nzchar(trimws(branch$stdout))) stop("Git did not report the initial branch.")
+    processx::run(git, c("config", "--local", "init.defaultBranch", trimws(branch$stdout)),
+      wd = root, env = git_env(), error_on_status = FALSE, timeout = 60)
+  }, error = function(e) list(status = -1L, stderr = conditionMessage(e)))
+  if (recorded$status != 0L) return(list(state = "failed", detail = trimws(recorded$stderr)))
   list(state = "initialized", detail = "git init ran in the project root; nothing was staged or committed")
 }
 

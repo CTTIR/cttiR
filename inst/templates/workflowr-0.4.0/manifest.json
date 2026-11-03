@@ -16,7 +16,7 @@
     "code/run_workflow.R": "793d7a9bb3ab4f0600c05b0eaacec9d889d04eb92693fc98b7d4387a6e56bf03",
     "_targets.R": "4315b03274e610563609515eedcac2b65f8a7ff8eeb5b6aebc696372fff5c969"
   },
-  "generator_source_sha256": "1ad568e309abf1c956eb177c4a17dd415516c174e6cc85545268f14bb50e30da",
+  "generator_source_sha256": "a7c49524a4f21fb5e99dd733a2075b2bdc8f2c28b0096363e8f45f106f858644",
   "limitations": [
     "Migration from older template bundles requires separate review.",
     "Pages remain scaffold placeholders until reviewed result views are connected.",

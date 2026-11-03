@@ -3,6 +3,8 @@
 ^.*\.Rcheck$
 ^.*\.tar\.gz$
 ^CURRENT_STATE\.md$
+^MAINTENANCE\.md$
+^pkgdown$
 ^CONCEPT\.md$
 ^ROADMAP\.md$
 ^\.git$

@@ -4,6 +4,27 @@
   with the CTTIR institution logo: the same near-black, white and slate grey
   with a gold border.
 
+* Reject matrix-valued association columns, numeric class objects and observation
+  IDs that collide when converted to text. Ordinary numeric vectors and declared
+  factor covariates remain supported.
+* Preserve study measurements through 17-digit CSV storage, an accurate decimal
+  reader and an exact pre-creation round-trip check. Record numerical CSV and
+  JSON results with the same precision. Existing pinned projects are not rewritten.
+* Document the pinned strict-study prerequisite and public maintenance roadmap;
+  exclude website-only configuration from source packages.
+* Record the actual initial Git branch locally in new project repositories, so
+  workflowr's Git reader recognizes an empty repository when the user's default
+  branch differs from its fallback. Preserve the chosen branch and create no
+  stages or commits; existing repositories are untouched.
+* Resolve admitted macOS system path aliases before passing strict studies to
+  reflowR. Browser destinations below `/var` now use the same physical paths as
+  API compilation, while arbitrary symbolic-link destinations remain refused.
+* Declare workflowr's site generator on the standard site's index page so that
+  its documented renderer manages the report's local assets.
+* Give standard descriptive tables readable spacing and a labelled, keyboard
+  accessible scroll region; retain escaped values and source provenance.
+  Document the external assets requested when viewing workflowr reports.
+
 * Standardize the named v5 package logo across README, documentation pages
   and available application headers, with matching light and dark artwork.
 

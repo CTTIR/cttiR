@@ -11,7 +11,10 @@ study_analyze(spec, data, units)
 
 \item{data}{Optional data frame. Association observations need unique,
 nonmissing IDs. Paired observations need exactly one measurement per pair ID
-at each declared occasion.}
+at each declared occasion. Continuous columns must be plain numeric vectors,
+with one value per row. Association IDs must be plain character or numeric
+vectors and remain unique when converted to text. Supply character IDs to
+retain leading zeros or distinguish closely spaced numeric identifiers.}
 
 \item{units}{Named character vector or list declaring the actual units of
 every continuous analysis column; these must equal the planned units.}
