@@ -7,13 +7,18 @@
 study_project(directory, spec, data, dependency_lock, author, units, seed = 1L)
 }
 \arguments{
-\item{directory}{New project directory whose parent already exists.}
+\item{directory}{New project directory whose parent already exists. Accepted
+platform aliases are resolved to their physical paths before compilation;
+user-created symbolic links remain unsupported.}
 
 \item{spec}{A closed specification from \code{\link[=study_spec]{study_spec()}} or \code{\link[=study_paired_spec]{study_paired_spec()}}.}
 
 \item{data}{Optional data frame. Association observations need unique,
 nonmissing IDs. Paired observations need exactly one measurement per pair ID
-at each declared occasion.}
+at each declared occasion. Continuous columns must be plain numeric vectors,
+with one value per row. Association IDs must be plain character or numeric
+vectors and remain unique when converted to text. Supply character IDs to
+retain leading zeros or distinguish closely spaced numeric identifiers.}
 
 \item{dependency_lock}{An externally prepared dependency lock, for example
 from \code{\link[=study_dependency_lock]{study_dependency_lock()}}. No packages are restored automatically.}
@@ -31,6 +36,8 @@ declaration outside the project and pass successive updated declarations to
 \code{\link[=study_run]{study_run()}}, \code{\link[=study_render]{study_render()}} and \code{\link[=study_validate_project]{study_validate_project()}}. Creation
 initializes a study-owned Git repository and stages only generated analysis
 Rmd files. It does not commit, publish or approve a real study.
+Declared measurements are written as 17-digit decimal values and checked
+for an exact round trip before any project is created.
 }
 \description{
 Compile a Synthetic Study into a Strict Workflow Project

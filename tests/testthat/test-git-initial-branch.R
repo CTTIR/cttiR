@@ -1,0 +1,22 @@
+test_that("new repositories preserve the selected branch and remain empty to Git readers", {
+  skip_if_not(nzchar(git_binary()))
+  skip_if_not_installed("git2r")
+  parent <- normalizePath(withr::local_tempdir(), mustWork = TRUE)
+  root <- file.path(parent, "project")
+  dir.create(root)
+  environment <- git_env()
+  testthat::local_mocked_bindings(git_env = function() {
+    c(environment, GIT_CONFIG_COUNT = "1", GIT_CONFIG_KEY_0 = "init.defaultBranch",
+      GIT_CONFIG_VALUE_0 = "review-branch")
+  })
+  expect_identical(git_initialize(root)$state, "initialized")
+  expect_identical(readLines(file.path(root, ".git/HEAD")), "ref: refs/heads/review-branch")
+  repo <- git2r::repository(root, discover = FALSE)
+  expect_true(git2r::is_empty(repo))
+  expect_null(git2r::repository_head(repo))
+  expect_length(git2r::commits(repo), 0L)
+  expect_false(file.exists(file.path(root, ".git/index")))
+  before <- tree_hashes(root)
+  expect_identical(git_initialize(root)$state, "initialized")
+  expect_identical(tree_hashes(root), before)
+})

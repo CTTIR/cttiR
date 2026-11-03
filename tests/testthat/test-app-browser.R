@@ -152,7 +152,11 @@ test_that("Knowledge previews an update, audit repairs, cancellation and an unav
   capture(app, "runtime", "#runtime-result")
   app$click("runtime-run", wait_ = FALSE)
   wait_text(app, "#runtime-status", "blocked")
-  wait_text(app, "#runtime-result", "No qualified model fits")
+  supported_runtime <- identical(Sys.info()[["sysname"]], "Linux") &&
+    identical(Sys.info()[["machine"]], "x86_64")
+  blocker <- if (supported_runtime) "No qualified model fits" else
+    "Automatic model selection is not qualified for this platform."
+  wait_text(app, "#runtime-result", blocker)
   expect_false(dir.exists(file.path(live$parent, "runtime")))
 
   # An explicit model bypasses automatic selection, but offline acquisition

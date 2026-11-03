@@ -171,6 +171,11 @@ test_that("both fixed worker pipelines render current synthetic results without 
     expect_true(a$ok, info = paste(a$message, a$code, a$class))
     if (!isTRUE(a$ok)) next
     expect_identical(a$value$phase, "analyzed")
+    fixture <- app_study_fixture(recipe)
+    expected <- study_analyze(fixture$spec, fixture$data, fixture$units)
+    expect_identical(a$value$result, expected)
+    stored <- jsonlite::read_json(file.path(request$directory, "output/analysis/results.json"), simplifyVector = TRUE)
+    expect_equal(stored$coefficients, expected$coefficients, tolerance = 0)
     numerical <- tree_hashes(file.path(request$directory, "output/analysis"))
     r <- worker("study_render", list(record = a$value))
     expect_true(r$ok, info = paste(r$message, r$code, r$class))

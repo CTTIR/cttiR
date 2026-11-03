@@ -79,7 +79,10 @@ study_spec <- function(study_id, name, question, population, observation_id, out
 #' @param spec A closed specification from [study_spec()] or [study_paired_spec()].
 #' @param data Optional data frame. Association observations need unique,
 #'   nonmissing IDs. Paired observations need exactly one measurement per pair ID
-#'   at each declared occasion.
+#'   at each declared occasion. Continuous columns must be plain numeric vectors,
+#'   with one value per row. Association IDs must be plain character or numeric
+#'   vectors and remain unique when converted to text. Supply character IDs to
+#'   retain leading zeros or distinguish closely spaced numeric identifiers.
 #' @param units Named character vector or list declaring the actual units of
 #'   every continuous analysis column; these must equal the planned units.
 #' @return Invisibly a list with valid, recipe_id, specification_sha256 and,
@@ -124,9 +127,11 @@ study_validate <- function(spec, data = NULL, units = NULL) {
       !all(c(spec$observation_id, columns) %in% names(data))) study_fail("Data must contain unique declared columns.", "invalid_data")
   if (nrow(data) < 8L || nrow(data) > 100000L) study_fail("The bounded recipe accepts 8 to 100000 observations.")
   id <- data[[spec$observation_id]]
-  if (!(is.character(id) || is.numeric(id)) || anyNA(id) || anyDuplicated(id) ||
-      (is.numeric(id) && any(!is.finite(id))) || any(!nzchar(trimws(as.character(id)))))
-    study_fail("Observation IDs must be complete and unique.", "invalid_observation_id")
+  if (!(is.character(id) || is.numeric(id)) || is.object(id) || !is.null(dim(id)) ||
+      length(id) != nrow(data) || anyNA(id) || anyDuplicated(id) ||
+      (is.numeric(id) && any(!is.finite(id))) || any(!nzchar(trimws(as.character(id)))) ||
+      any(grepl("[[:cntrl:]]", as.character(id))) || anyDuplicated(as.character(id)))
+    study_fail("Observation IDs must be complete plain vectors and unique as text.", "invalid_observation_id")
   continuous <- Filter(function(x) identical(x$type, "continuous"), variables)
   expected_units <- stats::setNames(lapply(continuous, `[[`, "unit"), vapply(continuous, `[[`, "", "name"))
   if (is.character(units)) units <- as.list(units)
@@ -137,10 +142,13 @@ study_validate <- function(spec, data = NULL, units = NULL) {
     value <- data[[x$name]]
     if (anyNA(value)) study_fail(paste0("Missing analysis values: ", x$name), "missing_data")
     if (identical(x$type, "continuous")) {
-      if (!is.numeric(value) || any(!is.finite(value)) || length(unique(value)) < 2L)
-        study_fail(paste0("Continuous column must contain finite, nonconstant numeric values: ", x$name))
+      if (!is.numeric(value) || is.object(value) || !is.null(dim(value)) ||
+          length(value) != nrow(data) || any(!is.finite(value)) || length(unique(value)) < 2L)
+        study_fail(paste0("Continuous column must contain finite, nonconstant plain numeric values: ", x$name))
     } else {
-      if (!(is.character(value) || is.factor(value))) study_fail("Categorical columns must be strings or factors.")
+      if (!(is.character(value) && !is.object(value) || is.factor(value)) ||
+          !is.null(dim(value)) || length(value) != nrow(data))
+        study_fail("Categorical columns must be plain string vectors or factors.")
       levels <- unlist(x$levels, use.names = FALSE)
       if (!setequal(unique(as.character(value)), levels))
         study_fail(paste0("Observed factor levels must equal the declared levels: ", x$name), "factor_levels")
