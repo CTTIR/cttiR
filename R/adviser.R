@@ -42,9 +42,12 @@ adviser_evidence <- function(context, max_chars = 14000L) {
     }
   }
   ids <- vapply(items, function(x) x$source_id, character(1))
-  items <- items[!duplicated(ids)]
+  adviser_fit(items[!duplicated(ids)], max_chars)
+}
+
+# Shrink the longest excerpts first until the whole evidence block fits.
+adviser_fit <- function(items, max_chars = 14000L) {
   if (!length(items)) return(list())
-  # Shrink the longest excerpts first until the whole evidence block fits.
   size <- function(x) nchar(json_text(x), type = "chars")
   repeat {
     total <- size(items)
@@ -58,6 +61,37 @@ adviser_evidence <- function(context, max_chars = 14000L) {
     }
     keep <- max(200L, lengths[[longest]] - (total - max_chars) - 1L)
     items[[longest]]$excerpt <- paste0(substr(items[[longest]]$excerpt, 1L, keep), " [...]")
+  }
+  items
+}
+
+# The bundled catalog stores help text for only part of its verified exports.
+# For the rest, use the installed help page, but only when the installed
+# package version equals the pinned catalog version.
+adviser_installed_evidence <- function(context, catalog, max_chars = 9000L) {
+  symbols <- unique(unlist(lapply(context$gaps, function(gap)
+    if (identical(gap$reason, "reference_text_not_stored")) gap$symbol), use.names = FALSE))
+  packages <- stats::setNames(catalog$packages, vapply(catalog$packages, function(x) x$name, ""))
+  items <- list()
+  for (symbol in utils::head(symbols, 4L)) {
+    parts <- strsplit(symbol, "::", fixed = TRUE)[[1L]]
+    if (length(parts) != 2L) next
+    package <- packages[[parts[[1L]]]]
+    entry <- Filter(function(x) identical(x$name, parts[[2L]]), package$exports)
+    if (is.null(package) || length(entry) != 1L || !identical(entry[[1L]]$verification, "static_api_verified")) next
+    installed <- tryCatch(as.character(utils::packageVersion(parts[[1L]])), error = function(e) NA_character_)
+    if (!identical(installed, package$version)) next
+    rd <- tryCatch(tools::Rd_db(parts[[1L]]), error = function(e) NULL)
+    file <- basename(entry[[1L]]$documentation$path %||% "")
+    if (is.null(rd) || !nzchar(file) || is.null(rd[[file]])) next
+    lines <- utils::capture.output(tools::Rd2txt(rd[[file]], options = list(underline_titles = FALSE)))
+    text <- paste(lines, collapse = "\n")
+    if (nchar(text) > max_chars) text <- paste0(substr(text, 1L, max_chars), " [...]")
+    items[[length(items) + 1L]] <- list(source_id = paste0("api:", parts[[1L]], ":", parts[[2L]]),
+      package = package$name, revision = package$revision %||% package$version,
+      document = entry[[1L]]$documentation$path, source_sha256 = entry[[1L]]$documentation$sha256 %||% "",
+      signature = entry[[1L]]$signature %||% "", verification = "installed_documentation_matching_catalog_version",
+      excerpt = text)
   }
   items
 }
@@ -176,7 +210,13 @@ advise <- function(question, language = c("en", "de"), path = NULL, acknowledge_
   if (any(vapply(context$gaps, function(x) identical(x$reason, "instruction_request_rejected"), logical(1)))) {
     return(result("fallback", "instruction_request_rejected"))
   }
+  catalog <- tryCatch(resolve_catalog(path), error = function(e) NULL)
   evidence <- adviser_evidence(context)
+  if (!is.null(catalog)) {
+    extra <- adviser_installed_evidence(context, catalog)
+    known <- vapply(evidence, function(x) x$source_id, character(1))
+    evidence <- adviser_fit(c(evidence, Filter(function(x) !x$source_id %in% known, extra)))
+  }
   if (!length(evidence)) return(result("fallback", "evidence_unavailable"))
   if (is.null(endpoint)) endpoint <- tryCatch(runtime_endpoint(), error = function(e) NULL)
   if (!planner_valid_endpoint(endpoint)) return(result("fallback", "endpoint_rejected", evidence = evidence))
@@ -208,7 +248,6 @@ advise <- function(question, language = c("en", "de"), path = NULL, acknowledge_
   if (!is.list(message) || !identical(message$role, "assistant") || length(message$tool_calls)) {
     return(result("fallback", "invalid_message", evidence = evidence, provenance = provenance))
   }
-  catalog <- tryCatch(resolve_catalog(path), error = function(e) NULL)
   checked <- adviser_validate(message$content, evidence, catalog)
   if (!checked$ok) return(result("fallback", checked$reason, evidence = evidence, provenance = provenance))
   fresh <- tryCatch(local_model(endpoint, model, timeout = min(10, max(1, remaining()))), error = function(e) NULL)

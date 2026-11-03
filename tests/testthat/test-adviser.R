@@ -131,3 +131,21 @@ test_that("advise() falls back on runtime and reply failures", {
   expect_identical(advise("Explain dplyr::filter", acknowledge_experimental = TRUE,
     endpoint = "http://127.0.0.1:11434")$reason, "model_missing")
 })
+
+test_that("installed help fills catalog entries without bundled text when versions match", {
+  withr::local_options(cttiR.catalog_dir = tempfile("unused-catalog-"))
+  context <- assistant_context("Use stats::t.test for paired measurements", approved_only = FALSE)
+  skip_if(!any(vapply(context$gaps, function(g) identical(g$reason, "reference_text_not_stored"), logical(1))),
+    "catalog already stores this help text")
+  extra <- adviser_installed_evidence(context, resolve_catalog())
+  catalog_version <- Filter(function(p) identical(p$name, "stats"), resolve_catalog()$packages)[[1]]$version
+  if (identical(as.character(utils::packageVersion("stats")), catalog_version)) {
+    expect_identical(vapply(extra, function(x) x$source_id, ""), "api:stats:t.test")
+    expect_match(extra[[1]]$excerpt, "paired", fixed = TRUE)
+    expect_identical(extra[[1]]$verification, "installed_documentation_matching_catalog_version")
+  } else {
+    expect_length(extra, 0L)
+  }
+  fitted <- adviser_fit(c(extra, extra), max_chars = 3000L)
+  expect_lte(nchar(json_text(fitted)), 3000L)
+})

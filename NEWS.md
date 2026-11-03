@@ -1,5 +1,11 @@
 # cttiR 0.1.1.9000
 
+* New experimental `advise()` and an "Analysis plan" request type in the Ask
+  view. They ask the locally trained adviser model for a source-cited analysis
+  plan in English or German. Replies are accepted only as one schema-valid plan
+  citing the supplied catalog sources. Unknown functions are flagged, nothing
+  is executed, and results stay labelled `experimental_not_qualified`.
+
 * The package logo uses the reserved CTTIR core palette, which it shares only
   with the CTTIR institution logo: the same near-black, white and slate grey
   with a gold border.
