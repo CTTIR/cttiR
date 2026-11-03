@@ -191,8 +191,11 @@ source-grounded analysis plans, served from the package-owned Ollama runtime
 after `setup_release()` imports its GGUF file. The package rebuilds the exact
 prompt format used in training and attaches documentation from the catalog. It
 accepts a reply only if it is a single plan matching the adviser schema that
-cites the sources it was given. Plans that name functions missing from the
-catalog are kept and flagged.
+cites the sources it was given. Decoding is constrained to that schema by
+default (`constrain = FALSE` reproduces the unconstrained decoding used in
+training). Plans that name functions missing from the catalog are kept and
+flagged. On the 148-case development set, the served Q8_0 release passed the
+mechanical checks in 102 of 104 adviser cases.
 
 **The model is not scientifically qualified.** In its 148-case development
 comparison it still made confirmed critical errors (6 of 148), including

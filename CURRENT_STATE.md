@@ -1,6 +1,16 @@
 # Current project state
 
-Updated 20 October 2026.
+Updated 3 November 2026.
+
+## Local adviser (experimental), 3 November 2026
+
+- `advise()` and the Ask view's "Analysis plan" request type use the trained Qwen3.5-9B adviser (shared adapter from 16 October, epoch 2).
+- **How it runs.** The adapter is merged into the base model and served as a Q8_0 GGUF from the package-owned Ollama 0.34.4 runtime, installed through `setup_release()`.
+- **How replies are checked.** The package rebuilds the exact training prompt (checked byte-identical), attaches pinned catalog documentation or matching installed help pages, and constrains decoding to the adviser schema. It then accepts only one schema-valid plan citing supplied sources and flags functions absent from the catalog.
+- **How it is labelled.** Results stay `experimental_not_qualified`, require an explicit acknowledgement and are never executed.
+- **Serving check** (148 development cases, one mechanical scorer, schema-constrained Q8_0): 129 passes overall and 102 of 104 adviser cases. The training-time NF4 generation passed 134 overall and 95 adviser cases. Q4_K_M passed 110 overall (94 adviser) and 98 when unconstrained.
+- **What the check does not cover.** Mechanical checks do not measure scientific correctness. The 20 October semantic review (6 confirmed critical final cases, 4 new regressions) remains the quality evidence, and no model is qualified.
+- **Where things are.** Weights, the release manifest and evaluation outputs stay outside Git. The setup probe now requests non-thinking output, which Qwen3.5 needs.
 
 ## Implemented and locally validated
 
