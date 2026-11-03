@@ -96,6 +96,7 @@ test_that("structured probe validates output and never returns thinking", {
     expect_equal(route, "chat")
     expect_equal(body$options$num_gpu, 0L)
     expect_equal(body$options$num_ctx, 2048L)
+    expect_false(body$think)
     expect_null(body$tools)
     response
   })
@@ -103,6 +104,8 @@ test_that("structured probe validates output and never returns thinking", {
   expect_equal(probe$state, "pass")
   expect_false(any(grepl("discard", unlist(probe))))
   response$message$content <- '{"status":"ready","extra":true}'
+  expect_error(runtime_probe("unused", "local:small"), class = "cttir_runtime_unavailable")
+  response$message$content <- 'Thinking about it: {"status":'
   expect_error(runtime_probe("unused", "local:small"), class = "cttir_runtime_unavailable")
   response$message$content <- '{"status":"ready"}'
   response$done <- FALSE
