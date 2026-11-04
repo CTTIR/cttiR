@@ -19,7 +19,11 @@ normalize_schema_value <- function(x, schema) {
 # jsonvalidate's V8 engine initialises R's random number generator, which would
 # create or advance .Random.seed in the user's workspace. Validation restores the
 # caller's random state so it has no side effects.
-json_schema_validate <- function(...) {
+.schema_validators <- new.env(parent = emptyenv())
+
+json_schema_validate <- function(json, schema, verbose = FALSE, greedy = FALSE,
+  error = FALSE, engine = "imjv", reference = NULL,
+  query = NULL, strict = FALSE) {
   workspace <- globalenv()
   had <- exists(".Random.seed", envir = workspace, inherits = FALSE)
   saved <- if (had) get(".Random.seed", envir = workspace, inherits = FALSE) else NULL
@@ -30,7 +34,45 @@ json_schema_validate <- function(...) {
       rm(".Random.seed", envir = workspace)
     }
   })
-  jsonvalidate::json_validate(...)
+  cache <- .schema_validators
+  if (!identical(cache$pid, Sys.getpid())) {
+    cache$pid <- Sys.getpid()
+    cache$entries <- list()
+  }
+  text <- if (is.character(schema) && length(schema) == 1L && !is.na(schema)) {
+    if (file.exists(schema)) paste(readLines(schema, warn = FALSE), collapse = "\n") else schema
+  } else {
+    NULL
+  }
+  # A referenced file can change independently of the root schema. Compile
+  # those schemas afresh; only self-contained schemas enter the bounded cache.
+  reusable <- !is.null(text) && is.null(reference) && schema_is_self_contained(text)
+  if (reusable) {
+    key <- digest::digest(list(text, engine, strict), algo = "sha256")
+    validator <- cache$entries[[key]]
+    if (is.null(validator)) {
+      validator <- jsonvalidate::json_validator(schema, engine, strict = strict)
+      if (length(cache$entries) >= 8L) cache$entries <- cache$entries[-1L]
+      cache$entries[[key]] <- validator
+    }
+  } else {
+    validator <- jsonvalidate::json_validator(schema, engine, reference = reference,
+      strict = strict)
+  }
+  validator(json, verbose, greedy, error, query)
+}
+
+schema_is_self_contained <- function(text) {
+  external <- function(node) {
+    if (!is.list(node)) return(FALSE)
+    refs <- node[intersect(names(node), c("$ref", "$dynamicRef", "$recursiveRef"))]
+    if (any(vapply(refs, function(x) {
+      !is.character(x) || length(x) != 1L || is.na(x) || !startsWith(x, "#")
+    }, logical(1)))) return(TRUE)
+    any(vapply(node, external, logical(1)))
+  }
+  tryCatch(!external(jsonlite::fromJSON(text, simplifyVector = FALSE)),
+    error = function(e) FALSE)
 }
 
 validate_document <- function(x, kind) {
