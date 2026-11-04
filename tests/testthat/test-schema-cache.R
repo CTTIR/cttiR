@@ -35,13 +35,16 @@ test_that("file edits and external references never reuse stale schemas", {
   expect_false(schema_is_self_contained('{"$dynamicRef":"other.json"}'))
   expect_false(schema_is_self_contained('{"$recursiveRef":"other.json"}'))
   expect_false(schema_is_self_contained('{"$\\u0072ef":"other.json"}'))
+  expect_false(schema_is_self_contained('{"$ref":"#","$ref":"value.json"}'))
   expect_false(schema_is_self_contained("not JSON"))
   child <- file.path(root, "value.json")
-  writeLines('{"type":"integer","minimum":1}', child)
-  writeLines('{"$ref":"value.json"}', schema)
-  expect_true(json_schema_validate("1", schema, engine = "ajv"))
-  writeLines('{"type":"integer","minimum":2}', child)
-  expect_false(json_schema_validate("1", schema, engine = "ajv"))
+  for (root_schema in c('{"$ref":"value.json"}', '{"$ref":"#","$ref":"value.json"}')) {
+    writeLines('{"type":"integer","minimum":1}', child)
+    writeLines(root_schema, schema)
+    expect_true(json_schema_validate("1", schema, engine = "ajv"))
+    writeLines('{"type":"integer","minimum":2}', child)
+    expect_false(json_schema_validate("1", schema, engine = "ajv"))
+  }
 })
 
 test_that("cache hits and misses preserve present and absent random state", {

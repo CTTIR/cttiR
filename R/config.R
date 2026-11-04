@@ -65,7 +65,7 @@ json_schema_validate <- function(json, schema, verbose = FALSE, greedy = FALSE,
 schema_is_self_contained <- function(text) {
   external <- function(node) {
     if (!is.list(node)) return(FALSE)
-    refs <- node[intersect(names(node), c("$ref", "$dynamicRef", "$recursiveRef"))]
+    refs <- node[names(node) %in% c("$ref", "$dynamicRef", "$recursiveRef")]
     if (any(vapply(refs, function(x) {
       !is.character(x) || length(x) != 1L || is.na(x) || !startsWith(x, "#")
     }, logical(1)))) return(TRUE)
