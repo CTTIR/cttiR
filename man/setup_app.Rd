@@ -30,10 +30,11 @@ background R process; read-only work can be cancelled and duplicate
 submissions are refused. Creation and configuration require a reviewed
 preview of the current draft and catalog. Scientific analysis and returned
 code are never executed by the general project builder.
-
-The separate Strict synthetic examples view offers two fixed, noncausal
-examples: an independent continuous-outcome association and a paired mean
-change. Preview, compilation, synthetic analysis and rendering are separate
+}
+\details{
+The separate Strict synthetic examples view offers independent association,
+paired mean-change and two-group continuous-outcome workflows. The two-group
+workflow retains a supplied research question and explicit planning inputs. Preview, compilation, synthetic analysis and rendering are separate
 explicit actions through \code{\link[=study_project]{study_project()}}, \code{\link[=study_run]{study_run()}} and
 \code{\link[=study_render]{study_render()}}. It accepts no data upload, arbitrary code or model plan,
 and installs no packages. The prepared external library must already exist.
@@ -43,8 +44,7 @@ download it outside the project for continuation through the R API after
 session loss. The interface never recovers authority from project files and
 never marks scientific or real-study approval. General Open/Configure remains
 for projects created by \code{\link[=project]{project()}}, not strict example projects.
-}
-\details{
+
 Fast asks only for name, research type and goal (plus the parent directory)
 and shows the resolved workflow profile, routing reason and selected tools.
 Detailed adds optional questions from a declarative registry; every question

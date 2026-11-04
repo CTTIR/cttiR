@@ -110,9 +110,9 @@ app_server <- function(path = NULL, worker = app_worker) {
 #' preview of the current draft and catalog. Scientific analysis and returned
 #' code are never executed by the general project builder.
 #'
-#' The separate Strict synthetic examples view offers two fixed, noncausal
-#' examples: an independent continuous-outcome association and a paired mean
-#' change. Preview, compilation, synthetic analysis and rendering are separate
+#' The separate Strict synthetic examples view offers independent association,
+#' paired mean-change and two-group continuous-outcome workflows. The two-group
+#' workflow retains a supplied research question and explicit planning inputs. Preview, compilation, synthetic analysis and rendering are separate
 #' explicit actions through [study_project()], [study_run()] and
 #' [study_render()]. It accepts no data upload, arbitrary code or model plan,
 #' and installs no packages. The prepared external library must already exist.

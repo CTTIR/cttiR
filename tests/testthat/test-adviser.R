@@ -157,3 +157,36 @@ test_that("installed help fills catalog entries without bundled text when versio
   fitted <- adviser_fit(c(extra, extra), max_chars = 3000L)
   expect_lte(nchar(json_text(fitted)), 3000L)
 })
+
+test_that("evidence fitting terminates when a truncation marker cannot fit", {
+  # A 201-character excerpt lies just above the floor; appending the marker
+  # must not leave the loop repeatedly producing the same oversized item.
+  setTimeLimit(elapsed = 2, transient = TRUE)
+  fitted <- tryCatch(adviser_fit(list(list(excerpt = strrep("x", 201))), max_chars = 210L),
+    finally = setTimeLimit(cpu = Inf, elapsed = Inf, transient = FALSE))
+  expect_lte(nchar(json_text(fitted)), 210L)
+})
+
+test_that("continuous two-group power questions retrieve the relevant statistical APIs", {
+  withr::local_options(cttiR.catalog_dir = tempfile("unused-catalog-"))
+  context <- assistant_context(paste("Plan a randomized trial comparing new therapy against standard of care.",
+    "The continuous outcome has SD 10 and a target mean difference of 5.",
+    "Calculate sample size for 80 percent power and two-sided alpha 0.05."), approved_only = FALSE)
+  symbols <- unique(c(unlist(lapply(context$references, function(x)
+    vapply(x$callables, function(y) y$symbol, ""))),
+    vapply(context$gaps, function(x) x$symbol, "")))
+  expect_true(all(c("stats::power.t.test", "stats::t.test") %in% symbols))
+  expect_false("zhncommandR::new_therapy_blocks" %in% symbols)
+})
+
+test_that("statistical routing requires a supported two-group comparison", {
+  excluded <- c("Sample size for three groups with continuous outcomes and SD 10",
+    "One sample mean power calculation, SD 12", "Paired two-group continuous mean difference power",
+    "Two groups with repeated continuous measurements: sample size",
+    "Continuous outcome power for a crossover trial comparing therapy with standard care")
+  for (question in excluded) expect_length(assistant_statistical_candidates(question), 0L)
+  expect_identical(assistant_statistical_candidates("Two independent groups, continuous outcome, sample size"),
+    c("stats::power.t.test", "stats::t.test"))
+  expect_identical(assistant_statistical_candidates("Zwei unabhaengige parallele Gruppen, kontinuierlicher Endpunkt, Fallzahl"),
+    c("stats::power.t.test", "stats::t.test"))
+})

@@ -36,7 +36,8 @@ assistant_context <- function(question, path = NULL, symbols = NULL, approved_on
       # A named but absent function is an explicit evidence gap, not an
       # invitation to substitute lexically similar unrelated APIs.
       if (!length(symbols) && !length(references) && !length(named$absent)) {
-        symbols <- assistant_reference_candidates(question, catalog, limit = min(4L, max_documents))
+        symbols <- assistant_statistical_candidates(question)
+        if (!length(symbols)) symbols <- assistant_reference_candidates(question, catalog, limit = min(4L, max_documents))
         if (!length(symbols)) symbols <- assistant_reference_candidates(question, catalog,
           limit = min(4L, max_documents), allow_unnamed = TRUE)
         if (length(symbols)) gap("", "lexical_reference_candidates_require_review")
@@ -126,4 +127,16 @@ assistant_context <- function(question, path = NULL, symbols = NULL, approved_on
     token_count = NULL, execution_authorized = FALSE, evidence_registry = evidence_registry)
   if (nchar(json_text(result), type = "bytes") > 96000L) abort_cttir("Evidence context exceeds its total size limit.")
   result
+}
+
+# Narrow statistical intent routing precedes generic lexical API matching.
+# This selects documentation to read, not a method to execute or approve.
+assistant_statistical_candidates <- function(question) {
+  text <- tolower(question)
+  continuous <- grepl("continuous|numeric outcome|mean difference|standard deviation|\\bsd\\b|kontinuier|stetig|mittelwert|standardabweich", text, perl = TRUE)
+  groups <- grepl("\\b(two|2|zwei)\\s+(?:(?:independent|parallel|unabhaengig[a-z]*|parallel[a-z]*)\\s+)*(groups?|arms?|samples?|gruppen)|(?:therap|treatment|behandlung).*(?:standard.?care|standard.of.care|standardtherap|standardbehandlung|control)", text, perl = TRUE)
+  excluded <- grepl("survival|hazard|binary|binomial|proportion|cluster|non.?inferior|equivalence|ueberleben|nichtunterlegen|\\bpaired\\b|repeated|crossover|cross.over|gepaart|wiederholt|(?:three|four|3|4|multiple|drei|mehrere).{0,20}(?:group|arm|gruppe)", text, perl = TRUE)
+  if (!continuous || !groups || excluded) return(character())
+  power <- grepl("power|sample.size|stichprobe|fallzahl|teststaerke", text, perl = TRUE)
+  if (power) c("stats::power.t.test", "stats::t.test") else "stats::t.test"
 }

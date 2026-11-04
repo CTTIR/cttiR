@@ -1,5 +1,9 @@
 # cttiR 0.1.1.9000
 
+- Add a synthetic two-group workflow with explicit planning inputs, sample-size counts and Welch analysis.
+- Route continuous two-group power questions to verified statistical documentation.
+- Fix an evidence-trimming boundary case that could prevent adviser requests from completing.
+
 * New experimental `advise()` and an "Analysis plan" request type in the Ask
   view. They ask the locally trained adviser model for a source-cited analysis
   plan in English or German. Replies are accepted only as one schema-valid plan

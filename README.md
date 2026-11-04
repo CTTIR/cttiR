@@ -368,3 +368,22 @@ Local software setup: vLLM with Python/PyTorch, plus R and RStudio.
 ## Branding
 
 Editable R artwork and regeneration instructions are in [tools/branding](https://github.com/CTTIR/cttiR/blob/main/tools/branding/README.md).
+
+### Two-group planning and workflowr example
+
+The strict synthetic examples view now accepts a research question and explicit
+planning inputs for an independent two-group continuous-outcome comparison.
+Review the local adviser's proposal, confirm the meaningful difference, planning
+SD, power, significance level and dropout allowance, then preview, compile,
+analyze and render the workflow. The compiler uses fixed reviewed R functions;
+model-generated code is not executed.
+
+`study_two_group_power(delta = 5, sd = 10, dropout = 0.1)` returns 64 evaluable
+participants per group and 72 randomized per group (144 total). This planning
+approximation assumes equal allocation and a common planning SD. The synthetic
+analysis uses a two-sided Welch comparison with therapy minus standard care as
+the contrast. Real-study design and missing-data decisions require separate review.
+
+The complete R example is in `inst/examples/therapy-workflow.R`. It produces a
+local workflowr site, numerical results, diagnostics, a dependency inventory and
+external continuation records. It installs no packages and publishes nothing.

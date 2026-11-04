@@ -4,9 +4,10 @@ app_study_operations <- c("study_preview", "study_compile", "study_run", "study_
 app_study_hash <- function(value) content_hash(json_text(value))
 
 app_study_request <- function(request) {
-  study_keys(request, c("recipe", "directory", "author", "synthetic_acknowledged", "independent_pairs"), "Example request")
+  study_keys(request, c("recipe", "directory", "author", "synthetic_acknowledged", "independent_pairs",
+    if (identical(request$recipe, "two_group")) "trial"), "Example request")
   if (!is.character(request$recipe) || length(request$recipe) != 1L ||
-      is.na(request$recipe) || !request$recipe %in% c("association", "paired")) study_fail("Choose a supported synthetic example.")
+      is.na(request$recipe) || !request$recipe %in% c("association", "paired", "two_group")) study_fail("Choose a supported synthetic example.")
   study_text(request$directory, "new project directory", 4096L)
   study_text(request$author, "author", 160L)
   scalar_flag(request$synthetic_acknowledged, "synthetic_acknowledged")
@@ -14,12 +15,20 @@ app_study_request <- function(request) {
   if (!isTRUE(request$synthetic_acknowledged)) study_fail("Acknowledge that this workflow uses only the fixed synthetic example.")
   if (request$recipe == "paired" && !isTRUE(request$independent_pairs))
     study_fail("Explicitly acknowledge the independent synthetic pairs before proceeding.")
+  if (identical(request$recipe, "two_group")) {
+    study_keys(request$trial, c("question", "independent_observations", "planning"), "Trial request")
+    study_text(request$trial$question, "research question")
+    if (!identical(request$trial$independent_observations, TRUE)) study_fail("Explicitly declare independent observations.")
+    study_keys(request$trial$planning, c("delta", "sd", "power", "alpha", "dropout"), "Planning inputs")
+    plan <- do.call(study_two_group_power, request$trial$planning)
+    if (plan$evaluable_per_group < 4 || plan$evaluable_per_group > 10000) study_fail("The synthetic app example supports 4 to 10000 evaluable observations per group.")
+  }
   request$directory <- study_directory(request$directory)
   request
 }
 
-app_study_fixture <- function(recipe) {
-  if (!identical(recipe, "association") && !identical(recipe, "paired")) study_fail("Unsupported synthetic example.")
+app_study_fixture <- function(recipe, trial = NULL) {
+  if (!recipe %in% c("association", "paired", "two_group")) study_fail("Unsupported synthetic example.")
   kind <- RNGkind()
   had_seed <- exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)
   prior_seed <- if (had_seed) get(".Random.seed", envir = .GlobalEnv, inherits = FALSE) else NULL
@@ -29,7 +38,7 @@ app_study_fixture <- function(recipe) {
     else if (exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)) rm(".Random.seed", envir = .GlobalEnv)
   }, add = TRUE)
   RNGkind("Mersenne-Twister", "Inversion", "Rejection")
-  seed <- if (recipe == "association") 20261016L else 20261017L
+  seed <- if (recipe == "association") 20261016L else if (recipe == "paired") 20261017L else 20261104L
   set.seed(seed)
   if (recipe == "association") {
     exposure <- rep(seq_len(10), 4)
@@ -44,7 +53,7 @@ app_study_fixture <- function(recipe) {
       list(name = "exposure", type = "continuous", unit = "mg"),
       list(list(name = "age", type = "continuous", unit = "years")),
       research = list(domain = "clinical", data_origin = "primary", design = "observational"))
-  } else {
+  } else if (recipe == "paired") {
     pair_id <- sprintf("example_%03d", seq_len(24))
     baseline <- stats::rnorm(24, mean = 120, sd = 12)
     difference <- stats::rnorm(24, mean = -3, sd = 5)
@@ -58,6 +67,19 @@ app_study_fixture <- function(recipe) {
       list(name = "pressure", type = "continuous", unit = "mmHg"),
       "baseline", "followup", independent_pairs = TRUE,
       research = list(domain = "clinical", data_origin = "primary", design = "observational"))
+  } else {
+    plan <- do.call(study_two_group_power, trial$planning)
+    n <- plan$evaluable_per_group
+    if (n < 4 || n > 10000) study_fail("The synthetic example accepts 4 to 10000 observations per group.")
+    data <- data.frame(id = sprintf("synthetic_%05d", seq_len(2 * n)),
+      arm = rep(c("standard", "therapy"), each = n),
+      score = c(stats::rnorm(n, 100, plan$sd), stats::rnorm(n, 100 - plan$delta, plan$sd)))
+    units <- c(score = "points")
+    spec <- study_two_group_spec("synthetic_therapy_comparison", "Synthetic therapy versus standard care",
+      trial$question, "Independently generated synthetic continuous outcomes; no patient data", "id", "arm",
+      list(name = "score", type = "continuous", unit = "points"), "standard", "therapy",
+      independent_observations = trial$independent_observations, planning = trial$planning,
+      confidence = 1 - plan$alpha)
   }
   study_validate(spec, data, units)
   list(spec = spec, data = data, units = units, seed = seed)
@@ -67,7 +89,7 @@ app_study_preview <- function(request) {
   request <- app_study_request(request)
   if (file.exists(request$directory) || dir.exists(request$directory) || !dir.exists(dirname(request$directory)))
     study_fail("Use a new project directory below an existing physical parent.")
-  app_study_preview_value(request, app_study_fixture(request$recipe))
+  app_study_preview_value(request, app_study_fixture(request$recipe, request$trial))
 }
 
 app_study_preview_value <- function(request, fixture) {
@@ -85,7 +107,7 @@ app_study_compile <- function(request, expected_fingerprint) {
   scalar_text(expected_fingerprint, "expected_fingerprint")
   preview <- app_study_preview(request)
   if (!identical(preview$fingerprint, expected_fingerprint)) study_fail("The example preview is stale; preview again before compiling.")
-  fixture <- app_study_fixture(preview$request$recipe)
+  fixture <- app_study_fixture(preview$request$recipe, preview$request$trial)
   value <- study_project(preview$request$directory, fixture$spec, fixture$data,
     preview$dependency_lock, preview$request$author, fixture$units, fixture$seed)
   list(schema_version = 1L, phase = "compiled", request = preview$request,
@@ -110,7 +132,7 @@ app_study_record <- function(record, phase) {
     "recipe_id", "directory", "declaration", "result", "validation"), "Server-held example record")
   if (!identical(record$schema_version, 1L) || !identical(record$phase, phase)) study_fail("The example operation is not available in this phase.")
   request <- app_study_request(record$request)
-  fixture <- app_study_fixture(request$recipe)
+  fixture <- app_study_fixture(request$recipe, request$trial)
   if (!identical(record$request, request) || !identical(record$request_sha256, app_study_hash(request)) ||
       !identical(record$directory, request$directory) || !identical(record$recipe_id, fixture$spec$recipe_id) ||
       !identical(json_text(record$declaration$structure$composition$study), json_text(fixture$spec)))
@@ -165,8 +187,18 @@ app_study_ui <- function(id) {
     shiny::tags$p(class = "cttir-lead", app_tr("study.intro")),
     shiny::tags$p(class = "cttir-note", app_tr("study.scope")),
     shiny::radioButtons(ns("recipe"), app_tr("study.recipe"),
-      choiceNames = list(app_tr("study.association"), app_tr("study.paired")),
-      choiceValues = c("association", "paired"), selected = "association"),
+      choiceNames = list(app_tr("study.association"), app_tr("study.paired"), app_tr("study.two_group")),
+      choiceValues = c("association", "paired", "two_group"), selected = "association"),
+    shiny::conditionalPanel(sprintf("input['%s'] === 'two_group'", ns("recipe")),
+      shiny::textAreaInput(ns("trial_question"), app_tr("study.trial_question"),
+        value = "Does a new therapy reduce a continuous outcome compared with standard care?", rows = 3, width = "100%"),
+      shiny::numericInput(ns("trial_delta"), app_tr("study.trial_delta"), 5, min = 0.001),
+      shiny::numericInput(ns("trial_sd"), app_tr("study.trial_sd"), 10, min = 0.001),
+      shiny::numericInput(ns("trial_power"), app_tr("study.trial_power"), 0.8, min = 0.01, max = 0.99, step = 0.05),
+      shiny::numericInput(ns("trial_alpha"), app_tr("study.trial_alpha"), 0.05, min = 0.01, max = 0.2, step = 0.01),
+      shiny::numericInput(ns("trial_dropout"), app_tr("study.trial_dropout"), 0.1, min = 0, max = 0.9, step = 0.05),
+      shiny::checkboxInput(ns("trial_independent"), app_tr("study.trial_independent"), FALSE),
+      shiny::tags$p(class = "cttir-note", app_tr("study.trial_scope"))),
     shiny::textInput(ns("directory"), app_tr("study.directory"), value = "", width = "100%"),
     shiny::textInput(ns("author"), app_tr("study.author"), value = "", width = "100%"),
     shiny::checkboxInput(ns("synthetic_acknowledged"), app_tr("study.ack"), value = FALSE),
@@ -191,7 +223,8 @@ app_study_preview_details <- function(value, lang) {
   independence <- if (study_is_paired(spec)) {
     if (isTRUE(spec$independent_pairs)) app_t("study.independence.paired", lang)
     else app_t("study.independence.unconfirmed", lang)
-  } else if (identical(spec$dependence, "independent")) app_t("study.independence.observations", lang)
+  } else if (study_is_two_group(spec) && isTRUE(spec$independent_observations)) app_t("study.independence.observations", lang)
+  else if (identical(spec$dependence, "independent")) app_t("study.independence.observations", lang)
   else app_t("study.independence.unconfirmed", lang)
   shiny::tags$dl(class = "cttir-dl",
     shiny::tags$dt(app_t("study.units", lang)),
@@ -242,9 +275,15 @@ app_study_server <- function(id, pool, lang = shiny::reactive("en")) {
     state <- shiny::reactiveValues(preview = NULL, accepted = NULL, record = NULL,
       phase = "draft", status = app_status("info", "study.ready"), signature = NULL,
       exported_sha256 = NULL, failed_write = FALSE)
-    request <- shiny::reactive(app_study_request(list(recipe = input$recipe, directory = input$directory,
-      author = input$author, synthetic_acknowledged = input$synthetic_acknowledged,
-      independent_pairs = input$independent_pairs)))
+    request <- shiny::reactive({
+      value <- list(recipe = input$recipe, directory = input$directory, author = input$author,
+        synthetic_acknowledged = input$synthetic_acknowledged, independent_pairs = input$independent_pairs)
+      if (identical(input$recipe, "two_group")) value$trial <- list(question = input$trial_question,
+        independent_observations = input$trial_independent,
+        planning = list(delta = input$trial_delta, sd = input$trial_sd, power = input$trial_power,
+          alpha = input$trial_alpha, dropout = input$trial_dropout))
+      app_study_request(value)
+    })
     request_hash <- function() tryCatch(app_study_hash(request()), error = function(e) NULL)
     guard <- function(expr) tryCatch(expr,
       cttir_app_status = function(e) state$status <- e$status,
@@ -259,7 +298,8 @@ app_study_server <- function(id, pool, lang = shiny::reactive("en")) {
     }
     shiny::observe({
       sig <- app_study_hash(list(input$recipe, input$directory, input$author,
-        input$synthetic_acknowledged, input$independent_pairs))
+        input$synthetic_acknowledged, input$independent_pairs, input$trial_question, input$trial_delta,
+        input$trial_sd, input$trial_power, input$trial_alpha, input$trial_dropout, input$trial_independent))
       if (!identical(sig, shiny::isolate(state$signature))) {
         state$signature <- sig
         state$preview <- NULL

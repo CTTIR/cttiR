@@ -59,8 +59,13 @@ adviser_fit <- function(items, max_chars = 14000L) {
       if (!length(items)) break
       next
     }
-    keep <- max(200L, lengths[[longest]] - (total - max_chars) - 1L)
-    items[[longest]]$excerpt <- paste0(substr(items[[longest]]$excerpt, 1L, keep), " [...]")
+    marker <- " [...]"
+    keep <- lengths[[longest]] - (total - max_chars) - nchar(marker)
+    if (keep < 200L) {
+      items <- items[-longest]
+    } else {
+      items[[longest]]$excerpt <- paste0(substr(items[[longest]]$excerpt, 1L, keep), marker)
+    }
   }
   items
 }
