@@ -1,5 +1,9 @@
 # cttiR 0.1.1.9000
 
+* Reuse up to eight compiled self-contained JSON schemas per process. Schema
+  edits invalidate the cache, external references are always recompiled, and
+  validation retains its existing errors and random-state guarantees.
+
 * The package logo uses the reserved CTTIR core palette, which it shares only
   with the CTTIR institution logo: the same near-black, white and slate grey
   with a gold border.
