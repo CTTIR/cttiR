@@ -483,8 +483,10 @@ study_render <- function(directory, declaration, timeout = 600) {
   study_report_git_status(root, files)
   callr::r(function(root, declaration) {
     loadNamespace("cttiR")
-    options(cttir.study.external_declaration = declaration)
-    setwd(root)
+    saved <- options(cttir.study.external_declaration = declaration)
+    on.exit(options(saved), add = TRUE)
+    wd <- setwd(root)
+    on.exit(setwd(wd), add = TRUE)
     files <- c("analysis/index.Rmd", vapply(declaration$structure$profile$stages, `[[`, "", "analysis"))
     workflowr::wflow_build(files = files, view = FALSE, verbose = FALSE, local = TRUE)
     invisible(TRUE)

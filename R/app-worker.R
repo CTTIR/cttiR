@@ -65,7 +65,8 @@ app_worker <- function(operation, args) {
   settings <- options()[intersect(names(options()), keys)]
   callr::r_bg(
     function(operation, args, settings, version) {
-      options(settings)
+      saved <- options(settings)
+      on.exit(options(saved), add = TRUE)
       if (!identical(as.character(utils::packageVersion("cttiR")), version)) {
         message <- "The installed cttiR version differs from the running application. Reinstall the current package."
         return(list(ok = FALSE, message = message, code = "version_mismatch", class = "cttir_api_mismatch"))
