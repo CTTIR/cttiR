@@ -436,6 +436,10 @@ ask_prerequisites <- function(id) {
 #'   revision (versioned source archive or commit). Code uses placeholders
 #'   (`<...>`) for mapped data and is illustrative; generated projects use the
 #'   full reviewed stage library.
+#' @examples
+#' answer <- ask("How do I compare two independent groups on a continuous outcome?")
+#' answer$answer
+#' answer$packages
 #' @export
 ask <- function(question, path = NULL, verified_only = TRUE) {
   question <- utf8_input(question)

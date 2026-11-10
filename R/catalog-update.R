@@ -386,6 +386,15 @@ defer_repository_sources <- function(plan) {
 #'   reports, the exact repository URLs requested, `resource_changes`, API and
 #'   documentation diffs, new `tombstones`, the Bioconductor release policy,
 #'   activation and warnings.
+#' @examples
+#' old <- options(
+#'   cttiR.catalog_dir = file.path(tempdir(), "cttiR-catalog"),
+#'   cttiR.runtime_dir = file.path(tempdir(), "cttiR-runtime")
+#' )
+#' # Local mode reads only configured local sources; a dry run writes nothing
+#' preview <- update(dry_run = TRUE)
+#' class(preview)
+#' options(old)
 #' @export
 update <- function(
   sources = NULL, packages = NULL, mode = c("local", "remote"),
@@ -593,6 +602,15 @@ update_knowledge <- function(...) update(...)
 #' @return A `cttir_update` containing IDs, API impact, activation outcome,
 #'   `active_problem` (`NA` when the active snapshot verified) and the restored
 #'   `bioc_release` policy (`NA` release when none is recorded).
+#' @examples
+#' old <- options(
+#'   cttiR.catalog_dir = file.path(tempdir(), "cttiR-catalog"),
+#'   cttiR.runtime_dir = file.path(tempdir(), "cttiR-runtime")
+#' )
+#' # No composite snapshot has been retained in this fresh catalog store
+#' tryCatch(rollback_knowledge(strrep("a", 64), dry_run = TRUE),
+#'   error = conditionMessage)
+#' options(old)
 #' @export
 rollback_knowledge <- function(version, dry_run = TRUE) {
   scalar_text(version, "version")

@@ -49,3 +49,10 @@ Creates a closed, noncausal specification for the initial reviewed-code
 development recipe. This version supports synthetic inputs only; it does not
 approve a real study or infer scientific decisions from data.
 }
+\examples{
+spec <- study_spec("association", "Example", "Association?",
+  "Synthetic observations", "observation_id",
+  list(name = "outcome", type = "continuous", unit = "mmHg"),
+  list(name = "exposure", type = "continuous", unit = "mg"))
+spec$study_id
+}

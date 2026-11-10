@@ -337,6 +337,15 @@ audit_overall_reason <- function(checks) {
 #'   `repair = TRUE` would attempt for the final checks, with their target files
 #'   and current hashes; computed read-only), package identity, effects and
 #'   limitations.
+#' @examples
+#' old <- options(
+#'   cttiR.catalog_dir = file.path(tempdir(), "cttiR-catalog"),
+#'   cttiR.runtime_dir = file.path(tempdir(), "cttiR-runtime")
+#' )
+#' # Installation checks inspect only the (here empty) owned runtime state
+#' result <- audit(scope = "installation")
+#' names(result)
+#' options(old)
 #' @export
 audit <- function(path = NULL, scope = c("installation", "knowledge", "project"),
   repair = FALSE, output = NULL, strict = FALSE, live = FALSE) {
@@ -460,6 +469,17 @@ audit_package_identity <- function() {
 #' never with repairs, live probes or reports.
 #' @param path Optional exact project root.
 #' @return A `cttir_audit` from the shared inspection engine.
+#' @examples
+#' old <- options(
+#'   cttiR.catalog_dir = file.path(tempdir(), "cttiR-catalog"),
+#'   cttiR.runtime_dir = file.path(tempdir(), "cttiR-runtime")
+#' )
+#' \donttest{
+#' # Reads the bundled catalog and installed package metadata (slow)
+#' report <- doctor()
+#' names(report)
+#' }
+#' options(old)
 #' @export
 doctor <- function(path = NULL) audit(path = path, repair = FALSE, live = FALSE)
 

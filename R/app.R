@@ -142,6 +142,9 @@ app_server <- function(path = NULL, worker = app_worker) {
 #'   workers use the installed cttiR, which must match the running version. Run
 #'   locally only; authentication and remote multi-user deployment are not
 #'   supported.
+#' @examples
+#' # Opens a local Shiny setup interface
+#' if (interactive()) setup_app()
 #' @export
 setup_app <- function(mode = c("fast", "detailed"), launch.browser = interactive()) {
   app_require()
@@ -162,6 +165,15 @@ setup_app <- function(mode = c("fast", "detailed"), launch.browser = interactive
 #' @param path Exact existing project root.
 #' @param launch.browser Open the browser when the application is run.
 #' @return A local Shiny application using [sync()] for preview and application.
+#' @examples
+#' # Opens a local Shiny configuration interface for an existing project
+#' if (interactive()) {
+#'   parent <- tempfile("cttiR-")
+#'   dir.create(parent)
+#'   p <- project("Example", "methods", "Plan a reproducible comparison",
+#'     path = parent)
+#'   configure(p$path)
+#' }
 #' @export
 configure <- function(path = ".", launch.browser = interactive()) {
   app_require()

@@ -17,3 +17,12 @@ retained release manifests protect their model downloads, including older
 versions kept for rollback. Model blobs are always retained. This call performs
 no HTTP requests, starts no process and does not create storage.
 }
+\examples{
+old <- options(
+  cttiR.catalog_dir = file.path(tempdir(), "cttiR-catalog"),
+  cttiR.runtime_dir = file.path(tempdir(), "cttiR-runtime")
+)
+storage <- runtime_storage()
+storage$inventoried_bytes
+options(old)
+}

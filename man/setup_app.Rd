@@ -30,7 +30,8 @@ background R process; read-only work can be cancelled and duplicate
 submissions are refused. Creation and configuration require a reviewed
 preview of the current draft and catalog. Scientific analysis and returned
 code are never executed by the general project builder.
-
+}
+\details{
 The separate Strict synthetic examples view offers two fixed, noncausal
 examples: an independent continuous-outcome association and a paired mean
 change. Preview, compilation, synthetic analysis and rendering are separate
@@ -43,8 +44,7 @@ download it outside the project for continuation through the R API after
 session loss. The interface never recovers authority from project files and
 never marks scientific or real-study approval. General Open/Configure remains
 for projects created by \code{\link[=project]{project()}}, not strict example projects.
-}
-\details{
+
 Fast asks only for name, research type and goal (plus the parent directory)
 and shows the resolved workflow profile, routing reason and selected tools.
 Detailed adds optional questions from a declarative registry; every question
@@ -58,4 +58,8 @@ Restored drafts require a new preview; Configure drafts are bound to the
 existing project identity. Exported text may contain user-supplied sensitive
 information. Drafts are not automatically saved. The interface is available
 in English and German.
+}
+\examples{
+# Opens a local Shiny setup interface
+if (interactive()) setup_app()
 }

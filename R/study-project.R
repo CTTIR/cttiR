@@ -99,6 +99,10 @@ study_installed_runtime <- function() {
 #' @return A dependency lock containing the installed R and transitive package
 #'   versions. This only reads the external library; it installs nothing and
 #'   does not assert a download origin or provide a restoration manifest.
+#' @examples
+#' # Reads the prepared library; it needs reflowR, workflowr, callr and git2r
+#' lock <- tryCatch(study_dependency_lock(), error = conditionMessage)
+#' if (is.list(lock)) lock$R$Version else lock
 #' @export
 study_dependency_lock <- function() {
   study_require()
@@ -143,6 +147,23 @@ study_environment <- function(lock) {
 #'   Rmd files. It does not commit, publish or approve a real study.
 #'   Declared measurements are written as 17-digit decimal values and checked
 #'   for an exact round trip before any project is created.
+#' @examples
+#' # Compiling needs an installed cttiR together with reflowR, workflowr,
+#' # callr and git2r in a prepared library, and initializes a Git repository.
+#' \dontrun{
+#' spec <- study_paired_spec("paired_example", "Paired example",
+#'   "What is the mean change?", "Synthetic independent pairs",
+#'   "subject_id", "occasion",
+#'   list(name = "measurement", type = "continuous", unit = "mmHg"),
+#'   "baseline", "followup", independent_pairs = TRUE)
+#' data <- data.frame(subject_id = rep(paste0("pair_", 1:8), 2L),
+#'   occasion = rep(c("baseline", "followup"), each = 8L),
+#'   measurement = c(100 + 1:8, 100 + 1:8 + c(-4, -2, -1, 0, 1, 3, 5, 6)))
+#' lock <- study_dependency_lock()
+#' compiled <- study_project(file.path(tempdir(), "paired-study"), spec, data,
+#'   lock, author = "A. Author", units = c(measurement = "mmHg"))
+#' study_validate_project(compiled$directory, compiled$declaration)
+#' }
 #' @export
 study_project <- function(directory, spec, data, dependency_lock, author, units, seed = 1L) {
   study_require(); study_validate(spec, data, units); study_environment(dependency_lock)
@@ -237,6 +258,11 @@ study_assert_run <- function(directory, declaration) {
 #' @param require_render Require current externally pinned HTML and all applicable stages.
 #' @return A list with valid, reason, structural validation and scientific_approval
 #'   set to FALSE. Stale or unsupported material yields valid = FALSE.
+#' @examples
+#' # Needs a project compiled with study_project()
+#' \dontrun{
+#' study_validate_project(compiled$directory, compiled$declaration)
+#' }
 #' @export
 study_validate_project <- function(directory, declaration, require_run = FALSE, require_render = FALSE) {
   tryCatch({
@@ -280,6 +306,11 @@ study_admit <- function(directory, declaration, require_run = FALSE) {
 #' @inheritParams study_validate_project
 #' @return A list with directory, numerical result and an updated external
 #'   declaration pinning the exact run receipt. Preserve the updated declaration.
+#' @examples
+#' # Needs a project compiled with study_project()
+#' \dontrun{
+#' ran <- study_run(compiled$directory, compiled$declaration)
+#' }
 #' @export
 study_run <- function(directory, declaration) {
   directory <- study_directory(directory)
@@ -361,6 +392,11 @@ study_html <- function(x) {
 #' @param directory Study directory. Used by canonical stage files only.
 #' @return Invisibly the stage view receipt. Requires the external trusted
 #'   declaration installed by [study_render()] in a clean child R session.
+#' @examples
+#' # Presents a stage recorded by study_run() inside a compiled study project
+#' \dontrun{
+#' study_stage("analysis", compiled$directory)
+#' }
 #' @export
 study_stage <- function(stage, directory = ".") {
   declaration <- getOption("cttir.study.external_declaration")
@@ -431,6 +467,11 @@ study_stage <- function(stage, directory = ".") {
 #'   pinning stage receipts and all generated report files. No Git commit or
 #'   publication occurs. Rendering uses a clean child R session in the prepared
 #'   external library and never reruns statistical estimation.
+#' @examples
+#' # Needs a project compiled and run with study_project() and study_run()
+#' \dontrun{
+#' rendered <- study_render(compiled$directory, ran$declaration)
+#' }
 #' @export
 study_render <- function(directory, declaration, timeout = 600) {
   if (!is.numeric(timeout) || length(timeout) != 1L || !is.finite(timeout) || timeout < 30 || timeout > 3600)

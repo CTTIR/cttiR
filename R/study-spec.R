@@ -60,6 +60,12 @@ study_variable <- function(x, categorical = FALSE) {
 #' @param confidence Confidence interval coverage, between 0.8 and 0.99.
 #' @param evidence List of evidence declarations, retained without asserting support.
 #' @return A validated specification. No data are opened or analyzed.
+#' @examples
+#' spec <- study_spec("association", "Example", "Association?",
+#'   "Synthetic observations", "observation_id",
+#'   list(name = "outcome", type = "continuous", unit = "mmHg"),
+#'   list(name = "exposure", type = "continuous", unit = "mg"))
+#' spec$study_id
 #' @export
 study_spec <- function(study_id, name, question, population, observation_id, outcome,
                        exposure, covariates = list(),
@@ -87,6 +93,18 @@ study_spec <- function(study_id, name, question, population, observation_id, out
 #'   every continuous analysis column; these must equal the planned units.
 #' @return Invisibly a list with valid, recipe_id, specification_sha256 and,
 #'   when data are supplied, n. Invalid or unsupported input raises an error.
+#' @examples
+#' spec <- study_paired_spec("paired_example", "Paired example",
+#'   "What is the mean change?", "Synthetic independent pairs",
+#'   "subject_id", "occasion",
+#'   list(name = "measurement", type = "continuous", unit = "mmHg"),
+#'   "baseline", "followup", independent_pairs = TRUE)
+#' change <- c(-4, -2, -1, 0, 1, 3, 5, 6)
+#' data <- data.frame(subject_id = rep(paste0("pair_", 1:8), 2L),
+#'   occasion = rep(c("baseline", "followup"), each = 8L),
+#'   measurement = c(100 + 1:8, 100 + 1:8 + change))
+#' check <- study_validate(spec, data, c(measurement = "mmHg"))
+#' check$valid
 #' @export
 study_validate <- function(spec, data = NULL, units = NULL) {
   if (study_is_paired(spec)) return(study_paired_validate(spec, data, units))
@@ -165,6 +183,18 @@ study_validate <- function(spec, data = NULL, units = NULL) {
 #'   include rank and residual standard deviation; paired results include pair
 #'   count and within-pair differences.
 #'   Passing numerical computation does not grant scientific approval.
+#' @examples
+#' spec <- study_paired_spec("paired_example", "Paired example",
+#'   "What is the mean change?", "Synthetic independent pairs",
+#'   "subject_id", "occasion",
+#'   list(name = "measurement", type = "continuous", unit = "mmHg"),
+#'   "baseline", "followup", independent_pairs = TRUE)
+#' change <- c(-4, -2, -1, 0, 1, 3, 5, 6)
+#' data <- data.frame(subject_id = rep(paste0("pair_", 1:8), 2L),
+#'   occasion = rep(c("baseline", "followup"), each = 8L),
+#'   measurement = c(100 + 1:8, 100 + 1:8 + change))
+#' result <- study_analyze(spec, data, c(measurement = "mmHg"))
+#' result$coefficients[, c("term", "estimate", "conf_low", "conf_high")]
 #' @export
 study_analyze <- function(spec, data, units) {
   if (study_is_paired(spec)) return(study_paired_analyze(spec, data, units))

@@ -19,3 +19,9 @@ declaration pinning the exact run receipt. Preserve the updated declaration.
 \description{
 Run the Fixed Synthetic Study Recipe
 }
+\examples{
+# Needs a project compiled with study_project()
+\dontrun{
+ran <- study_run(compiled$directory, compiled$declaration)
+}
+}

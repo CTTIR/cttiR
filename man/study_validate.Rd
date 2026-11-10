@@ -26,3 +26,16 @@ when data are supplied, n. Invalid or unsupported input raises an error.
 \description{
 Validate a Study Contract and Optional Data
 }
+\examples{
+spec <- study_paired_spec("paired_example", "Paired example",
+  "What is the mean change?", "Synthetic independent pairs",
+  "subject_id", "occasion",
+  list(name = "measurement", type = "continuous", unit = "mmHg"),
+  "baseline", "followup", independent_pairs = TRUE)
+change <- c(-4, -2, -1, 0, 1, 3, 5, 6)
+data <- data.frame(subject_id = rep(paste0("pair_", 1:8), 2L),
+  occasion = rep(c("baseline", "followup"), each = 8L),
+  measurement = c(100 + 1:8, 100 + 1:8 + change))
+check <- study_validate(spec, data, c(measurement = "mmHg"))
+check$valid
+}

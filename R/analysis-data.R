@@ -10,6 +10,11 @@
 #' @return A list with state, coded issues, aggregate missingness and row counts.
 #'   A passed check is not model, diagnostic or scientific approval. Individual
 #'   records, identifier values and excluded row numbers are never returned.
+#' @examples
+#' p <- project("Example", "methods", "Plan a reproducible comparison",
+#'   path = tempdir(), dry_run = TRUE)
+#' checked <- check_analysis_data(data.frame(x = 1:3), p$spec)
+#' checked$state
 #' @export
 check_analysis_data <- function(data, spec) {
   spec <- validate_spec(spec)

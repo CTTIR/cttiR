@@ -42,3 +42,21 @@ for an exact round trip before any project is created.
 \description{
 Compile a Synthetic Study into a Strict Workflow Project
 }
+\examples{
+# Compiling needs an installed cttiR together with reflowR, workflowr,
+# callr and git2r in a prepared library, and initializes a Git repository.
+\dontrun{
+spec <- study_paired_spec("paired_example", "Paired example",
+  "What is the mean change?", "Synthetic independent pairs",
+  "subject_id", "occasion",
+  list(name = "measurement", type = "continuous", unit = "mmHg"),
+  "baseline", "followup", independent_pairs = TRUE)
+data <- data.frame(subject_id = rep(paste0("pair_", 1:8), 2L),
+  occasion = rep(c("baseline", "followup"), each = 8L),
+  measurement = c(100 + 1:8, 100 + 1:8 + c(-4, -2, -1, 0, 1, 3, 5, 6)))
+lock <- study_dependency_lock()
+compiled <- study_project(file.path(tempdir(), "paired-study"), spec, data,
+  lock, author = "A. Author", units = c(measurement = "mmHg"))
+study_validate_project(compiled$directory, compiled$declaration)
+}
+}

@@ -46,6 +46,9 @@ resolve_catalog <- function(path = NULL) {
 #'   basis, every required callable is a statically verified documented export
 #'   and a recorded fixture passed. Any source change, including documentation
 #'   only, requires a new decision. Decisions never install or run anything.
+#' @examples
+#' catalog <- packages()
+#' head(catalog[, c("package", "version", "approved")])
 #' @export
 packages <- function(path = NULL) {
   catalog <- resolve_catalog(path)
@@ -111,6 +114,9 @@ catalog_revision_token <- function(package) {
 #'   declarations (`static_declaration_only`) are never callable evidence.
 #'   Only exports covered by a complete reviewed approval of the exact revision
 #'   are labelled `workflow_approved` with `approved = TRUE`.
+#' @examples
+#' hits <- search("t.test", limit = 3)
+#' hits[, c("symbol", "score")]
 #' @export
 search <- function(query, packages = NULL, path = NULL, limit = 20L) {
   scalar_text(query, "query")

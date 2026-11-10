@@ -18,3 +18,9 @@ declaration installed by \code{\link[=study_render]{study_render()}} in a clean 
 \description{
 Present a Verified Recorded Study Stage
 }
+\examples{
+# Presents a stage recorded by study_run() inside a compiled study project
+\dontrun{
+study_stage("analysis", compiled$directory)
+}
+}

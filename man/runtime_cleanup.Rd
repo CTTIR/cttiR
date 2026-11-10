@@ -28,3 +28,13 @@ consenting call. A setup lock prevents concurrent package acquisition; all
 selected hashes are rechecked before deletion. Failed or partial cleanup leaves
 a durable receipt. No process is stopped and no model tag is removed.
 }
+\examples{
+old <- options(
+  cttiR.catalog_dir = file.path(tempdir(), "cttiR-catalog"),
+  cttiR.runtime_dir = file.path(tempdir(), "cttiR-runtime")
+)
+# Preview only: nothing is downloaded in a fresh runtime directory
+tryCatch(runtime_cleanup("model.gguf", dry_run = TRUE),
+  error = conditionMessage)
+options(old)
+}

@@ -19,6 +19,18 @@ study_is_paired <- function(spec) {
 #' @param independent_pairs Required explicit declaration, exactly `TRUE`.
 #'   Clustered or otherwise dependent pairs require a different recipe.
 #' @return A closed synthetic paired specification. No data are read or analyzed.
+#' @examples
+#' spec <- study_paired_spec("paired_example", "Paired example",
+#'   "What is the mean change?", "Synthetic independent pairs",
+#'   "subject_id", "occasion",
+#'   list(name = "measurement", type = "continuous", unit = "mmHg"),
+#'   "baseline", "followup", independent_pairs = TRUE)
+#' change <- c(-4, -2, -1, 0, 1, 3, 5, 6)
+#' data <- data.frame(subject_id = rep(paste0("pair_", 1:8), 2L),
+#'   occasion = rep(c("baseline", "followup"), each = 8L),
+#'   measurement = c(100 + 1:8, 100 + 1:8 + change))
+#' spec$study_id
+#' study_validate(spec, data, c(measurement = "mmHg"))$valid
 #' @export
 study_paired_spec <- function(study_id, name, question, population, pair_id,
                               occasion, outcome, before, after, independent_pairs,

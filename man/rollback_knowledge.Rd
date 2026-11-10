@@ -25,3 +25,13 @@ verified one: the damage is reported in \code{active_problem} and \code{warnings
 damaged files are kept for inspection, and the impact against them is not
 computed.
 }
+\examples{
+old <- options(
+  cttiR.catalog_dir = file.path(tempdir(), "cttiR-catalog"),
+  cttiR.runtime_dir = file.path(tempdir(), "cttiR-runtime")
+)
+# No composite snapshot has been retained in this fresh catalog store
+tryCatch(rollback_knowledge(strrep("a", 64), dry_run = TRUE),
+  error = conditionMessage)
+options(old)
+}

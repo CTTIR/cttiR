@@ -45,6 +45,14 @@ runtime_storage_files <- function(root) {
 #' no HTTP requests, starts no process and does not create storage.
 #' @return A list with storage root, file inventory, inventoried bytes, current
 #'   setup lock state and locally verified owned process identity when available.
+#' @examples
+#' old <- options(
+#'   cttiR.catalog_dir = file.path(tempdir(), "cttiR-catalog"),
+#'   cttiR.runtime_dir = file.path(tempdir(), "cttiR-runtime")
+#' )
+#' storage <- runtime_storage()
+#' storage$inventoried_bytes
+#' options(old)
 #' @export
 runtime_storage <- function() {
   root <- runtime_directory()
@@ -71,6 +79,15 @@ runtime_storage <- function() {
 #' @param consent Explicit consent to irreversible removal (default `FALSE`).
 #' @return A list with state, selected paths/bytes, expected hashes and, after a
 #'   removal attempt, a receipt path. Omitted files are never selected implicitly.
+#' @examples
+#' old <- options(
+#'   cttiR.catalog_dir = file.path(tempdir(), "cttiR-catalog"),
+#'   cttiR.runtime_dir = file.path(tempdir(), "cttiR-runtime")
+#' )
+#' # Preview only: nothing is downloaded in a fresh runtime directory
+#' tryCatch(runtime_cleanup("model.gguf", dry_run = TRUE),
+#'   error = conditionMessage)
+#' options(old)
 #' @export
 runtime_cleanup <- function(files, expected = NULL, dry_run = TRUE, consent = FALSE) {
   scalar_flag(dry_run, "dry_run"); scalar_flag(consent, "consent")
@@ -130,6 +147,14 @@ runtime_cleanup <- function(files, expected = NULL, dry_run = TRUE, consent = FA
 #' @return A list with state, process identity and, after a stop attempt, a durable
 #'   receipt. `stopping` means the process remained alive after five seconds;
 #'   it is not a claim that all resources or child processes were released.
+#' @examples
+#' old <- options(
+#'   cttiR.catalog_dir = file.path(tempdir(), "cttiR-catalog"),
+#'   cttiR.runtime_dir = file.path(tempdir(), "cttiR-runtime")
+#' )
+#' # Without a verified owned runtime there is nothing to stop
+#' tryCatch(runtime_stop(dry_run = TRUE), error = conditionMessage)
+#' options(old)
 #' @export
 runtime_stop <- function(dry_run = TRUE, consent = FALSE, expected = NULL) {
   scalar_flag(dry_run, "dry_run"); scalar_flag(consent, "consent")

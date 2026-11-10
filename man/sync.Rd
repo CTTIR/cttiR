@@ -65,3 +65,12 @@ to schema 2; applying it preserves the original specification under
 \verb{.cttir/migrations/} and retains the selected catalog and dependency pins.
 The \code{migration} result records before/after hashes and changed JSON pointers.
 }
+\examples{
+parent <- tempfile("cttiR-")
+dir.create(parent)
+p <- project("Example", "methods", "Plan a reproducible comparison",
+  path = parent)
+preview <- sync(p$path, dry_run = TRUE)
+class(preview)
+unlink(parent, recursive = TRUE)
+}

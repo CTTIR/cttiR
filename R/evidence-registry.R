@@ -61,6 +61,12 @@ evidence_record <- function(text) {
 #' @param version Optional exact source version; requires package.
 #' @return Search results with evidence IDs, locators, versions, hashes and
 #'   explicit coverage limitations. Restricted documents are excluded.
+#' @examples
+#' # Needs a local evidence registry and the SHA-256 of its manifest, which
+#' # are prepared outside the package and cannot be created in an example.
+#' \dontrun{
+#' evidence_search("path/to/registry", manifest_sha256, "mixed model")
+#' }
 #' @export
 evidence_search <- function(directory, manifest_sha256, query, limit = 8L,
                             family = NULL, package = NULL, version = NULL) {
@@ -95,6 +101,12 @@ evidence_search <- function(directory, manifest_sha256, query, limit = 8L,
 #' @param evidence_id Exact evidence-v1 identifier returned by [evidence_search()].
 #' @return One verified record, or an error for missing, ambiguous, restricted or
 #'   changed evidence. This does not certify that a claim follows from its text.
+#' @examples
+#' # Needs a local evidence registry and the SHA-256 of its manifest, which
+#' # are prepared outside the package and cannot be created in an example.
+#' \dontrun{
+#' evidence_resolve("path/to/registry", manifest_sha256, "evidence-id")
+#' }
 #' @export
 evidence_resolve <- function(directory, manifest_sha256, evidence_id) {
   scalar_text(evidence_id, "evidence_id")

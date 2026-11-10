@@ -27,3 +27,7 @@ are labelled \code{workflow_approved} with \code{approved = TRUE}.
 \description{
 Search revision-scoped APIs and stored documentation
 }
+\examples{
+hits <- search("t.test", limit = 3)
+hits[, c("symbol", "score")]
+}

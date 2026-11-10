@@ -28,3 +28,9 @@ set to FALSE. Stale or unsupported material yields valid = FALSE.
 \description{
 Validate a Compiled Study and Its Externally Pinned Results
 }
+\examples{
+# Needs a project compiled with study_project()
+\dontrun{
+study_validate_project(compiled$directory, compiled$declaration)
+}
+}

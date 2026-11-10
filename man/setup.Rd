@@ -47,3 +47,13 @@ Machine preferences may set \code{options(cttiR.runtime_dir = path)} and
 \code{options(cttiR.ollama_endpoint = "http://127.0.0.1:11434")}. Other endpoints
 are rejected. The local HTTP client disables proxies and redirects.
 }
+\examples{
+old <- options(
+  cttiR.catalog_dir = file.path(tempdir(), "cttiR-catalog"),
+  cttiR.runtime_dir = file.path(tempdir(), "cttiR-runtime")
+)
+# A dry run plans the runtime setup without downloading or starting anything
+plan <- setup(dry_run = TRUE, offline = TRUE, install_ollama = FALSE)
+class(plan)
+options(old)
+}

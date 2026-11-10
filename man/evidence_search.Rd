@@ -39,3 +39,10 @@ references. Selected source bytes and extraction identities are checked at
 retrieval. A match does not establish that a claim is supported, that a legal
 source is currently applicable, or that code is approved for execution.
 }
+\examples{
+# Needs a local evidence registry and the SHA-256 of its manifest, which
+# are prepared outside the package and cannot be created in an example.
+\dontrun{
+evidence_search("path/to/registry", manifest_sha256, "mixed model")
+}
+}

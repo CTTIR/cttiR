@@ -162,6 +162,11 @@ check_empty_strings <- function(x, base = NULL, prefix = "") {
 #' @param spec A resolved specification list or local JSON/YAML file path.
 #' @return Invisibly, the normalized specification. Also checks unique IDs,
 #'   portable slugs and conservative scientific approval prerequisites.
+#' @examples
+#' p <- project("Example", "methods", "Plan a reproducible comparison",
+#'   path = tempdir(), dry_run = TRUE)
+#' spec <- validate_spec(p$spec)
+#' spec$project$name
 #' @export
 validate_spec <- function(spec) {
   if (is.character(spec)) spec <- read_document(spec)

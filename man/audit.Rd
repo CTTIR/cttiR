@@ -84,3 +84,13 @@ unique names. Report text is portable: paths under the project root become
 relative, the home directory is shown as \code{~}, and Markdown control characters
 in messages are escaped.
 }
+\examples{
+old <- options(
+  cttiR.catalog_dir = file.path(tempdir(), "cttiR-catalog"),
+  cttiR.runtime_dir = file.path(tempdir(), "cttiR-runtime")
+)
+# Installation checks inspect only the (here empty) owned runtime state
+result <- audit(scope = "installation")
+names(result)
+options(old)
+}

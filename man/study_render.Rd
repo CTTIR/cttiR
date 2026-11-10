@@ -23,3 +23,9 @@ external library and never reruns statistical estimation.
 \description{
 Render All Stages from Pinned Study Results
 }
+\examples{
+# Needs a project compiled and run with study_project() and study_run()
+\dontrun{
+rendered <- study_render(compiled$directory, ran$declaration)
+}
+}

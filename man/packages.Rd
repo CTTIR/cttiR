@@ -31,3 +31,7 @@ basis, every required callable is a statically verified documented export
 and a recorded fixture passed. Any source change, including documentation
 only, requires a new decision. Decisions never install or run anything.
 }
+\examples{
+catalog <- packages()
+head(catalog[, c("package", "version", "approved")])
+}

@@ -168,3 +168,13 @@ refused, and previews never recover locks. An active snapshot that fails
 verification is refused with the verified retained IDs that
 \code{\link[=rollback_knowledge]{rollback_knowledge()}} can restore.
 }
+\examples{
+old <- options(
+  cttiR.catalog_dir = file.path(tempdir(), "cttiR-catalog"),
+  cttiR.runtime_dir = file.path(tempdir(), "cttiR-runtime")
+)
+# Local mode reads only configured local sources; a dry run writes nothing
+preview <- update(dry_run = TRUE)
+class(preview)
+options(old)
+}

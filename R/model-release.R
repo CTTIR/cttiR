@@ -155,6 +155,12 @@ release_import_model <- function(endpoint, model, path) {
 #' @param install_ollama Permit acquisition of the pinned runtime when absent.
 #' @return A `cttir_setup` containing storage/resource requirements, runtime/model
 #'   identity, steps and blockers. No qualification follows from manifest labels.
+#' @examples
+#' # Needs a published release manifest, its SHA-256 and network access to
+#' # download a model; a dry run still reads the manifest.
+#' \dontrun{
+#' setup_release("release-manifest.json", manifest_sha256, dry_run = TRUE)
+#' }
 #' @export
 setup_release <- function(manifest, manifest_sha256, model_file = NULL, dry_run = TRUE,
                           consent = FALSE, offline = FALSE, install_ollama = TRUE) {

@@ -14,3 +14,8 @@ does not assert a download origin or provide a restoration manifest.
 \description{
 Snapshot the Prepared Study Environment
 }
+\examples{
+# Reads the prepared library; it needs reflowR, workflowr, callr and git2r
+lock <- tryCatch(study_dependency_lock(), error = conditionMessage)
+if (is.list(lock)) lock$R$Version else lock
+}

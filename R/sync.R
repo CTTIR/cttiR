@@ -249,6 +249,14 @@ proposal_path <- function(path) file.path(".cttir", "proposed", path)
 #'   level, blockers, `environment` and `git` status and an `analysis`
 #'   configuration assessment. Recording mappings does not approve or execute an
 #'   analysis.
+#' @examples
+#' parent <- tempfile("cttiR-")
+#' dir.create(parent)
+#' p <- project("Example", "methods", "Plan a reproducible comparison",
+#'   path = parent)
+#' preview <- sync(p$path, dry_run = TRUE)
+#' class(preview)
+#' unlink(parent, recursive = TRUE)
 #' @export
 sync <- function(path = ".", config = NULL, options = list(), dry_run = TRUE) {
   sync_impl(path, config, options, dry_run)

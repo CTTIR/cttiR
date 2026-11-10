@@ -21,3 +21,13 @@ previewed with \code{\link[=sync]{sync()}} (field-level requested changes and th
 and applied only on explicit request. Edited managed files are reported as
 conflicts and nothing is written while conflicts remain.
 }
+\examples{
+# Opens a local Shiny configuration interface for an existing project
+if (interactive()) {
+  parent <- tempfile("cttiR-")
+  dir.create(parent)
+  p <- project("Example", "methods", "Plan a reproducible comparison",
+    path = parent)
+  configure(p$path)
+}
+}

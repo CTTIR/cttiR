@@ -16,3 +16,15 @@ A \code{cttir_audit} from the shared inspection engine.
 Runs the default audit scopes through the same check engine as \code{\link[=audit]{audit()}},
 never with repairs, live probes or reports.
 }
+\examples{
+old <- options(
+  cttiR.catalog_dir = file.path(tempdir(), "cttiR-catalog"),
+  cttiR.runtime_dir = file.path(tempdir(), "cttiR-runtime")
+)
+\donttest{
+# Reads the bundled catalog and installed package metadata (slow)
+report <- doctor()
+names(report)
+}
+options(old)
+}

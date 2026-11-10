@@ -20,3 +20,10 @@ changed evidence. This does not certify that a claim follows from its text.
 \description{
 Resolve One Exact Local Evidence Citation
 }
+\examples{
+# Needs a local evidence registry and the SHA-256 of its manifest, which
+# are prepared outside the package and cannot be created in an example.
+\dontrun{
+evidence_resolve("path/to/registry", manifest_sha256, "evidence-id")
+}
+}

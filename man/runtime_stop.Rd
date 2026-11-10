@@ -28,3 +28,12 @@ Windows supports the read-only preview only. Applying a stop on Windows is
 refused before creating locks or receipts or sending signals, because this
 graceful termination operation is unavailable there.
 }
+\examples{
+old <- options(
+  cttiR.catalog_dir = file.path(tempdir(), "cttiR-catalog"),
+  cttiR.runtime_dir = file.path(tempdir(), "cttiR-runtime")
+)
+# Without a verified owned runtime there is nothing to stop
+tryCatch(runtime_stop(dry_run = TRUE), error = conditionMessage)
+options(old)
+}

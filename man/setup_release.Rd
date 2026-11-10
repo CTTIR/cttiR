@@ -52,3 +52,10 @@ structured-output probe; it does not grant planner or assistance qualification.
 Previous release artifacts remain available for rollback by selecting their
 original manifests. Research-project dependency preparation is separate.
 }
+\examples{
+# Needs a published release manifest, its SHA-256 and network access to
+# download a model; a dry run still reads the manifest.
+\dontrun{
+setup_release("release-manifest.json", manifest_sha256, dry_run = TRUE)
+}
+}

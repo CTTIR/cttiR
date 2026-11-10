@@ -57,3 +57,16 @@ The contrast is after minus before, with a two-sided test against zero.
 Only synthetic, noncausal clinical examples are supported. Declaring pair
 independence does not establish it scientifically.
 }
+\examples{
+spec <- study_paired_spec("paired_example", "Paired example",
+  "What is the mean change?", "Synthetic independent pairs",
+  "subject_id", "occasion",
+  list(name = "measurement", type = "continuous", unit = "mmHg"),
+  "baseline", "followup", independent_pairs = TRUE)
+change <- c(-4, -2, -1, 0, 1, 3, 5, 6)
+data <- data.frame(subject_id = rep(paste0("pair_", 1:8), 2L),
+  occasion = rep(c("baseline", "followup"), each = 8L),
+  measurement = c(100 + 1:8, 100 + 1:8 + change))
+spec$study_id
+study_validate(spec, data, c(measurement = "mmHg"))$valid
+}

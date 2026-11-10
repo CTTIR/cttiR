@@ -16,3 +16,9 @@ portable slugs and conservative scientific approval prerequisites.
 \description{
 Validate a resolved project specification
 }
+\examples{
+p <- project("Example", "methods", "Plan a reproducible comparison",
+  path = tempdir(), dry_run = TRUE)
+spec <- validate_spec(p$spec)
+spec$project$name
+}

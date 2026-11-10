@@ -44,3 +44,8 @@ code for any part of it. A question that names an absent or unapproved
 function gets no code. Instruction-shaped text,
 including lookalike letters and override markers, is treated as data.
 }
+\examples{
+answer <- ask("How do I compare two independent groups on a continuous outcome?")
+answer$answer
+answer$packages
+}

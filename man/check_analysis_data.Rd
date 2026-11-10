@@ -23,3 +23,9 @@ the currently planned independent linear/binomial, right-censored survival,
 and continuous grouped models have data checks. Complete-case exclusions are
 reported only when explicitly configured; no imputation or deletion occurs.
 }
+\examples{
+p <- project("Example", "methods", "Plan a reproducible comparison",
+  path = tempdir(), dry_run = TRUE)
+checked <- check_analysis_data(data.frame(x = 1:3), p$spec)
+checked$state
+}
