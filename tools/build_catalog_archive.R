@@ -8,7 +8,7 @@ build_catalog_archive <- function(root = ".") {
   stage <- tempfile("catalog-archive-"); dir.create(stage)
   on.exit(unlink(stage, recursive = TRUE), add = TRUE)
   archive <- file.path(stage, "catalogs.xz")
-  con <- xzfile(archive, "wb", compression = 8)
+  con <- xzfile(archive, "wb", compression = -9)
   snapshots <- list(); offset <- 0
   tryCatch({
     for (path in paths) {
