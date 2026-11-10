@@ -54,6 +54,7 @@ test_that("small rendered HTML stays metadata-only even when source documentatio
 })
 
 test_that("document-only updates preserve pinned corpus and rollback", {
+  skip_on_cran()
   f <- document_fixture()
   withr::local_options(cttiR.sources = list(list(id = "fixture", path = f$source,
         documentation_rights = "Synthetic fixture authored for testing")))

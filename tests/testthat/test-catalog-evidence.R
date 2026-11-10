@@ -120,6 +120,7 @@ test_that("Rd-escaped aliases document operator exports", {
 })
 
 test_that("non-callable kinds appear in search with their own verification labels", {
+  skip_on_cran()
   f <- evidence_fixture()
   withr::local_options(cttiR.sources = list(list(id = "a", path = f$source)),
     cttiR.catalog_dir = file.path(f$parent, "store"))

@@ -54,6 +54,7 @@ test_that("a reader preview never repairs or removes a writer lock", {
 })
 
 test_that("recovery accepts only the recorded active preimage or postimage", {
+  skip_on_cran()
   skip_if_not_installed("callr")
   f <- local_update_fixture()
   update()

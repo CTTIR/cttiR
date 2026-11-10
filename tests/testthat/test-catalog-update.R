@@ -1,4 +1,5 @@
 test_that("update preview leaves no store and rejects unsupported policies", {
+  skip_on_cran()
   f <- local_update_fixture()
   mock <- local_repository_mock()
   plan <- update(dry_run = TRUE)
@@ -17,6 +18,7 @@ test_that("update preview leaves no store and rejects unsupported policies", {
 })
 
 test_that("whole package updates remove exports, retain pins and roll back", {
+  skip_on_cran()
   f <- local_update_fixture()
   first <- update()
   expect_true(first$activation)
@@ -44,6 +46,7 @@ test_that("whole package updates remove exports, retain pins and roll back", {
 })
 
 test_that("failed extraction and activation preserve the last complete pointer", {
+  skip_on_cran()
   f <- local_update_fixture()
   update()
   pointer <- read_document(file.path(f$store, "active.json"))
@@ -59,6 +62,7 @@ test_that("failed extraction and activation preserve the last complete pointer",
 })
 
 test_that("combined local refresh preserves curation and historical resource pins", {
+  skip_on_cran()
   f <- local_update_fixture()
   description <- readLines(file.path(f$source, "DESCRIPTION"))
   writeLines(sub("cttirFixtureA", "reflowR", description, fixed = TRUE), file.path(f$source, "DESCRIPTION"))
@@ -78,6 +82,7 @@ test_that("combined local refresh preserves curation and historical resource pin
 })
 
 test_that("resource staging failure never publishes an API-only partial update", {
+  skip_on_cran()
   f <- local_update_fixture()
   update()
   pointer <- read_document(file.path(f$store, "active.json"))
@@ -89,6 +94,7 @@ test_that("resource staging failure never publishes an API-only partial update",
 })
 
 test_that("corrupt historical snapshots cannot become active", {
+  skip_on_cran()
   f <- local_update_fixture()
   first <- update()
   writeLines("keep <- function(x = 8) x", file.path(f$source, "R", "api.R"))
@@ -113,6 +119,7 @@ test_that("repeat creation and sync use project pins even if the global pointer 
 })
 
 test_that("creation rejects catalog changes after preview or during planning", {
+  skip_on_cran()
   f <- local_update_fixture()
   expected <- content_hash(json_text(current_catalog_manifest()))
   update()
@@ -124,6 +131,7 @@ test_that("creation rejects catalog changes after preview or during planning", {
 })
 
 test_that("a damaged active snapshot is reported but never blocks rollback to a verified one", {
+  skip_on_cran()
   f <- local_update_fixture()
   description <- readLines(file.path(f$source, "DESCRIPTION"))
   writeLines(sub("cttirFixtureA", "reflowR", description, fixed = TRUE), file.path(f$source, "DESCRIPTION"))

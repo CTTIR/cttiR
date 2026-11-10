@@ -1,4 +1,5 @@
 test_that("public workflowr creation is explicit, pinned and idempotent", {
+  skip_on_cran()
   skip_if(Sys.which("git") == "")
   withr::local_options(cttiR.catalog_dir = tempfile("unused-catalog-"))
   parent <- new_parent()

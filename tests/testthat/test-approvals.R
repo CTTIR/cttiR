@@ -149,6 +149,7 @@ test_that("decision files are validated strictly", {
 })
 
 test_that("G27: revision-scoped approvals survive pins and rollback but not source changes", {
+  skip_on_cran()
   f <- approval_fixture()
   hash_one <- source_hash_of(f)
   write_decisions(f$decisions, list(decision(hash_one, "fixture-table-v1")))
@@ -410,6 +411,7 @@ test_that("generated code is validated statically against the approved revision"
 kb_context <- function(path = NULL) audit_context(path, "knowledge", FALSE, FALSE)
 
 test_that("KB-006 names an unavailable pinned snapshot instead of substituting silently", {
+  skip_on_cran()
   f <- local_update_fixture()
   update()
   p <- project("Pinned approvals", "methods", "Goal", f$parent)

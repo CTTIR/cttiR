@@ -42,6 +42,7 @@ test_that("the network sentinels intercept the package's request paths", {
 })
 
 test_that("core workflows complete offline with zero network attempts", {
+  skip_on_cran()
   attempts <- local_network_sentinels()
   f <- local_update_fixture()
   runtime <- file.path(f$parent, "empty-runtime")

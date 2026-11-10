@@ -43,6 +43,7 @@ test_that("Ask renders grounded evidence, escapes text and never runs returned c
 })
 
 test_that("Knowledge previews and applies an update against a temporary store, then rolls back", {
+  skip_on_cran()
   skip_if_not_installed("shiny")
   f <- local_update_fixture()
   shiny::testServer(app_knowledge_server, args = app_test_args(), {
@@ -129,6 +130,7 @@ test_that("Resources load lazily and apply domain, repository and maturity filte
 })
 
 test_that("Audit filters checks, exports reports and applies allowlisted repairs", {
+  skip_on_cran()
   skip_if_not_installed("shiny")
   p <- project("Audit fixture", "methods", "Goal", new_parent())
   reports <- file.path(new_parent(), "reports")

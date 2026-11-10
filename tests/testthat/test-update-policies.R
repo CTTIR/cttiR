@@ -9,6 +9,7 @@ repository_source_files <- function(version = "1.0.0", code = c("old <- function
 }
 
 test_that("required source failures abort while optional failures are partial and stale", {
+  skip_on_cran()
   f <- local_update_fixture()
   mock <- local_repository_mock(repository_source_files())
   withr::local_options(cttiR.sources = list(list(id = "cran-a", cran = "cttirFixtureA")))
@@ -45,6 +46,7 @@ test_that("required source failures abort while optional failures are partial an
 })
 
 test_that("pruning requires evidence and writes tombstones without touching history", {
+  skip_on_cran()
   f <- local_update_fixture()
   first <- update()
   pinned <- project("Prune pinned", "methods", "Goal", f$parent)
@@ -91,6 +93,7 @@ test_that("pruning requires evidence and writes tombstones without touching hist
 })
 
 test_that("local mode never calls any network adapter", {
+  skip_on_cran()
   f <- local_update_fixture()
   calls <- character()
   local_mocked_bindings(

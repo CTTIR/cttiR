@@ -13,6 +13,7 @@ interrupted_fixture <- function(root, pid) {
 }
 
 test_that("interrupted transactions restore only matching preimages", {
+  skip_on_cran()
   skip_if_not_installed("callr")
   parent <- new_parent()
   p <- project("Interrupted", "methods", "Goal", parent)
@@ -44,6 +45,7 @@ test_that("recovery refuses active writers and post-interruption edits", {
 })
 
 test_that("a writer lock left before any journal is released by sync and by audit repair", {
+  skip_on_cran()
   skip_if_not_installed("callr")
   parent <- new_parent()
   p <- project("Stale writer", "methods", "Goal", parent)

@@ -22,6 +22,7 @@ test_that("every specified check ID has a complete registered definition", {
 })
 
 test_that("extra checks register for the session and invalid definitions are refused", {
+  skip_on_cran()
   check <- audit_check("XTR-001", "installation", "Synthetic registered check.",
     function(context) audit_result("warning", "Synthetic finding.", list(source = "test")), required = FALSE)
   register_audit_check(check)
@@ -63,6 +64,7 @@ test_that("a check that errors or returns garbage is reported, not propagated", 
 })
 
 test_that("default audit leaves project, catalog store and runtime state byte-identical", {
+  skip_on_cran()
   f <- local_update_fixture()
   update()
   runtime <- file.path(f$parent, "runtime")
@@ -209,6 +211,7 @@ test_that("reports escape Markdown and replace project and home paths", {
 })
 
 test_that("integration scope creates and removes its own temporary files", {
+  skip_on_cran()
   f <- local_update_fixture()
   update()
   sources <- getOption("cttiR.sources")
@@ -232,6 +235,7 @@ test_that("integration scope creates and removes its own temporary files", {
 })
 
 test_that("doctor never repairs and uses the shared engine", {
+  skip_on_cran()
   parent <- new_parent()
   p <- project("Doctor", "methods", "Goal", parent)
   unlink(file.path(p$path, "code/validate_project.R"))
@@ -246,6 +250,7 @@ test_that("doctor never repairs and uses the shared engine", {
 })
 
 test_that("overall status follows the documented precedence", {
+  skip_on_cran()
   rows <- function(status, required) data.frame(id = paste0("X-", seq_along(status)), status = status, required = required)
   expect_equal(audit_overall(rows(c("pass", "fail"), c(TRUE, TRUE))), "fail")
   expect_equal(audit_overall(rows(c("not_tested", "fail"), c(TRUE, TRUE))), "fail")
@@ -293,6 +298,7 @@ test_that("strict mode throws only for required failures or unverified checks, a
 })
 
 test_that("missing-file repair is idempotent and a failed repair preserves prior bytes", {
+  skip_on_cran()
   parent <- new_parent()
   p <- project("Repair twice", "methods", "Goal", parent)
   target <- file.path(p$path, "code/validate_project.R")
@@ -323,6 +329,7 @@ test_that("missing-file repair is idempotent and a failed repair preserves prior
 })
 
 test_that("interrupted-write repair is idempotent and a failed rollback restores every byte", {
+  skip_on_cran()
   skip_if_not_installed("callr")
   parent <- new_parent()
   p <- project("Recover twice", "methods", "Goal", parent)
@@ -360,6 +367,7 @@ test_that("interrupted-write repair is idempotent and a failed rollback restores
 })
 
 test_that("a corrupt active pointer is repointed to the last verified manifest under the lock", {
+  skip_on_cran()
   f <- local_update_fixture()
   first <- update()
   writeLines(c("keep <- function(x = 3) x", "added <- function() 1"), file.path(f$source, "R", "api.R"))
@@ -402,6 +410,7 @@ test_that("a corrupt active pointer is repointed to the last verified manifest u
 })
 
 test_that("pointer repair is skipped while a catalog writer lock exists", {
+  skip_on_cran()
   f <- local_update_fixture()
   update()
   writeLines("broken", file.path(f$store, "active.json"))
@@ -441,6 +450,7 @@ test_that("fresh standard, pipeline and modality projects audit their code witho
 })
 
 test_that("project code checks cover every R file and fail unsafe, unparseable or unresolved code", {
+  skip_on_cran()
   parent <- new_parent()
   fresh <- function(name) project(name, "primary_research", "Compare blood pressure between two groups", parent)$path
   check <- function(root) audit_row(audit(root, scope = "project"), "STD-003")
@@ -548,6 +558,7 @@ test_that("hand-edited control metadata fails like an identical project() repeat
 })
 
 test_that("project checks report a missing pinned snapshot instead of using the active catalog", {
+  skip_on_cran()
   f <- local_update_fixture()
   update()
   p <- project("Pinned elsewhere", "primary_research", "Compare blood pressure between two groups", f$parent)
@@ -568,6 +579,7 @@ test_that("project checks report a missing pinned snapshot instead of using the 
 })
 
 test_that("the resource JSON mirror is compared row by row, not only by counts", {
+  skip_on_cran()
   parity <- resource_json_parity()
   expect_true(parity$hash_matches)
   expect_length(parity$mismatched_tables, 0L)

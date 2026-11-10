@@ -1,4 +1,5 @@
 test_that("remote update verifies blobs and publishes a complete pinned revision", {
+  skip_on_cran()
   f <- remote_fixture()
   local_repository_mock()
   local_mocked_bindings(github_json = f$json, github_download = f$download)

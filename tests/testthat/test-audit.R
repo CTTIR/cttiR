@@ -1,4 +1,5 @@
 test_that("audit is read-only, scope-aware and strict about actual failures", {
+  skip_on_cran()
   parent <- new_parent()
   p <- project("Audit", "methods", "Goal", parent)
   before <- tree_hashes(p$path)
@@ -38,6 +39,7 @@ test_that("repair restores only verified missing managed files", {
 })
 
 test_that("a repair is bound to the previewed plan, which lists its target files", {
+  skip_on_cran()
   parent <- new_parent()
   p <- project("Bound repair", "methods", "Goal", parent)
   demo <- file.path(p$path, "code", "run_demo.R")

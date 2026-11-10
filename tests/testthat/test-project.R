@@ -170,6 +170,7 @@ test_that("a repeat project() stays read-only after sync updated or kept user-ow
 })
 
 test_that("analysis plans list the unknowns of each research type without inventing content", {
+  skip_on_cran()
   parent <- new_parent()
   goal <- "Compare blood pressure between two groups"
   plans <- list()

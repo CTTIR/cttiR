@@ -1,4 +1,5 @@
 test_that("workflowr migration previews without writes and preserves edited manuscripts", {
+  skip_on_cran()
   skip_if(Sys.which("git") == "")
   withr::local_options(cttiR.catalog_dir = tempfile("unused-catalog-"))
   p <- project("Migration", "methods", "Describe measurements", new_parent())
@@ -38,6 +39,7 @@ test_that("migration cannot overwrite edited site configuration", {
 })
 
 test_that("older catalog pins require explicit local refresh for workflowr migration", {
+  skip_on_cran()
   withr::local_options(cttiR.catalog_dir = tempfile("unused-catalog-"))
   spec <- default_spec("Older", "methods", "Describe measurements", "older")
   spec$provenance$catalog_id <- "92627577cce4722d0673e6c5a71773b0a8b35d6dbd9e38f6bd7b959972a9e67c"

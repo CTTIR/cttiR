@@ -1,4 +1,5 @@
 test_that("bundled archive preserves every pinned snapshot identity", {
+  skip_on_cran()
   index <- catalog_archive_manifest()
   expect_identical(read_bundled_catalog()$content_id, index$current_id)
   current <- system.file("extdata", "api-catalog.json.gz", package = "cttiR")

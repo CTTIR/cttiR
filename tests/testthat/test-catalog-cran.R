@@ -16,6 +16,7 @@ cran_files <- function(members, version = "1.0.0", md5 = NULL, package = "cttirF
 cran_record <- function(...) list(id = "cran-fixture", cran = "cttirFixtureA", documentation_rights = "Synthetic test fixture", ...)
 
 test_that("a CRAN tarball is verified, extracted statically and pinned to its MD5 revision", {
+  skip_on_cran()
   f <- local_update_fixture()
   files <- cran_files(package_members())
   mock <- local_repository_mock(files)
@@ -61,6 +62,7 @@ test_that("an MD5 mismatch fails closed with a failed report and keeps the point
 })
 
 test_that("archived versions use the archive endpoint and label checksum provenance", {
+  skip_on_cran()
   f <- local_update_fixture()
   files <- cran_files(package_members(version = "0.9.0"), version = "0.9.0", archive = TRUE)
   mock <- local_repository_mock(files)
@@ -187,6 +189,7 @@ test_that("Bioconductor sources are fetched from the selected frozen release", {
 })
 
 test_that("a CRAN v2 removing an export cannot resurrect it while pins keep history", {
+  skip_on_cran()
   f <- local_update_fixture()
   v1 <- cran_files(package_members(code = c("old <- function(x) x", "keep <- function(x = 1) x"), exports = c("old", "keep")))
   mock <- local_repository_mock(v1)

@@ -20,6 +20,7 @@ resource_only_fixture <- function(env = parent.frame()) {
 }
 
 test_that("remote refresh updates observations, reports impacts and preserves curation", {
+  skip_on_cran()
   f <- resource_only_fixture()
   cran <- bundled_stanzas("CRAN")
   cran$Seurat[["Version"]] <- "9.0.0"
@@ -62,6 +63,7 @@ test_that("remote refresh updates observations, reports impacts and preserves cu
 })
 
 test_that("absence from an index is lifecycle evidence and a renamed package stays new", {
+  skip_on_cran()
   resource_only_fixture()
   cran <- bundled_stanzas("CRAN")
   renamed <- cran$renv
@@ -91,6 +93,7 @@ test_that("absence from an index is lifecycle evidence and a renamed package sta
 })
 
 test_that("an unavailable required index fails both catalogs while an optional one is partial", {
+  skip_on_cran()
   f <- resource_only_fixture()
   local_repository_mock()
   update(mode = "remote", catalogs = "resources")
@@ -227,6 +230,7 @@ test_that("metadata-only S4 claims and discovered candidates stay unverified and
 })
 
 test_that("a failed second-catalog activation leaves both previous snapshots active", {
+  skip_on_cran()
   f <- local_update_fixture()
   mock <- local_repository_mock()
   update(mode = "remote")
@@ -249,6 +253,7 @@ test_that("a failed second-catalog activation leaves both previous snapshots act
 })
 
 test_that("Bioconductor release policy stages new releases without touching pins", {
+  skip_on_cran()
   f <- resource_only_fixture()
   mock <- local_repository_mock(c(repository_files(), repository_files(release = "3.22")))
   for (bad in list("release", "devel", "9.99", "3.24", c("3.22", "3.23"), NA_character_, 3.22)) {
@@ -293,6 +298,7 @@ test_that("Bioconductor release policy stages new releases without touching pins
 })
 
 test_that("rollback restores the Bioconductor release policy together with both catalogs", {
+  skip_on_cran()
   f <- resource_only_fixture()
   mock <- local_repository_mock(c(repository_files(), repository_files(release = "3.22")))
   policy_file <- file.path(f$store, "bioc-policy.json")

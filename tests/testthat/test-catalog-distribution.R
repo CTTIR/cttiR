@@ -56,6 +56,7 @@ test_that("ambiguous or development distribution registrations fail closed", {
 })
 
 test_that("distribution candidates participate in immutable update and rollback", {
+  skip_on_cran()
   record <- distribution_fixture()
   cache <- file.path(new_parent(), "cache")
   withr::local_options(cttiR.sources = list(record), cttiR.catalog_dir = cache)
