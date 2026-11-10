@@ -1,11 +1,21 @@
 # cttiR 0.2.0
 
 * Prepared for a first CRAN submission.
+* `project()`, `sync()`, `configure()` and `study_stage()` no longer
+  default to the working directory: `path` (or `directory`) must be given.
 * Twenty-nine exported functions without examples gain them. Examples use a
   temporary catalog and runtime directory, never start or download a local
-  model runtime, and run slow audits only under `\donttest{}`; examples
-  that need an external evidence registry, a release manifest or a
-  prepared study library are not run.
+  model runtime, and run slow audits only under `\donttest{}`. The evidence
+  registry and release preview examples build synthetic inputs in a
+  temporary directory; the strict study examples run under `\donttest{}`
+  when reflowR, workflowr, callr and git2r are installed (rendering also
+  needs Pandoc).
+* Installed package versions and dependency closures are read from the
+  metadata of the packages involved instead of `installed.packages()`.
+* The bundled catalog archive is recompressed with `xz -9e` (identical
+  content, 2.0 instead of 2.5 MB), unreferenced logo variants are left out
+  of the source package, and SystemRequirements names the V8 engine used
+  through 'jsonvalidate'.
 * The 24 slowest test files, which together took about nine minutes, skip
   on CRAN; the full CI job sets `NOT_CRAN=true` and still runs them. The
   build scripts in `tools/` are no longer part of the source package.

@@ -20,9 +20,8 @@ This is a new submission: cttiR 0.2.0.
 * Suggests or Enhances not in mainstream repositories: reflowR, available
   from https://cttir.r-universe.dev (Additional_repositories).
 
-The installed size is about 12.7 Mb (extdata 7.1 Mb, R 2.0 Mb, help
-1.4 Mb) and may be reported on some platforms; the source package is about
-5.8 Mb.
+The installed size is about 10.7 Mb (extdata 6.6 Mb, R 1.5 Mb) and may be
+reported on some platforms; the source package is about 4.5 Mb.
 
 ## Notes
 
@@ -34,11 +33,16 @@ The installed size is about 12.7 Mb (extdata 7.1 Mb, R 2.0 Mb, help
   started by examples, tests or vignettes. Runtime acquisition and model
   use are explicit opt-in operations with dry-run previews; examples point
   the catalog and runtime directories at `tempdir()`.
-* Examples that need a locally prepared evidence registry, a published
-  release manifest, or a prepared study library with Git are wrapped in
-  `\dontrun{}` with a comment explaining the requirement. `doctor()` reads
-  the bundled catalog and all installed package metadata and is wrapped in
+* No example uses `\dontrun{}`. The evidence registry and release preview
+  examples build synthetic inputs below `tempdir()`. The strict study
+  examples run under `\donttest{}` only when reflowR, workflowr, callr and
+  git2r are installed (rendering also needs Pandoc), so they are skipped
+  where reflowR is unavailable. `doctor()` reads the bundled catalog and the
+  installed metadata of the cataloged packages and is wrapped in
   `\donttest{}`.
+* Functions that write files (`project()`, `sync()`, `configure()`,
+  `study_stage()`) have no default location; examples, tests and vignettes
+  pass a directory below `tempdir()`.
 * The slowest test files skip on CRAN so that the tests finish in a few
   minutes; they run in full in continuous integration.
 * The bundled, compressed API catalog and resource catalog make up most
