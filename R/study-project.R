@@ -147,10 +147,10 @@ study_environment <- function(lock) {
 #'   Rmd files. It does not commit, publish or approve a real study.
 #'   Declared measurements are written as 17-digit decimal values and checked
 #'   for an exact round trip before any project is created.
-#' @examples
+#' @examplesIf all(vapply(c("reflowR", "workflowr", "callr", "git2r"), requireNamespace, logical(1), quietly = TRUE))
+#' \donttest{
 #' # Compiling needs an installed cttiR together with reflowR, workflowr,
-#' # callr and git2r in a prepared library, and initializes a Git repository.
-#' \dontrun{
+#' # callr and git2r, and initializes a Git repository in the new project.
 #' spec <- study_paired_spec("paired_example", "Paired example",
 #'   "What is the mean change?", "Synthetic independent pairs",
 #'   "subject_id", "occasion",
@@ -159,10 +159,13 @@ study_environment <- function(lock) {
 #' data <- data.frame(subject_id = rep(paste0("pair_", 1:8), 2L),
 #'   occasion = rep(c("baseline", "followup"), each = 8L),
 #'   measurement = c(100 + 1:8, 100 + 1:8 + c(-4, -2, -1, 0, 1, 3, 5, 6)))
-#' lock <- study_dependency_lock()
-#' compiled <- study_project(file.path(tempdir(), "paired-study"), spec, data,
-#'   lock, author = "A. Author", units = c(measurement = "mmHg"))
-#' study_validate_project(compiled$directory, compiled$declaration)
+#' directory <- tempfile("paired-study-", tmpdir = normalizePath(tempdir()))
+#' compiled <- study_project(directory, spec, data, study_dependency_lock(),
+#'   author = "A. Author", units = c(measurement = "mmHg"))
+#' study_validate_project(compiled$directory, compiled$declaration)$valid
+#' # The raw-data directory is read-only; make it writable before removal.
+#' Sys.chmod(file.path(directory, "data", "raw"), "0755")
+#' unlink(directory, recursive = TRUE)
 #' }
 #' @export
 study_project <- function(directory, spec, data, dependency_lock, author, units, seed = 1L) {
@@ -258,10 +261,26 @@ study_assert_run <- function(directory, declaration) {
 #' @param require_render Require current externally pinned HTML and all applicable stages.
 #' @return A list with valid, reason, structural validation and scientific_approval
 #'   set to FALSE. Stale or unsupported material yields valid = FALSE.
-#' @examples
-#' # Needs a project compiled with study_project()
-#' \dontrun{
-#' study_validate_project(compiled$directory, compiled$declaration)
+#' @examplesIf all(vapply(c("reflowR", "workflowr", "callr", "git2r"), requireNamespace, logical(1), quietly = TRUE))
+#' \donttest{
+#' # Validates a synthetic project compiled with study_project()
+#' spec <- study_paired_spec("paired_example", "Paired example",
+#'   "What is the mean change?", "Synthetic independent pairs",
+#'   "subject_id", "occasion",
+#'   list(name = "measurement", type = "continuous", unit = "mmHg"),
+#'   "baseline", "followup", independent_pairs = TRUE)
+#' data <- data.frame(subject_id = rep(paste0("pair_", 1:8), 2L),
+#'   occasion = rep(c("baseline", "followup"), each = 8L),
+#'   measurement = c(100 + 1:8, 100 + 1:8 + c(-4, -2, -1, 0, 1, 3, 5, 6)))
+#' directory <- tempfile("paired-study-", tmpdir = normalizePath(tempdir()))
+#' compiled <- study_project(directory, spec, data, study_dependency_lock(),
+#'   author = "A. Author", units = c(measurement = "mmHg"))
+#' checked <- study_validate_project(compiled$directory, compiled$declaration)
+#' checked$valid
+#' checked$scientific_approval
+#' # The raw-data directory is read-only; make it writable before removal.
+#' Sys.chmod(file.path(directory, "data", "raw"), "0755")
+#' unlink(directory, recursive = TRUE)
 #' }
 #' @export
 study_validate_project <- function(directory, declaration, require_run = FALSE, require_render = FALSE) {
@@ -306,10 +325,25 @@ study_admit <- function(directory, declaration, require_run = FALSE) {
 #' @inheritParams study_validate_project
 #' @return A list with directory, numerical result and an updated external
 #'   declaration pinning the exact run receipt. Preserve the updated declaration.
-#' @examples
-#' # Needs a project compiled with study_project()
-#' \dontrun{
+#' @examplesIf all(vapply(c("reflowR", "workflowr", "callr", "git2r"), requireNamespace, logical(1), quietly = TRUE))
+#' \donttest{
+#' # Runs the recipe of a synthetic project compiled with study_project()
+#' spec <- study_paired_spec("paired_example", "Paired example",
+#'   "What is the mean change?", "Synthetic independent pairs",
+#'   "subject_id", "occasion",
+#'   list(name = "measurement", type = "continuous", unit = "mmHg"),
+#'   "baseline", "followup", independent_pairs = TRUE)
+#' data <- data.frame(subject_id = rep(paste0("pair_", 1:8), 2L),
+#'   occasion = rep(c("baseline", "followup"), each = 8L),
+#'   measurement = c(100 + 1:8, 100 + 1:8 + c(-4, -2, -1, 0, 1, 3, 5, 6)))
+#' directory <- tempfile("paired-study-", tmpdir = normalizePath(tempdir()))
+#' compiled <- study_project(directory, spec, data, study_dependency_lock(),
+#'   author = "A. Author", units = c(measurement = "mmHg"))
 #' ran <- study_run(compiled$directory, compiled$declaration)
+#' names(ran)
+#' # The raw-data directory is read-only; make it writable before removal.
+#' Sys.chmod(file.path(directory, "data", "raw"), "0755")
+#' unlink(directory, recursive = TRUE)
 #' }
 #' @export
 study_run <- function(directory, declaration) {
@@ -471,10 +505,27 @@ study_stage <- function(stage, directory) {
 #'   pinning stage receipts and all generated report files. No Git commit or
 #'   publication occurs. Rendering uses a clean child R session in the prepared
 #'   external library and never reruns statistical estimation.
-#' @examples
-#' # Needs a project compiled and run with study_project() and study_run()
-#' \dontrun{
-#' rendered <- study_render(compiled$directory, ran$declaration)
+#' @examplesIf all(vapply(c("reflowR", "workflowr", "callr", "git2r"), requireNamespace, logical(1), quietly = TRUE)) && rmarkdown::pandoc_available()
+#' \donttest{
+#' # Renders a synthetic project compiled with study_project() and run with
+#' # study_run(); workflowr rendering needs Pandoc.
+#' spec <- study_paired_spec("paired_example", "Paired example",
+#'   "What is the mean change?", "Synthetic independent pairs",
+#'   "subject_id", "occasion",
+#'   list(name = "measurement", type = "continuous", unit = "mmHg"),
+#'   "baseline", "followup", independent_pairs = TRUE)
+#' data <- data.frame(subject_id = rep(paste0("pair_", 1:8), 2L),
+#'   occasion = rep(c("baseline", "followup"), each = 8L),
+#'   measurement = c(100 + 1:8, 100 + 1:8 + c(-4, -2, -1, 0, 1, 3, 5, 6)))
+#' directory <- tempfile("paired-study-", tmpdir = normalizePath(tempdir()))
+#' compiled <- study_project(directory, spec, data, study_dependency_lock(),
+#'   author = "A. Author", units = c(measurement = "mmHg"))
+#' ran <- study_run(compiled$directory, compiled$declaration)
+#' rendered <- study_render(ran$directory, ran$declaration)
+#' rendered$validation$valid
+#' # The raw-data directory is read-only; make it writable before removal.
+#' Sys.chmod(file.path(directory, "data", "raw"), "0755")
+#' unlink(directory, recursive = TRUE)
 #' }
 #' @export
 study_render <- function(directory, declaration, timeout = 600) {

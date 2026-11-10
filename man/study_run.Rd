@@ -20,8 +20,25 @@ declaration pinning the exact run receipt. Preserve the updated declaration.
 Run the Fixed Synthetic Study Recipe
 }
 \examples{
-# Needs a project compiled with study_project()
-\dontrun{
+\dontshow{if (all(vapply(c("reflowR", "workflowr", "callr", "git2r"), requireNamespace, logical(1), quietly = TRUE))) withAutoprint(\{ # examplesIf}
+\donttest{
+# Runs the recipe of a synthetic project compiled with study_project()
+spec <- study_paired_spec("paired_example", "Paired example",
+  "What is the mean change?", "Synthetic independent pairs",
+  "subject_id", "occasion",
+  list(name = "measurement", type = "continuous", unit = "mmHg"),
+  "baseline", "followup", independent_pairs = TRUE)
+data <- data.frame(subject_id = rep(paste0("pair_", 1:8), 2L),
+  occasion = rep(c("baseline", "followup"), each = 8L),
+  measurement = c(100 + 1:8, 100 + 1:8 + c(-4, -2, -1, 0, 1, 3, 5, 6)))
+directory <- tempfile("paired-study-", tmpdir = normalizePath(tempdir()))
+compiled <- study_project(directory, spec, data, study_dependency_lock(),
+  author = "A. Author", units = c(measurement = "mmHg"))
 ran <- study_run(compiled$directory, compiled$declaration)
+names(ran)
+# The raw-data directory is read-only; make it writable before removal.
+Sys.chmod(file.path(directory, "data", "raw"), "0755")
+unlink(directory, recursive = TRUE)
 }
+\dontshow{\}) # examplesIf}
 }

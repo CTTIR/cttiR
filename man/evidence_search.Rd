@@ -40,9 +40,42 @@ retrieval. A match does not establish that a claim is supported, that a legal
 source is currently applicable, or that code is approved for execution.
 }
 \examples{
-# Needs a local evidence registry and the SHA-256 of its manifest, which
-# are prepared outside the package and cannot be created in an example.
-\dontrun{
-evidence_search("path/to/registry", manifest_sha256, "mixed model")
-}
+# A minimal synthetic registry in a temporary directory. Real registries are
+# built outside the package and pinned by the SHA-256 of their manifest.
+registry <- tempfile("evidence-registry-")
+dir.create(registry)
+sha256 <- function(file) digest::digest(file = file, algo = "sha256")
+source_file <- file.path(registry, "source.txt")
+text <- "Mixed models need a reviewed random-effects structure."
+writeLines(text, source_file)
+record <- list(schema_version = 1L,
+  evidence_id = paste0("evidence-v1:", strrep("a", 64)),
+  source_id = "source:example", family = "packages", package = "Example",
+  version = "1.0.0", revision = "example", document_sha256 = sha256(source_file),
+  text = text, text_sha256 = digest::digest(text, algo = "sha256", serialize = FALSE),
+  source_pins = list(list(path = source_file, sha256 = sha256(source_file))),
+  permissions = "evidence_only_no_execution_or_approval",
+  training_admission = "not_granted_by_indexing")
+db <- DBI::dbConnect(RSQLite::SQLite(), file.path(registry, "evidence.sqlite"))
+invisible(DBI::dbExecute(db, paste("CREATE TABLE evidence(evidence_id TEXT PRIMARY KEY,",
+  "source_id TEXT, family TEXT, package TEXT, version TEXT, restricted INTEGER, record TEXT)")))
+invisible(DBI::dbExecute(db,
+  "CREATE VIRTUAL TABLE search USING fts5(evidence_id UNINDEXED, text)"))
+invisible(DBI::dbExecute(db, "INSERT INTO evidence VALUES(?,?,?,?,?,0,?)",
+  params = list(record$evidence_id, record$source_id, record$family, record$package,
+    record$version, as.character(jsonlite::toJSON(record, auto_unbox = TRUE)))))
+invisible(DBI::dbExecute(db, "INSERT INTO search VALUES(?,?)",
+  params = list(record$evidence_id, text)))
+DBI::dbDisconnect(db)
+writeLines("{}", file.path(registry, "coverage.jsonl"))
+manifest <- list(schema_version = 1L, limits = "Synthetic example registry",
+  files_sha256 = list(evidence.sqlite = sha256(file.path(registry, "evidence.sqlite")),
+    coverage.jsonl = sha256(file.path(registry, "coverage.jsonl"))))
+jsonlite::write_json(manifest, file.path(registry, "manifest.json"), auto_unbox = TRUE)
+pin <- sha256(file.path(registry, "manifest.json"))
+
+found <- evidence_search(registry, pin, "random effects")
+length(found$results)
+evidence_resolve(registry, pin, found$results[[1]]$evidence$evidence_id)$text
+unlink(registry, recursive = TRUE)
 }

@@ -53,9 +53,34 @@ Previous release artifacts remain available for rollback by selecting their
 original manifests. Research-project dependency preparation is separate.
 }
 \examples{
-# Needs a published release manifest, its SHA-256 and network access to
-# download a model; a dry run still reads the manifest.
-\dontrun{
-setup_release("release-manifest.json", manifest_sha256, dry_run = TRUE)
-}
+old <- options(
+  cttiR.catalog_dir = file.path(tempdir(), "cttiR-catalog"),
+  cttiR.runtime_dir = file.path(tempdir(), "cttiR-runtime")
+)
+# A synthetic manifest: the preview reads and checks it, reports blockers and
+# downloads, starts and writes nothing. Real manifests come from a reviewed
+# release together with their SHA-256.
+template <- "{{ .Prompt }}"
+release <- list(schema_version = 1L, release_id = "synthetic-example-1",
+  package_version = as.character(utils::packageVersion("cttiR")),
+  catalog_id = strrep("0", 64), policy_sha256 = strrep("0", 64),
+  prompt_version = "example", runtime_version = "example",
+  platform = "Linux", arch = "x86_64",
+  base_model = list(repository = "example/model", revision = strrep("a", 40),
+    adapter_sha256 = strrep("b", 64), license = "Synthetic example"),
+  model = list(tag = "example:synthetic", file = "example.gguf",
+    sha256 = strrep("c", 64), bytes = 1024L, url = NULL, digest = strrep("d", 64),
+    template = template,
+    template_sha256 = digest::digest(template, algo = "sha256", serialize = FALSE),
+    parameters = list(num_ctx = 4096L, num_predict = 1024L, temperature = 0L,
+      stop = list("</s>")),
+    import_template = NULL),
+  resources = list(minimum_memory_bytes = 1073741824, required_disk_bytes = 2147483648))
+manifest <- tempfile("release-", fileext = ".json")
+jsonlite::write_json(release, manifest, auto_unbox = TRUE, null = "null", digits = NA)
+preview <- setup_release(manifest, digest::digest(file = manifest, algo = "sha256"))
+preview$state
+preview$blockers
+unlink(manifest)
+options(old)
 }
