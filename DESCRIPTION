@@ -9,9 +9,10 @@ Description: Creates deterministic research projects from a name, research type
     package APIs and documentation with verified local, GitHub, CRAN and
     Bioconductor refresh and rollback, a curated resource catalog, grounded
     answers, project synchronization, audits with allowlisted repairs, an
-    optional local model runtime and a local Shiny interface.
+    optional local model runtime and a local 'shiny' interface.
 License: MIT + file LICENSE
 Encoding: UTF-8
+Language: en-GB
 Depends: R (>= 4.1.0)
 SystemRequirements: curl and tar with zstd support (optional, for managed
     local runtime acquisition on Linux x86_64)
