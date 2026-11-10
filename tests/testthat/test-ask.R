@@ -1,3 +1,6 @@
+# Slow; skipped on CRAN. Runs with NOT_CRAN=true, as in the full CI job.
+skip_on_cran()
+
 test_that("grounded answers meet the pre-registered benchmark thresholds", {
   bench <- ask_benchmark()
   failed <- bench$results[!bench$results$passed, c("id", "kind", "approved")]

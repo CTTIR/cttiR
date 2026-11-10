@@ -1,3 +1,6 @@
+# Slow; skipped on CRAN. Runs with NOT_CRAN=true, as in the full CI job.
+skip_on_cran()
+
 cran_files <- function(members, version = "1.0.0", md5 = NULL, package = "cttirFixtureA", archive = FALSE) {
   bytes <- tarball_bytes(members)
   stanza <- c(Package = package, Version = version, License = "MIT",

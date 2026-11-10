@@ -1,3 +1,6 @@
+# Slow; skipped on CRAN. Runs with NOT_CRAN=true, as in the full CI job.
+skip_on_cran()
+
 # Builder fault matrix (spec 10 "Required verification", gate G13). Failures are
 # injected with mocks so the tests are deterministic and never fill a disk.
 

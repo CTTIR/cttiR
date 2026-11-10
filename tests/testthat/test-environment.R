@@ -1,3 +1,6 @@
+# Slow; skipped on CRAN. Runs with NOT_CRAN=true, as in the full CI job.
+skip_on_cran()
+
 # Dependency environment (renv), targets pipeline and Git for generated projects.
 
 live <- function() identical(Sys.getenv("CTTIR_LIVE_TESTS"), "true")

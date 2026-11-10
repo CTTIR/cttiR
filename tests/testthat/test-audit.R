@@ -1,3 +1,6 @@
+# Slow; skipped on CRAN. Runs with NOT_CRAN=true, as in the full CI job.
+skip_on_cran()
+
 test_that("audit is read-only, scope-aware and strict about actual failures", {
   skip_on_cran()
   parent <- new_parent()

@@ -1,3 +1,6 @@
+# Slow; skipped on CRAN. Runs with NOT_CRAN=true, as in the full CI job.
+skip_on_cran()
+
 stop_catalog_writer <- function(root, pid, journal = NULL) {
   dir.create(file.path(root, "write-lock"), recursive = TRUE, showWarnings = FALSE)
   write_bytes(json_text(list(pid = pid, host = Sys.info()[["nodename"]])), file.path(root, "write-lock/owner.json"))

@@ -1,3 +1,6 @@
+# Slow; skipped on CRAN. Runs with NOT_CRAN=true, as in the full CI job.
+skip_on_cran()
+
 registry_doc <- function() jsonlite::fromJSON(resource_file("extdata", "questions.json"), simplifyVector = FALSE)
 
 # Smallest set of upstream answers that makes a relevance condition true.

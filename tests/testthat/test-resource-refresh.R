@@ -1,3 +1,6 @@
+# Slow; skipped on CRAN. Runs with NOT_CRAN=true, as in the full CI job.
+skip_on_cran()
+
 curated_columns <- c("package_id", "name", "category", "purpose", "selection_tier", "tidy_alignment", "interop_expectation",
   "interop_verification", "metadata_verification", "api_verification", "adapter_status", "default_install",
   "eligible_after_adapter_validation", "notes_json", "documentation_url")

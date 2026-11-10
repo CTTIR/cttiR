@@ -1,3 +1,6 @@
+# Slow; skipped on CRAN. Runs with NOT_CRAN=true, as in the full CI job.
+skip_on_cran()
+
 app_study_test_parent <- function() {
   path <- tempfile("cttir-app-study-")
   dir.create(path)

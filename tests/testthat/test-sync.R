@@ -1,3 +1,6 @@
+# Slow; skipped on CRAN. Runs with NOT_CRAN=true, as in the full CI job.
+skip_on_cran()
+
 test_that("sync previews, applies and preserves user content and pins", {
   parent <- new_parent()
   p <- project("Sync", "methods", "Original goal", parent)

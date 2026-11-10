@@ -1,3 +1,6 @@
+# Slow; skipped on CRAN. Runs with NOT_CRAN=true, as in the full CI job.
+skip_on_cran()
+
 test_that("application construction never creates a project and stays on loopback", {
   skip_if_not_installed("shiny")
   parent <- new_parent()

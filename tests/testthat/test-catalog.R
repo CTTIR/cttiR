@@ -1,3 +1,6 @@
+# Slow; skipped on CRAN. Runs with NOT_CRAN=true, as in the full CI job.
+skip_on_cran()
+
 test_that("static extraction never executes code and preserves unresolved exports", {
   parent <- new_parent()
   sentinel <- file.path(parent, "should-not-exist")

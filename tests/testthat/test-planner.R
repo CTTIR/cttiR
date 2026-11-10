@@ -1,3 +1,6 @@
+# Slow; skipped on CRAN. Runs with NOT_CRAN=true, as in the full CI job.
+skip_on_cran()
+
 fake_digest <- paste(rep("b", 64), collapse = "")
 
 valid_reply <- function(...) {

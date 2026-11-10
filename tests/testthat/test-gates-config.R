@@ -1,3 +1,6 @@
+# Slow; skipped on CRAN. Runs with NOT_CRAN=true, as in the full CI job.
+skip_on_cran()
+
 # Gates G03 (replay), G04 (scientific metadata), G05 (publications) and G06
 # (configuration and schema migration).
 

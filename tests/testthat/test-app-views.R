@@ -1,3 +1,6 @@
+# Slow; skipped on CRAN. Runs with NOT_CRAN=true, as in the full CI job.
+skip_on_cran()
+
 counting_worker <- function(counter) {
   counter$calls <- character()
   function(operation, args) {

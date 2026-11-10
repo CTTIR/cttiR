@@ -1,3 +1,6 @@
+# Slow; skipped on CRAN. Runs with NOT_CRAN=true, as in the full CI job.
+skip_on_cran()
+
 mapped_analysis <- function() {
   list(
     data_sources = list(list(id = "source01", label = "Synthetic source", logical_uri = NULL,

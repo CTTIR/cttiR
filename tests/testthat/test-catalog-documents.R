@@ -1,3 +1,6 @@
+# Slow; skipped on CRAN. Runs with NOT_CRAN=true, as in the full CI job.
+skip_on_cran()
+
 test_that("rights-aware literal extraction stores inventories without executing code", {
   f <- document_fixture()
   restricted <- extract_source(f$source, "fixture", "one")

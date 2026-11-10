@@ -1,3 +1,6 @@
+# Slow; skipped on CRAN. Runs with NOT_CRAN=true, as in the full CI job.
+skip_on_cran()
+
 test_that("update preview leaves no store and rejects unsupported policies", {
   skip_on_cran()
   f <- local_update_fixture()

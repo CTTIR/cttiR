@@ -1,3 +1,6 @@
+# Slow; skipped on CRAN. Runs with NOT_CRAN=true, as in the full CI job.
+skip_on_cran()
+
 test_that("every specified check ID has a complete registered definition", {
   required_ids <- c(sprintf("INS-%03d", 1:4), sprintf("KB-%03d", 1:5), sprintf("PRJ-%03d", 1:6), sprintf("INT-%03d", 1:3))
   checks <- audit_checks()

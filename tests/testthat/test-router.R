@@ -1,3 +1,6 @@
+# Slow; skipped on CRAN. Runs with NOT_CRAN=true, as in the full CI job.
+skip_on_cran()
+
 route_for <- function(goal, options = list(), type = "primary_research") {
   p <- project("Routing", type, goal, tempdir(), options = options, dry_run = TRUE)
   list(project = p, workflow = p$readiness$workflow, analysis = p$readiness$analysis,

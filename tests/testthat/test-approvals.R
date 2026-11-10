@@ -1,3 +1,6 @@
+# Slow; skipped on CRAN. Runs with NOT_CRAN=true, as in the full CI job.
+skip_on_cran()
+
 fixture_rights <- "Synthetic fixture authored for testing"
 
 # Approved fixture revision: functions, an S3 method, reference topics, a

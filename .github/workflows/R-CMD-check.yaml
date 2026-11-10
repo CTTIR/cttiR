@@ -25,6 +25,8 @@ jobs:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
       _R_CHECK_FORCE_SUGGESTS_: ${{ matrix.config.full && 'true' || 'false' }}
+      # Slow test files skip on CRAN; the full job still runs them.
+      NOT_CRAN: ${{ matrix.config.full && 'true' || 'false' }}
     steps:
       - uses: actions/checkout@v4
       - uses: r-lib/actions/setup-pandoc@v2
