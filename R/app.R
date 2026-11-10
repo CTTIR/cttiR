@@ -162,7 +162,7 @@ setup_app <- function(mode = c("fast", "detailed"), launch.browser = interactive
 #' previewed with [sync()] (field-level requested changes and the file plan)
 #' and applied only on explicit request. Edited managed files are reported as
 #' conflicts and nothing is written while conflicts remain.
-#' @param path Exact existing project root.
+#' @param path Exact existing project root. There is no default.
 #' @param launch.browser Open the browser when the application is run.
 #' @return A local Shiny application using [sync()] for preview and application.
 #' @examples
@@ -175,7 +175,7 @@ setup_app <- function(mode = c("fast", "detailed"), launch.browser = interactive
 #'   configure(p$path)
 #' }
 #' @export
-configure <- function(path = ".", launch.browser = interactive()) {
+configure <- function(path, launch.browser = interactive()) {
   app_require()
   scalar_flag(launch.browser, "launch.browser")
   p <- read_project(path, edited = TRUE)

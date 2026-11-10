@@ -8,7 +8,7 @@ project(
   name,
   type,
   goal,
-  path = getwd(),
+  path,
   config = NULL,
   options = list(),
   dry_run = FALSE
@@ -26,7 +26,9 @@ the slug would exceed 80 characters, a short hash of the name is appended
 
 \item{goal}{Nonempty research objective.}
 
-\item{path}{Existing parent directory; never the project directory itself.}
+\item{path}{Existing parent directory in which the project directory is
+created, for example \code{tempdir()}; never the project directory itself.
+There is no default.}
 
 \item{config}{Optional named configuration list or local JSON/YAML file.}
 

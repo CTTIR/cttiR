@@ -219,7 +219,8 @@ proposal_path <- function(path) file.path(".cttir", "proposed", path)
 #' explicitly selects the active local catalog only if every existing dependency
 #' retains its source revision. This option performs no network update.
 #'
-#' @param path Exact project root.
+#' @param path Exact project root, as returned in `project()$path`. There is
+#'   no default.
 #' @param config Optional configuration list or YAML/JSON path.
 #' @param options Configuration overrides taking precedence over `config`.
 #' @param dry_run Return a read-only plan by default.
@@ -258,11 +259,11 @@ proposal_path <- function(path) file.path(".cttir", "proposed", path)
 #' class(preview)
 #' unlink(parent, recursive = TRUE)
 #' @export
-sync <- function(path = ".", config = NULL, options = list(), dry_run = TRUE) {
+sync <- function(path, config = NULL, options = list(), dry_run = TRUE) {
   sync_impl(path, config, options, dry_run)
 }
 
-sync_impl <- function(path = ".", config = NULL, options = list(), dry_run = TRUE, expected_plan = NULL) {
+sync_impl <- function(path, config = NULL, options = list(), dry_run = TRUE, expected_plan = NULL) {
   scalar_flag(dry_run, "dry_run")
   options <- utf8_input(options)
   p <- read_project(path, edited = TRUE)

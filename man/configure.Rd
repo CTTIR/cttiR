@@ -4,10 +4,10 @@
 \alias{configure}
 \title{Configure an existing project with an explicit preview}
 \usage{
-configure(path = ".", launch.browser = interactive())
+configure(path, launch.browser = interactive())
 }
 \arguments{
-\item{path}{Exact existing project root.}
+\item{path}{Exact existing project root. There is no default.}
 
 \item{launch.browser}{Open the browser when the application is run.}
 }

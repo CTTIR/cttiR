@@ -403,7 +403,9 @@ project_manifest <- function(files, template_version = "0.1.0", reporting = "gen
 #' @param type One of `primary_research`, `secondary_research`, `methods`,
 #'   `review`, `software`, `mixed`, or `other`.
 #' @param goal Nonempty research objective.
-#' @param path Existing parent directory; never the project directory itself.
+#' @param path Existing parent directory in which the project directory is
+#'   created, for example `tempdir()`; never the project directory itself.
+#'   There is no default.
 #' @param config Optional named configuration list or local JSON/YAML file.
 #' @param options Named configuration list taking precedence over `config`.
 #' @param dry_run If TRUE, return a plan without writing any files.
@@ -442,12 +444,12 @@ project_manifest <- function(files, template_version = "0.1.0", reporting = "gen
 #'   path = tempdir(), dry_run = TRUE
 #' )
 #' print(p)
-project <- function(name, type, goal, path = getwd(), config = NULL,
+project <- function(name, type, goal, path, config = NULL,
   options = list(), dry_run = FALSE) {
   project_impl(name, type, goal, path, config, options, dry_run)
 }
 
-project_impl <- function(name, type, goal, path = getwd(), config = NULL,
+project_impl <- function(name, type, goal, path, config = NULL,
   options = list(), dry_run = FALSE, expected_catalog = NULL) {
   scalar_flag(dry_run, "dry_run")
   name <- utf8_input(name)

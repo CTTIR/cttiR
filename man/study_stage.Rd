@@ -4,23 +4,25 @@
 \alias{study_stage}
 \title{Present a Verified Recorded Study Stage}
 \usage{
-study_stage(stage, directory = ".")
+study_stage(stage, directory)
 }
 \arguments{
 \item{stage}{Fixed stage identifier from the compiled profile.}
 
-\item{directory}{Study directory. Used by canonical stage files only.}
+\item{directory}{Study directory. The canonical stage files pass \code{"."}, the
+study root they are knitted from. There is no default.}
 }
 \value{
 Invisibly the stage view receipt. Requires the external trusted
 declaration installed by \code{\link[=study_render]{study_render()}} in a clean child R session.
 }
 \description{
-Present a Verified Recorded Study Stage
+Writes the HTML view of one recorded stage to standard output, for the
+\code{results = 'asis'} chunk of a generated stage file that \code{\link[=study_render]{study_render()}}
+knits, and records a view receipt under \verb{output/report-views/}.
 }
 \examples{
-# Presents a stage recorded by study_run() inside a compiled study project
-\dontrun{
-study_stage("analysis", compiled$directory)
-}
+# study_stage() runs inside the stage files knitted by study_render(), which
+# supplies the trusted declaration; anywhere else it refuses and writes nothing.
+try(study_stage("protocol", tempdir()))
 }

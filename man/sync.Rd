@@ -4,10 +4,11 @@
 \alias{sync}
 \title{Preview or apply project configuration changes}
 \usage{
-sync(path = ".", config = NULL, options = list(), dry_run = TRUE)
+sync(path, config = NULL, options = list(), dry_run = TRUE)
 }
 \arguments{
-\item{path}{Exact project root.}
+\item{path}{Exact project root, as returned in \code{project()$path}. There is
+no default.}
 
 \item{config}{Optional configuration list or YAML/JSON path.}
 

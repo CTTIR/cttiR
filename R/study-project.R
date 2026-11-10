@@ -388,17 +388,21 @@ study_html <- function(x) {
 }
 
 #' Present a Verified Recorded Study Stage
+#'
+#' Writes the HTML view of one recorded stage to standard output, for the
+#' `results = 'asis'` chunk of a generated stage file that [study_render()]
+#' knits, and records a view receipt under `output/report-views/`.
 #' @param stage Fixed stage identifier from the compiled profile.
-#' @param directory Study directory. Used by canonical stage files only.
+#' @param directory Study directory. The canonical stage files pass `"."`, the
+#'   study root they are knitted from. There is no default.
 #' @return Invisibly the stage view receipt. Requires the external trusted
 #'   declaration installed by [study_render()] in a clean child R session.
 #' @examples
-#' # Presents a stage recorded by study_run() inside a compiled study project
-#' \dontrun{
-#' study_stage("analysis", compiled$directory)
-#' }
+#' # study_stage() runs inside the stage files knitted by study_render(), which
+#' # supplies the trusted declaration; anywhere else it refuses and writes nothing.
+#' try(study_stage("protocol", tempdir()))
 #' @export
-study_stage <- function(stage, directory = ".") {
+study_stage <- function(stage, directory) {
   declaration <- getOption("cttir.study.external_declaration")
   if (is.null(declaration)) study_fail("Render through study_render with an external declaration.")
   study_admit(directory, declaration, require_run = TRUE)
