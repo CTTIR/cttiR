@@ -106,8 +106,8 @@ study_installed_runtime <- function() {
 #' @export
 study_dependency_lock <- function() {
   study_require()
-  installed <- utils::installed.packages()
   roots <- c("cttiR", "reflowR", "workflowr", "callr", "git2r")
+  installed <- library_dependency_db(roots, .libPaths())
   dependencies <- tools::package_dependencies(roots, db = installed,
     which = c("Depends", "Imports", "LinkingTo"), recursive = TRUE)
   packages <- sort(unique(c(roots, unlist(dependencies, use.names = FALSE))))

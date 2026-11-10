@@ -590,15 +590,14 @@ project_blockers <- function(spec, bundle, environment = environment_status(bund
 environment_status <- function(dependencies, root = NULL, mode = "none") {
   if (identical(mode, "renv")) return(renv_environment_status(dependencies, root))
   if (!length(dependencies)) return(list(state = "no_dependencies_recorded", missing = list(), mismatched = list()))
-  installed <- utils::installed.packages(fields = "Version")
   missing <- character()
   mismatched <- character()
   for (dep in dependencies) {
-    index <- match(dep$package, installed[, "Package"])
-    if (is.na(index)) {
+    installed <- installed_versions(dep$package)
+    if (is.na(installed)) {
       missing <- c(missing, dep$package)
-    } else if (!is.null(dep$version) && !identical(unname(installed[index, "Version"]), dep$version)) {
-      mismatched <- c(mismatched, paste0(dep$package, " ", installed[index, "Version"], " != ", dep$version))
+    } else if (!is.null(dep$version) && !identical(installed, dep$version)) {
+      mismatched <- c(mismatched, paste0(dep$package, " ", installed, " != ", dep$version))
     }
   }
   unpinned <- vapply(dependencies, function(dep) is.null(dep$version), logical(1))

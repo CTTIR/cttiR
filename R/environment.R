@@ -172,12 +172,57 @@ environment_touchable <- function(root) {
   }, character(1)), files)
 }
 
+# Installed package metadata is read per package instead of through
+# installed.packages(), which scans every package of every library. A package
+# counts as installed in the first library of `lib.loc` that holds its
+# installed metadata (Meta/package.rds): the copy installed.packages(lib.loc)
+# lists first.
+installed_versions <- function(packages, lib.loc = .libPaths()) {
+  vapply(packages, function(package) {
+    found <- lib.loc[file.exists(file.path(lib.loc, package, "Meta", "package.rds"))]
+    if (!length(found)) return(NA_character_)
+    version <- utils::packageDescription(package, lib.loc = found[[1L]], fields = "Version")
+    if (is.character(version) && length(version) == 1L) version else NA_character_
+  }, character(1), USE.NAMES = FALSE)
+}
+
+# Installed DESCRIPTION records of `packages` and of every package they reach
+# through `which`, as a `db` for tools::package_dependencies(). For this closure
+# it equals installed.packages(lib.loc) without scanning whole libraries.
+# Only base R and namespaced calls: a copy whose environment is baseenv() is
+# passed to the renv worker process.
+library_dependency_db <- function(packages, lib.loc, which = c("Depends", "Imports", "LinkingTo")) {
+  fields <- c("Package", "Version", which)
+  rows <- list()
+  seen <- character()
+  queue <- unique(packages)
+  while (length(queue)) {
+    package <- queue[[1L]]
+    queue <- queue[-1L]
+    if (package %in% seen) next
+    seen <- c(seen, package)
+    found <- lib.loc[file.exists(file.path(lib.loc, package, "Meta", "package.rds"))]
+    if (!length(found)) next
+    description <- utils::packageDescription(package, lib.loc = found[[1L]], fields = fields[-1L], drop = FALSE)
+    values <- vapply(fields[-1L], function(field) {
+      value <- description[[field]]
+      if (is.character(value) && length(value) == 1L) value else NA_character_
+    }, character(1), USE.NAMES = FALSE)
+    row <- matrix(c(package, values), nrow = 1L, dimnames = list(package, fields))
+    rows[[length(rows) + 1L]] <- row
+    direct <- tools::package_dependencies(package, db = row, which = which)[[1L]]
+    queue <- c(queue, setdiff(direct, seen))
+  }
+  if (!length(rows)) return(matrix(character(), 0L, length(fields), dimnames = list(NULL, fields)))
+  do.call(rbind, rows)
+}
+
 # renv routes every download through `renv.download.override` when it is set.
 # Offline, this refuses and logs each attempt before any connection is opened.
 # Its environment only holds the log path, so it serializes to a fresh process.
 renv_offline_override <- function(guard) {
   override <- function(url, destfile, ...) {
-    cat(url, "\n", sep = "", file = guard, append = TRUE)
+    write(url, file = guard, append = TRUE)
     stop("Network access is disabled (workflow.network = 'offline'); refused: ", url, call. = FALSE)
   }
   environment(override) <- list2env(list(guard = guard), parent = baseenv())
@@ -185,17 +230,22 @@ renv_offline_override <- function(guard) {
 }
 
 # Runs in a fresh R process (callr); it must only use base R and namespaced calls.
-environment_worker <- function(root, packages, pins, sources, repos, override) {
+# `dependency_db` is library_dependency_db() with its environment set to baseenv().
+environment_worker <- function(root, packages, pins, sources, repos, override, dependency_db) {
   offline <- is.function(override)
-  options(renv.consent = TRUE, renv.config.ppm.enabled = FALSE, renv.config.pak.enabled = FALSE,
+  saved <- options(renv.consent = TRUE, renv.config.ppm.enabled = FALSE, renv.config.pak.enabled = FALSE,
     renv.config.updates.check = FALSE, renv.config.synchronized.check = FALSE, repos = repos,
     renv.download.override = override)
-  installed <- utils::installed.packages(lib.loc = sources)
-  installed <- installed[!duplicated(installed[, "Package"]), , drop = FALSE]
-  base <- rownames(utils::installed.packages(lib.loc = .Library, priority = "base"))
+  on.exit(options(saved), add = TRUE)
+  installed <- dependency_db(packages, sources)
   closure <- tools::package_dependencies(packages, db = installed, which = c("Depends", "Imports", "LinkingTo"),
     recursive = TRUE)
-  needed <- setdiff(unique(c(packages, unlist(closure, use.names = FALSE))), c(base, "R"))
+  candidates <- setdiff(unique(c(packages, unlist(closure, use.names = FALSE))), "R")
+  base <- candidates[vapply(candidates, function(p) {
+    file.exists(file.path(.Library, p, "Meta", "package.rds")) &&
+      identical(utils::packageDescription(p, lib.loc = .Library, fields = "Priority"), "base")
+  }, logical(1))]
+  needed <- setdiff(candidates, base)
   missing <- setdiff(needed, installed[, "Package"])
   version <- function(p) unname(installed[match(p, installed[, "Package"]), "Version"])
   wrong <- character()
@@ -221,7 +271,9 @@ environment_worker <- function(root, packages, pins, sources, repos, override) {
     requested <- vapply(incomplete, function(p) if (is.null(pins[[p]])) p else paste0(p, "@", pins[[p]]), character(1))
     renv::install(packages = unname(requested), library = library, repos = repos, prompt = FALSE, project = root)
   }
-  present <- utils::installed.packages(lib.loc = c(library, .Library))[, "Package"]
+  present <- packages[vapply(packages, function(p) {
+    any(file.exists(file.path(c(library, .Library), p, "Meta", "package.rds")))
+  }, logical(1))]
   absent <- setdiff(packages, present)
   if (length(absent)) {
     return(list(status = "install_incomplete", missing = absent, wrong_version = character(), library = library))
@@ -315,10 +367,13 @@ prepare_project_environment <- function(root, dependencies, network = "offline",
   log <- tempfile("cttir-environment-", fileext = ".log")
   on.exit(unlink(c(guard, log)), add = TRUE)
   pins <- lapply(required, function(x) x$pinned)
+  dependency_db <- library_dependency_db
+  environment(dependency_db) <- baseenv()
   outcome$worker <- tryCatch(
     callr::r(environment_worker,
       args = list(root = root, packages = names(required), pins = pins, sources = libraries, repos = repos,
-        override = if (identical(network, "offline")) renv_offline_override(guard) else NULL),
+        override = if (identical(network, "offline")) renv_offline_override(guard) else NULL,
+        dependency_db = dependency_db),
       libpath = libraries, repos = repos, stdout = log, stderr = "2>&1", user_profile = FALSE,
       system_profile = FALSE, package = FALSE, timeout = timeout, wd = tempdir(),
       env = if (identical(network, "offline")) offline_process_env() else callr::rcmd_safe_env()),
@@ -337,17 +392,20 @@ prepare_project_environment <- function(root, dependencies, network = "offline",
   finish(library = worker$library)
 }
 
-restore_worker <- function(project, library, override) {
-  options(renv.consent = TRUE, renv.config.ppm.enabled = FALSE, renv.config.pak.enabled = FALSE,
+# Runs in a fresh R process (callr). Reports each locked package as found first
+# in the restore library, the site libraries or the system library.
+restore_worker <- function(project, library, override, packages) {
+  saved <- options(renv.consent = TRUE, renv.config.ppm.enabled = FALSE, renv.config.pak.enabled = FALSE,
     renv.config.updates.check = FALSE, renv.download.override = override)
+  on.exit(options(saved), add = TRUE)
   renv::restore(project = project, library = library, prompt = FALSE, clean = FALSE)
   found <- list()
-  for (lib in unique(c(library, .Library.site, .Library))) {
-    ip <- utils::installed.packages(lib.loc = lib, noCache = TRUE)
-    for (i in seq_len(nrow(ip))) {
-      if (is.null(found[[ip[i, "Package"]]])) {
-        found[[ip[i, "Package"]]] <- list(version = unname(ip[i, "Version"]), restored = identical(lib, library))
-      }
+  for (package in packages) {
+    for (lib in unique(c(library, .Library.site, .Library))) {
+      if (!file.exists(file.path(lib, package, "Meta", "package.rds"))) next
+      found[[package]] <- list(version = utils::packageDescription(package, lib.loc = lib, fields = "Version"),
+        restored = identical(lib, library))
+      break
     }
   }
   found
@@ -392,7 +450,7 @@ restore_smoke <- function(root, library = tempfile("cttir-restore-library-"), li
   started <- Sys.time()
   error <- NULL
   restore_args <- list(project = copy, library = normalizePath(library, winslash = "/"),
-    override = renv_offline_override(guard))
+    override = renv_offline_override(guard), packages = names(lock$versions))
   found <- tryCatch(
     callr::r(restore_worker, args = restore_args,
       libpath = libraries, stdout = log, stderr = "2>&1", user_profile = FALSE, system_profile = FALSE,

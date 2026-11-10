@@ -415,9 +415,8 @@ audit_kb_registry <- function(context) {
 
 audit_kb_evidence <- function(context) {
   catalog <- resolve_catalog()
-  installed <- utils::installed.packages(noCache = TRUE)
-  versions <- installed[!duplicated(installed[, "Package"]), "Version"]
-  names(versions) <- installed[!duplicated(installed[, "Package"]), "Package"]
+  cataloged <- vapply(catalog$packages, function(p) p$name, character(1))
+  versions <- stats::setNames(installed_versions(cataloged), cataloged)
   exports <- 0L
   resolved <- 0L
   documented <- 0L

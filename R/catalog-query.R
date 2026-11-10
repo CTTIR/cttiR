@@ -52,13 +52,11 @@ resolve_catalog <- function(path = NULL) {
 #' @export
 packages <- function(path = NULL) {
   catalog <- resolve_catalog(path)
-  installed <- utils::installed.packages(fields = "Version")
   rows <- lapply(catalog$packages, function(p) {
-    index <- match(p$name, installed[, "Package"])
     data.frame(
       package = p$name, version = p$version, revision = p$revision,
       source_hash = p$source_hash, repository = p$repository, provider = p$family,
-      installed_version = if (is.na(index)) NA_character_ else installed[index, "Version"],
+      installed_version = installed_versions(p$name),
       pinned_version = if (is.null(path)) NA_character_ else p$version,
       exports = p$coverage$exports, resolved = p$coverage$resolved,
       documented = p$coverage$documented, approved = p$coverage$approved,
