@@ -1,35 +1,46 @@
-# Historical check notes for 432fa34 — not current submission evidence
+## Submission
 
-Package: cttiR 0.1.1. These notes describe validated source 432fa34; they are
-not an instruction to submit. Full product qualification remains open for the
-independent planner qualification and reviewed interoperability requirements.
-The Seurat exploration workflow is optional future work. Current development
-version is 0.1.1.9000; these historical counts do not validate that source.
+This is a new submission: cttiR 0.2.0.
 
-## Check results
+## Test environments
 
-Local Linux x86_64, R 4.6.1: full `R CMD check --as-cran --timings` completed
-with 0 errors, 0 warnings and 1 incoming NOTE. Vignettes were rebuilt; PDF and
-HTML manuals passed. Tests: 5,470 passed, 13 skipped, zero failures/warnings.
-Skipped live runtime/browser/restore and unavailable optional-package checks
-are identified in the retained test log; they are not counted as passes.
+* Local: macOS 27 on Apple silicon, R 4.6.1 (aarch64-apple-darwin),
+  `R CMD check --as-cran --no-manual` on the built tarball with `NOT_CRAN`
+  unset. LaTeX is not installed on this machine, so the PDF manual was not
+  built locally.
+* GitHub Actions (r-lib/actions v2, `--as-cran`): macos-latest (R release),
+  windows-latest (R release), ubuntu-latest (R devel, R release with all
+  Suggests, R oldrel-1).
 
-The incoming NOTE identifies a new submission and a Title beginning with the
-package name. The current specified product title is "CTTIR Project Builder".
+## R CMD check results
 
-The hosted matrix for 432fa34 passed all five jobs: Linux release with all
-Suggests, Linux oldrel-1, Linux devel, Windows release and macOS release.
-Run: https://github.com/CTTIR/cttiR/actions/runs/37094093244
-These are existing repository CI results, not win-builder or R-hub submissions.
+0 errors | 0 warnings | 1 note
 
-## Scope and side effects
+* New submission.
+* Suggests or Enhances not in mainstream repositories: reflowR, available
+  from https://cttir.r-universe.dev (Additional_repositories).
 
-Ordinary examples and checks do not download models or start an inference
-runtime. Runtime acquisition and model use are explicit opt-in operations;
-planning remains deterministic by default. No CRAN or external-builder
-submission has been made.
+The installed size is about 12.7 Mb (extdata 7.1 Mb, R 2.0 Mb, help
+1.4 Mb) and may be reported on some platforms; the source package is about
+5.8 Mb.
 
-Local full-check archive SHA-256:
-3a8d633a2bb6dafd19597b706c5d0e570bc5269196cffd60e690612256ae2730
+## Notes
 
-The archive excludes private administration and validation artifacts.
+* Suggests includes reflowR, which is not on CRAN; it is available from
+  the repository named in `Additional_repositories`
+  (https://cttir.r-universe.dev). The package uses it only conditionally
+  and the tests that need it skip when it is absent.
+* The optional local model runtime is never required, downloaded or
+  started by examples, tests or vignettes. Runtime acquisition and model
+  use are explicit opt-in operations with dry-run previews; examples point
+  the catalog and runtime directories at `tempdir()`.
+* Examples that need a locally prepared evidence registry, a published
+  release manifest, or a prepared study library with Git are wrapped in
+  `\dontrun{}` with a comment explaining the requirement. `doctor()` reads
+  the bundled catalog and all installed package metadata and is wrapped in
+  `\donttest{}`.
+* The slowest test files skip on CRAN so that the tests finish in a few
+  minutes; they run in full in continuous integration.
+* The bundled, compressed API catalog and resource catalog make up most
+  of the installed size; they are needed offline at run time, because
+  ask(), search() and project() must work without network access.

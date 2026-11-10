@@ -1,4 +1,20 @@
-# cttiR 0.1.1.9000
+# cttiR 0.2.0
+
+* Prepared for a first CRAN submission.
+* Twenty-nine exported functions without examples gain them. Examples use a
+  temporary catalog and runtime directory, never start or download a local
+  model runtime, and run slow audits only under `\donttest{}`; examples
+  that need an external evidence registry, a release manifest or a
+  prepared study library are not run.
+* The 24 slowest test files, which together took about nine minutes, skip
+  on CRAN; the full CI job sets `NOT_CRAN=true` and still runs them. The
+  build scripts in `tools/` are no longer part of the source package.
+* DESCRIPTION declares `Language: en-GB` and
+  `Additional_repositories: https://cttir.r-universe.dev` for the
+  suggested reflowR; `inst/WORDLIST` records the technical terms used in
+  the documentation.
+
+## Earlier development changes
 
 * Reuse up to eight compiled self-contained JSON schemas per process. Schema
   edits invalidate the cache, external references are always recompiled, and
