@@ -26,3 +26,4 @@
 ^man/figures/icon-[0-9]+\.png$
 ^man/figures/logo(-dark|-light|-mono|-symbol|-with-name-mono)?\.(png|pdf|svg)$
 ^man/figures/logo-with-name(-dark)?\.(pdf|svg)$
+^CITATION\.cff$
