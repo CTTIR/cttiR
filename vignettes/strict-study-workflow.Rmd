@@ -78,7 +78,9 @@ cttiR::study_validate(spec, data, units)
 The axes have separate meanings: `clinical` controls the research-domain colour,
 `primary` declares newly generated data, and `observational` records the design.
 An existing dataset would use `secondary` data origin without becoming an
-evidence-synthesis project. The strict profile uses clinical red `#C8102E` here.
+evidence-synthesis project. The strict profile takes the clinical colour from
+the installed reflowR: red `#C8102E` at the pinned revision, vermilion `#D55E00`
+in later reflowR versions.
 
 Missing values, mismatching units and duplicate observation IDs stop validation.
 The recipe also rejects rank-deficient or degenerate fits; it does not silently

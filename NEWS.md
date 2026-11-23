@@ -19,6 +19,9 @@
   alias of `update()` that masks nothing.
 * `setup_app()` rejects an unknown `mode` with a `cttir_input_error` naming
   the two allowed values instead of the untyped `match.arg()` error.
+* The strict study vignettes no longer state one fixed clinical colour: the
+  colour comes from the installed reflowR (`#C8102E` at the pinned revision,
+  `#D55E00` in later versions).
 * The application's home heading and browser title spell the package name
   `cttiR` in English and German.
 * The maintainer entry carries the ORCID, and `citation("cttiR")` uses the

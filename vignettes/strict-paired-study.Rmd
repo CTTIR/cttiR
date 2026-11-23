@@ -127,8 +127,9 @@ the recorded analysis without refitting it, and rejects stale input or output.
 
 The profile fixes eleven stage locations plus the index. Nine stages apply to
 this recipe; sensitivity and exploratory work are explicitly inapplicable.
-The clinical domain uses red `#C8102E`; primary describes the new data origin,
-and observational describes the design. The diagnostics plot sorts pair IDs;
+The clinical domain colour comes from the installed reflowR (red `#C8102E` at
+the pinned revision, vermilion `#D55E00` in later reflowR versions); primary
+describes the new data origin, and observational describes the design. The diagnostics plot sorts pair IDs;
 that index is not a time axis.
 
 Inspect `docs/index.html` and the stage reports. Preserve the original project,

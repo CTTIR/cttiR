@@ -9,6 +9,7 @@ KISSKI
 LLM
 MathJax
 Nonempty
+ORCID
 Ollama
 PID
 Pandoc
@@ -66,6 +67,7 @@ nonexistent
 noninteractive
 nonmissing
 parseable
+pkgdown
 pseudobulk
 qwen
 reflowR
