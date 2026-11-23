@@ -17,6 +17,9 @@
   longer run together, and p-values show five significant digits instead of
   rounding to `0.0e+00`. Recorded results are unchanged; existing compiled
   projects keep their pinned writer.
+* The normal quantile panels of the strict study diagnostics plot label
+  their horizontal axis "Standard normal quantiles" instead of R's default
+  "Theoretical Quantiles".
 * The README states the 64 package revisions of the bundled catalog.
 * New help topic `?cttiR` gives the entry points and states that attaching
   the package masks `base::search()` and `stats::update()`; `?search`,

@@ -393,14 +393,16 @@ study_run <- function(directory, declaration) {
       main = "Recorded within-pair differences")
     graphics::abline(h = 0, col = "grey50", lty = 2L)
     stats::qqnorm(result$diagnostics$difference, pch = 19L, col = color,
-      ylab = paste("After minus before:", outcome_label), main = "Difference normal quantiles")
+      xlab = "Standard normal quantiles", ylab = paste("After minus before:", outcome_label),
+      main = "Difference normal quantiles")
     stats::qqline(result$diagnostics$difference, col = "grey50", lty = 2L)
   } else {
     graphics::plot(result$diagnostics$fitted, result$diagnostics$residual, pch = 19L, col = color,
       xlab = paste("Fitted", outcome_label), ylab = paste("Residual:", outcome_label), main = "Residuals versus fitted")
     graphics::abline(h = 0, col = "grey50", lty = 2L)
     stats::qqnorm(result$diagnostics$residual, pch = 19L, col = color,
-      ylab = paste("Residual:", outcome_label), main = "Residual normal quantiles")
+      xlab = "Standard normal quantiles", ylab = paste("Residual:", outcome_label),
+      main = "Residual normal quantiles")
     stats::qqline(result$diagnostics$residual, col = "grey50", lty = 2L)
   }
   grDevices::dev.off(device)
