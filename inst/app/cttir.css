@@ -116,6 +116,8 @@ a:focus, button:focus, input:focus, select:focus, textarea:focus, summary:focus,
 .cttir-table caption { color: var(--cttir-text); font-weight: 600; }
 .cttir-table th, .cttir-table td { border: 1px solid var(--cttir-border); padding: 6px 8px; text-align: left; vertical-align: top; overflow-wrap: break-word; word-break: normal; hyphens: manual; }
 .cttir-table td.cttir-break { overflow-wrap: anywhere; }
+/* Badges wrap inside table cells so long status labels do not push columns past the table edge. */
+.cttir-table .cttir-badge { white-space: normal; overflow-wrap: normal; word-break: normal; align-items: flex-start; }
 .cttir-review-panel > h2:first-child, .cttir-review-panel > h3:first-child { margin-top: 4px; }
 .cttir-table th { background: var(--cttir-surface); }
 

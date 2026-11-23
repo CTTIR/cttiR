@@ -34,7 +34,9 @@
   of an existing project; it states that only the reviewed changes are applied.
 * The Freshness column of the application's Resources view shows a
   translated label instead of the raw `snapshot_only_recheck_on_update`
-  identifier, which ran past the table edge.
+  identifier, and status badges inside application tables wrap between
+  words, so the Resources table no longer runs past its right edge and
+  hides the Freshness and Documentation columns.
 * The maintainer entry carries the ORCID, and `citation("cttiR")` uses the
   package title from DESCRIPTION.
 * The pkgdown reference index describes each group and lists the package
