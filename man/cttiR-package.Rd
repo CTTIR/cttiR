@@ -51,11 +51,11 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: R. Heller \email{raban.heller@uni-ulm.de} [copyright holder]
+\strong{Maintainer}: R. Heller \email{raban.heller@uni-ulm.de} (\href{https://orcid.org/0000-0001-8006-9742}{ORCID}) [copyright holder]
 
 Authors:
 \itemize{
-  \item R. Heller \email{raban.heller@uni-ulm.de} [copyright holder]
+  \item R. Heller \email{raban.heller@uni-ulm.de} (\href{https://orcid.org/0000-0001-8006-9742}{ORCID}) [copyright holder]
 }
 
 }

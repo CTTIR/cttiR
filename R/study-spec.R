@@ -178,11 +178,17 @@ study_validate <- function(spec, data = NULL, units = NULL) {
 
 #' Execute a Synthetic Study Recipe
 #' @inheritParams study_validate
+#' @param data Data frame as described in [study_validate()]. It is required
+#'   here; `NULL` stops with a `cttir_study_error`.
 #' @return A list with coefficient table, sample size, residual degrees of
 #'   freedom, diagnostics and explicit limitations. Association results also
 #'   include rank and residual standard deviation; paired results include pair
 #'   count and within-pair differences.
 #'   Passing numerical computation does not grant scientific approval.
+#'   Rank-deficient designs, fewer than five residual degrees of freedom and
+#'   degenerate uncertainty stop with a `cttir_study_error`; this includes an
+#'   essentially perfect association fit, for which [stats::summary.lm()]
+#'   would only warn.
 #' @examples
 #' spec <- study_paired_spec("paired_example", "Paired example",
 #'   "What is the mean change?", "Synthetic independent pairs",
@@ -197,6 +203,8 @@ study_validate <- function(spec, data = NULL, units = NULL) {
 #' result$coefficients[, c("term", "estimate", "conf_low", "conf_high")]
 #' @export
 study_analyze <- function(spec, data, units) {
+  # study_validate() accepts a specification without data; an analysis cannot.
+  if (missing(data) || is.null(data)) study_fail("Supply the study data to analyze.", "invalid_data")
   if (study_is_paired(spec)) return(study_paired_analyze(spec, data, units))
   admission <- study_validate(spec, data, units)
   frame <- data.frame(.outcome = data[[spec$outcome$name]], .exposure = data[[spec$exposure$name]])
@@ -218,6 +226,14 @@ study_analyze <- function(spec, data, units) {
                    na.action = stats::na.fail, x = TRUE, y = TRUE, model = TRUE)
   if (fit$rank != ncol(fit$x) || fit$df.residual < 5L)
     study_fail("A full-rank design with at least five residual degrees of freedom is required.", "rank_or_information")
+  # Residual variance at rounding-error scale: the criterion by which
+  # stats::summary.lm() warns "essentially perfect fit: summary may be
+  # unreliable". Such a fit stops here instead of returning those statistics.
+  fitted_values <- stats::fitted(fit)
+  residual_variance <- sum(stats::residuals(fit)^2) / fit$df.residual
+  if (!is.finite(residual_variance) ||
+      residual_variance < (mean(fitted_values)^2 + stats::var(c(fitted_values))) * 1e-30)
+    study_fail("The fit is essentially perfect, so its uncertainty is unreliable.", "degenerate_fit")
   summary <- summary(fit); table <- summary$coefficients
   if (any(!is.finite(table)) || !is.finite(summary$sigma) || summary$sigma <= 0)
     study_fail("The fit has degenerate or nonfinite uncertainty.", "degenerate_fit")

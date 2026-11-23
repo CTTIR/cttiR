@@ -9,12 +9,8 @@ study_analyze(spec, data, units)
 \arguments{
 \item{spec}{A closed specification from \code{\link[=study_spec]{study_spec()}} or \code{\link[=study_paired_spec]{study_paired_spec()}}.}
 
-\item{data}{Optional data frame. Association observations need unique,
-nonmissing IDs. Paired observations need exactly one measurement per pair ID
-at each declared occasion. Continuous columns must be plain numeric vectors,
-with one value per row. Association IDs must be plain character or numeric
-vectors and remain unique when converted to text. Supply character IDs to
-retain leading zeros or distinguish closely spaced numeric identifiers.}
+\item{data}{Data frame as described in \code{\link[=study_validate]{study_validate()}}. It is required
+here; \code{NULL} stops with a \code{cttir_study_error}.}
 
 \item{units}{Named character vector or list declaring the actual units of
 every continuous analysis column; these must equal the planned units.}
@@ -25,6 +21,10 @@ freedom, diagnostics and explicit limitations. Association results also
 include rank and residual standard deviation; paired results include pair
 count and within-pair differences.
 Passing numerical computation does not grant scientific approval.
+Rank-deficient designs, fewer than five residual degrees of freedom and
+degenerate uncertainty stop with a \code{cttir_study_error}; this includes an
+essentially perfect association fit, for which \code{\link[stats:summary.lm]{stats::summary.lm()}}
+would only warn.
 }
 \description{
 Execute a Synthetic Study Recipe

@@ -11,6 +11,13 @@ association_integrity_fixture <- function() {
     units = c(y = "u", x = "u", z = "u"))
 }
 
+paired_spec_without_data <- function() {
+  study_paired_spec("paired_example", "Paired example", "What is the mean change?",
+    "Synthetic independent pairs", "subject_id", "occasion",
+    list(name = "measurement", type = "continuous", unit = "mmHg"),
+    "baseline", "followup", independent_pairs = TRUE)
+}
+
 test_that("study paths resolve approved platform aliases without hiding user links", {
   parent <- withr::local_tempdir()
   requested <- file.path(parent, "new_study")
@@ -104,4 +111,24 @@ test_that("paired differences and association results survive the input round tr
     recorded <- study_read_csv(results, c("character", rep("numeric", 6)))
     expect_identical(recorded, expected$coefficients)
   }
+})
+
+test_that("analysis without data or with an essentially perfect fit stops with a study error", {
+  x <- association_integrity_fixture()
+  for (spec in list(x$spec, paired_spec_without_data())) {
+    e <- tryCatch(study_analyze(spec, NULL, x$units), error = identity)
+    expect_s3_class(e, "cttir_study_error")
+    expect_identical(e$code, "invalid_data")
+    expect_error(study_analyze(spec, units = x$units), class = "cttir_study_error")
+  }
+  expect_true(study_validate(x$spec)$valid)
+  perfect <- x$data
+  perfect$y <- 1 + 2 * perfect$x + 3 * perfect$z + 5 * (perfect$group == "B")
+  e <- withCallingHandlers(tryCatch(study_analyze(x$spec, perfect, x$units), error = identity),
+    warning = function(w) stop("a perfect fit must stop before summary.lm() warns"))
+  expect_s3_class(e, "cttir_study_error")
+  expect_identical(e$code, "degenerate_fit")
+  expect_match(conditionMessage(e), "essentially perfect")
+  expect_silent(result <- study_analyze(x$spec, x$data, x$units))
+  expect_true(all(is.finite(result$coefficients$std_error)))
 })
