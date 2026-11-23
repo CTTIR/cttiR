@@ -257,7 +257,13 @@ test_that("view renderers tolerate unknown and missing result fields", {
   expect_match(as.character(app_badge("pass", "de")), "Bestanden", fixed = TRUE)
   expect_match(as.character(app_badge("pass")), "cttir-badge-ok", fixed = TRUE)
   expect_equal(app_status_kind("conflict"), "fail")
-  checks <- data.frame(id = c("PRJ-002:a", "PRJ-002:b", "PRJ-007", "KB-001"), status = c("fail", "warning", "fail", "fail"))
+  bundled <- resources(limit = 500L)
+  bundled$maturity <- app_resource_maturity(bundled)
+  for (value in unique(unlist(bundled[c("maturity", "api_verification", "freshness")]))) {
+    for (lang in c("en", "de")) expect_false(is.null(app_messages()[[lang]][[paste0("value.", value)]]), label = value)
+  }
+  expect_match(as.character(app_badge("snapshot_only_recheck_on_update")), "Snapshot; rechecked on update", fixed = TRUE)
+  checks <-data.frame(id = c("PRJ-002:a", "PRJ-002:b", "PRJ-007", "KB-001"), status = c("fail", "warning", "fail", "fail"))
   expect_equal(app_repair_candidates(checks)$id, c("PRJ-002:a", "PRJ-007"))
 })
 
