@@ -5,6 +5,7 @@ development:
 destination: site
 reference:
   - title: Projects and workflows
+    desc: Create, preview and synchronize projects and check their configuration, specification and data.
     contents:
       - project
       - sync
@@ -12,6 +13,7 @@ reference:
       - validate_spec
       - check_analysis_data
   - title: Synthetic study workflow
+    desc: Declare, compile, analyse and render the strict synthetic association and paired studies.
     contents:
       - study_spec
       - study_paired_spec
@@ -24,6 +26,7 @@ reference:
       - study_run
       - study_validate_project
   - title: Knowledge and resources
+    desc: Read, search, refresh and roll back the revision-scoped catalog and the evidence registry.
     contents:
       - packages
       - search
@@ -34,6 +37,7 @@ reference:
       - evidence_search
       - evidence_resolve
   - title: Audit and runtime
+    desc: Inspect an installation or project and manage the local application and optional model runtime.
     contents:
       - audit
       - doctor
@@ -44,6 +48,10 @@ reference:
       - runtime_storage
       - runtime_stop
       - runtime_cleanup
+  - title: Package
+    desc: Package overview, entry points and the base functions masked when cttiR is attached.
+    contents:
+      - cttiR-package
 articles:
   - title: Guides
     navbar: ~

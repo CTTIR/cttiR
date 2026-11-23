@@ -17,6 +17,10 @@ p <- cttiR::project(
 p
 ```
 
+Call the functions with the `cttiR::` prefix, as here. Attaching the package
+with `library(cttiR)` masks `base::search()` and `stats::update()`;
+`cttiR::update_knowledge()` is `cttiR::update()` under a name that masks nothing.
+
 `path` is an existing **parent** directory; this creates `example_study/`.
 Use `dry_run = TRUE` for a read-only preview. Creation uses local resources by
 default and does not read study data or install packages. An explicitly enabled
@@ -245,6 +249,7 @@ settings and must be reviewed before analysis.
 Runtime acquisition is verified on Linux x86_64 only.
 
 MIT licensed.
+
 ## Installation and documentation
 
 Use R 4.1 or newer. Install the development package and its rendered vignettes

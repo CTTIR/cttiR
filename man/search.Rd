@@ -27,6 +27,13 @@ are labelled \code{workflow_approved} with \code{approved = TRUE}.
 \description{
 Search revision-scoped APIs and stored documentation
 }
+\section{Masking}{
+
+Attaching cttiR masks \code{\link[base:search]{base::search()}}, which lists the attached packages.
+Call that as \code{base::search()}, or use \code{cttiR::search()} without attaching
+the package.
+}
+
 \examples{
 hits <- search("t.test", limit = 3)
 hits[, c("symbol", "score")]

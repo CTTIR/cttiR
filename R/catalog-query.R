@@ -112,6 +112,10 @@ catalog_revision_token <- function(package) {
 #'   declarations (`static_declaration_only`) are never callable evidence.
 #'   Only exports covered by a complete reviewed approval of the exact revision
 #'   are labelled `workflow_approved` with `approved = TRUE`.
+#' @section Masking:
+#' Attaching cttiR masks [base::search()], which lists the attached packages.
+#' Call that as `base::search()`, or use `cttiR::search()` without attaching
+#' the package.
 #' @examples
 #' hits <- search("t.test", limit = 3)
 #' hits[, c("symbol", "score")]

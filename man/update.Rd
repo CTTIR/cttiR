@@ -168,6 +168,14 @@ refused, and previews never recover locks. An active snapshot that fails
 verification is refused with the verified retained IDs that
 \code{\link[=rollback_knowledge]{rollback_knowledge()}} can restore.
 }
+\section{Masking}{
+
+Attaching cttiR masks \code{\link[stats:update]{stats::update()}}, which refits a model. Call that as
+\code{stats::update()}, use \code{cttiR::update()} without attaching the package, or
+call \code{update_knowledge()}, the same function under a name that masks
+nothing.
+}
+
 \examples{
 old <- options(
   cttiR.catalog_dir = file.path(tempdir(), "cttiR-catalog"),

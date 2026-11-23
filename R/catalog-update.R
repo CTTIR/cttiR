@@ -386,6 +386,11 @@ defer_repository_sources <- function(plan) {
 #'   reports, the exact repository URLs requested, `resource_changes`, API and
 #'   documentation diffs, new `tombstones`, the Bioconductor release policy,
 #'   activation and warnings.
+#' @section Masking:
+#' Attaching cttiR masks [stats::update()], which refits a model. Call that as
+#' `stats::update()`, use `cttiR::update()` without attaching the package, or
+#' call `update_knowledge()`, the same function under a name that masks
+#' nothing.
 #' @examples
 #' old <- options(
 #'   cttiR.catalog_dir = file.path(tempdir(), "cttiR-catalog"),
