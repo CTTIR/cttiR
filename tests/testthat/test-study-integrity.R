@@ -132,3 +132,21 @@ test_that("analysis without data or with an essentially perfect fit stops with a
   expect_silent(result <- study_analyze(x$spec, x$data, x$units))
   expect_true(all(is.finite(result$coefficients$std_error)))
 })
+
+test_that("stage tables are styled, escaped and keep the magnitude of small p-values", {
+  skip_if_not_installed("knitr")
+  coefficients <- data.frame(term = c("(Intercept)", "x<y"), estimate = c(111.24366, 1.9338951234),
+    p_value = c(3.2e-33, 0.25), stringsAsFactors = FALSE)
+  before <- serialize(coefficients, NULL)
+  html <- study_stage_table(coefficients)
+  expect_length(html, 1L)
+  expect_match(html, 'class="table table-striped table-condensed"', fixed = TRUE)
+  expect_match(html, '<div class="table-responsive" tabindex="0" role="region"', fixed = TRUE)
+  expect_match(html, "3.2e-33", fixed = TRUE)
+  expect_false(grepl("0.0e+00", html, fixed = TRUE))
+  expect_match(html, "1.933895", fixed = TRUE)
+  expect_match(html, "x&lt;y", fixed = TRUE)
+  expect_identical(serialize(coefficients, NULL), before)
+  plain <- study_stage_table(data.frame(variable = "age", mean = 54.25))
+  expect_match(plain, "54.25", fixed = TRUE)
+})

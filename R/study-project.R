@@ -421,6 +421,20 @@ study_html <- function(x) {
   x
 }
 
+# HTML table of recorded results for a stage view. The Bootstrap classes give
+# the cells padding in the rendered report and the labelled region scrolls on
+# narrow screens. p-values keep five significant digits, because rounding to
+# six decimals would print small values as zero; recorded values are unchanged.
+study_stage_table <- function(x) {
+  right <- vapply(x, is.numeric, logical(1))
+  if (is.numeric(x$p_value)) x$p_value <- trimws(formatC(x$p_value, digits = 5L, format = "g"))
+  paste0('<div class="table-responsive" tabindex="0" role="region" aria-label="Recorded results table">',
+    paste(knitr::kable(x, format = "html", escape = TRUE, digits = 6L,
+      align = ifelse(right, "r", "l"),
+      table.attr = 'class="table table-striped table-condensed"'), collapse = "\n"),
+    "</div>")
+}
+
 #' Present a Verified Recorded Study Stage
 #'
 #' Writes the HTML view of one recorded stage to standard output, for the
@@ -447,7 +461,7 @@ study_stage <- function(stage, directory) {
   recipe <- declaration$structure$composition$recipe
   result <- jsonlite::read_json(file.path(directory, "output/analysis/results.json"), simplifyVector = TRUE)
   paragraph <- function(x) cat("<p>", study_html(x), "</p>\n", sep = "")
-  table <- function(x) cat(knitr::kable(x, format = "html", escape = TRUE, digits = 6L), "\n")
+  table <- function(x) cat(study_stage_table(x), "\n")
   paragraph(paste("Synthetic study:", spec$name))
   paragraph(paste("Scientific review:", result$scientific_review))
   if (study_is_paired(spec)) {

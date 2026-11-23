@@ -12,6 +12,11 @@
 * `study_analyze()` refuses an essentially perfect association fit
   (`degenerate_fit`) by the criterion of `stats::summary.lm()`, instead of
   returning statistics that R itself flags as unreliable with a warning.
+* Result tables in rendered strict study reports carry Bootstrap table
+  classes inside a labelled, keyboard-accessible scroll region, so columns no
+  longer run together, and p-values show five significant digits instead of
+  rounding to `0.0e+00`. Recorded results are unchanged; existing compiled
+  projects keep their pinned writer.
 * The README states the 64 package revisions of the bundled catalog.
 * New help topic `?cttiR` gives the entry points and states that attaching
   the package masks `base::search()` and `stats::update()`; `?search`,
