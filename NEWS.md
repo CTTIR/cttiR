@@ -29,6 +29,9 @@
   `#D55E00` in later versions).
 * The application's home heading and browser title spell the package name
   `cttiR` in English and German.
+* The application's Open project view no longer repeats the creation note
+  ("Creates the project and its reviewed workflow") above the configuration
+  of an existing project; it states that only the reviewed changes are applied.
 * The maintainer entry carries the ORCID, and `citation("cttiR")` uses the
   package title from DESCRIPTION.
 * The pkgdown reference index describes each group and lists the package

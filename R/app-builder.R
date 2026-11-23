@@ -274,7 +274,7 @@ app_builder_ui <- function(id, mode = "fast", existing = FALSE) {
   shiny::tagList(
     shiny::tags$h1(app_tr(if (existing) "configure.title" else "create.title")),
     shiny::tags$p(class = "cttir-lead", app_tr(if (existing) "configure.intro" else "create.intro")),
-    shiny::tags$p(class = "cttir-note", app_tr("create.scope_note")),
+    shiny::tags$p(class = "cttir-note", app_tr(if (existing) "configure.scope_note" else "create.scope_note")),
     if (existing) shiny::uiOutput(ns("project_summary")),
     if (!existing) shiny::radioButtons(ns("mode"), app_tr("create.mode"), inline = TRUE,
       choiceNames = list(app_tr("create.mode_fast"), app_tr("create.mode_detailed")),

@@ -25,6 +25,17 @@ test_that("application construction never creates a project and stays on loopbac
   expect_match(html, "Skip to content", fixed = TRUE)
 })
 
+test_that("the configure view describes changes to an existing project, not creation", {
+  skip_if_not_installed("shiny")
+  create <- as.character(app_builder_ui("create"))
+  configure <- as.character(app_builder_ui("open", existing = TRUE))
+  expect_match(create, 'data-i18n="create.scope_note"', fixed = TRUE)
+  expect_match(configure, 'data-i18n="configure.scope_note"', fixed = TRUE)
+  expect_false(grepl("create.scope_note", configure, fixed = TRUE))
+  expect_false(grepl("Creates the project", configure, fixed = TRUE))
+  for (lang in c("en", "de")) expect_true(nzchar(app_t("configure.scope_note", lang)))
+})
+
 test_that("Fast and Detailed share a draft and require a current preview", {
   skip_if_not_installed("shiny")
   parent <- new_parent()
