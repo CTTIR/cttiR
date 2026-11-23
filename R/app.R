@@ -45,7 +45,7 @@ app_ui <- function(mode = "fast", path = NULL) {
   }
   shiny::navbarPage(
     title = shiny::tags$span(class = "cttir-brand", .cttir_brand_logo(), "cttiR"),
-    id = "nav", selected = selected, collapsible = TRUE, windowTitle = "cttir", lang = "en",
+    id = "nav", selected = selected, collapsible = TRUE, windowTitle = "cttiR", lang = "en",
     header = shiny::tagList(app_head(), app_header()),
     view("nav.home", "home", app_home_ui("home")),
     view("nav.create", "create", app_builder_ui("create", mode)),

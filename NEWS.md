@@ -19,6 +19,8 @@
   alias of `update()` that masks nothing.
 * `setup_app()` rejects an unknown `mode` with a `cttir_input_error` naming
   the two allowed values instead of the untyped `match.arg()` error.
+* The application's home heading and browser title spell the package name
+  `cttiR` in English and German.
 * The maintainer entry carries the ORCID, and `citation("cttiR")` uses the
   package title from DESCRIPTION.
 * The pkgdown reference index describes each group and lists the package

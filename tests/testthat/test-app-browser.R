@@ -1,7 +1,7 @@
 test_that("Fast creation previews the routing and creates the project in a browser", {
   live <- browser_app("fast", "cttiR::setup_app(launch.browser = FALSE)")
   app <- live$app
-  expect_match(app$get_text(".tab-content .tab-pane.active h1"), "cttir project builder", fixed = TRUE)
+  expect_match(app$get_text(".tab-content .tab-pane.active h1"), "cttiR project builder", fixed = TRUE)
   capture(app, "home")
   app$set_inputs(lang = "de")
   wait_text(app, ".navbar-nav", "Projekt anlegen")
