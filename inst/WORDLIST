@@ -22,6 +22,7 @@ Rmd
 SCE
 SQLite
 Seurat
+SystemRequirements
 TeX
 Workflowr
 XZ
@@ -51,6 +52,7 @@ followup
 ggplot
 glm
 honoring
+jsonvalidate
 lifecycle
 lm
 lockfile

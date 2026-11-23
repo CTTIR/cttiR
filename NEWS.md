@@ -7,6 +7,16 @@
   asking to check field names, types and allowed values. At most five
   problems are listed and supplied values are never echoed. The condition
   class, code and `field` are unchanged.
+* New help topic `?cttiR` gives the entry points and states that attaching
+  the package masks `base::search()` and `stats::update()`; `?search`,
+  `?update` and the README say so too. `update_knowledge()` remains the
+  alias of `update()` that masks nothing.
+* `setup_app()` rejects an unknown `mode` with a `cttir_input_error` naming
+  the two allowed values instead of the untyped `match.arg()` error.
+* The maintainer entry carries the ORCID, and `citation("cttiR")` uses the
+  package title from DESCRIPTION.
+* The pkgdown reference index describes each group and lists the package
+  topic.
 * `project()`, `sync()`, `configure()` and `study_stage()` no longer
   default to the working directory: `path` (or `directory`) must be given.
 * Twenty-nine exported functions without examples gain them. Examples use a
