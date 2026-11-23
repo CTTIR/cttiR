@@ -428,11 +428,11 @@ study_html <- function(x) {
 study_stage_table <- function(x) {
   right <- vapply(x, is.numeric, logical(1))
   if (is.numeric(x$p_value)) x$p_value <- trimws(formatC(x$p_value, digits = 5L, format = "g"))
+  html <- knitr::kable(x, format = "html", escape = TRUE, digits = 6L,
+    align = ifelse(right, "r", "l"),
+    table.attr = 'class="table table-striped table-condensed"')
   paste0('<div class="table-responsive" tabindex="0" role="region" aria-label="Recorded results table">',
-    paste(knitr::kable(x, format = "html", escape = TRUE, digits = 6L,
-      align = ifelse(right, "r", "l"),
-      table.attr = 'class="table table-striped table-condensed"'), collapse = "\n"),
-    "</div>")
+    paste(html, collapse = "\n"), "</div>")
 }
 
 #' Present a Verified Recorded Study Stage
