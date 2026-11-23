@@ -433,7 +433,8 @@ study_stage_table <- function(x) {
   html <- knitr::kable(x, format = "html", escape = TRUE, digits = 6L,
     align = ifelse(right, "r", "l"),
     table.attr = 'class="table table-striped table-condensed"')
-  paste0('<div class="table-responsive" tabindex="0" role="region" aria-label="Recorded results table">',
+  paste0('<div class="table-responsive" tabindex="0" role="region"',
+    ' aria-label="Recorded results table">',
     paste(html, collapse = "\n"), "</div>")
 }
 

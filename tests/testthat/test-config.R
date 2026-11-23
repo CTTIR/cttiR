@@ -28,7 +28,8 @@ test_that("schema errors name the offending fields without echoing values", {
   expect_identical(e$code, "schema_validation")
   e <- failure(validate_config(list(unknown = TRUE, workflow = list(network = "sometimes"))))
   expect_match(conditionMessage(e), "/unknown is not a recognized field", fixed = TRUE)
-  expect_match(conditionMessage(e), "/workflow/network must be one of: offline, allowed", fixed = TRUE)
+  expect_match(conditionMessage(e), "/workflow/network must be one of: offline, allowed",
+    fixed = TRUE)
   expect_false(grepl("sometimes", conditionMessage(e), fixed = TRUE))
   e <- failure(validate_spec(list()))
   expect_match(conditionMessage(e), "/schema_version is required", fixed = TRUE)

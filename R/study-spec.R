@@ -204,7 +204,8 @@ study_validate <- function(spec, data = NULL, units = NULL) {
 #' @export
 study_analyze <- function(spec, data, units) {
   # study_validate() accepts a specification without data; an analysis cannot.
-  if (missing(data) || is.null(data)) study_fail("Supply the study data to analyze.", "invalid_data")
+  if (missing(data) || is.null(data))
+    study_fail("Supply the study data to analyze.", "invalid_data")
   if (study_is_paired(spec)) return(study_paired_analyze(spec, data, units))
   admission <- study_validate(spec, data, units)
   frame <- data.frame(.outcome = data[[spec$outcome$name]], .exposure = data[[spec$exposure$name]])
@@ -233,7 +234,8 @@ study_analyze <- function(spec, data, units) {
   residual_variance <- sum(stats::residuals(fit)^2) / fit$df.residual
   if (!is.finite(residual_variance) ||
       residual_variance < (mean(fitted_values)^2 + stats::var(c(fitted_values))) * 1e-30)
-    study_fail("The fit is essentially perfect, so its uncertainty is unreliable.", "degenerate_fit")
+    study_fail("The fit is essentially perfect, so its uncertainty is unreliable.",
+      "degenerate_fit")
   summary <- summary(fit); table <- summary$coefficients
   if (any(!is.finite(table)) || !is.finite(summary$sigma) || summary$sigma <= 0)
     study_fail("The fit has degenerate or nonfinite uncertainty.", "degenerate_fit")

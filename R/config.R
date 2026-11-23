@@ -94,7 +94,8 @@ validate_document <- function(x, kind) {
     if (!startsWith(kind, "assistant-")) {
       found <- paste0(" Found: ", schema_error_detail(errors, limit = 5L)$text, ".")
     }
-    abort_cttir(paste0("Invalid ", kind, " document; check field names, types and allowed values.", found),
+    abort_cttir(paste0("Invalid ", kind,
+      " document; check field names, types and allowed values.", found),
       "cttir_schema_error", "schema_validation",
       field = errors
     )
