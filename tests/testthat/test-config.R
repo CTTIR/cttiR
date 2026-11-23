@@ -17,6 +17,31 @@ test_that("unknown fields, malformed values and unsafe YAML are rejected", {
   expect_error(project("Valid", "methods", "Goal", tempdir(), dry_run = NA), class = "cttir_input_error")
 })
 
+test_that("schema errors name the offending fields without echoing values", {
+  failure <- function(expr) tryCatch(expr, cttir_schema_error = identity)
+  e <- failure(project("Valid", "invalid_type", "Goal", tempdir(), dry_run = TRUE))
+  expect_s3_class(e, "cttir_schema_error")
+  expect_match(conditionMessage(e), "^Invalid project-spec document; check field names")
+  expect_match(conditionMessage(e), "/project/type must be one of: primary_research", fixed = TRUE)
+  expect_false(grepl("invalid_type", conditionMessage(e), fixed = TRUE))
+  expect_true(is.data.frame(e$field))
+  expect_identical(e$code, "schema_validation")
+  e <- failure(validate_config(list(unknown = TRUE, workflow = list(network = "sometimes"))))
+  expect_match(conditionMessage(e), "/unknown is not a recognized field", fixed = TRUE)
+  expect_match(conditionMessage(e), "/workflow/network must be one of: offline, allowed", fixed = TRUE)
+  expect_false(grepl("sometimes", conditionMessage(e), fixed = TRUE))
+  e <- failure(validate_spec(list()))
+  expect_match(conditionMessage(e), "/schema_version is required", fixed = TRUE)
+  expect_match(conditionMessage(e), "and [0-9]+ more\\.$")
+  errors <- data.frame(instancePath = c("/a", "/b", "/c"), keyword = "type",
+    message = "must be string", stringsAsFactors = FALSE)
+  expect_identical(schema_error_detail(errors)$text,
+    "/a must be string; /b must be string; /c must be string")
+  expect_identical(schema_error_detail(errors, limit = 2L)$text,
+    "/a must be string; /b must be string; and 1 more")
+  expect_identical(schema_error_detail(errors, limit = 3L)$pointer, "/a")
+})
+
 test_that("config precedence, keyed publications and explicit nulls work", {
   parent <- new_parent()
   config <- list(

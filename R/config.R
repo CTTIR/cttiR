@@ -87,9 +87,15 @@ validate_document <- function(x, kind) {
   }
   valid <- json_schema_validate(encoded, schema_path, engine = "ajv", verbose = TRUE)
   if (!isTRUE(valid)) {
-    abort_cttir(paste("Invalid", kind, "document; check field names, types and allowed values."),
+    errors <- attr(valid, "errors")
+    # Documents written by the user name the offending fields; proposals
+    # returned by a model keep the general message.
+    found <- if (startsWith(kind, "assistant-")) "" else {
+      paste0(" Found: ", schema_error_detail(errors, limit = 5L)$text, ".")
+    }
+    abort_cttir(paste0("Invalid ", kind, " document; check field names, types and allowed values.", found),
       "cttir_schema_error", "schema_validation",
-      field = attr(valid, "errors")
+      field = errors
     )
   }
   normalized

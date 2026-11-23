@@ -103,8 +103,10 @@ check_slug <- function(x, field = "slug") {
 }
 
 # Readable summary of JSON Schema validation errors: the first offending JSON
-# Pointer and one clause per error.
-schema_error_detail <- function(errors) {
+# Pointer and one clause per error. `limit` bounds the number of clauses and
+# counts the rest. Clauses name pointers, keys and the values the schema
+# allows; supplied values are never echoed.
+schema_error_detail <- function(errors, limit = NULL) {
   if (!is.data.frame(errors) || !nrow(errors)) return(list(pointer = NULL, text = "the document does not match the schema"))
   path <- if ("instancePath" %in% names(errors)) errors$instancePath else rep("", nrow(errors))
   params <- if (is.data.frame(errors$params)) errors$params else data.frame(row.names = seq_len(nrow(errors)))
@@ -126,7 +128,11 @@ schema_error_detail <- function(errors) {
     pointers <- c(pointers, pointer)
     clauses <- c(clauses, paste(pointer, clause))
   }
-  list(pointer = pointers[[1]], text = paste(unique(clauses), collapse = "; "))
+  clauses <- unique(clauses)
+  if (!is.null(limit) && length(clauses) > limit) {
+    clauses <- c(clauses[seq_len(limit)], paste("and", length(clauses) - limit, "more"))
+  }
+  list(pointer = pointers[[1]], text = paste(clauses, collapse = "; "))
 }
 
 # Empty strings are never answers (file 04): an unknown is null, and absence

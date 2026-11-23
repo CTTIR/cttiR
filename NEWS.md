@@ -1,6 +1,12 @@
 # cttiR 0.2.0
 
 * Prepared for a first CRAN submission.
+* Schema errors from `project()`, `validate_config()` and `validate_spec()`
+  name the offending fields, for example
+  `/project/type must be one of: primary_research, ...`, instead of only
+  asking to check field names, types and allowed values. At most five
+  problems are listed and supplied values are never echoed. The condition
+  class, code and `field` are unchanged.
 * `project()`, `sync()`, `configure()` and `study_stage()` no longer
   default to the working directory: `path` (or `directory`) must be given.
 * Twenty-nine exported functions without examples gain them. Examples use a
