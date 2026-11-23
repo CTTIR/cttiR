@@ -160,7 +160,7 @@ Bioconductor and Seurat capabilities; clinical tabular goals never route there.
 ## Knowledge catalog and approvals
 
 ```r
-cttiR::packages()                       # 62 package revisions with coverage and approvals
+cttiR::packages()                       # 64 package revisions with coverage and approvals
 cttiR::search("nlme::lme")              # revision-scoped evidence
 cttiR::ask("Fit a mixed model for repeated measures")
 cttiR::resources("cytometry", repository = "Bioconductor")

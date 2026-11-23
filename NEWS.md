@@ -7,6 +7,12 @@
   asking to check field names, types and allowed values. At most five
   problems are listed and supplied values are never echoed. The condition
   class, code and `field` are unchanged.
+* `study_analyze()` stops with a `cttir_study_error` when `data` is `NULL`
+  or missing; both recipes previously failed with an untyped base R error.
+* `study_analyze()` refuses an essentially perfect association fit
+  (`degenerate_fit`) by the criterion of `stats::summary.lm()`, instead of
+  returning statistics that R itself flags as unreliable with a warning.
+* The README states the 64 package revisions of the bundled catalog.
 * New help topic `?cttiR` gives the entry points and states that attaching
   the package masks `base::search()` and `stats::update()`; `?search`,
   `?update` and the README say so too. `update_knowledge()` remains the
