@@ -148,7 +148,9 @@ app_server <- function(path = NULL, worker = app_worker) {
 #' @export
 setup_app <- function(mode = c("fast", "detailed"), launch.browser = interactive()) {
   app_require()
-  mode <- match.arg(mode)
+  mode <- tryCatch(match.arg(mode), error = function(e) {
+    abort_cttir("mode must be \"fast\" or \"detailed\".", field = "mode")
+  })
   scalar_flag(launch.browser, "launch.browser")
   shiny::shinyApp(app_ui(mode), app_server(),
     options = list(host = "127.0.0.1", launch.browser = launch.browser)

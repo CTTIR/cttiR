@@ -11,6 +11,9 @@ test_that("application construction never creates a project and stays on loopbac
   expect_s3_class(setup_app("detailed", launch.browser = FALSE), "shiny.appobj")
   expect_length(list.files(parent, all.files = TRUE, no.. = TRUE), 0L)
   expect_error(setup_app(launch.browser = NA), class = "cttir_input_error")
+  for (mode in list("other", NA_character_, 1, character())) {
+    expect_error(setup_app(mode, launch.browser = FALSE), "fast", class = "cttir_input_error")
+  }
   expect_error(app_config("{invalid}"), class = "cttir_input_error")
   expect_error(app_config('{"unknown":true}'), class = "cttir_schema_error")
   html <- as.character(app_ui())
