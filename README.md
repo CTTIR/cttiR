@@ -1,6 +1,8 @@
 # cttiR <picture class="cttir-readme-logo"><source class="cttir-logo-dark-source" media="(prefers-color-scheme: dark)" srcset="man/figures/logo-with-name-dark.png" /><img src="man/figures/logo-with-name.png" align="right" alt="cttiR logo" width="120" height="139" /></picture>
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24426404.svg)](https://doi.org/10.5281/zenodo.24426404)
+
+Zenodo DOI reserved for the release: `10.5281/zenodo.24426404` (not yet published).
+
 
 **CTTIR Project Builder — three inputs, one structured research project.**
 
