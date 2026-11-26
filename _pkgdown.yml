@@ -17,6 +17,8 @@ reference:
     contents:
       - study_spec
       - study_paired_spec
+      - study_two_group_power
+      - study_two_group_spec
       - study_project
       - study_validate
       - study_dependency_lock
@@ -31,6 +33,7 @@ reference:
       - packages
       - search
       - ask
+      - advise
       - resources
       - update
       - rollback_knowledge

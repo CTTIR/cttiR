@@ -193,8 +193,9 @@ study_project <- function(directory, spec, data, dependency_lock, author, units,
   }
   paired <- study_is_paired(spec)
   recipe <- list(schema_version = 1L, id = spec$recipe_id,
-    engine = if (paired) "stats::t.test" else "stats::lm",
-    interpretation = if (paired) "noncausal_paired_mean_change" else "noncausal_association",
+    engine = if (paired || study_is_two_group(spec)) "stats::t.test" else "stats::lm",
+    interpretation = if (study_is_two_group(spec)) "synthetic_two_group_mean_difference"
+      else if (paired) "noncausal_paired_mean_change" else "noncausal_association",
     input = list(path = "data/raw/observations.csv",
       sha256 = file_hash(scratch), rows = nrow(data), columns = as.list(columns), classes = as.list(classes),
       units = as.list(units), projection = "Only the declared ID and analysis columns are copied; no rows are excluded."),
@@ -360,7 +361,11 @@ study_run <- function(directory, declaration) {
   result <- study_analyze(spec, data, recipe$input$units)
   variables <- study_data_layout(spec)$variables
   continuous <- Filter(function(x) x$type == "continuous", variables)
-  descriptives <- if (study_is_paired(spec)) do.call(rbind, lapply(c("before", "after", "difference"), function(key) {
+  descriptives <- if (study_is_two_group(spec)) do.call(rbind, lapply(c(spec$control, spec$treatment), function(g) {
+    value <- data[[spec$outcome$name]][data[[spec$group]] == g]
+    data.frame(variable = spec$outcome$name, group = g, unit = spec$outcome$unit, n = length(value), mean = mean(value),
+      sd = stats::sd(value), min = min(value), median = stats::median(value), max = max(value))
+  })) else if (study_is_paired(spec)) do.call(rbind, lapply(c("before", "after", "difference"), function(key) {
     value <- result$diagnostics[[key]]
     data.frame(variable = key, unit = spec$outcome$unit, n = length(value), mean = mean(value),
       sd = stats::sd(value), min = min(value), median = stats::median(value), max = max(value))
@@ -467,7 +472,9 @@ study_stage <- function(stage, directory) {
   table <- function(x) cat(study_stage_table(x), "\n")
   paragraph(paste("Synthetic study:", spec$name))
   paragraph(paste("Scientific review:", result$scientific_review))
-  if (study_is_paired(spec)) {
+  if (study_is_two_group(spec)) {
+    study_two_group_stage(stage, spec, recipe, result, directory, declaration, paragraph, table)
+  } else if (study_is_paired(spec)) {
     study_paired_stage(stage, spec, recipe, result, directory, declaration, paragraph, table)
   } else {
   if (stage == "protocol") {

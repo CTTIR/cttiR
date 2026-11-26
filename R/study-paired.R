@@ -143,6 +143,10 @@ study_paired_analyze <- function(spec, data, units) {
 }
 
 study_data_layout <- function(spec) {
+  if (study_is_two_group(spec)) return(list(variables = list(spec$outcome,
+    list(name = spec$group, type = "categorical", levels = c(spec$control, spec$treatment), reference = spec$control)),
+    columns = c(spec$observation_id, spec$group, spec$outcome$name),
+    classes = c("character", "character", "numeric"), id = spec$observation_id))
   if (study_is_paired(spec)) return(list(variables = list(spec$outcome),
     columns = c(spec$pair_id, spec$occasion, spec$outcome$name),
     classes = c("character", "character", "numeric"), id = spec$pair_id))

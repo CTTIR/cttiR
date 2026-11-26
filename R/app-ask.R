@@ -52,8 +52,10 @@ app_ask_ui <- function(id) {
       shiny::checkboxInput(ns("verified_only"), app_tr("ask.verified_only"), value = TRUE),
       shiny::checkboxInput(ns("local_assistance"), app_tr("assistance.enable"), value = FALSE),
       shiny::radioButtons(ns("assistance_kind"), app_tr("assistance.kind"),
-        choiceNames = list(app_tr("assistance.answer"), app_tr("assistance.suggestion")),
-        choiceValues = c("answer", "suggestion"), selected = "answer", inline = TRUE)),
+        choiceNames = list(app_tr("assistance.answer"), app_tr("assistance.suggestion"), app_tr("assistance.plan")),
+        choiceValues = c("answer", "suggestion", "plan"), selected = "answer", inline = TRUE),
+      shiny::conditionalPanel(sprintf("input['%s'] && input['%s'] === 'plan'", ns("local_assistance"), ns("assistance_kind")),
+        shiny::checkboxInput(ns("acknowledge_experimental"), app_tr("assistance.acknowledge"), value = FALSE))),
     shiny::conditionalPanel(sprintf("input['%s'] === 'search'", ns("action")),
       shiny::numericInput(ns("limit"), app_tr("ask.limit"), value = 20, min = 1, max = 200, step = 1)),
     shiny::checkboxInput(ns("use_project"), app_tr("common.use_project"), value = FALSE),
@@ -72,7 +74,8 @@ app_ask_server <- function(id, pool, lang = shiny::reactive("en"), project = shi
       assistance_input = NULL, preview = NULL, applied = NULL)
     project_path <- function() if (isTRUE(input$use_project)) project() else NULL
     assistance_input <- function() list(question = input$question, path = project_path(), language = lang(),
-      action = input$action, enabled = isTRUE(input$local_assistance), kind = input$assistance_kind %||% "answer")
+      action = input$action, enabled = isTRUE(input$local_assistance), kind = input$assistance_kind %||% "answer",
+      acknowledged = isTRUE(input$acknowledge_experimental))
     shiny::observeEvent(input$run, {
       if (slot$busy()) return()
       question <- input$question %||% ""
@@ -88,7 +91,11 @@ app_ask_server <- function(id, pool, lang = shiny::reactive("en"), project = shi
       } else {
         list(query = question, path = project_path(), limit = if (is.na(limit)) 20L else limit)
       }
-      if (kind == "ask" && isTRUE(input$local_assistance)) {
+      if (kind == "ask" && isTRUE(input$local_assistance) && identical(input$assistance_kind, "plan")) {
+        kind <- "advise"
+        args <- list(question = question, path = project_path(), language = lang(),
+          acknowledge_experimental = isTRUE(input$acknowledge_experimental))
+      } else if (kind == "ask" && isTRUE(input$local_assistance)) {
         kind <- "assistant_advice"
         args <- list(question = question, path = project_path(), language = lang(), use_model = TRUE,
           kind = if (identical(input$assistance_kind, "suggestion")) "suggestion" else "answer")
@@ -96,9 +103,9 @@ app_ask_server <- function(id, pool, lang = shiny::reactive("en"), project = shi
       state$result <- NULL
       state$preview <- NULL
       state$applied <- NULL
-      submitted <- if (kind == "assistant_advice") assistance_input() else NULL
+      submitted <- if (kind %in% c("assistant_advice", "advise")) assistance_input() else NULL
       state$status <- app_start_job(slot, kind, args, paste0("job.", kind), function(result) {
-        if (kind == "assistant_advice" && !identical(submitted, assistance_input())) {
+        if (kind %in% c("assistant_advice", "advise") && !identical(submitted, assistance_input())) {
           state$status <- app_status("info", "assistance.stale")
           return()
         }
@@ -151,6 +158,12 @@ app_ask_server <- function(id, pool, lang = shiny::reactive("en"), project = shi
     output$result <- shiny::renderUI({
       value <- state$result
       if (is.null(value)) return(NULL)
+      if (identical(state$kind, "advise")) {
+        if (!identical(state$assistance_input, assistance_input())) {
+          return(shiny::tags$p(app_t("assistance.stale", lang())))
+        }
+        return(app_adviser_ui(value, lang(), session$ns))
+      }
       if (identical(state$kind, "assistant_advice")) {
         if (!identical(state$assistance_input, assistance_input())) {
           return(shiny::tags$p(app_t("assistance.stale", lang())))
@@ -170,9 +183,9 @@ app_ask_server <- function(id, pool, lang = shiny::reactive("en"), project = shi
       filename = function() "cttir-answer-code.R",
       contentType = "text/plain",
       content = function(file) {
-        if (identical(state$kind, "assistant_advice") &&
+        if (isTRUE(state$kind %in% c("assistant_advice", "advise")) &&
             !identical(state$assistance_input, assistance_input())) abort_cttir("Request fresh guidance before downloading code.")
-        answer <- if (identical(state$kind, "assistant_advice")) state$result$deterministic else state$result
+        answer <- if (state$kind %in% c("assistant_advice", "advise")) state$result$deterministic else state$result
         code <- unclass(answer)$code
         text <- if (is.character(code)) paste(code, collapse = "\n") else ""
         writeLines(c("# Code returned by cttiR::ask(); review before use. It was not executed.", text), file, useBytes = TRUE)

@@ -1,8 +1,19 @@
 # Current project state
 
-Updated 20 October 2026.
+Updated 26 November 2026.
 
 ## Implemented and locally validated
+
+The local adviser and independent two-group synthetic workflow are integrated
+with the current package input guards, report formatting, runtime checks and
+0.2.0 metadata. The initial focused checks passed 321 assertions; catalog,
+release/runtime-storage and study-integrity checks passed another 215, with
+no failures, warnings or skips. Another 98 runtime checks passed. A fresh
+installed-package run compiled, analyzed, rendered and validated the two-group
+therapy example, with the raw synthetic observations retained read-only.
+These checks use synthetic fixtures and do not release a model, approve
+scientific conclusions or change operational services.
+
 
 - Deterministic study compilation with the reflowR strict composition, fixed workflow stages, declared research design and domain colours.
 - An initial synthetic, independent-observation, continuous-outcome association recipe. Unsupported designs and inconsistent data stop before report acceptance.

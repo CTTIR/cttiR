@@ -107,6 +107,7 @@ study_spec <- function(study_id, name, question, population, observation_id, out
 #' check$valid
 #' @export
 study_validate <- function(spec, data = NULL, units = NULL) {
+  if (study_is_two_group(spec)) return(study_two_group_validate(spec, data, units))
   if (study_is_paired(spec)) return(study_paired_validate(spec, data, units))
   keys <- c("schema_version", "recipe_id", "study_id", "name", "question", "population",
     "research", "observation_id", "outcome", "exposure", "covariates", "estimand",
@@ -206,6 +207,7 @@ study_analyze <- function(spec, data, units) {
   # study_validate() accepts a specification without data; an analysis cannot.
   if (missing(data) || is.null(data))
     study_fail("Supply the study data to analyze.", "invalid_data")
+  if (study_is_two_group(spec)) return(study_two_group_analyze(spec, data, units))
   if (study_is_paired(spec)) return(study_paired_analyze(spec, data, units))
   admission <- study_validate(spec, data, units)
   frame <- data.frame(.outcome = data[[spec$outcome$name]], .exposure = data[[spec$exposure$name]])

@@ -1,5 +1,13 @@
 # cttiR 0.2.0
 
+* Integrated the experimental local adviser and its non-executing analysis-plan
+  view while retaining the current runtime verification and input guards.
+* Added explicit independent two-group synthetic study planning and Welch
+  analysis, with separate evaluable and randomized counts and declared units.
+* Preserved current missing-data, degenerate-fit and report-format safeguards
+  across the added workflow. Model responses remain experimental and require
+  acknowledgement; package checks do not qualify a model or a real study.
+
 * Prepared for a first CRAN submission.
 * Schema errors from `project()`, `validate_config()` and `validate_spec()`
   name the offending fields, for example
@@ -72,6 +80,112 @@
 * Reuse up to eight compiled self-contained JSON schemas per process. Schema
   edits invalidate the cache, external references are always recompiled, and
   validation retains its existing errors and random-state guarantees.
+
+* The package logo uses the reserved CTTIR core palette, which it shares only
+  with the CTTIR institution logo: the same near-black, white and slate grey
+  with a gold border.
+
+* Reject matrix-valued association columns, numeric class objects and observation
+  IDs that collide when converted to text. Ordinary numeric vectors and declared
+  factor covariates remain supported.
+* Preserve study measurements through 17-digit CSV storage, an accurate decimal
+  reader and an exact pre-creation round-trip check. Record numerical CSV and
+  JSON results with the same precision. Existing pinned projects are not rewritten.
+* Document the pinned strict-study prerequisite and public maintenance roadmap;
+  exclude website-only configuration from source packages.
+* Record the actual initial Git branch locally in new project repositories, so
+  workflowr's Git reader recognizes an empty repository when the user's default
+  branch differs from its fallback. Preserve the chosen branch and create no
+  stages or commits; existing repositories are untouched.
+* Resolve admitted macOS system path aliases before passing strict studies to
+  reflowR. Browser destinations below `/var` now use the same physical paths as
+  API compilation, while arbitrary symbolic-link destinations remain refused.
+* Declare workflowr's site generator on the standard site's index page so that
+  its documented renderer manages the report's local assets.
+* Give standard descriptive tables readable spacing and a labelled, keyboard
+  accessible scroll region; retain escaped values and source provenance.
+  Document the external assets requested when viewing workflowr reports.
+
+* Standardize the named v5 package logo across README, documentation pages
+  and available application headers, with matching light and dark artwork.
+
+
+* Name missing packages when a study dependency lock is incomplete. Provision
+  cpp11 explicitly in CI so binary installations retain the required build
+  dependency closure, and report the first failed app pipeline phase clearly.
+
+* Include the declared outcome name and unit on association and paired-study
+  diagnostic value axes, including normal-quantile plots.
+
+* Add a separate app flow for two fixed synthetic strict-study examples, with
+  explicit preview, compilation, analysis and rendering. Keep declarations in
+  session state for export and reject stale previews, changed fixtures and
+  repeated write steps. General project creation keeps its existing behavior.
+
+* Add a worked synthetic paired-study guide and shorten bundled upstream notice
+  paths for portable source archives, preserving every notice byte and license
+  reference.
+
+* Detect symbolic links through cross-platform file metadata before project
+  reads or writes, including linked ancestors on Windows. Exact macOS system
+  aliases retain their existing exception.
+* Keep runtime-stop previews read-only on Windows and explicitly refuse applying
+  graceful shutdown before locks, receipts or signals. No forced-kill fallback
+  is used.
+
+- Strict studies now initialize their own Git repository and reject
+  missing or mismatched repository roots, preventing enclosing-repository
+  metadata from appearing as study report provenance. Only generated analysis
+  Rmd templates are staged; ambiguous report-source status is rejected and no
+  commit is created.
+
+* Add a separate synthetic paired mean-change contract with explicit pair
+  independence, ID-based matching, complete-pair and unit checks, and recorded
+  paired diagnostics in the strict study workflow. Existing association
+  specifications retain their behavior.
+
+* Add a closed synthetic association specification and installed-code study
+  compiler using reflowR's strict composition. Analysis and rendering have
+  separate externally pinned receipts; current raw inputs, dependency versions,
+  controls and results are required before a report is accepted.
+* Add read-only evidence search and exact citation resolution with source/version
+  locators, immutable SQLite reads, external manifest pins and stale-source
+  rejection. Retrieved documentation confers no execution or training approval.
+* Require current data, configuration and output identities for legacy study-data
+  readiness instead of accepting a historical passing code receipt alone.
+
+* Grounded advice now preserves exact bare-callable evidence, reports absent or
+  ambiguous APIs, and withholds model code when known outcome/design constraints
+  conflict with the reviewed adapter. Partial support is labelled explicitly.
+* Planner proposals abstain when capability matches exceed the schema bound and
+  identify unapproved candidate capabilities. Qualification now binds package
+  function bodies, defaults, static rules, R/platform and transitive dependency
+  versions; implementation changes require renewed qualification.
+
+* Add explicit release-manifest setup with trusted checksums, offline GGUF import,
+  resumable model and runtime downloads, owned-runtime identity checks and bilingual setup
+  controls. Import verifies transport and structured response behavior; it does
+  not qualify a model for assistance.
+
+* Add read-only runtime storage inventory, hash-bound removal of unreferenced
+  downloads and separately confirmed graceful shutdown of an owned daemon.
+  Retained releases, model blobs and unrelated files remain protected.
+
+* Preserve pinned documentation when partial reference imports omit existing
+  documents. API explanations distinguish documented function behavior from
+  workflow execution approval and avoid unrelated project guidance.
+
+* Store bundled current and historical API catalogs in a lossless indexed XZ archive. Preserve every logical snapshot identity and the original source-tree files while bounding reads and checking archive and snapshot hashes.
+
+- Add a synthetic two-group workflow with explicit planning inputs, sample-size counts and Welch analysis.
+- Route continuous two-group power questions to verified statistical documentation.
+- Fix an evidence-trimming boundary case that could prevent adviser requests from completing.
+
+* New experimental `advise()` and an "Analysis plan" request type in the Ask
+  view. They ask the locally trained adviser model for a source-cited analysis
+  plan in English or German. Replies are accepted only as one schema-valid plan
+  citing the supplied catalog sources. Unknown functions are flagged, nothing
+  is executed, and results stay labelled `experimental_not_qualified`.
 
 * The package logo uses the reserved CTTIR core palette, which it shares only
   with the CTTIR institution logo: the same near-black, white and slate grey

@@ -356,7 +356,7 @@ runtime_probe <- function(endpoint, model) {
   )
   started <- proc.time()[["elapsed"]]
   response <- runtime_request(endpoint, "chat", list(
-    model = model, stream = FALSE,
+    model = model, stream = FALSE, think = FALSE,
     messages = list(list(role = "user", content = 'Return exactly {"status":"ready"}.')),
     format = schema, keep_alive = 0,
     options = list(temperature = 0, seed = 1L, num_ctx = 2048L, num_predict = 32L, num_gpu = 0L, num_thread = 2L)
@@ -364,7 +364,7 @@ runtime_probe <- function(endpoint, model) {
   content <- response$message$content
   valid <- isTRUE(response$done) && identical(response$model, model) && is.character(content) &&
     length(content) == 1L && is.null(response$message$tool_calls) &&
-    isTRUE(json_schema_validate(content, json_text(schema), engine = "ajv"))
+    isTRUE(tryCatch(json_schema_validate(content, json_text(schema), engine = "ajv"), error = function(e) FALSE))
   if (!valid) abort_cttir("The model did not pass the structured-output probe.", "cttir_runtime_unavailable", "probe_failed")
   list(
     state = "pass", elapsed_seconds = unname(proc.time()[["elapsed"]] - started),

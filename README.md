@@ -178,6 +178,41 @@ validated snippets and reports gaps instead of inventing APIs.
 new immutable snapshots (never installing packages); `rollback_knowledge()`
 restores an earlier one. Project pins never change implicitly.
 
+## Local adviser (experimental)
+
+`advise()` asks the locally trained adviser model for an analysis plan. The
+question can be in English or German, and the plan cites pinned catalog
+documentation. In the app, choose **Ask → Request local assistance → Analysis
+plan** and tick the acknowledgement.
+
+```r
+plan <- cttiR::advise(
+  "Compare systolic blood pressure before and after treatment in the same patients; which test fits?",
+  language = "en", acknowledge_experimental = TRUE
+)
+plan            # status, method, assumptions, steps, open questions, sources
+plan$proposal   # the parsed plan
+```
+
+The adviser is a Qwen3.5-9B model with a CTTIR adapter trained on
+source-grounded analysis plans, served from the package-owned Ollama runtime
+after `setup_release()` imports its GGUF file. The package rebuilds the exact
+prompt format used in training and attaches documentation from the catalog. It
+accepts a reply only if it is a single plan matching the adviser schema that
+cites the sources it was given. Decoding is constrained to that schema by
+default (`constrain = FALSE` reproduces the unconstrained decoding used in
+training). Plans that name functions missing from the catalog are kept and
+flagged. On the 148-case development set, the served Q8_0 release passed the
+mechanical checks in 102 of 104 adviser cases.
+
+**The model is not scientifically qualified.** In its 148-case development
+comparison it still made confirmed critical errors (6 of 148), including
+four new ones introduced by training. Every result is labelled
+`experimental_not_qualified`, requires `acknowledge_experimental = TRUE`, is
+never executed, and comes with the deterministic `ask()` answer. Analyses run
+only through the strict study workflows above. The model weights are not part
+of this repository.
+
 ## Maintenance and checks
 
 * `sync()` previews and applies explicit configuration changes and preserves
@@ -343,3 +378,22 @@ Local software setup: vLLM with Python/PyTorch, plus R and RStudio.
 ## Branding
 
 Editable R artwork and regeneration instructions are in [tools/branding](https://github.com/CTTIR/cttiR/blob/main/tools/branding/README.md).
+
+### Two-group planning and workflowr example
+
+The strict synthetic examples view now accepts a research question and explicit
+planning inputs for an independent two-group continuous-outcome comparison.
+Review the local adviser's proposal, confirm the meaningful difference, planning
+SD, power, significance level and dropout allowance, then preview, compile,
+analyze and render the workflow. The compiler uses fixed reviewed R functions;
+model-generated code is not executed.
+
+`study_two_group_power(delta = 5, sd = 10, dropout = 0.1)` returns 64 evaluable
+participants per group and 72 randomized per group (144 total). This planning
+approximation assumes equal allocation and a common planning SD. The synthetic
+analysis uses a two-sided Welch comparison with therapy minus standard care as
+the contrast. Real-study design and missing-data decisions require separate review.
+
+The complete R example is in `inst/examples/therapy-workflow.R`. It produces a
+local workflowr site, numerical results, diagnostics, a dependency inventory and
+external continuation records. It installs no packages and publishes nothing.
